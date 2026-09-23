@@ -23,6 +23,7 @@ function MiniChart({ symbol, onRemove }: { symbol: string; onRemove: () => void 
         textColor: '#cccccc',
         fontSize: 10,
         fontFamily: 'JetBrains Mono',
+        attributionLogo: false,
       },
       grid: {
         vertLines: { color: '#1a1a1a' },

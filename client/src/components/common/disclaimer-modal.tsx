@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/use-auth-store';
 import { useT } from '../../i18n';
+import { LEGAL_URL } from '../../lib/legal';
 import { AlertTriangle } from 'lucide-react';
 
-const DISCLAIMER_KEY = 'tnt-disclaimer-accepted';
+const DISCLAIMER_KEY = 'sgfx-disclaimer-accepted';
 
 export function DisclaimerModal() {
   const t = useT();
@@ -36,6 +37,10 @@ export function DisclaimerModal() {
         <p className="text-[11px] font-mono text-neutral leading-relaxed mb-6">
           {t('disclaimerBody')}
         </p>
+
+        <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="block -mt-3 mb-6 text-[10px] font-mono text-accent hover:underline uppercase tracking-widest">
+          {t('termsOfService')} / {t('privacyPolicy')}
+        </a>
 
         <button
           onClick={accept}

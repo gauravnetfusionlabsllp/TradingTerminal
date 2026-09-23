@@ -4,6 +4,8 @@ import { useAppStore } from '../stores/use-app-store';
 import { API_URL } from '../api/client';
 import { useAuthStore } from '../stores/use-auth-store';
 import { useMt5Live, wantedMt5Symbols, type Mt5Quote } from '../api/hooks/use-mt5';
+import { createQuoteThrottle } from '../lib/quote-throttle';
+import { setSocket } from './socket';
 
 function getWsUrl() {
   // Same server as the REST API (called directly, no dev proxy)
@@ -16,12 +18,11 @@ const RECONNECT_BASE_DELAY = 1000;
 const RECONNECT_MAX_DELAY = 30000;
 const HEARTBEAT_TIMEOUT = 60_000; // must be > server's 25s ping interval (generous buffer)
 
-// The one app-wide socket, so hooks elsewhere (MT5 quote subscriptions) can send on it
-let socket: WebSocket | null = null;
-
-export function sendWs(msg: object) {
-  if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(msg));
-}
+// Settings → Display: throttle off = every batch hits the store on arrival; on = ≤1 store write per quoteThrottleMs
+const queueQuotes = createQuoteThrottle<Mt5Quote>(
+  (q) => useMt5Live.setState((s) => ({ quotes: { ...s.quotes, ...q } })),
+  () => { const s = useAppStore.getState().settings; return s.quoteThrottle ? s.quoteThrottleMs : 0; },
+);
 
 export function useWebSocket() {
   const queryClient = useQueryClient();
@@ -52,7 +53,7 @@ export function useWebSocket() {
     try {
       const ws = new WebSocket(getWsUrl());
       wsRef.current = ws;
-      socket = ws;
+      setSocket(ws);
 
       ws.onopen = () => {
         const isReconnect = reconnectAttemptRef.current > 0;
@@ -116,45 +117,12 @@ export function useWebSocket() {
         case 'ping':
           // Server heartbeat — just reset timer (already done above)
           break;
-        case 'news': {
-          queryClient.invalidateQueries({ queryKey: ['news'] });
-          queryClient.invalidateQueries({ queryKey: ['map-events'] });
-
-          // Trigger breaking news flash + add notification for new articles
-          if (msg.data && msg.data.id) {
-            const article = msg.data;
-            const symbols = article.recommendations?.map((r: any) => r.symbol) || [];
-            const title = (article.title || '').slice(0, 60);
-
-            window.dispatchEvent(new CustomEvent('breaking-news', {
-              detail: {
-                id: article.id,
-                title: article.title,
-                titleTranslations: article.titleTranslations || null,
-                sentiment: article.sentiment,
-                symbols,
-              }
-            }));
-
-            // Push to notification store
-            useAppStore.getState().addNotification({
-              id: article.id,
-              title: article.title,
-              titleTranslations: article.titleTranslations || null,
-              sentiment: article.sentiment,
-              symbols,
-              time: new Date(),
-            });
-
-            addLog({ type: 'ws', message: `News — "${title}..."` });
-          }
+        case 'mt5-quotes':
+          queueQuotes(msg.data as Mt5Quote[]);
           break;
-        }
-        case 'mt5-quotes': {
-          const batch = msg.data as Mt5Quote[];
-          useMt5Live.setState((s) => ({ quotes: { ...s.quotes, ...Object.fromEntries(batch.map((q) => [q.symbol, q])) } }));
+        case 'mt5-error':
+          addLog({ type: 'alert', message: `Live prices — ${msg.data?.error ?? 'subscription refused'}` });
           break;
-        }
         case 'mt5-feed':
           useMt5Live.setState({ live: !!msg.data?.live });
           break;
@@ -162,13 +130,6 @@ export function useWebSocket() {
           queryClient.invalidateQueries({ queryKey: ['stocks'] });
           addLog({ type: 'trade', message: 'Quote data refreshed' });
           break;
-        case 'recommendation': {
-          queryClient.invalidateQueries({ queryKey: ['recommendations'] });
-          const sym = msg.data?.symbol || '';
-          const act = msg.data?.action || '';
-          addLog({ type: 'alert', message: `New signal — ${sym} ${act}` });
-          break;
-        }
         case 'calendar-release': {
           queryClient.invalidateQueries({ queryKey: ['calendar'] });
           const eventName = msg.data?.event || 'Economic data';

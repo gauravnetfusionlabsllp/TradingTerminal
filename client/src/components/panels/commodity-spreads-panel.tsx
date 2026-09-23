@@ -80,53 +80,16 @@ interface InterCommoditySpread {
   zScore: number;
 }
 
-// ── Fallback data ──
-
-const CALENDAR_SPREADS: CalendarSpread[] = [
-  { commodity: 'WTI CRUDE', front: 78.42, secondMonth: 77.85, spread: 0.57, structure: 'backwardation' },
-  { commodity: 'BRENT CRUDE', front: 82.15, secondMonth: 81.72, spread: 0.43, structure: 'backwardation' },
-  { commodity: 'NATURAL GAS', front: 2.34, secondMonth: 2.51, spread: -0.17, structure: 'contango' },
-  { commodity: 'GOLD', front: 2045.60, secondMonth: 2052.30, spread: -6.70, structure: 'contango' },
-  { commodity: 'SILVER', front: 23.18, secondMonth: 23.42, spread: -0.24, structure: 'contango' },
-  { commodity: 'COPPER', front: 3.8450, secondMonth: 3.8620, spread: -0.0170, structure: 'contango' },
-  { commodity: 'CORN', front: 4.52, secondMonth: 4.61, spread: -0.09, structure: 'contango' },
-  { commodity: 'SOYBEANS', front: 12.38, secondMonth: 12.22, spread: 0.16, structure: 'backwardation' },
-  { commodity: 'WHEAT', front: 5.89, secondMonth: 6.02, spread: -0.13, structure: 'contango' },
-];
-
-const CRACK_SPREADS: CrackSpread[] = [
-  { type: '3-2-1 CRACK', value: 28.45, change: 1.23, avg1m: 26.80, percentile: 72 },
-  { type: '5-3-2 CRACK', value: 24.12, change: -0.87, avg1m: 25.10, percentile: 45 },
-  { type: 'GASOLINE CRACK', value: 32.18, change: 2.05, avg1m: 29.40, percentile: 85 },
-  { type: 'HEATING OIL CRACK', value: 22.76, change: -1.42, avg1m: 24.30, percentile: 35 },
-  { type: 'RBOB-BRENT', value: 26.33, change: 0.65, avg1m: 25.80, percentile: 58 },
-];
-
-const CRUSH_SPREADS: CrushSpread[] = [
-  { type: 'SOY CRUSH', value: 1.82, change: 0.04, avg1m: 1.75, percentile: 68 },
-  { type: 'CORN CRUSH (ETHANOL)', value: 0.45, change: -0.02, avg1m: 0.48, percentile: 32 },
-  { type: 'WHEAT CRUSH (FLOUR)', value: 2.15, change: 0.08, avg1m: 2.05, percentile: 74 },
-];
-
-const INTER_COMMODITY_SPREADS: InterCommoditySpread[] = [
-  { name: 'GOLD/SILVER RATIO', value: 88.24, historicalAvg: 80.50, zScore: 1.42 },
-  { name: 'BRENT-WTI SPREAD', value: 3.73, historicalAvg: 4.20, zScore: -0.85 },
-  { name: 'CORN/WHEAT RATIO', value: 0.767, historicalAvg: 0.810, zScore: -0.92 },
-  { name: 'PLAT/GOLD SPREAD', value: -1082.40, historicalAvg: -850.00, zScore: -1.68 },
-  { name: 'HO-RBOB SPREAD', value: -9.42, historicalAvg: -5.30, zScore: -1.24 },
-  { name: 'COPPER/GOLD RATIO', value: 0.00188, historicalAvg: 0.00210, zScore: -1.05 },
-];
-
 // ── Main Panel ──
 
 export function CommoditySpreadsPanel() {
   const t = useT();
   const { data, isLoading } = useCommoditySpreads();
 
-  const calendarSpreads: CalendarSpread[] = data?.calendarSpreads ?? CALENDAR_SPREADS;
-  const crackSpreads: CrackSpread[] = data?.crackSpreads ?? CRACK_SPREADS;
-  const crushSpreads: CrushSpread[] = data?.crushSpreads ?? CRUSH_SPREADS;
-  const interCommoditySpreads: InterCommoditySpread[] = data?.interCommoditySpreads ?? INTER_COMMODITY_SPREADS;
+  const calendarSpreads: CalendarSpread[] = data?.calendarSpreads ?? [];
+  const crackSpreads: CrackSpread[] = data?.crackSpreads ?? [];
+  const crushSpreads: CrushSpread[] = data?.crushSpreads ?? [];
+  const interCommoditySpreads: InterCommoditySpread[] = data?.interCommoditySpreads ?? [];
 
   if (isLoading && !data) {
     return (
@@ -137,6 +100,15 @@ export function CommoditySpreadsPanel() {
             Loading...
           </span>
         </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="h-full flex flex-col bg-black">
+        <Header t={t} />
+        <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
       </div>
     );
   }

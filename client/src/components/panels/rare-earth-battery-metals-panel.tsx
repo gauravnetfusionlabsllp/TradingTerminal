@@ -13,64 +13,6 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'pipeline', label: 'Pipeline' },
 ];
 
-// ── Fallback Data ──
-
-const FALLBACK_PRICES = [
-  { name: 'Neodymium (NdPr Oxide)', symbol: 'NDPR', price: 63.20, unit: '$/kg', dailyChange: 2.14, change30d: 5.8, ytdChange: 8.5, high52w: 78.60, low52w: 48.20 },
-  { name: 'Dysprosium Oxide', symbol: 'DY', price: 285.00, unit: '$/kg', dailyChange: 1.42, change30d: 4.2, ytdChange: 12.3, high52w: 340.00, low52w: 210.00 },
-  { name: 'Terbium Oxide', symbol: 'TB', price: 1250.00, unit: '$/kg', dailyChange: 0.88, change30d: 3.1, ytdChange: 6.7, high52w: 1480.00, low52w: 980.00 },
-  { name: 'Praseodymium Oxide', symbol: 'PR', price: 68.50, unit: '$/kg', dailyChange: 1.95, change30d: 4.8, ytdChange: 7.2, high52w: 82.40, low52w: 52.60 },
-  { name: 'Lithium Carbonate', symbol: 'LICO', price: 12.40, unit: '$/kg', dailyChange: -1.82, change30d: -6.4, ytdChange: -24.6, high52w: 22.50, low52w: 9.80 },
-  { name: 'Cobalt', symbol: 'CO', price: 29350, unit: '$/t', dailyChange: 0.74, change30d: 2.1, ytdChange: -8.3, high52w: 38200, low52w: 24100 },
-  { name: 'Nickel (Class 1)', symbol: 'NI', price: 16420, unit: '$/t', dailyChange: -0.45, change30d: -2.8, ytdChange: -18.7, high52w: 21300, low52w: 14850 },
-  { name: 'Graphite (Flake)', symbol: 'GR', price: 538, unit: '$/t', dailyChange: -0.22, change30d: -3.2, ytdChange: -32.1, high52w: 890, low52w: 420 },
-  { name: 'Manganese (EMM)', symbol: 'MN', price: 4.85, unit: '$/kg', dailyChange: 0.62, change30d: 1.4, ytdChange: -5.2, high52w: 6.40, low52w: 3.90 },
-  { name: 'Lanthanum Oxide', symbol: 'LA', price: 1.80, unit: '$/kg', dailyChange: -0.56, change30d: -1.8, ytdChange: -12.4, high52w: 2.40, low52w: 1.50 },
-  { name: 'Cerium Oxide', symbol: 'CE', price: 1.65, unit: '$/kg', dailyChange: -0.30, change30d: -1.2, ytdChange: -10.8, high52w: 2.20, low52w: 1.35 },
-  { name: 'Scandium Oxide', symbol: 'SC', price: 4200, unit: '$/kg', dailyChange: 0.48, change30d: 2.6, ytdChange: 15.2, high52w: 4800, low52w: 3200 },
-];
-
-const FALLBACK_SUPPLY = [
-  { country: 'China', production: 240000, unit: 'mt RE / yr', globalShare: 69.8, reserves: 44000000, disruption: 'EXPORT CONTROLS', disruptionLevel: 'high' as const },
-  { country: 'United States', production: 43000, unit: 'mt RE / yr', globalShare: 12.5, reserves: 2300000, disruption: 'CAPACITY RAMP', disruptionLevel: 'low' as const },
-  { country: 'Myanmar', production: 38000, unit: 'mt RE / yr', globalShare: 11.0, reserves: 0, disruption: 'BORDER CONFLICT', disruptionLevel: 'critical' as const },
-  { country: 'Australia', production: 18000, unit: 'mt RE / yr', globalShare: 5.2, reserves: 5700000, disruption: 'NONE', disruptionLevel: 'none' as const },
-  { country: 'DRC', production: 130000, unit: 'mt Co / yr', globalShare: 72.6, reserves: 4000000, disruption: 'ARTISANAL RISK', disruptionLevel: 'moderate' as const },
-  { country: 'Indonesia', production: 1800000, unit: 'mt Ni / yr', globalShare: 48.6, reserves: 55000000, disruption: 'ORE BAN', disruptionLevel: 'high' as const },
-  { country: 'Australia (Li)', production: 86000, unit: 'mt LCE / yr', globalShare: 46.9, reserves: 7900000, disruption: 'PRICE SQUEEZE', disruptionLevel: 'moderate' as const },
-  { country: 'Chile (Li)', production: 44000, unit: 'mt LCE / yr', globalShare: 24.0, reserves: 11000000, disruption: 'NATIONALIZATION', disruptionLevel: 'high' as const },
-];
-
-const FALLBACK_EV_DEMAND = [
-  { region: 'China', q1: 2850, q2: 3120, q3: 3480, q4: 3850, unit: 'GWh', growthYoY: 28.4, keyChemistry: 'LFP / NMC' },
-  { region: 'Europe', q1: 1420, q2: 1580, q3: 1720, q4: 1950, unit: 'GWh', growthYoY: 18.6, keyChemistry: 'NMC / NCA' },
-  { region: 'North America', q1: 980, q2: 1120, q3: 1280, q4: 1480, unit: 'GWh', growthYoY: 32.5, keyChemistry: 'NMC / LFP' },
-  { region: 'Japan / Korea', q1: 620, q2: 690, q3: 750, q4: 840, unit: 'GWh', growthYoY: 14.2, keyChemistry: 'NCA / NMC' },
-  { region: 'India', q1: 180, q2: 220, q3: 280, q4: 350, unit: 'GWh', growthYoY: 68.4, keyChemistry: 'LFP' },
-  { region: 'Rest of World', q1: 240, q2: 280, q3: 320, q4: 380, unit: 'GWh', growthYoY: 42.1, keyChemistry: 'LFP / NMC' },
-];
-
-const FALLBACK_PIPELINE = [
-  { project: 'MP Materials (Mountain Pass)', location: 'US - California', metal: 'Rare Earths', stage: 'Production', capacity: '43,000 mt/yr', startDate: 'Active', owner: 'MP Materials' },
-  { project: 'Lynas Kalgoorlie', location: 'Australia - WA', metal: 'Rare Earths', stage: 'Construction', capacity: '12,000 mt/yr', startDate: '2027 Q2', owner: 'Lynas' },
-  { project: 'Thacker Pass', location: 'US - Nevada', metal: 'Lithium', stage: 'Construction', capacity: '40,000 mt LCE/yr', startDate: '2027 H1', owner: 'Lithium Americas' },
-  { project: 'Jadar', location: 'Serbia', metal: 'Lithium', stage: 'Permitting', capacity: '58,000 mt LCE/yr', startDate: '2028+', owner: 'Rio Tinto' },
-  { project: 'Weda Bay HPAL', location: 'Indonesia', metal: 'Nickel', stage: 'Production', capacity: '120,000 mt Ni/yr', startDate: 'Active', owner: 'Tsingshan / Eramet' },
-  { project: 'Kabanga', location: 'Tanzania', metal: 'Nickel', stage: 'Development', capacity: '65,000 mt Ni/yr', startDate: '2028 H2', owner: 'Lifezone Metals' },
-  { project: 'KoBold (Mingomba)', location: 'Zambia', metal: 'Copper / Cobalt', stage: 'Exploration', capacity: 'TBD', startDate: '2030+', owner: 'KoBold Metals' },
-  { project: 'Norra Karr', location: 'Sweden', metal: 'Heavy Rare Earths', stage: 'Permitting', capacity: '5,000 mt/yr', startDate: '2028 Q4', owner: 'Leading Edge Materials' },
-  { project: 'Balama', location: 'Mozambique', metal: 'Graphite', stage: 'Production', capacity: '100,000 mt/yr', startDate: 'Active', owner: 'Syrah Resources' },
-  { project: 'Grota do Cirilo', location: 'Brazil', metal: 'Lithium', stage: 'Production', capacity: '75,000 mt LCE/yr', startDate: 'Active', owner: 'Sigma Lithium' },
-];
-
-const FALLBACK_DATA = {
-  prices: FALLBACK_PRICES,
-  supplyChain: FALLBACK_SUPPLY,
-  evDemand: FALLBACK_EV_DEMAND,
-  pipeline: FALLBACK_PIPELINE,
-  timestamp: new Date().toISOString(),
-};
-
 // ── Formatting helpers ──
 
 function fmtPrice(n: number): string {
@@ -150,7 +92,7 @@ export function RareEarthBatteryMetalsPanel() {
     );
   }
 
-  const d = data || FALLBACK_DATA;
+  const d = data;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -212,7 +154,7 @@ export function RareEarthBatteryMetalsPanel() {
       {/* Footer */}
       <div className="px-3 py-1 border-t border-border/10 bg-[#050505] shrink-0">
         <span className="text-[7px] font-mono text-neutral-700">
-          Updated: {new Date(d.timestamp).toLocaleTimeString()}
+          Updated: {d?.timestamp ? new Date(d.timestamp).toLocaleTimeString() : '--'}
         </span>
       </div>
     </div>
@@ -221,7 +163,7 @@ export function RareEarthBatteryMetalsPanel() {
 
 // ── PRICES TAB ──
 
-function PricesTab({ prices }: { prices: typeof FALLBACK_PRICES }) {
+function PricesTab({ prices }: { prices: any[] }) {
   return (
     <div>
       <div className="px-2 py-1.5 border-b border-border/20 bg-[#030303]">
@@ -272,7 +214,7 @@ function PricesTab({ prices }: { prices: typeof FALLBACK_PRICES }) {
 
 // ── SUPPLY CHAIN TAB ──
 
-function SupplyChainTab({ supply }: { supply: typeof FALLBACK_SUPPLY }) {
+function SupplyChainTab({ supply }: { supply: any[] }) {
   return (
     <div>
       <div className="px-2 py-1.5 border-b border-border/20 bg-[#030303]">
@@ -334,7 +276,7 @@ function SupplyChainTab({ supply }: { supply: typeof FALLBACK_SUPPLY }) {
 
 // ── EV DEMAND TAB ──
 
-function EvDemandTab({ demand }: { demand: typeof FALLBACK_EV_DEMAND }) {
+function EvDemandTab({ demand }: { demand: any[] }) {
   return (
     <div>
       <div className="px-2 py-1.5 border-b border-border/20 bg-[#030303]">
@@ -373,7 +315,7 @@ function EvDemandTab({ demand }: { demand: typeof FALLBACK_EV_DEMAND }) {
                 +{d.growthYoY.toFixed(1)}%
               </span>
               <div className="flex flex-wrap gap-0.5">
-                {d.keyChemistry.split(' / ').map((c) => (
+                {d.keyChemistry.split(' / ').map((c: string) => (
                   <span
                     key={c}
                     className="text-[6px] font-mono font-bold text-orange-400/80 bg-orange-500/10 px-1 py-0"
@@ -406,7 +348,7 @@ function EvDemandTab({ demand }: { demand: typeof FALLBACK_EV_DEMAND }) {
 
 // ── PIPELINE TAB ──
 
-function PipelineTab({ pipeline }: { pipeline: typeof FALLBACK_PIPELINE }) {
+function PipelineTab({ pipeline }: { pipeline: any[] }) {
   return (
     <div>
       <div className="px-2 py-1.5 border-b border-border/20 bg-[#030303]">

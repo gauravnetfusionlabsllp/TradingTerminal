@@ -1,72 +1,6 @@
 import { useInsuranceMarket } from '../../api/hooks/use-insurance-market';
 import { Shield } from 'lucide-react';
 
-// ── Fallback Mock Data ──
-
-const FALLBACK_DATA = {
-  overview: {
-    globalPremiums: 7.12,
-    premiumGrowth: 4.8,
-    combinedRatio: 95.2,
-    catLossesYTD: 68.4,
-    reinsuranceCapital: 725,
-  },
-  pcLines: [
-    { line: 'Property', rateChange: 8.2, lossRatio: 62.5, combinedRatio: 92.3, marketCycle: 'HARD' },
-    { line: 'Casualty', rateChange: 5.4, lossRatio: 68.2, combinedRatio: 98.3, marketCycle: 'STABLE' },
-    { line: 'Auto', rateChange: 12.6, lossRatio: 71.4, combinedRatio: 97.9, marketCycle: 'HARD' },
-    { line: 'Workers Comp', rateChange: -2.1, lossRatio: 58.4, combinedRatio: 86.6, marketCycle: 'SOFT' },
-    { line: 'Marine', rateChange: 3.8, lossRatio: 55.2, combinedRatio: 87.8, marketCycle: 'STABLE' },
-    { line: 'Cyber', rateChange: 18.4, lossRatio: 42.6, combinedRatio: 81.0, marketCycle: 'HARD' },
-    { line: 'D&O', rateChange: -6.8, lossRatio: 48.5, combinedRatio: 82.7, marketCycle: 'SOFT' },
-    { line: 'Professional Liability', rateChange: 2.4, lossRatio: 64.8, combinedRatio: 96.3, marketCycle: 'STABLE' },
-  ],
-  reinsuranceRates: [
-    { program: 'US Property Cat', rateOnLine: 12.4, yoyChange: 15.2, capacity: 'constrained' },
-    { program: 'Europe Windstorm', rateOnLine: 8.8, yoyChange: 8.6, capacity: 'adequate' },
-    { program: 'Japan Typhoon', rateOnLine: 9.2, yoyChange: 6.4, capacity: 'adequate' },
-    { program: 'Global Marine', rateOnLine: 5.6, yoyChange: 3.1, capacity: 'adequate' },
-    { program: 'US Casualty XL', rateOnLine: 7.8, yoyChange: -1.8, capacity: 'adequate' },
-    { program: 'Caribbean Hurricane', rateOnLine: 18.6, yoyChange: 22.4, capacity: 'scarce' },
-    { program: 'Australia Flood', rateOnLine: 14.2, yoyChange: 18.8, capacity: 'constrained' },
-    { program: 'Global Retro', rateOnLine: 22.4, yoyChange: 12.6, capacity: 'scarce' },
-  ],
-  catBonds: {
-    outstanding: 47.2,
-    newIssuance: 16.8,
-    recentDeals: [
-      { name: 'Everglades Re 2026-1', peril: 'Hurricane', size: 350, spread: 825, expectedLoss: 2.14 },
-      { name: 'Sierra Re 2025-2', peril: 'Earthquake', size: 500, spread: 675, expectedLoss: 1.82 },
-      { name: 'Golden State Re III', peril: 'Wildfire', size: 200, spread: 1150, expectedLoss: 3.45 },
-      { name: 'Windmill Re 2026-A', peril: 'Windstorm', size: 425, spread: 540, expectedLoss: 1.28 },
-      { name: 'Pacific Re 2025-1', peril: 'Typhoon', size: 300, spread: 780, expectedLoss: 2.56 },
-      { name: 'Rhine Re IV', peril: 'Flood', size: 275, spread: 480, expectedLoss: 0.98 },
-      { name: 'Atlas Re 2026-B', peril: 'Multi-Peril', size: 600, spread: 920, expectedLoss: 2.88 },
-    ],
-  },
-  lossEvents: [
-    { event: 'Hurricane Milton', date: '2025-10-08', region: 'US Southeast', insuredLoss: 32.4, line: 'Property' },
-    { event: 'California Wildfire Complex', date: '2025-09-15', region: 'US West', insuredLoss: 14.2, line: 'Property' },
-    { event: 'Rhine Valley Flooding', date: '2025-07-22', region: 'Europe', insuredLoss: 9.8, line: 'Property' },
-    { event: 'Tohoku Earthquake', date: '2025-08-14', region: 'Japan', insuredLoss: 8.6, line: 'Property' },
-    { event: 'Texas Hailstorm', date: '2025-06-18', region: 'US Central', insuredLoss: 5.2, line: 'Auto' },
-    { event: 'Cyclone Nivar', date: '2025-11-02', region: 'Indian Ocean', insuredLoss: 2.1, line: 'Marine' },
-  ],
-  insurerPerformance: [
-    { company: 'Chubb (CB)', premiums: 52.8, combinedRatio: 88.5, investmentReturn: 4.2, stockYTD: 12.4 },
-    { company: 'Progressive (PGR)', premiums: 62.4, combinedRatio: 89.4, investmentReturn: 3.8, stockYTD: 18.6 },
-    { company: 'AIG', premiums: 46.2, combinedRatio: 97.3, investmentReturn: 3.6, stockYTD: 4.2 },
-    { company: 'Allstate (ALL)', premiums: 54.8, combinedRatio: 93.1, investmentReturn: 4.1, stockYTD: 8.8 },
-    { company: 'Travelers (TRV)', premiums: 42.6, combinedRatio: 95.1, investmentReturn: 3.9, stockYTD: 6.2 },
-    { company: 'Hartford (HIG)', premiums: 24.8, combinedRatio: 94.8, investmentReturn: 4.4, stockYTD: -2.8 },
-    { company: 'Markel (MKL)', premiums: 12.4, combinedRatio: 92.6, investmentReturn: 5.2, stockYTD: 9.4 },
-    { company: 'RenaissanceRe (RNR)', premiums: 8.6, combinedRatio: 86.4, investmentReturn: 4.8, stockYTD: 14.2 },
-    { company: 'Everest Re (RE)', premiums: 14.2, combinedRatio: 91.2, investmentReturn: 4.6, stockYTD: 10.8 },
-    { company: 'MetLife (MET)', premiums: 68.4, combinedRatio: 96.2, investmentReturn: 3.4, stockYTD: 2.6 },
-  ],
-  generatedAt: new Date().toISOString(),
-};
-
 // ── Color / badge helpers ──
 
 function marketCycleBadge(cycle: string): string {
@@ -115,7 +49,7 @@ export function InsuranceMarketPanel() {
   const { data: rawData, isLoading, error } = useInsuranceMarket() as any;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = (rawData as any) || FALLBACK_DATA;
+  const data = rawData as any;
 
   if (isLoading && !rawData) {
     return (
@@ -137,7 +71,13 @@ export function InsuranceMarketPanel() {
     );
   }
 
-  const overview = data.overview || FALLBACK_DATA.overview;
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+    );
+  }
+
+  const overview = data.overview;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -149,6 +89,7 @@ export function InsuranceMarketPanel() {
             Insurance Market
           </span>
         </div>
+        {overview && (
         <div className="flex items-center gap-3">
           <span className="text-[7px] text-neutral-600 uppercase">Premiums</span>
           <span className="text-[9px] font-bold text-white tabular-nums">${overview.globalPremiums}T</span>
@@ -157,10 +98,12 @@ export function InsuranceMarketPanel() {
             {overview.combinedRatio}%
           </span>
         </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {/* ── 1. Overview Stats ── */}
+        {overview && (
         <div className="border-b border-teal-400/30">
           <div className="grid grid-cols-5 gap-px bg-border/10">
             {[
@@ -177,6 +120,7 @@ export function InsuranceMarketPanel() {
             ))}
           </div>
         </div>
+        )}
 
         {/* ── 2. P&C Lines ── */}
         <div className="border-b border-teal-400/30">
@@ -188,7 +132,7 @@ export function InsuranceMarketPanel() {
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">Comb R</span>
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">Cycle</span>
           </div>
-          {(data.pcLines || FALLBACK_DATA.pcLines).map((p: any) => (
+          {(data.pcLines ?? []).map((p: any) => (
             <div
               key={p.line}
               className="grid grid-cols-[1fr_56px_52px_52px_56px] px-2 py-1 border-b border-border/20 hover:bg-teal-400/[0.02]"
@@ -219,7 +163,7 @@ export function InsuranceMarketPanel() {
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">YoY</span>
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">Capacity</span>
           </div>
-          {(data.reinsuranceRates || FALLBACK_DATA.reinsuranceRates).map((r: any) => (
+          {(data.reinsuranceRates ?? []).map((r: any) => (
             <div
               key={r.program}
               className="grid grid-cols-[1fr_52px_52px_64px] px-2 py-1 border-b border-border/20 hover:bg-teal-400/[0.02]"
@@ -239,19 +183,20 @@ export function InsuranceMarketPanel() {
         </div>
 
         {/* ── 4. Cat Bonds ── */}
+        {data.catBonds && (
         <div className="border-b border-teal-400/30">
           <SectionHeader title="Catastrophe Bonds" />
           <div className="flex items-center gap-4 px-3 py-1.5 border-b border-border/20">
             <div>
               <div className="text-[7px] text-neutral-600 uppercase">Outstanding</div>
               <div className="text-[10px] font-bold text-white tabular-nums">
-                ${(data.catBonds || FALLBACK_DATA.catBonds).outstanding}B
+                ${data.catBonds.outstanding}B
               </div>
             </div>
             <div>
               <div className="text-[7px] text-neutral-600 uppercase">New Issuance YTD</div>
               <div className="text-[10px] font-bold text-teal-400 tabular-nums">
-                ${(data.catBonds || FALLBACK_DATA.catBonds).newIssuance}B
+                ${data.catBonds.newIssuance}B
               </div>
             </div>
           </div>
@@ -262,7 +207,7 @@ export function InsuranceMarketPanel() {
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">Spread</span>
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">EL</span>
           </div>
-          {(data.catBonds || FALLBACK_DATA.catBonds).recentDeals.map((d: any) => (
+          {(data.catBonds.recentDeals ?? []).map((d: any) => (
             <div
               key={d.name}
               className="grid grid-cols-[1fr_60px_48px_48px_48px] px-2 py-1 border-b border-border/20 hover:bg-teal-400/[0.02]"
@@ -275,6 +220,7 @@ export function InsuranceMarketPanel() {
             </div>
           ))}
         </div>
+        )}
 
         {/* ── 5. Loss Events YTD ── */}
         <div className="border-b border-teal-400/30">
@@ -286,7 +232,7 @@ export function InsuranceMarketPanel() {
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">Ins Loss</span>
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">Line</span>
           </div>
-          {(data.lossEvents || FALLBACK_DATA.lossEvents).map((e: any, i: any) => (
+          {(data.lossEvents ?? []).map((e: any, i: any) => (
             <div
               key={i}
               className="grid grid-cols-[1fr_64px_64px_56px_52px] px-2 py-1 border-b border-border/20 hover:bg-teal-400/[0.02]"
@@ -314,7 +260,7 @@ export function InsuranceMarketPanel() {
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">Inv Ret</span>
             <span className="text-[7px] text-neutral-600 uppercase tracking-wider text-right">Stk YTD</span>
           </div>
-          {(data.insurerPerformance || FALLBACK_DATA.insurerPerformance).map((c: any) => (
+          {(data.insurerPerformance ?? []).map((c: any) => (
             <div
               key={c.company}
               className="grid grid-cols-[1fr_52px_52px_48px_48px] px-2 py-1 border-b border-border/20 hover:bg-teal-400/[0.02]"

@@ -1,22 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../stores/use-app-store';
-import { Terminal, Search, Globe, TrendingUp, Cpu, Command } from 'lucide-react';
-import { useCategories } from '../../api/hooks/use-categories';
+import { Terminal, TrendingUp, Command } from 'lucide-react';
 import { useT } from '../../i18n';
 
 export function CommandPalette() {
   const isOpen = useAppStore((s) => s.commandPaletteOpen);
   const setOpen = useAppStore((s) => s.setCommandPaletteOpen);
   const setSelectedSymbol = useAppStore((s) => s.setSelectedSymbol);
-  const setSelectedCategory = useAppStore((s) => s.setSelectedCategory);
-  const setSearchQuery = useAppStore((s) => s.setSearchQuery);
   
   const t = useT();
   const [input, setInput] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const { data: categories } = useCategories();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Command handlers
@@ -44,11 +40,7 @@ export function CommandPalette() {
 
   useEffect(() => {
     if (!input) {
-      setResults([
-        { type: 'command', id: 'news', label: t('cmdNews'), icon: <Terminal className="w-4 h-4" />, action: () => setSelectedCategory(null) },
-        { type: 'command', id: 'ai', label: t('cmdAi'), icon: <Cpu className="w-4 h-4" />, action: () => {} },
-        { type: 'command', id: 'map', label: t('cmdMap'), icon: <Globe className="w-4 h-4" />, action: () => {} },
-      ]);
+      setResults([]);
       return;
     }
 
@@ -66,33 +58,12 @@ export function CommandPalette() {
       });
     }
 
-    // Categories
-    categories?.forEach(cat => {
-      if (cat.name.toLowerCase().includes(input.toLowerCase())) {
-        searchResults.push({
-          type: 'category',
-          id: `cat-${cat.slug}`,
-          label: `CAT ${cat.name}`,
-          icon: <Search className="w-4 h-4" />,
-          action: () => setSelectedCategory(cat.slug)
-        });
-      }
-    });
-
-    // General search
-    searchResults.push({
-      type: 'search',
-      id: 'global-search',
-      label: `SEARCH "${input}"`,
-      icon: <Search className="w-4 h-4" />,
-      action: () => setSearchQuery(input)
-    });
-
     setResults(searchResults);
     setActiveIndex(0);
-  }, [input, categories, setSelectedSymbol, setSelectedCategory, setSearchQuery]);
+  }, [input, setSelectedSymbol]);
 
   const handleExecute = (item: any) => {
+    if (!item) return;
     item.action();
     setOpen(false);
   };

@@ -3,83 +3,6 @@ import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw, FlaskConical } from 'lucide-react';
 
 // i18n helper with fallback
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  timestamp: new Date().toISOString(),
-  overview: {
-    totalTrials: 6842,
-    phase1: 2814,
-    phase2: 2367,
-    phase3: 1661,
-    approvalsYTD: 14,
-    avgTimeToApproval: 10.5,
-    avgRDCost: 2.3e9,
-  },
-  pipeline: [
-    { drug: 'Donanemab', company: 'Eli Lilly', indication: "Alzheimer's Disease", phase: 'APPROVED', modality: 'mAb', peakSales: 12.4e9, pos: 100, competitors: 4 },
-    { drug: 'Suzetrigine', company: 'Vertex', indication: 'Acute Pain', phase: 'APPROVED', modality: 'SM', peakSales: 5.8e9, pos: 100, competitors: 2 },
-    { drug: 'Resmetirom', company: 'Madrigal', indication: 'NASH/MASH', phase: 'APPROVED', modality: 'SM', peakSales: 4.2e9, pos: 100, competitors: 6 },
-    { drug: 'Cretostimogene', company: 'Ferring', indication: 'Bladder Cancer', phase: 'FILED', modality: 'Gene Tx', peakSales: 1.9e9, pos: 82, competitors: 3 },
-    { drug: 'Duvakitug', company: 'AbbVie / Teva', indication: 'Ulcerative Colitis', phase: 'P3', modality: 'mAb', peakSales: 6.1e9, pos: 58, competitors: 8 },
-    { drug: 'Orforglipron', company: 'Eli Lilly', indication: 'Obesity', phase: 'P3', modality: 'SM', peakSales: 9.8e9, pos: 65, competitors: 12 },
-    { drug: 'MK-0616', company: 'Merck', indication: 'Hyperlipidemia', phase: 'P3', modality: 'SM', peakSales: 3.7e9, pos: 52, competitors: 5 },
-    { drug: 'Navtemadlin', company: 'Roche', indication: 'AML', phase: 'P3', modality: 'SM', peakSales: 2.1e9, pos: 44, competitors: 7 },
-    { drug: 'ABBV-951', company: 'AbbVie', indication: "Parkinson's Disease", phase: 'FILED', modality: 'SM', peakSales: 2.8e9, pos: 78, competitors: 3 },
-    { drug: 'Casdatifan', company: 'Roche', indication: 'VHL Disease', phase: 'P3', modality: 'SM', peakSales: 1.4e9, pos: 61, competitors: 1 },
-    { drug: 'Cobenfy', company: 'Bristol Myers', indication: 'Schizophrenia', phase: 'APPROVED', modality: 'SM', peakSales: 7.2e9, pos: 100, competitors: 3 },
-    { drug: 'Pivekimab', company: 'ImmunoGen', indication: 'AML', phase: 'P2', modality: 'ADC', peakSales: 1.6e9, pos: 32, competitors: 9 },
-    { drug: 'Datopotamab DXd', company: 'Daiichi / AZ', indication: 'HR+ Breast Cancer', phase: 'P3', modality: 'ADC', peakSales: 5.5e9, pos: 55, competitors: 6 },
-    { drug: 'Pirtobrutinib', company: 'Eli Lilly', indication: 'CLL/SLL', phase: 'P3', modality: 'SM', peakSales: 4.3e9, pos: 68, competitors: 4 },
-  ],
-  catalysts: [
-    { drug: 'Orforglipron', company: 'Eli Lilly', indication: 'Obesity', dateType: 'PDUFA', date: '2026-06-28', consensus: 'Positive' },
-    { drug: 'MK-0616', company: 'Merck', indication: 'Hyperlipidemia', dateType: 'P3 Readout', date: '2026-04-15', consensus: 'Cautious' },
-    { drug: 'Duvakitug', company: 'AbbVie / Teva', indication: 'Ulcerative Colitis', dateType: 'P3 Readout', date: '2026-05-20', consensus: 'Positive' },
-    { drug: 'Cretostimogene', company: 'Ferring', indication: 'Bladder Cancer', dateType: 'PDUFA', date: '2026-04-30', consensus: 'Positive' },
-    { drug: 'Datopotamab DXd', company: 'Daiichi / AZ', indication: 'HR+ Breast Cancer', dateType: 'P3 Readout', date: '2026-07-12', consensus: 'Mixed' },
-    { drug: 'ABBV-951', company: 'AbbVie', indication: "Parkinson's Disease", dateType: 'PDUFA', date: '2026-10-02', consensus: 'Positive' },
-    { drug: 'Pirtobrutinib', company: 'Eli Lilly', indication: 'CLL/SLL', dateType: 'AdComm', date: '2026-08-18', consensus: 'Positive' },
-    { drug: 'Navtemadlin', company: 'Roche', indication: 'AML', dateType: 'P3 Readout', date: '2026-09-05', consensus: 'Cautious' },
-    { drug: 'Casdatifan', company: 'Roche', indication: 'VHL Disease', dateType: 'PDUFA', date: '2026-11-22', consensus: 'Positive' },
-    { drug: 'Pivekimab', company: 'ImmunoGen', indication: 'AML', dateType: 'P2 Readout', date: '2026-05-08', consensus: 'Mixed' },
-  ],
-  patentCliffs: [
-    { drug: 'Keytruda', company: 'Merck', currentSales: 25.0e9, patentExpiry: '2028-06', genericCompetitors: 8, revenueAtRisk: 18.5e9, biosimilarStatus: 'In Development' },
-    { drug: 'Eliquis', company: 'Bristol Myers / Pfizer', currentSales: 18.2e9, patentExpiry: '2026-11', genericCompetitors: 12, revenueAtRisk: 16.8e9, biosimilarStatus: 'Filed' },
-    { drug: 'Opdivo', company: 'Bristol Myers', currentSales: 9.0e9, patentExpiry: '2028-12', genericCompetitors: 5, revenueAtRisk: 6.2e9, biosimilarStatus: 'Phase 3' },
-    { drug: 'Stelara', company: 'Johnson & Johnson', currentSales: 10.9e9, patentExpiry: '2025-09', genericCompetitors: 9, revenueAtRisk: 10.1e9, biosimilarStatus: 'Approved' },
-    { drug: 'Imbruvica', company: 'AbbVie / J&J', currentSales: 4.6e9, patentExpiry: '2027-03', genericCompetitors: 6, revenueAtRisk: 3.8e9, biosimilarStatus: 'In Development' },
-    { drug: 'Entresto', company: 'Novartis', currentSales: 6.5e9, patentExpiry: '2026-07', genericCompetitors: 10, revenueAtRisk: 5.9e9, biosimilarStatus: 'Filed' },
-    { drug: 'Ozempic', company: 'Novo Nordisk', currentSales: 18.4e9, patentExpiry: '2031-10', genericCompetitors: 3, revenueAtRisk: 14.2e9, biosimilarStatus: 'Phase 1' },
-    { drug: 'Dupixent', company: 'Sanofi / Regeneron', currentSales: 13.1e9, patentExpiry: '2029-03', genericCompetitors: 4, revenueAtRisk: 9.8e9, biosimilarStatus: 'Phase 1' },
-  ],
-  therapeuticAreas: [
-    { area: 'Oncology', activeTrials: 2148, p3Programs: 412, recentApprovals: 5, marketSize: 286e9 },
-    { area: 'Immunology', activeTrials: 892, p3Programs: 156, recentApprovals: 3, marketSize: 124e9 },
-    { area: 'Neuroscience', activeTrials: 764, p3Programs: 98, recentApprovals: 2, marketSize: 78e9 },
-    { area: 'Cardiovascular', activeTrials: 618, p3Programs: 87, recentApprovals: 1, marketSize: 62e9 },
-    { area: 'Metabolic / Obesity', activeTrials: 542, p3Programs: 74, recentApprovals: 2, marketSize: 94e9 },
-    { area: 'Rare Disease', activeTrials: 486, p3Programs: 68, recentApprovals: 1, marketSize: 42e9 },
-    { area: 'Infectious Disease', activeTrials: 428, p3Programs: 52, recentApprovals: 0, marketSize: 58e9 },
-    { area: 'Hematology', activeTrials: 364, p3Programs: 48, recentApprovals: 0, marketSize: 36e9 },
-    { area: 'Respiratory', activeTrials: 312, p3Programs: 38, recentApprovals: 0, marketSize: 48e9 },
-    { area: 'Ophthalmology', activeTrials: 288, p3Programs: 28, recentApprovals: 0, marketSize: 22e9 },
-  ],
-  rdSpending: [
-    { company: 'Roche', rdSpend: 16.1e9, rdRevenueRatio: 25.8, pipelineAssets: 182, p3Assets: 38, recentApprovals: 3 },
-    { company: 'Merck', rdSpend: 14.2e9, rdRevenueRatio: 23.4, pipelineAssets: 148, p3Assets: 32, recentApprovals: 2 },
-    { company: 'Johnson & Johnson', rdSpend: 13.8e9, rdRevenueRatio: 16.1, pipelineAssets: 126, p3Assets: 28, recentApprovals: 2 },
-    { company: 'Pfizer', rdSpend: 12.4e9, rdRevenueRatio: 20.8, pipelineAssets: 118, p3Assets: 25, recentApprovals: 1 },
-    { company: 'Novartis', rdSpend: 11.6e9, rdRevenueRatio: 22.2, pipelineAssets: 164, p3Assets: 34, recentApprovals: 3 },
-    { company: 'AbbVie', rdSpend: 10.2e9, rdRevenueRatio: 18.6, pipelineAssets: 92, p3Assets: 22, recentApprovals: 2 },
-    { company: 'AstraZeneca', rdSpend: 10.8e9, rdRevenueRatio: 23.1, pipelineAssets: 174, p3Assets: 42, recentApprovals: 4 },
-    { company: 'Bristol Myers', rdSpend: 9.8e9, rdRevenueRatio: 21.4, pipelineAssets: 86, p3Assets: 18, recentApprovals: 1 },
-    { company: 'Eli Lilly', rdSpend: 11.3e9, rdRevenueRatio: 26.2, pipelineAssets: 98, p3Assets: 30, recentApprovals: 3 },
-    { company: 'Sanofi', rdSpend: 8.4e9, rdRevenueRatio: 17.8, pipelineAssets: 82, p3Assets: 20, recentApprovals: 1 },
-  ],
-};
-
 // ── Formatting helpers ──
 
 function fmtVol(n: number): string {
@@ -460,7 +383,7 @@ export function PharmaPipelinePanel() {
   const t = useT();
   const { data, isLoading, refetch } = usePharmaPipeline();
 
-  const d = data || FALLBACK_DATA;
+  const d = data;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -474,10 +397,10 @@ export function PharmaPipelinePanel() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[7px] font-mono text-neutral-500 tabular-nums">
-            {d.overview.totalTrials.toLocaleString()} trials
+            {d?.overview?.totalTrials?.toLocaleString() ?? '--'} trials
           </span>
           <span className="text-[7px] font-mono font-bold text-emerald-400 tabular-nums">
-            {d.overview.approvalsYTD} FDA YTD
+            {d?.overview?.approvalsYTD ?? '--'} FDA YTD
           </span>
           <button
             onClick={() => refetch()}
@@ -499,6 +422,8 @@ export function PharmaPipelinePanel() {
               </span>
             </div>
           </div>
+        ) : !d ? (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
         ) : (
           <>
             <OverviewSection overview={d.overview} t={t} />

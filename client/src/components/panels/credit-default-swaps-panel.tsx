@@ -2,106 +2,6 @@ import { useState } from 'react';
 import { useCreditDefaultSwaps } from '../../api/hooks/use-credit-default-swaps';
 import { Shield } from 'lucide-react';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  indexOverview: [
-    { name: 'CDX IG', series: 'S41', level: 52.3, change: -1.2, changePct: -2.24, dailyRange: '51.8 - 53.1', prev: 53.5 },
-    { name: 'CDX HY', series: 'S41', level: 312.5, change: 3.8, changePct: 1.23, dailyRange: '308.2 - 314.7', prev: 308.7 },
-    { name: 'iTraxx Europe', series: 'S40', level: 58.7, change: -0.9, changePct: -1.51, dailyRange: '57.9 - 59.4', prev: 59.6 },
-    { name: 'iTraxx Xover', series: 'S40', level: 298.4, change: 2.1, changePct: 0.71, dailyRange: '295.1 - 300.3', prev: 296.3 },
-  ],
-  singleNameCds: [
-    { entity: 'Goldman Sachs', sector: 'Financials', rating: 'A+', spread5y: 58.2, change: -2.1, recoveryRate: 40.0, impliedPd: 0.97 },
-    { entity: 'JPMorgan Chase', sector: 'Financials', rating: 'A+', spread5y: 48.5, change: -1.8, recoveryRate: 40.0, impliedPd: 0.81 },
-    { entity: 'Ford Motor', sector: 'Auto', rating: 'BB+', spread5y: 185.3, change: 5.4, recoveryRate: 35.0, impliedPd: 3.09 },
-    { entity: 'General Electric', sector: 'Industrials', rating: 'BBB+', spread5y: 72.1, change: 0.8, recoveryRate: 40.0, impliedPd: 1.20 },
-    { entity: 'Meta Platforms', sector: 'Technology', rating: 'AA-', spread5y: 38.4, change: -0.5, recoveryRate: 40.0, impliedPd: 0.64 },
-    { entity: 'Boeing Co', sector: 'Industrials', rating: 'BBB-', spread5y: 142.7, change: 8.3, recoveryRate: 35.0, impliedPd: 2.38 },
-    { entity: 'AT&T Inc', sector: 'Telecom', rating: 'BBB', spread5y: 89.6, change: 1.2, recoveryRate: 40.0, impliedPd: 1.49 },
-    { entity: 'Citigroup', sector: 'Financials', rating: 'A-', spread5y: 63.8, change: -1.5, recoveryRate: 40.0, impliedPd: 1.06 },
-    { entity: 'Tesla Inc', sector: 'Auto', rating: 'BBB-', spread5y: 128.9, change: 3.7, recoveryRate: 35.0, impliedPd: 2.15 },
-    { entity: 'Verizon Comms', sector: 'Telecom', rating: 'BBB+', spread5y: 74.2, change: 0.3, recoveryRate: 40.0, impliedPd: 1.24 },
-    { entity: 'Amazon.com', sector: 'Technology', rating: 'AA', spread5y: 32.1, change: -0.9, recoveryRate: 40.0, impliedPd: 0.54 },
-    { entity: 'Kraft Heinz', sector: 'Consumer', rating: 'BB+', spread5y: 168.4, change: 4.2, recoveryRate: 35.0, impliedPd: 2.81 },
-  ],
-  sectorAggregates: [
-    { sector: 'Financials', avgSpread: 56.8, spreadRange: '32.1 - 89.4', widening: 3, tightening: 8, trend30d: 'down' },
-    { sector: 'Technology', avgSpread: 42.3, spreadRange: '28.5 - 72.1', widening: 2, tightening: 6, trend30d: 'down' },
-    { sector: 'Industrials', avgSpread: 95.7, spreadRange: '48.2 - 162.3', widening: 5, tightening: 4, trend30d: 'up' },
-    { sector: 'Auto', avgSpread: 157.1, spreadRange: '98.4 - 215.8', widening: 6, tightening: 2, trend30d: 'up' },
-    { sector: 'Telecom', avgSpread: 81.9, spreadRange: '52.3 - 118.7', widening: 3, tightening: 5, trend30d: 'flat' },
-    { sector: 'Energy', avgSpread: 78.4, spreadRange: '41.2 - 135.6', widening: 4, tightening: 5, trend30d: 'down' },
-    { sector: 'Consumer', avgSpread: 112.5, spreadRange: '62.1 - 185.3', widening: 5, tightening: 3, trend30d: 'up' },
-    { sector: 'Healthcare', avgSpread: 65.2, spreadRange: '35.8 - 102.4', widening: 2, tightening: 7, trend30d: 'down' },
-  ],
-  cdsBasis: [
-    { issuer: 'Goldman Sachs', cdsSpread: 58.2, cashSpread: 62.5, basis: -4.3, trend: 'narrowing' },
-    { issuer: 'JPMorgan Chase', cdsSpread: 48.5, cashSpread: 51.2, basis: -2.7, trend: 'stable' },
-    { issuer: 'Ford Motor', cdsSpread: 185.3, cashSpread: 178.1, basis: 7.2, trend: 'widening' },
-    { issuer: 'Boeing Co', cdsSpread: 142.7, cashSpread: 138.4, basis: 4.3, trend: 'widening' },
-    { issuer: 'AT&T Inc', cdsSpread: 89.6, cashSpread: 92.1, basis: -2.5, trend: 'narrowing' },
-    { issuer: 'Tesla Inc', cdsSpread: 128.9, cashSpread: 122.3, basis: 6.6, trend: 'widening' },
-    { issuer: 'Meta Platforms', cdsSpread: 38.4, cashSpread: 40.1, basis: -1.7, trend: 'stable' },
-    { issuer: 'Citigroup', cdsSpread: 63.8, cashSpread: 67.2, basis: -3.4, trend: 'narrowing' },
-  ],
-  significantMoves: [
-    { entity: 'Boeing Co', direction: 'WIDER', moveBps: 8.3, currentSpread: 142.7, catalyst: 'FAA investigation into quality concerns' },
-    { entity: 'Ford Motor', direction: 'WIDER', moveBps: 5.4, currentSpread: 185.3, catalyst: 'EV transition costs exceed estimates' },
-    { entity: 'Kraft Heinz', direction: 'WIDER', moveBps: 4.2, currentSpread: 168.4, catalyst: 'Consumer spending weakness signals' },
-    { entity: 'JPMorgan Chase', direction: 'TIGHTER', moveBps: 1.8, currentSpread: 48.5, catalyst: 'Strong Q4 earnings beat estimates' },
-    { entity: 'Goldman Sachs', direction: 'TIGHTER', moveBps: 2.1, currentSpread: 58.2, catalyst: 'Asset management revenue growth' },
-    { entity: 'Amazon.com', direction: 'TIGHTER', moveBps: 0.9, currentSpread: 32.1, catalyst: 'AWS revenue acceleration' },
-  ],
-  termStructure: [
-    {
-      entity: 'Goldman Sachs',
-      tenors: [
-        { tenor: '1Y', spread: 22.5 },
-        { tenor: '2Y', spread: 34.8 },
-        { tenor: '3Y', spread: 45.2 },
-        { tenor: '5Y', spread: 58.2 },
-        { tenor: '7Y', spread: 68.4 },
-        { tenor: '10Y', spread: 78.9 },
-      ],
-    },
-    {
-      entity: 'Ford Motor',
-      tenors: [
-        { tenor: '1Y', spread: 85.3 },
-        { tenor: '2Y', spread: 118.7 },
-        { tenor: '3Y', spread: 148.2 },
-        { tenor: '5Y', spread: 185.3 },
-        { tenor: '7Y', spread: 198.6 },
-        { tenor: '10Y', spread: 212.4 },
-      ],
-    },
-    {
-      entity: 'Boeing Co',
-      tenors: [
-        { tenor: '1Y', spread: 68.1 },
-        { tenor: '2Y', spread: 95.4 },
-        { tenor: '3Y', spread: 118.3 },
-        { tenor: '5Y', spread: 142.7 },
-        { tenor: '7Y', spread: 155.2 },
-        { tenor: '10Y', spread: 168.8 },
-      ],
-    },
-    {
-      entity: 'Meta Platforms',
-      tenors: [
-        { tenor: '1Y', spread: 15.2 },
-        { tenor: '2Y', spread: 22.8 },
-        { tenor: '3Y', spread: 29.5 },
-        { tenor: '5Y', spread: 38.4 },
-        { tenor: '7Y', spread: 44.1 },
-        { tenor: '10Y', spread: 51.3 },
-      ],
-    },
-  ],
-  timestamp: new Date().toISOString(),
-};
-
 // ── Color / format helpers ──
 
 function changeColor(n: number): string {
@@ -158,9 +58,13 @@ function SectionHeader({ title }: { title: string }) {
 
 export function CreditDefaultSwapsPanel() {
   const { data: apiData, isLoading } = useCreditDefaultSwaps();
-  const data = apiData || FALLBACK_DATA;
+  const data = apiData;
 
   const [termEntity, setTermEntity] = useState(0);
+
+  if (!data) {
+    return <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">{isLoading ? 'Loading...' : 'No data available'}</div>;
+  }
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -408,7 +312,7 @@ export function CreditDefaultSwapsPanel() {
         {/* Timestamp */}
         <div className="px-3 py-1 border-t border-border/10">
           <span className="text-[7px] text-neutral-700">
-            Last update: {new Date((data as any).timestamp).toLocaleTimeString()}
+            Last update: {(data as any).timestamp ? new Date((data as any).timestamp).toLocaleTimeString() : '--'}
           </span>
         </div>
       </div>

@@ -39,95 +39,6 @@ function statusBadge(status: string): { bg: string; text: string } {
   return { bg: 'rgba(107,114,128,0.12)', text: '#6b7280' };
 }
 
-// -- Fallback data --
-
-const FALLBACK = {
-  summary: {
-    totalOutstanding: '842B',
-    ytdIssuance: '128B',
-    avgProfitRate: '4.85%',
-    avgSpread: '+112bps',
-    sovereignWeight: '58.4%',
-    corporateWeight: '41.6%',
-  },
-  activeIssues: [
-    { issuer: 'Saudi Arabia', country: 'SA', structure: 'Ijara', maturity: '2034', profitRate: 4.75, yield: 4.82, spread: 78, rating: 'A+', amount: 5.0, currency: 'USD' },
-    { issuer: 'Malaysia Sovereign', country: 'MY', structure: 'Wakala', maturity: '2031', profitRate: 3.95, yield: 4.02, spread: 62, rating: 'A-', amount: 3.5, currency: 'USD' },
-    { issuer: 'IsDB Trust Services', country: 'INT', structure: 'Wakala', maturity: '2029', profitRate: 4.10, yield: 4.15, spread: 42, rating: 'AAA', amount: 2.5, currency: 'USD' },
-    { issuer: 'Dubai Islamic Bank', country: 'AE', structure: 'Mudaraba', maturity: '2030', profitRate: 5.25, yield: 5.35, spread: 135, rating: 'A', amount: 1.0, currency: 'USD' },
-    { issuer: 'Qatar International', country: 'QA', structure: 'Ijara', maturity: '2033', profitRate: 4.50, yield: 4.58, spread: 65, rating: 'AA-', amount: 4.0, currency: 'USD' },
-    { issuer: 'Bahrain Sovereign', country: 'BH', structure: 'Ijara', maturity: '2032', profitRate: 6.25, yield: 6.38, spread: 248, rating: 'B+', amount: 2.0, currency: 'USD' },
-    { issuer: 'Indonesia Republic', country: 'ID', structure: 'Wakala', maturity: '2035', profitRate: 5.10, yield: 5.18, spread: 125, rating: 'BBB', amount: 3.0, currency: 'USD' },
-    { issuer: 'Turkey Republic', country: 'TR', structure: 'Ijara', maturity: '2028', profitRate: 7.50, yield: 7.68, spread: 385, rating: 'B', amount: 2.5, currency: 'USD' },
-    { issuer: 'STC (Saudi Telecom)', country: 'SA', structure: 'Murabaha', maturity: '2029', profitRate: 4.85, yield: 4.92, spread: 98, rating: 'A', amount: 1.5, currency: 'USD' },
-    { issuer: 'Etihad Airways', country: 'AE', structure: 'Ijara', maturity: '2031', profitRate: 5.75, yield: 5.88, spread: 185, rating: 'BBB-', amount: 1.0, currency: 'USD' },
-    { issuer: 'ICD (Islamic Corp)', country: 'INT', structure: 'Wakala', maturity: '2027', profitRate: 4.30, yield: 4.35, spread: 48, rating: 'AA', amount: 1.5, currency: 'USD' },
-    { issuer: 'DP World', country: 'AE', structure: 'Musharaka', maturity: '2033', profitRate: 5.45, yield: 5.55, spread: 155, rating: 'BBB+', amount: 2.0, currency: 'USD' },
-    { issuer: 'Oman Sovereign', country: 'OM', structure: 'Ijara', maturity: '2030', profitRate: 5.85, yield: 5.95, spread: 195, rating: 'BB+', amount: 1.75, currency: 'USD' },
-    { issuer: 'Kuwait Finance House', country: 'KW', structure: 'Mudaraba', maturity: '2029', profitRate: 4.60, yield: 4.68, spread: 82, rating: 'A', amount: 1.0, currency: 'USD' },
-  ],
-  pipeline: [
-    { issuer: 'Saudi Arabia', country: 'SA', structure: 'Ijara', expectedSize: '5-6B', currency: 'USD', expectedTenor: '10Y', status: 'Mandated', leadManagers: 'HSBC / Citi / JPM', expectedDate: '2026-04' },
-    { issuer: 'Malaysia Sovereign', country: 'MY', structure: 'Wakala', expectedSize: '2-3B', currency: 'USD', expectedTenor: '7Y', status: 'Roadshow', leadManagers: 'CIMB / StanChart', expectedDate: '2026-04' },
-    { issuer: 'Emirates NBD', country: 'AE', structure: 'Mudaraba', expectedSize: '750M', currency: 'USD', expectedTenor: '5Y', status: 'Announced', leadManagers: 'ENBD / HSBC', expectedDate: '2026-05' },
-    { issuer: 'Sharjah Govt', country: 'AE', structure: 'Ijara', expectedSize: '1-1.5B', currency: 'USD', expectedTenor: '10Y', status: 'Mandated', leadManagers: 'StanChart / HSBC', expectedDate: '2026-05' },
-    { issuer: 'IsDB Trust', country: 'INT', structure: 'Wakala', expectedSize: '2B', currency: 'USD', expectedTenor: '5Y', status: 'Priced', leadManagers: 'IsDB / HSBC / Citi', expectedDate: '2026-04' },
-    { issuer: 'Axiata Group', country: 'MY', structure: 'Musharaka', expectedSize: '500M', currency: 'MYR', expectedTenor: '7Y', status: 'Book Building', leadManagers: 'CIMB / Maybank', expectedDate: '2026-05' },
-    { issuer: 'DAMAC Properties', country: 'AE', structure: 'Ijara', expectedSize: '500M', currency: 'USD', expectedTenor: '5Y', status: 'Announced', leadManagers: 'FAB / Emirates NBD', expectedDate: '2026-06' },
-    { issuer: 'Pakistan Republic', country: 'PK', structure: 'Ijara', expectedSize: '1B', currency: 'USD', expectedTenor: '5Y', status: 'Roadshow', leadManagers: 'StanChart / Dubai Islamic', expectedDate: '2026-06' },
-  ],
-  marketBreakdown: {
-    byCountry: [
-      { name: 'Saudi Arabia', weight: 28.5, amount: 240 },
-      { name: 'Malaysia', weight: 22.1, amount: 186 },
-      { name: 'UAE', weight: 16.8, amount: 141 },
-      { name: 'Indonesia', weight: 8.4, amount: 71 },
-      { name: 'Qatar', weight: 7.2, amount: 61 },
-      { name: 'Turkey', weight: 5.8, amount: 49 },
-      { name: 'Bahrain', weight: 4.1, amount: 35 },
-      { name: 'Kuwait', weight: 3.2, amount: 27 },
-      { name: 'Oman', weight: 2.4, amount: 20 },
-      { name: 'Others', weight: 1.5, amount: 12 },
-    ],
-    byStructure: [
-      { name: 'Ijara', weight: 38.2, amount: 322 },
-      { name: 'Wakala', weight: 28.5, amount: 240 },
-      { name: 'Murabaha', weight: 14.8, amount: 125 },
-      { name: 'Musharaka', weight: 8.2, amount: 69 },
-      { name: 'Mudaraba', weight: 6.5, amount: 55 },
-      { name: 'Salam', weight: 2.1, amount: 18 },
-      { name: 'Istisna', weight: 1.7, amount: 13 },
-    ],
-    byCurrency: [
-      { name: 'USD', weight: 52.4, amount: 441 },
-      { name: 'MYR', weight: 18.5, amount: 156 },
-      { name: 'SAR', weight: 12.8, amount: 108 },
-      { name: 'IDR', weight: 6.2, amount: 52 },
-      { name: 'TRY', weight: 4.1, amount: 35 },
-      { name: 'Others', weight: 6.0, amount: 50 },
-    ],
-    bySector: [
-      { name: 'Sovereign', weight: 42.5, amount: 358 },
-      { name: 'Financial', weight: 22.8, amount: 192 },
-      { name: 'Supranational', weight: 12.4, amount: 104 },
-      { name: 'Energy', weight: 8.5, amount: 72 },
-      { name: 'Telecom', weight: 5.2, amount: 44 },
-      { name: 'Real Estate', weight: 4.8, amount: 40 },
-      { name: 'Transport', weight: 3.8, amount: 32 },
-    ],
-  },
-  yieldCurves: {
-    tenors: ['1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '15Y', '20Y', '30Y'],
-    curves: [
-      { name: 'Saudi Arabia', rating: 'A+', yields: [4.15, 4.28, 4.38, 4.55, 4.68, 4.82, 5.02, 5.15, 5.28] },
-      { name: 'Malaysia', rating: 'A-', yields: [3.72, 3.85, 3.92, 4.05, 4.18, 4.32, 4.52, 4.65, 4.78] },
-      { name: 'Qatar', rating: 'AA-', yields: [3.95, 4.08, 4.18, 4.35, 4.48, 4.58, 4.72, 4.82, 4.92] },
-      { name: 'Indonesia', rating: 'BBB', yields: [4.55, 4.72, 4.85, 5.05, 5.22, 5.38, 5.58, 5.72, 5.85] },
-      { name: 'Bahrain', rating: 'B+', yields: [5.45, 5.68, 5.85, 6.12, 6.32, 6.48, 6.72, 6.88, 7.02] },
-    ],
-  },
-};
-
 const CURVE_COLORS = ['#34d399', '#60a5fa', '#fbbf24', '#c084fc', '#f87171'];
 
 export function SukukMonitorPanel() {
@@ -154,25 +65,25 @@ export function SukukMonitorPanel() {
     );
   }
 
-  const d = (data as any) ?? FALLBACK;
-  const summary = d.summary ?? FALLBACK.summary;
-  const activeIssues = d.activeIssues ?? FALLBACK.activeIssues;
-  const pipeline = d.pipeline ?? FALLBACK.pipeline;
-  const marketBreakdown = d.marketBreakdown ?? FALLBACK.marketBreakdown;
-  const yieldCurves = d.yieldCurves ?? FALLBACK.yieldCurves;
+  const d = data as any;
+  const summary = d.summary;
+  const activeIssues = d.activeIssues ?? [];
+  const pipeline = d.pipeline ?? [];
+  const marketBreakdown = d.marketBreakdown;
+  const yieldCurves = d.yieldCurves;
 
-  const byCountry = marketBreakdown.byCountry ?? FALLBACK.marketBreakdown.byCountry;
-  const byStructure = marketBreakdown.byStructure ?? FALLBACK.marketBreakdown.byStructure;
-  const byCurrency = marketBreakdown.byCurrency ?? FALLBACK.marketBreakdown.byCurrency;
-  const bySector = marketBreakdown.bySector ?? FALLBACK.marketBreakdown.bySector;
+  const byCountry = marketBreakdown?.byCountry ?? [];
+  const byStructure = marketBreakdown?.byStructure ?? [];
+  const byCurrency = marketBreakdown?.byCurrency ?? [];
+  const bySector = marketBreakdown?.bySector ?? [];
 
   const maxCountryWeight = Math.max(...byCountry.map((c: any) => c.weight));
   const maxStructureWeight = Math.max(...byStructure.map((s: any) => s.weight));
   const maxCurrencyWeight = Math.max(...byCurrency.map((c: any) => c.weight));
   const maxSectorWeight = Math.max(...bySector.map((s: any) => s.weight));
 
-  const tenors = yieldCurves.tenors ?? FALLBACK.yieldCurves.tenors;
-  const curves = yieldCurves.curves ?? FALLBACK.yieldCurves.curves;
+  const tenors = yieldCurves?.tenors ?? [];
+  const curves = yieldCurves?.curves ?? [];
   const allYields = curves.flatMap((c: any) => c.yields ?? []);
   const minYield = Math.floor(Math.min(...allYields) * 10) / 10 - 0.2;
   const maxYield = Math.ceil(Math.max(...allYields) * 10) / 10 + 0.2;
@@ -211,7 +122,7 @@ export function SukukMonitorPanel() {
       </div>
 
       {/* Summary Bar */}
-      <div className="grid grid-cols-6 border-b border-border/20 shrink-0">
+      {summary && <div className="grid grid-cols-6 border-b border-border/20 shrink-0">
         {[
           { label: 'TOTAL OUTSTANDING', value: `$${summary.totalOutstanding}` },
           { label: 'YTD ISSUANCE', value: `$${summary.ytdIssuance}` },
@@ -225,7 +136,7 @@ export function SukukMonitorPanel() {
             <div className="text-[10px] font-black tabular-nums" style={{ color: ACCENT }}>{stat.value}</div>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* Tab Bar */}
       <div className="flex items-center gap-0 border-b border-border/20 shrink-0">
@@ -491,7 +402,7 @@ export function SukukMonitorPanel() {
         )}
 
         {/* Yield Curves */}
-        {tab === 'curves' && (
+        {tab === 'curves' && curves.length > 0 && (
           <div className="px-2 py-2">
             <div className="flex items-center gap-1.5 mb-2 px-1">
               <div className="w-1 h-1 bg-emerald-400" />

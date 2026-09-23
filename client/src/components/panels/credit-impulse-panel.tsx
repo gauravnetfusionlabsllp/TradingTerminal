@@ -67,63 +67,6 @@ interface CreditImpulseData {
   globalDirection: 'expanding' | 'contracting' | 'neutral';
 }
 
-// ── Fallback mock data ──
-
-const MOCK_DATA: CreditImpulseData = {
-  globalImpulse: 1.8,
-  globalDirection: 'expanding',
-  timestamp: new Date().toISOString(),
-  countries: [
-    { country: 'United States', code: 'US', impulse: 2.1, impulsePrev: 1.7, direction: 'expanding', creditGrowthYoY: 3.4, privateDebtGdp: 152.3 },
-    { country: 'China', code: 'CN', impulse: 4.6, impulsePrev: 5.1, direction: 'expanding', creditGrowthYoY: 9.8, privateDebtGdp: 214.7 },
-    { country: 'Eurozone', code: 'EU', impulse: -0.3, impulsePrev: -0.8, direction: 'contracting', creditGrowthYoY: 0.7, privateDebtGdp: 128.5 },
-    { country: 'Japan', code: 'JP', impulse: 0.9, impulsePrev: 0.4, direction: 'expanding', creditGrowthYoY: 2.8, privateDebtGdp: 176.2 },
-    { country: 'United Kingdom', code: 'GB', impulse: -1.2, impulsePrev: -0.6, direction: 'contracting', creditGrowthYoY: -0.3, privateDebtGdp: 143.8 },
-    { country: 'Australia', code: 'AU', impulse: 0.2, impulsePrev: 0.5, direction: 'neutral', creditGrowthYoY: 4.1, privateDebtGdp: 189.6 },
-    { country: 'Canada', code: 'CA', impulse: -0.7, impulsePrev: -0.2, direction: 'contracting', creditGrowthYoY: 1.5, privateDebtGdp: 184.2 },
-    { country: 'South Korea', code: 'KR', impulse: 1.4, impulsePrev: 1.1, direction: 'expanding', creditGrowthYoY: 5.2, privateDebtGdp: 218.9 },
-    { country: 'Brazil', code: 'BR', impulse: 3.2, impulsePrev: 2.8, direction: 'expanding', creditGrowthYoY: 8.4, privateDebtGdp: 72.1 },
-    { country: 'India', code: 'IN', impulse: 2.5, impulsePrev: 2.1, direction: 'expanding', creditGrowthYoY: 13.7, privateDebtGdp: 56.4 },
-  ],
-  bankLending: [
-    { region: 'US (Fed)', demandIndex: 12.4, standardsIndex: -8.3, direction: 'loosening', quarter: 'Q1 2026' },
-    { region: 'Eurozone (ECB)', demandIndex: -3.7, standardsIndex: 5.2, direction: 'tightening', quarter: 'Q1 2026' },
-    { region: 'Japan (BOJ)', demandIndex: 8.1, standardsIndex: -2.4, direction: 'loosening', quarter: 'Q4 2025' },
-    { region: 'UK (BOE)', demandIndex: -6.8, standardsIndex: 11.7, direction: 'tightening', quarter: 'Q1 2026' },
-    { region: 'China (PBOC)', demandIndex: 22.3, standardsIndex: -15.6, direction: 'loosening', quarter: 'Q1 2026' },
-  ],
-  moneySupply: [
-    { region: 'United States', m2YoY: 3.8, m2Level: '$21.7T', m1YoY: -1.2, trend: 'expanding' },
-    { region: 'Eurozone', m2YoY: 1.4, m2Level: '€16.1T', m1YoY: -2.8, trend: 'neutral' },
-    { region: 'China', m2YoY: 8.7, m2Level: '¥304.2T', m1YoY: 5.3, trend: 'expanding' },
-    { region: 'Japan', m2YoY: 2.1, m2Level: '¥1,237T', m1YoY: 0.4, trend: 'expanding' },
-    { region: 'United Kingdom', m2YoY: -0.3, m2Level: '£3.1T', m1YoY: -3.4, trend: 'contracting' },
-  ],
-  financialConditions: [
-    { index: 'GS US FCI', value: 99.42, change1w: -0.15, change1m: -0.38, regime: 'loose' },
-    { index: 'BBG US FCI', value: 0.87, change1w: 0.04, change1m: 0.12, regime: 'loose' },
-    { index: 'Chicago Fed NFCI', value: -0.32, change1w: -0.02, change1m: -0.08, regime: 'loose' },
-    { index: 'ECB CLIFS', value: 0.15, change1w: 0.03, change1m: 0.07, regime: 'neutral' },
-    { index: 'BOE FCI', value: -0.08, change1w: 0.05, change1m: 0.14, regime: 'tight' },
-  ],
-  creditGrowth: [
-    { sector: 'C&I Loans', yoyGrowth: 2.8, momGrowth: 0.3, outstanding: '$2.87T', trend: 'accelerating' },
-    { sector: 'Consumer Credit', yoyGrowth: 4.1, momGrowth: 0.4, outstanding: '$5.13T', trend: 'stable' },
-    { sector: 'Mortgages', yoyGrowth: 1.6, momGrowth: 0.1, outstanding: '$12.82T', trend: 'decelerating' },
-    { sector: 'Auto Loans', yoyGrowth: 3.5, momGrowth: 0.3, outstanding: '$1.64T', trend: 'stable' },
-    { sector: 'Credit Cards', yoyGrowth: 8.2, momGrowth: 0.7, outstanding: '$1.17T', trend: 'accelerating' },
-    { sector: 'Student Loans', yoyGrowth: -0.4, momGrowth: 0.0, outstanding: '$1.77T', trend: 'decelerating' },
-  ],
-  seniorLoanOfficer: [
-    { category: 'Large/Mid C&I', tighteningPct: -5.2, demandPct: 8.4, delinquencyTrend: 'stable', quarter: 'Q1 2026' },
-    { category: 'Small Firm C&I', tighteningPct: 3.7, demandPct: -2.1, delinquencyTrend: 'rising', quarter: 'Q1 2026' },
-    { category: 'CRE', tighteningPct: 18.4, demandPct: -12.6, delinquencyTrend: 'rising', quarter: 'Q1 2026' },
-    { category: 'Residential RE', tighteningPct: -2.8, demandPct: 14.3, delinquencyTrend: 'stable', quarter: 'Q1 2026' },
-    { category: 'Consumer (Cards)', tighteningPct: 7.1, demandPct: 5.8, delinquencyTrend: 'rising', quarter: 'Q1 2026' },
-    { category: 'Auto Loans', tighteningPct: -1.3, demandPct: 3.2, delinquencyTrend: 'falling', quarter: 'Q1 2026' },
-  ],
-};
-
 // ── Format helpers ──
 
 function fmtImpulse(n: number): string {
@@ -226,8 +169,8 @@ function CreditImpulseSection({
   t,
 }: {
   countries: CountryImpulse[];
-  globalImpulse: number;
-  globalDirection: string;
+  globalImpulse?: number;
+  globalDirection?: string;
   t: ReturnType<typeof useT>;
 }) {
   const maxAbs = useMemo(() => Math.max(...countries.map((c) => Math.abs(c.impulse)), 1), [countries]);
@@ -238,7 +181,7 @@ function CreditImpulseSection({
         <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'ciCreditImpulse', 'Credit Impulse by Country')}
         </span>
-        <div className="flex items-center gap-1.5">
+        {globalImpulse != null && globalDirection && <div className="flex items-center gap-1.5">
           <span className="text-[7px] font-mono text-neutral-600">GLOBAL:</span>
           <span className={`text-[8px] font-mono font-bold ${impulseColor(globalImpulse)}`}>
             {fmtImpulse(globalImpulse)}
@@ -246,7 +189,7 @@ function CreditImpulseSection({
           <span className={`text-[6px] font-mono font-black uppercase px-1 py-px ${directionBg(globalDirection)} ${directionColor(globalDirection)}`}>
             {globalDirection.toUpperCase()}
           </span>
-        </div>
+        </div>}
       </div>
 
       {/* Column headers */}
@@ -552,7 +495,7 @@ export function CreditImpulsePanel() {
   const t = useT();
   const { data: hookData, isLoading, refetch } = useCreditImpulse();
 
-  const data: CreditImpulseData = (hookData as CreditImpulseData) ?? MOCK_DATA;
+  const data = hookData as CreditImpulseData | undefined;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -565,16 +508,16 @@ export function CreditImpulsePanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider ${directionColor(data.globalDirection)} ${directionBg(data.globalDirection)}`}>
+          {data?.globalDirection && <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider ${directionColor(data.globalDirection)} ${directionBg(data.globalDirection)}`}>
             {data.globalDirection === 'expanding'
               ? tr(t, 'ciExpanding', 'Expanding')
               : data.globalDirection === 'contracting'
                 ? tr(t, 'ciContracting', 'Contracting')
                 : tr(t, 'ciNeutral', 'Neutral')}
-          </span>
-          <span className={`text-[8px] font-mono font-bold ${impulseColor(data.globalImpulse)}`}>
+          </span>}
+          {data?.globalImpulse != null && <span className={`text-[8px] font-mono font-bold ${impulseColor(data.globalImpulse)}`}>
             {fmtImpulse(data.globalImpulse)}
-          </span>
+          </span>}
           <button
             onClick={() => refetch()}
             className="p-1 text-neutral-500 hover:text-purple-400 transition-colors"
@@ -591,30 +534,32 @@ export function CreditImpulsePanel() {
           </div>
         )}
 
-        {!hookData && !isLoading && !MOCK_DATA && (
+        {!hookData && !isLoading && (
           <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
             {tr(t, 'ciNoData', 'No data available')}
           </div>
         )}
 
+        {data && (<>
         <CreditImpulseSection
-          countries={data.countries}
+          countries={data.countries ?? []}
           globalImpulse={data.globalImpulse}
           globalDirection={data.globalDirection}
           t={t}
         />
-        <BankLendingSection surveys={data.bankLending} t={t} />
-        <MoneySupplySection data={data.moneySupply} t={t} />
-        <FinancialConditionsSection conditions={data.financialConditions} t={t} />
-        <CreditGrowthSection data={data.creditGrowth} t={t} />
-        <SeniorLoanOfficerSection data={data.seniorLoanOfficer} t={t} />
+        <BankLendingSection surveys={data.bankLending ?? []} t={t} />
+        <MoneySupplySection data={data.moneySupply ?? []} t={t} />
+        <FinancialConditionsSection conditions={data.financialConditions ?? []} t={t} />
+        <CreditGrowthSection data={data.creditGrowth ?? []} t={t} />
+        <SeniorLoanOfficerSection data={data.seniorLoanOfficer ?? []} t={t} />
 
         {/* Footer timestamp */}
         <div className="px-3 py-1.5 border-t border-border/10">
           <span className="text-[7px] font-mono text-neutral-700">
-            {tr(t, 'ciLastUpdate', 'Last update')}: {new Date(data.timestamp).toLocaleTimeString()}
+            {tr(t, 'ciLastUpdate', 'Last update')}: {data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '--'}
           </span>
         </div>
+        </>)}
       </div>
     </div>
   );

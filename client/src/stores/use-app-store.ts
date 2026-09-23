@@ -7,7 +7,6 @@ interface SavedWatchlist { tabs: string[]; tabSymbols: Record<string, string[]>;
 export interface Notification {
   id: number;
   title: string;
-  titleTranslations?: string | null;
   sentiment: string | null;
   symbols: string[];
   time: Date;
@@ -21,37 +20,28 @@ export interface LogEntry {
 }
 
 export interface UserSettings {
-  breakingAlerts: boolean;
   soundEnabled: boolean;
   autoRefreshInterval: number;
   tickerSpeed: number;
   theme: 'dark' | 'midnight';
-  dataSource: string;
-  aiProvider: string;
-  tradingChannel: string;
+  quoteThrottle: boolean;   // off = every live tick batch renders on arrival
+  quoteThrottleMs: number;  // on = at most one live price render per this many ms
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
-  breakingAlerts: true,
   soundEnabled: false,
   autoRefreshInterval: 30,
   tickerSpeed: 80,
   theme: 'dark',
-  dataSource: 'neuberg',
-  aiProvider: 'neuberg',
-  tradingChannel: 'hyperliquid',
+  quoteThrottle: true,
+  quoteThrottleMs: 100,
 };
 
-export type StockPanelView = 'watchlist' | 'chart' | 'heatmap' | 'compare';
+export type StockPanelView = 'watchlist' | 'heatmap' | 'compare';
 
 interface AppState {
-  selectedCategory: string | null;
-  selectedArticleId: number | null;
   selectedSymbol: string | null;
-  searchQuery: string;
   wsConnected: boolean;
-  lastScrapeTime: string | null;
-  articleCount: number;
   commandPaletteOpen: boolean;
   activeWatchlistTab: string;
   watchlistTabs: string[];
@@ -80,35 +70,6 @@ interface AppState {
   // Panel visibility
   hiddenPanels: string[];
 
-  // Map visited nodes
-  visitedMapNodes: number[];
-
-  // Trading coin selection (from news detail)
-  tradingCoin: string | null;
-  tradingSourceArticleId: number | null;
-
-  // Technical indicators (F3)
-  indicatorConfig: Record<string, boolean>;
-  chartDrawings: Array<{ type: string; points: Array<{ time: number; price: number }> }>;
-  activeDrawingTool: string | null;
-  setIndicatorConfig: (config: Record<string, boolean>) => void;
-  toggleIndicator: (name: string) => void;
-  setActiveDrawingTool: (tool: string | null) => void;
-  addChartDrawing: (drawing: { type: string; points: Array<{ time: number; price: number }> }) => void;
-  clearChartDrawings: () => void;
-
-  // Personalized news feed (F13)
-  categoryClicks: Record<string, number>;
-  forYouEnabled: boolean;
-  setForYouEnabled: (enabled: boolean) => void;
-  trackCategoryClick: (category: string) => void;
-
-  // AI Chat context (F15)
-  chatContexts: Array<{ type: string; id?: number; symbol?: string; label: string }>;
-  addChatContext: (ctx: { type: string; id?: number; symbol?: string; label: string }) => void;
-  removeChatContext: (index: number) => void;
-  clearChatContexts: () => void;
-
   // Settings
   settingsPanelOpen: boolean;
   settings: UserSettings;
@@ -117,13 +78,8 @@ interface AppState {
   locale: Locale;
   setLocale: (locale: Locale) => void;
 
-  setSelectedCategory: (category: string | null) => void;
-  setSelectedArticleId: (id: number | null) => void;
   setSelectedSymbol: (symbol: string | null) => void;
-  setSearchQuery: (query: string) => void;
   setWsConnected: (connected: boolean) => void;
-  setLastScrapeTime: (time: string) => void;
-  setArticleCount: (count: number) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setActiveWatchlistTab: (tab: string) => void;
   addWatchlistTab: (name: string) => void;
@@ -157,13 +113,6 @@ interface AppState {
   hidePanel: (panelId: string) => void;
   showPanel: (panelId: string) => void;
 
-  // Map visited actions
-  markMapNodeVisited: (id: number) => void;
-
-  // Trading coin actions
-  setTradingCoin: (coin: string | null) => void;
-  setTradingSourceArticleId: (id: number | null) => void;
-
   // Settings actions
   setSettingsPanelOpen: (open: boolean) => void;
   updateSettings: (patch: Partial<UserSettings>) => void;
@@ -172,13 +121,8 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      selectedCategory: null,
-      selectedArticleId: null,
       selectedSymbol: null,
-      searchQuery: '',
       wsConnected: false,
-      lastScrapeTime: null,
-      articleCount: 0,
       commandPaletteOpen: false,
       activeWatchlistTab: 'WATCHLIST',
       watchlistTabs: ['WATCHLIST', 'HOLDING'],
@@ -209,48 +153,6 @@ export const useAppStore = create<AppState>()(
       // Panel visibility
       hiddenPanels: [],
 
-      // Map visited nodes
-      visitedMapNodes: [] as number[],
-
-      // Trading coin
-      tradingCoin: null,
-      tradingSourceArticleId: null,
-
-      // Technical indicators (F3)
-      indicatorConfig: { sma20: true, sma50: true } as Record<string, boolean>,
-      chartDrawings: [],
-      activeDrawingTool: null,
-      setIndicatorConfig: (config) => set({ indicatorConfig: config }),
-      toggleIndicator: (name) => set((state) => ({
-        indicatorConfig: { ...state.indicatorConfig, [name]: !state.indicatorConfig[name] },
-      })),
-      setActiveDrawingTool: (tool) => set({ activeDrawingTool: tool }),
-      addChartDrawing: (drawing) => set((state) => ({
-        chartDrawings: [...state.chartDrawings, drawing],
-      })),
-      clearChartDrawings: () => set({ chartDrawings: [] }),
-
-      // Personalized news feed (F13)
-      categoryClicks: {} as Record<string, number>,
-      forYouEnabled: false,
-      setForYouEnabled: (enabled) => set({ forYouEnabled: enabled }),
-      trackCategoryClick: (category) => set((state) => ({
-        categoryClicks: {
-          ...state.categoryClicks,
-          [category]: (state.categoryClicks[category] || 0) + 1,
-        },
-      })),
-
-      // AI Chat context (F15)
-      chatContexts: [],
-      addChatContext: (ctx) => set((state) => ({
-        chatContexts: [...state.chatContexts, ctx],
-      })),
-      removeChatContext: (index) => set((state) => ({
-        chatContexts: state.chatContexts.filter((_, i) => i !== index),
-      })),
-      clearChatContexts: () => set({ chatContexts: [] }),
-
       // Settings
       settingsPanelOpen: false,
       settings: DEFAULT_SETTINGS,
@@ -259,16 +161,8 @@ export const useAppStore = create<AppState>()(
       locale: 'en' as Locale,
       setLocale: (locale) => set({ locale }),
 
-      setSelectedCategory: (category) => set({ selectedCategory: category }),
-      setSelectedArticleId: (id) => set({ selectedArticleId: id }),
-      setSelectedSymbol: (symbol) => set({
-        selectedSymbol: symbol,
-        stockPanelView: symbol ? 'chart' : 'watchlist',
-      }),
-      setSearchQuery: (query) => set({ searchQuery: query }),
+      setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
       setWsConnected: (connected) => set({ wsConnected: connected }),
-      setLastScrapeTime: (time) => set({ lastScrapeTime: time }),
-      setArticleCount: (count) => set({ articleCount: count }),
       setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
       setActiveWatchlistTab: (tab) => set({ activeWatchlistTab: tab }),
       addWatchlistTab: (name) => set((state) => ({
@@ -319,10 +213,7 @@ export const useAppStore = create<AppState>()(
       }),
 
       // View control actions
-      setStockPanelView: (view) => set((state) => ({
-        stockPanelView: view,
-        ...(view !== 'chart' ? { selectedSymbol: null } : {}),
-      })),
+      setStockPanelView: (view) => set({ stockPanelView: view }),
 
       // Compare actions
       addToCompare: (symbol) => set((state) => {
@@ -372,16 +263,6 @@ export const useAppStore = create<AppState>()(
         unreadCount: 0,
       })),
 
-      // Map visited actions
-      markMapNodeVisited: (id) => set((state) => {
-        if (state.visitedMapNodes.includes(id)) return state;
-        return { visitedMapNodes: [...state.visitedMapNodes, id] };
-      }),
-
-      // Trading coin actions
-      setTradingCoin: (coin) => set({ tradingCoin: coin }),
-      setTradingSourceArticleId: (id) => set({ tradingSourceArticleId: id }),
-
       // Panel visibility actions
       hidePanel: (panelId) => set((state) => ({
         hiddenPanels: state.hiddenPanels.includes(panelId)
@@ -416,10 +297,12 @@ export const useAppStore = create<AppState>()(
         compareSymbols: state.compareSymbols,
         hiddenPanels: state.hiddenPanels,
         locale: state.locale,
-        indicatorConfig: state.indicatorConfig,
-        categoryClicks: state.categoryClicks,
-        forYouEnabled: state.forYouEnabled,
       }),
+      // Default merge is shallow: a saved `settings` would drop fields added since — keep their defaults
+      merge: (persisted, current) => {
+        const p = persisted as Partial<AppState> | undefined;
+        return { ...current, ...p, settings: { ...current.settings, ...p?.settings } };
+      },
     }
   )
 );

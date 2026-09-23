@@ -1,7 +1,18 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { useChart, type Candle } from '../../api/hooks/use-chart';
+import {
+  createChart, ColorType, LineStyle, TickMarkType,
+  type IChartApi, type ISeriesApi, type Time, type TickMarkFormatter, type UTCTimestamp,
+} from 'lightweight-charts';
+import { useMt5Chart, useMt5Quotes, useMt5Symbols, TF_SECONDS, type Mt5Timeframe } from '../../api/hooks/use-mt5';
+import { useAuthStore } from '../../stores/use-auth-store';
+import { useAppStore } from '../../stores/use-app-store';
+import { tickBucket, foldTick, mergeLive, type Bar } from '../../lib/live-candles';
+import { keepView } from '../../lib/chart-view';
+import { fmtPrice } from '../trading/mt5-trading';
+import { SymbolPicker } from '../trading/symbol-picker';
+import { ChartTrading } from './chart-trading';
+import { GlassCard } from '../common/glass-card';
 import { useT } from '../../i18n';
-import { Search } from 'lucide-react';
 
 // ─── Technical indicator calculation functions (pure TypeScript) ───
 
@@ -134,12 +145,7 @@ function calcBollinger(
 
 // ─── Formatting helpers ───
 
-function formatPrice(n: number): string {
-  if (Math.abs(n) >= 1000) return n.toFixed(2);
-  if (Math.abs(n) >= 1) return n.toFixed(2);
-  if (Math.abs(n) >= 0.01) return n.toFixed(4);
-  return n.toFixed(6);
-}
+const formatPrice = fmtPrice; // shortest exact form, so FX keeps its 5 digits
 
 function formatVol(n: number): string {
   if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
@@ -148,44 +154,15 @@ function formatVol(n: number): string {
   return String(Math.round(n));
 }
 
-function formatDate(ts: number, range: string): string {
+function formatDate(ts: number): string {
   const d = new Date(ts * 1000);
-  if (range === '1d') {
-    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  }
-  if (range === '5d') {
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
-      d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  }
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+    d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
-
-function formatAxisDate(ts: number, range: string): string {
-  const d = new Date(ts * 1000);
-  if (range === '1d' || range === '5d') {
-    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  }
-  if (range === '1mo' || range === '3mo') {
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-  return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-}
-
-// ─── Range → interval mapping ───
-
-const RANGE_INTERVAL: Record<string, string> = {
-  '1d': '5m',
-  '5d': '15m',
-  '1mo': '1h',
-  '3mo': '1d',
-  '6mo': '1d',
-  '1y': '1d',
-  '2y': '1wk',
-  '5y': '1wk',
-};
 
 // ─── Types ───
 
+type Candle = Bar;
 type ChartType = 'candle' | 'line';
 type IndicatorKey = 'sma20' | 'sma50' | 'sma200' | 'ema20' | 'ema50' | 'ema200' | 'rsi' | 'macd' | 'bollinger' | 'volume';
 
@@ -228,29 +205,93 @@ const INDICATOR_LABELS: Record<IndicatorKey, string> = {
   volume: 'Volume',
 };
 
-const RANGE_LABELS = ['1D', '5D', '1M', '3M', '6M', '1Y', '2Y', '5Y'];
-const RANGE_VALUES = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y'];
+const TIMEFRAMES = Object.keys(TF_SECONDS) as Mt5Timeframe[];
 
-// ─── Main component ───
+// Overlay legend: [indicator, label, color, dashed]
+const LEGEND: [IndicatorKey, string, string, boolean?][] = [
+  ['sma20', 'SMA20', '#facc15'], ['sma50', 'SMA50', '#3b82f6'], ['sma200', 'SMA200', '#ef4444'],
+  ['ema20', 'EMA20', '#facc15', true], ['ema50', 'EMA50', '#3b82f6', true], ['ema200', 'EMA200', '#ef4444', true],
+  ['bollinger', 'BB(20,2)', '#fbbf24'],
+];
+
+// ─── Standalone panel: MT5 symbol picker, follows the Market Watch selection ───
 
 export function TechnicalChartPanel() {
+  const t = useT();
+  const user = useAuthStore((s) => s.user);
+  const setLoginModalOpen = useAuthStore((s) => s.setLoginModalOpen);
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
+  const watchlist = useAppStore((s) => s.tabSymbols[s.activeWatchlistTab]);
+  const { data: symbols = [] } = useMt5Symbols();
+  const [picked, setPicked] = useState('');
+
+  useEffect(() => {
+    if (selectedSymbol) setPicked(selectedSymbol);
+  }, [selectedSymbol]);
+
+  if (!user) {
+    return (
+      <GlassCard className="h-full flex flex-col items-center justify-center">
+        <button
+          onClick={() => setLoginModalOpen(true)}
+          className="px-4 py-2 border border-accent text-accent text-[11px] font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-colors"
+        >
+          {t('loginWithMt5')}
+        </button>
+      </GlassCard>
+    );
+  }
+
+  const symbol = picked || watchlist?.find((w) => symbols.some((s) => s.symbol === w)) || symbols[0]?.symbol || '';
+  return (
+    <TechnicalChart
+      symbol={symbol}
+      picker={<SymbolPicker symbols={symbols} value={symbol} onSelect={setPicked} placeholder="SYMBOL" className="w-32" />}
+    />
+  );
+}
+
+// ─── Chart: MT5 bars + live FIX ticks ───
+
+export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: React.ReactNode }) {
   const t = useT();
   const tr = (key: string, fallback: string) => {
     try { return (t as (k: string) => string)(key) || fallback; } catch { return fallback; }
   };
 
-  const [symbol, setSymbol] = useState('AAPL');
-  const [inputValue, setInputValue] = useState('AAPL');
-  const [range, setRange] = useState('6mo');
+  const [tf, setTf] = useState<Mt5Timeframe>('M5');
   const [chartType, setChartType] = useState<ChartType>('candle');
   const [indicators, setIndicators] = useState<Indicators>(DEFAULT_INDICATORS);
   const [showIndicatorMenu, setShowIndicatorMenu] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const indicatorMenuRef = useRef<HTMLDivElement>(null);
 
-  const interval = RANGE_INTERVAL[range] || '1d';
-  const { data, isLoading, error } = useChart(symbol, range, interval);
-  const candles = data?.candles ?? [];
+  // On-chart trading only for symbols this MT5 account can trade; lots live here so a timeframe switch keeps them
+  const user = useAuthStore((s) => s.user);
+  const { data: symbols = [] } = useMt5Symbols();
+  const [lots, setLots] = useState('0.01');
+  const trade = user && symbols.some((s) => s.symbol === symbol) ? { readOnly: !!user.readOnly, lots, setLots } : undefined;
+
+  const { data, offset, error, isLoading, hasMore, fetchOlder, isFetchingOlder } = useMt5Chart(symbol, tf);
+  const tfSec = TF_SECONDS[tf];
+  // MT5 bars open on server time (≈ UTC+3); shift to real UTC so labels read in the viewer's local time
+  const base = useMemo<Candle[]>(
+    () => (data?.history ?? []).map((c) => ({ ...c, timestamp: c.time - (offset ?? 0) })),
+    [data, offset],
+  );
+
+  // Live ticks extend the right edge between the 60s refetches
+  const [tail, setTail] = useState<Candle[]>([]);
+  useEffect(() => setTail([]), [symbol, tf]);
+  const { data: quotes } = useMt5Quotes([symbol]);
+  const quote = quotes?.[symbol];
+  useEffect(() => {
+    const last = base[base.length - 1];
+    const bucket = tickBucket(quote?.ts, offset, tfSec, Date.now());
+    if (!quote || !last || bucket === undefined) return;
+    setTail((prev) => foldTick(prev, last, quote.bid, bucket));
+  }, [quote, base, offset, tfSec]);
+  const candles = useMemo(() => mergeLive(base, tail), [base, tail]);
 
   // Close indicator menu on outside click
   useEffect(() => {
@@ -264,28 +305,9 @@ export function TechnicalChartPanel() {
     return () => document.removeEventListener('mousedown', handler);
   }, [showIndicatorMenu]);
 
-  const handleSymbolSubmit = useCallback(() => {
-    const trimmed = inputValue.trim().toUpperCase();
-    if (trimmed && trimmed !== symbol) {
-      setSymbol(trimmed);
-    }
-  }, [inputValue, symbol]);
-
   const toggleIndicator = useCallback((key: IndicatorKey) => {
     setIndicators((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
-
-  // Compute sub-chart heights
-  const hasRSI = indicators.rsi;
-  const hasMACD = indicators.macd;
-  const hasVolume = indicators.volume;
-
-  const subChartCount = (hasVolume ? 1 : 0) + (hasRSI ? 1 : 0) + (hasMACD ? 1 : 0);
-  // Price chart gets remaining space
-  const priceHeightPct = subChartCount === 0 ? 100 : subChartCount === 1 ? 72 : subChartCount === 2 ? 58 : 50;
-  const volHeightPct = hasVolume ? (subChartCount === 1 ? 28 : subChartCount === 2 ? 18 : 15) : 0;
-  const rsiHeightPct = hasRSI ? (subChartCount === 1 ? 28 : subChartCount === 2 ? 18 : 15) : 0;
-  const macdHeightPct = hasMACD ? (subChartCount === 1 ? 28 : subChartCount === 2 ? 18 : 15) : 0;
 
   // Pre-compute indicator data
   const closes = useMemo(() => candles.map((c) => c.close), [candles]);
@@ -335,31 +357,19 @@ export function TechnicalChartPanel() {
   const hoverCandle = hoverIndex != null && hoverIndex >= 0 && hoverIndex < candles.length ? candles[hoverIndex] : null;
 
   return (
-    <div className="flex flex-col h-full bg-black text-white overflow-hidden select-none" style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' }}>
+    <div className="relative flex flex-col h-full bg-black text-white overflow-hidden select-none" style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' }}>
       {/* Top control bar */}
       <div className="flex items-center gap-1 px-2 py-1 border-b border-white/5 shrink-0 flex-wrap">
-        {/* Symbol input */}
-        <div className="flex items-center gap-1 bg-white/5 border border-white/10 px-1.5 py-0.5">
-          <Search className="w-3 h-3 text-amber-400/60" />
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value.toUpperCase())}
-            onKeyDown={(e) => e.key === 'Enter' && handleSymbolSubmit()}
-            onBlur={handleSymbolSubmit}
-            className="bg-transparent text-amber-400 text-[10px] font-bold w-16 outline-none placeholder:text-white/20 uppercase tracking-wider"
-            placeholder="SYMBOL"
-          />
-        </div>
+        {picker}
 
-        {/* Range buttons */}
+        {/* Timeframe buttons */}
         <div className="flex items-center gap-0.5">
-          {RANGE_LABELS.map((label, i) => (
+          {TIMEFRAMES.map((label) => (
             <button
               key={label}
-              onClick={() => setRange(RANGE_VALUES[i])}
+              onClick={() => setTf(label)}
               className={`px-1.5 py-0.5 text-[8px] font-bold tracking-wider transition-colors ${
-                range === RANGE_VALUES[i]
+                tf === label
                   ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40'
                   : 'text-white/40 hover:text-white/70 border border-transparent'
               }`}
@@ -446,44 +456,62 @@ export function TechnicalChartPanel() {
         </div>
       </div>
 
-      {/* Hover OHLCV overlay */}
-      {hoverCandle && (
-        <div className="absolute top-8 left-2 z-30 flex items-center gap-3 text-[9px] font-mono bg-black/80 px-2 py-0.5 border border-white/5">
-          <span className="text-white/50">{formatDate(hoverCandle.timestamp, range)}</span>
-          <span className="text-white/70">O:<span className="text-white">{formatPrice(hoverCandle.open)}</span></span>
-          <span className="text-white/70">H:<span className="text-white">{formatPrice(hoverCandle.high)}</span></span>
-          <span className="text-white/70">L:<span className="text-white">{formatPrice(hoverCandle.low)}</span></span>
-          <span className="text-white/70">C:<span className={hoverCandle.close >= hoverCandle.open ? 'text-emerald-400' : 'text-red-400'}>{formatPrice(hoverCandle.close)}</span></span>
-          <span className="text-white/70">V:<span className="text-white">{formatVol(hoverCandle.volume)}</span></span>
-        </div>
-      )}
-
       {/* Chart area */}
-      <div className="flex-1 relative overflow-hidden">
+      {/* isolate: keeps the chart's z-10..z-30 overlays (trade strip, menus) below app chrome like the top bar */}
+      <div className="flex-1 relative overflow-hidden isolate">
+        {candles.length > 0 && (
+          <LwChart
+            key={`${symbol}:${tf}`}
+            symbol={symbol}
+            trade={trade}
+            candles={candles}
+            chartType={chartType}
+            indicators={indicators}
+            indicatorData={indicatorData}
+            setHoverIndex={setHoverIndex}
+            hasMore={!!hasMore}
+            loadingOlder={isFetchingOlder}
+            onNeedOlder={fetchOlder}
+          />
+        )}
+
+        {/* Hover OHLCV + indicator legend */}
+        <div className="absolute top-1 left-2 z-10 pointer-events-none flex flex-col gap-0.5 text-[9px] font-mono">
+          {hoverCandle && (
+            <div className="flex items-center gap-3 bg-black/80 px-2 py-0.5 border border-white/5">
+              <span className="text-white/50">{formatDate(hoverCandle.timestamp)}</span>
+              <span className="text-white/70">O:<span className="text-white">{formatPrice(hoverCandle.open)}</span></span>
+              <span className="text-white/70">H:<span className="text-white">{formatPrice(hoverCandle.high)}</span></span>
+              <span className="text-white/70">L:<span className="text-white">{formatPrice(hoverCandle.low)}</span></span>
+              <span className="text-white/70">C:<span className={hoverCandle.close >= hoverCandle.open ? 'text-emerald-400' : 'text-red-400'}>{formatPrice(hoverCandle.close)}</span></span>
+              <span className="text-white/70">V:<span className="text-white">{formatVol(hoverCandle.volume)}</span></span>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            {LEGEND.filter(([key]) => indicators[key]).map(([key, label, color, dashed]) => (
+              <span key={key} className="flex items-center gap-1" style={{ color }}>
+                <span className="inline-block w-3 border-t" style={{ borderColor: color, borderTopStyle: dashed ? 'dashed' : 'solid' }} />
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {isFetchingOlder && (
+          <div className="absolute bottom-7 left-2 z-10 pointer-events-none text-[8px] font-mono text-amber-400/70 tracking-widest">
+            LOADING HISTORY…
+          </div>
+        )}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
             <div className="w-5 h-5 border-2 border-amber-400/30 border-t-amber-400 animate-spin" />
           </div>
         )}
-        {error && (
+        {/* A failed older page keeps the chart that's already drawn */}
+        {error && !candles.length && (
           <div className="absolute inset-0 flex items-center justify-center z-20 text-red-400 text-[10px] font-mono">
             {tr('chartError', 'Failed to load chart data')}
           </div>
-        )}
-        {!isLoading && !error && candles.length > 0 && (
-          <ChartSVG
-            candles={candles}
-            chartType={chartType}
-            range={range}
-            indicators={indicators}
-            indicatorData={indicatorData}
-            priceHeightPct={priceHeightPct}
-            volHeightPct={volHeightPct}
-            rsiHeightPct={rsiHeightPct}
-            macdHeightPct={macdHeightPct}
-            hoverIndex={hoverIndex}
-            setHoverIndex={setHoverIndex}
-          />
         )}
         {!isLoading && !error && candles.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center text-white/20 text-[10px] font-mono uppercase tracking-widest">
@@ -495,516 +523,267 @@ export function TechnicalChartPanel() {
   );
 }
 
-// ─── SVG Chart component ───
+// ─── Chart renderer: lightweight-charts (drag-pan, wheel/pinch zoom, crosshair built in) ───
 
-interface ChartSVGProps {
-  candles: Candle[];
-  chartType: ChartType;
-  range: string;
-  indicators: Indicators;
-  indicatorData: {
-    sma20: (number | null)[];
-    sma50: (number | null)[];
-    sma200: (number | null)[];
-    ema20: (number | null)[];
-    ema50: (number | null)[];
-    ema200: (number | null)[];
-    rsi: (number | null)[];
-    macd: { macd: (number | null)[]; signal: (number | null)[]; histogram: (number | null)[] };
-    bollinger: { upper: (number | null)[]; middle: (number | null)[]; lower: (number | null)[] };
-  };
-  priceHeightPct: number;
-  volHeightPct: number;
-  rsiHeightPct: number;
-  macdHeightPct: number;
-  hoverIndex: number | null;
-  setHoverIndex: (i: number | null) => void;
+type Series = (number | null)[];
+interface IndicatorData {
+  sma20: Series;
+  sma50: Series;
+  sma200: Series;
+  ema20: Series;
+  ema50: Series;
+  ema200: Series;
+  rsi: Series;
+  macd: { macd: Series; signal: Series; histogram: Series };
+  bollinger: { upper: Series; middle: Series; lower: Series };
 }
 
-function ChartSVG({
-  candles,
-  chartType,
-  range,
-  indicators,
-  indicatorData,
-  priceHeightPct,
-  volHeightPct,
-  rsiHeightPct,
-  macdHeightPct,
-  hoverIndex,
-  setHoverIndex,
-}: ChartSVGProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dims, setDims] = useState({ width: 800, height: 500 });
+const INITIAL_BARS = 120; // on open; dragging toward the left edge loads older pages
+const OLDER_AT = 20; // fetch the next older page when the view is this close to the oldest loaded bar
 
+// Bars are real UTC; label them in the viewer's local time
+const tickMark: TickMarkFormatter = (time, type) => {
+  const d = new Date((time as number) * 1000);
+  if (type === TickMarkType.Year) return String(d.getFullYear());
+  if (type === TickMarkType.Month) return d.toLocaleDateString('en-US', { month: 'short' });
+  if (type === TickMarkType.DayOfMonth) return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
+const CHART_OPTIONS = {
+  layout: {
+    background: { type: ColorType.Solid as const, color: 'transparent' },
+    textColor: '#a1a1aa',
+    fontSize: 10,
+    fontFamily: 'ui-monospace, monospace',
+    attributionLogo: false,
+  },
+  grid: {
+    vertLines: { color: 'rgba(63,63,70,0.1)' },
+    horzLines: { color: 'rgba(63,63,70,0.1)' },
+  },
+  crosshair: {
+    horzLine: { color: '#f59e0b', labelBackgroundColor: '#f59e0b' },
+    vertLine: { color: '#f59e0b', labelBackgroundColor: '#f59e0b' },
+  },
+  // Same price-axis width on every pane, so bars line up vertically across main / RSI / MACD
+  rightPriceScale: { borderColor: 'rgba(63,63,70,0.3)', minimumWidth: 72 },
+  timeScale: { borderColor: 'rgba(63,63,70,0.3)', timeVisible: true, tickMarkFormatter: tickMark },
+  localization: { timeFormatter: (t: Time) => formatDate(t as number) },
+};
+
+// RSI / MACD panes follow the main chart's time scale instead of scrolling on their own
+const SUB_OPTIONS = {
+  ...CHART_OPTIONS,
+  handleScroll: false,
+  handleScale: false,
+  timeScale: { ...CHART_OPTIONS.timeScale, visible: false },
+};
+
+interface Pane { chart: IChartApi; dispose: () => void }
+
+function makePane(el: HTMLDivElement, options: typeof CHART_OPTIONS | typeof SUB_OPTIONS): Pane {
+  const chart = createChart(el, { ...options, width: el.clientWidth, height: el.clientHeight });
+  const ro = new ResizeObserver(() => chart.applyOptions({ width: el.clientWidth, height: el.clientHeight }));
+  ro.observe(el);
+  return { chart, dispose: () => { ro.disconnect(); chart.remove(); } };
+}
+
+const lineOpts = (color: string, dashed = false) => ({
+  color,
+  lineWidth: 1 as const,
+  lineStyle: dashed ? LineStyle.Dashed : LineStyle.Solid,
+  priceLineVisible: false,
+  lastValueVisible: false,
+  crosshairMarkerVisible: false,
+});
+
+/** Decimals the symbol quotes in (EURUSD 5, USDJPY 3, indices 2), from recent closes */
+function pricePrecision(candles: Candle[]): number {
+  let p = 2;
+  for (const c of candles.slice(-50)) {
+    const s = formatPrice(c.close);
+    const dot = s.indexOf('.');
+    if (dot >= 0) p = Math.max(p, s.length - dot - 1);
+  }
+  return Math.min(p, 6);
+}
+
+type Line = ISeriesApi<'Line'>;
+interface MainSeries {
+  volume: ISeriesApi<'Histogram'>;
+  candle: ISeriesApi<'Candlestick'>;
+  line: Line;
+  bbU: Line; bbM: Line; bbL: Line;
+  sma20: Line; sma50: Line; sma200: Line;
+  ema20: Line; ema50: Line; ema200: Line;
+}
+
+interface LwChartProps {
+  symbol: string;
+  trade?: { readOnly: boolean; lots: string; setLots: (v: string) => void };
+  candles: Candle[];
+  chartType: ChartType;
+  indicators: Indicators;
+  indicatorData: IndicatorData;
+  setHoverIndex: (i: number | null) => void;
+  hasMore: boolean;
+  loadingOlder: boolean;
+  onNeedOlder: () => void;
+}
+
+/** Mounted per symbol + timeframe (keyed by the caller); data is pushed in with setData on every change. */
+function LwChart({ symbol, trade, candles, chartType, indicators, indicatorData, setHoverIndex, hasMore, loadingOlder, onNeedOlder }: LwChartProps) {
+  const mainEl = useRef<HTMLDivElement>(null);
+  const rsiEl = useRef<HTMLDivElement>(null);
+  const macdEl = useRef<HTMLDivElement>(null);
+  const main = useRef<(Pane & { s: MainSeries }) | null>(null);
+  const rsi = useRef<(Pane & { line: Line }) | null>(null);
+  const macd = useRef<(Pane & { hist: ISeriesApi<'Histogram'>; line: Line; signal: Line }) | null>(null);
+  const timeIndex = useRef(new Map<number, number>());
+  const prev = useRef<{ n: number; lastT: number } | null>(null);
+  // The range subscription lives as long as the chart; read the paging state through a ref
+  const older = useRef({ hasMore, loadingOlder, onNeedOlder });
+  older.current = { hasMore, loadingOlder, onNeedOlder };
+  // Children's effects run before ours, so the trading layer mounts from state once the pane exists (a ref would still be null)
+  const [ready, setReady] = useState<(Pane & { s: MainSeries }) | null>(null);
+
+  // Main pane (series created once; toggles only change visibility / data)
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        setDims({ width: entry.contentRect.width, height: entry.contentRect.height });
-      }
+    const pane = makePane(mainEl.current!, CHART_OPTIONS);
+    const { chart } = pane;
+    const s: MainSeries = {
+      volume: chart.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: 'volume', priceLineVisible: false, lastValueVisible: false }),
+      candle: chart.addCandlestickSeries({
+        upColor: '#22c55e', downColor: '#ef4444', borderUpColor: '#22c55e', borderDownColor: '#ef4444',
+        wickUpColor: '#22c55e88', wickDownColor: '#ef444488',
+      }),
+      line: chart.addLineSeries({ color: '#f59e0b', lineWidth: 2, visible: false }),
+      bbU: chart.addLineSeries(lineOpts('rgba(251,191,36,0.4)')),
+      bbM: chart.addLineSeries(lineOpts('rgba(251,191,36,0.25)', true)),
+      bbL: chart.addLineSeries(lineOpts('rgba(251,191,36,0.4)')),
+      sma20: chart.addLineSeries(lineOpts('#facc15')),
+      sma50: chart.addLineSeries(lineOpts('#3b82f6')),
+      sma200: chart.addLineSeries(lineOpts('#ef4444')),
+      ema20: chart.addLineSeries(lineOpts('#facc15', true)),
+      ema50: chart.addLineSeries(lineOpts('#3b82f6', true)),
+      ema200: chart.addLineSeries(lineOpts('#ef4444', true)),
+    };
+    chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+    chart.timeScale().subscribeVisibleLogicalRangeChange((r) => {
+      if (!r) return;
+      rsi.current?.chart.timeScale().setVisibleLogicalRange(r);
+      macd.current?.chart.timeScale().setVisibleLogicalRange(r);
+      const o = older.current;
+      if (r.from < OLDER_AT && o.hasMore && !o.loadingOlder) o.onNeedOlder();
     });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+    chart.subscribeCrosshairMove((p) => setHoverIndex(p.time == null ? null : timeIndex.current.get(p.time as number) ?? null));
+    main.current = { ...pane, s };
+    setReady(main.current);
+    return () => { pane.dispose(); main.current = null; prev.current = null; setReady(null); };
+  }, [setHoverIndex]);
 
-  const { width: W, height: H } = dims;
-  const LEFT = 4;
-  const RIGHT = 60;
-  const TOP = 4;
-  const BOTTOM = 16;
-  const GAP = 2; // gap between sub-charts
-  const chartW = W - LEFT - RIGHT;
-  const totalH = H - TOP - BOTTOM;
+  // RSI pane with 70/30 guides
+  useEffect(() => {
+    if (!indicators.rsi || !rsiEl.current) return;
+    const pane = makePane(rsiEl.current, SUB_OPTIONS);
+    const line = pane.chart.addLineSeries({ color: '#a855f7', lineWidth: 1, priceLineVisible: false, title: 'RSI' });
+    line.createPriceLine({ price: 70, color: 'rgba(239,68,68,0.5)', lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: '' });
+    line.createPriceLine({ price: 30, color: 'rgba(34,197,94,0.5)', lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: '' });
+    rsi.current = { ...pane, line };
+    return () => { pane.dispose(); rsi.current = null; };
+  }, [indicators.rsi]);
 
-  // Section heights
-  const priceH = (totalH * priceHeightPct) / 100;
-  const volH = (totalH * volHeightPct) / 100;
-  const rsiH = (totalH * rsiHeightPct) / 100;
-  const macdH = (totalH * macdHeightPct) / 100;
+  // MACD pane
+  useEffect(() => {
+    if (!indicators.macd || !macdEl.current) return;
+    const pane = makePane(macdEl.current, SUB_OPTIONS);
+    const hist = pane.chart.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
+    const line = pane.chart.addLineSeries({ color: '#3b82f6', lineWidth: 1, priceLineVisible: false, title: 'MACD' });
+    const signal = pane.chart.addLineSeries({ color: '#f97316', lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
+    macd.current = { ...pane, hist, line, signal };
+    return () => { pane.dispose(); macd.current = null; };
+  }, [indicators.macd]);
 
-  // Y offsets for each section
-  const priceY0 = TOP;
-  const volY0 = priceY0 + priceH + (volHeightPct > 0 ? GAP : 0);
-  const rsiY0 = volY0 + volH + (rsiHeightPct > 0 ? GAP : 0);
-  const macdY0 = rsiY0 + rsiH + (macdHeightPct > 0 ? GAP : 0);
+  const precision = useMemo(() => pricePrecision(candles), [candles]);
 
-  const n = candles.length;
-  const candleStep = n > 0 ? chartW / n : 1;
-  const candleW = Math.max(1, candleStep * 0.7);
+  // Push data (pages, refetches and live ticks alike), then put the view back where it was
+  useEffect(() => {
+    const m = main.current;
+    const n = candles.length;
+    if (!m || !n) return;
+    const { chart, s } = m;
+    const ts = chart.timeScale();
+    const before = ts.getVisibleLogicalRange();
+    const time = (c: Candle) => c.timestamp as UTCTimestamp;
+    // Gaps become whitespace points so every pane has the same time points (keeps logical ranges aligned)
+    const pts = (on: boolean, arr: Series) =>
+      on ? candles.map((c, i) => (arr[i] == null ? { time: time(c) } : { time: time(c), value: arr[i]! })) : [];
 
-  function indexToX(i: number): number {
-    return LEFT + (i + 0.5) * candleStep;
-  }
-
-  // Price range (include Bollinger if active)
-  const priceRange = useMemo(() => {
-    let min = Infinity;
-    let max = -Infinity;
-    for (const c of candles) {
-      if (c.low < min) min = c.low;
-      if (c.high > max) max = c.high;
+    const priceFormat = { type: 'price' as const, precision, minMove: 10 ** -precision };
+    s.candle.applyOptions({ visible: chartType === 'candle', priceFormat });
+    s.line.applyOptions({ visible: chartType === 'line', priceFormat });
+    s.volume.applyOptions({ visible: indicators.volume });
+    s.candle.setData(candles.map((c) => ({ time: time(c), open: c.open, high: c.high, low: c.low, close: c.close })));
+    s.line.setData(candles.map((c) => ({ time: time(c), value: c.close })));
+    s.volume.setData(candles.map((c) => ({
+      time: time(c),
+      value: c.volume,
+      color: c.close >= c.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+    })));
+    s.sma20.setData(pts(indicators.sma20, indicatorData.sma20));
+    s.sma50.setData(pts(indicators.sma50, indicatorData.sma50));
+    s.sma200.setData(pts(indicators.sma200, indicatorData.sma200));
+    s.ema20.setData(pts(indicators.ema20, indicatorData.ema20));
+    s.ema50.setData(pts(indicators.ema50, indicatorData.ema50));
+    s.ema200.setData(pts(indicators.ema200, indicatorData.ema200));
+    s.bbU.setData(pts(indicators.bollinger, indicatorData.bollinger.upper));
+    s.bbM.setData(pts(indicators.bollinger, indicatorData.bollinger.middle));
+    s.bbL.setData(pts(indicators.bollinger, indicatorData.bollinger.lower));
+    rsi.current?.line.setData(pts(true, indicatorData.rsi));
+    if (macd.current) {
+      macd.current.hist.setData(candles.map((c, i) => {
+        const v = indicatorData.macd.histogram[i];
+        return v == null ? { time: time(c) } : { time: time(c), value: v, color: v >= 0 ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)' };
+      }));
+      macd.current.line.setData(pts(true, indicatorData.macd.macd));
+      macd.current.signal.setData(pts(true, indicatorData.macd.signal));
     }
-    if (indicators.bollinger && indicatorData.bollinger.upper.length > 0) {
-      for (const v of indicatorData.bollinger.upper) if (v != null && v > max) max = v;
-      for (const v of indicatorData.bollinger.lower) if (v != null && v < min) min = v;
+    timeIndex.current = new Map(candles.map((c, i) => [c.timestamp, i]));
+
+    const p = prev.current;
+    if (!p || !before) {
+      ts.setVisibleLogicalRange({ from: n - INITIAL_BARS, to: n + 3 });
+    } else {
+      let appended = 0;
+      for (let i = n - 1; i >= 0 && candles[i].timestamp > p.lastT; i--) appended++;
+      ts.setVisibleLogicalRange(keepView(before, p.n, n, appended));
     }
-    const pad = (max - min) * 0.05 || 1;
-    return { min: min - pad, max: max + pad };
-  }, [candles, indicators.bollinger, indicatorData.bollinger]);
-
-  function priceToY(price: number): number {
-    const pct = (price - priceRange.min) / (priceRange.max - priceRange.min);
-    return priceY0 + priceH * (1 - pct);
-  }
-
-  // Volume range
-  const volRange = useMemo(() => {
-    let max = 0;
-    for (const c of candles) if (c.volume > max) max = c.volume;
-    return { min: 0, max: max || 1 };
-  }, [candles]);
-
-  function volToY(vol: number): number {
-    const pct = vol / volRange.max;
-    return volY0 + volH * (1 - pct);
-  }
-
-  // RSI range (0-100)
-  function rsiToY(val: number): number {
-    const pct = val / 100;
-    return rsiY0 + rsiH * (1 - pct);
-  }
-
-  // MACD range
-  const macdRange = useMemo(() => {
-    let min = Infinity;
-    let max = -Infinity;
-    for (const v of indicatorData.macd.macd) if (v != null) { if (v < min) min = v; if (v > max) max = v; }
-    for (const v of indicatorData.macd.signal) if (v != null) { if (v < min) min = v; if (v > max) max = v; }
-    for (const v of indicatorData.macd.histogram) if (v != null) { if (v < min) min = v; if (v > max) max = v; }
-    if (min === Infinity) { min = -1; max = 1; }
-    const pad = (max - min) * 0.1 || 0.1;
-    return { min: min - pad, max: max + pad };
-  }, [indicatorData.macd]);
-
-  function macdToY(val: number): number {
-    const pct = (val - macdRange.min) / (macdRange.max - macdRange.min);
-    return macdY0 + macdH * (1 - pct);
-  }
-
-  // Build overlay line path
-  function buildLinePath(data: (number | null)[], toY: (v: number) => number): string {
-    let d = '';
-    for (let i = 0; i < data.length; i++) {
-      const v = data[i];
-      if (v == null) continue;
-      const x = indexToX(i);
-      const y = toY(v);
-      d += d === '' ? `M${x},${y}` : `L${x},${y}`;
+    prev.current = { n, lastT: candles[n - 1].timestamp };
+    const r = ts.getVisibleLogicalRange();
+    if (r) {
+      rsi.current?.chart.timeScale().setVisibleLogicalRange(r);
+      macd.current?.chart.timeScale().setVisibleLogicalRange(r);
     }
-    return d;
-  }
-
-  // X-axis labels (show ~8)
-  const xLabels = useMemo(() => {
-    if (n === 0) return [];
-    const count = Math.max(2, Math.min(8, Math.floor(chartW / 80)));
-    const step = Math.max(1, Math.floor(n / count));
-    const labels: { x: number; label: string }[] = [];
-    for (let i = 0; i < n; i += step) {
-      labels.push({ x: indexToX(i), label: formatAxisDate(candles[i].timestamp, range) });
-    }
-    return labels;
-  }, [n, chartW, candles, range]);
-
-  // Y-axis price labels (~5)
-  const yPriceLabels = useMemo(() => {
-    const count = Math.max(2, Math.min(6, Math.floor(priceH / 40)));
-    const labels: { y: number; label: string }[] = [];
-    const step = (priceRange.max - priceRange.min) / count;
-    for (let i = 0; i <= count; i++) {
-      const price = priceRange.min + step * i;
-      labels.push({ y: priceToY(price), label: formatPrice(price) });
-    }
-    return labels;
-  }, [priceRange, priceH]);
-
-  // Mouse interaction
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const mx = e.clientX - rect.left - LEFT;
-      if (mx < 0 || mx > chartW) { setHoverIndex(null); return; }
-      const idx = Math.floor(mx / candleStep);
-      setHoverIndex(Math.min(Math.max(0, idx), n - 1));
-    },
-    [candleStep, chartW, n, setHoverIndex],
-  );
-
-  const handleMouseLeave = useCallback(() => setHoverIndex(null), [setHoverIndex]);
+  }, [candles, indicatorData, indicators, chartType, precision]);
 
   return (
-    <div ref={containerRef} className="w-full h-full">
-      <svg
-        width={W}
-        height={H}
-        viewBox={`0 0 ${W} ${H}`}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="cursor-crosshair"
-      >
-        {/* Grid lines (subtle) */}
-        {yPriceLabels.map((l, i) => (
-          <line key={`grid-h-${i}`} x1={LEFT} y1={l.y} x2={W - RIGHT} y2={l.y} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />
-        ))}
-        {xLabels.map((l, i) => (
-          <line key={`grid-v-${i}`} x1={l.x} y1={TOP} x2={l.x} y2={H - BOTTOM} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />
-        ))}
-
-        {/* Section dividers */}
-        {volHeightPct > 0 && (
-          <line x1={LEFT} y1={volY0 - 1} x2={W - RIGHT} y2={volY0 - 1} stroke="rgba(255,255,255,0.08)" strokeWidth={0.5} />
+    <div className="absolute inset-0 flex flex-col">
+      <div className="flex-1 min-h-0 relative">
+        <div ref={mainEl} className="absolute inset-0" />
+        {ready && trade && mainEl.current && (
+          <ChartTrading
+            chart={ready.chart}
+            series={chartType === 'candle' ? ready.s.candle : ready.s.line}
+            el={mainEl.current}
+            symbol={symbol}
+            precision={precision}
+            {...trade}
+          />
         )}
-        {rsiHeightPct > 0 && (
-          <line x1={LEFT} y1={rsiY0 - 1} x2={W - RIGHT} y2={rsiY0 - 1} stroke="rgba(255,255,255,0.08)" strokeWidth={0.5} />
-        )}
-        {macdHeightPct > 0 && (
-          <line x1={LEFT} y1={macdY0 - 1} x2={W - RIGHT} y2={macdY0 - 1} stroke="rgba(255,255,255,0.08)" strokeWidth={0.5} />
-        )}
-
-        {/* Bollinger Bands */}
-        {indicators.bollinger && indicatorData.bollinger.upper.length > 0 && (() => {
-          const upper = indicatorData.bollinger.upper;
-          const lower = indicatorData.bollinger.lower;
-          // Build fill polygon
-          let fillPath = '';
-          const upperPoints: string[] = [];
-          const lowerPoints: string[] = [];
-          for (let i = 0; i < upper.length; i++) {
-            if (upper[i] != null && lower[i] != null) {
-              const x = indexToX(i);
-              upperPoints.push(`${x},${priceToY(upper[i]!)}`);
-              lowerPoints.unshift(`${x},${priceToY(lower[i]!)}`);
-            }
-          }
-          if (upperPoints.length > 1) {
-            fillPath = `M${upperPoints.join('L')}L${lowerPoints.join('L')}Z`;
-          }
-          return (
-            <>
-              {fillPath && <path d={fillPath} fill="rgba(251,191,36,0.06)" />}
-              <path d={buildLinePath(upper, priceToY)} fill="none" stroke="rgba(251,191,36,0.3)" strokeWidth={0.7} />
-              <path d={buildLinePath(indicatorData.bollinger.middle, priceToY)} fill="none" stroke="rgba(251,191,36,0.2)" strokeWidth={0.5} strokeDasharray="3,3" />
-              <path d={buildLinePath(lower, priceToY)} fill="none" stroke="rgba(251,191,36,0.3)" strokeWidth={0.7} />
-            </>
-          );
-        })()}
-
-        {/* Price chart */}
-        {chartType === 'candle' ? (
-          candles.map((c, i) => {
-            const x = indexToX(i);
-            const isUp = c.close >= c.open;
-            const color = isUp ? '#22c55e' : '#ef4444';
-            const bodyTop = priceToY(Math.max(c.open, c.close));
-            const bodyBot = priceToY(Math.min(c.open, c.close));
-            const bodyH = Math.max(0.5, bodyBot - bodyTop);
-            return (
-              <g key={i}>
-                {/* Wick */}
-                <line
-                  x1={x}
-                  y1={priceToY(c.high)}
-                  x2={x}
-                  y2={priceToY(c.low)}
-                  stroke={color}
-                  strokeWidth={0.8}
-                />
-                {/* Body */}
-                <rect
-                  x={x - candleW / 2}
-                  y={bodyTop}
-                  width={candleW}
-                  height={bodyH}
-                  fill={color}
-                />
-              </g>
-            );
-          })
-        ) : (
-          (() => {
-            // Line chart with gradient fill
-            const points = candles.map((c, i) => `${indexToX(i)},${priceToY(c.close)}`);
-            const linePath = `M${points.join('L')}`;
-            const firstX = indexToX(0);
-            const lastX = indexToX(candles.length - 1);
-            const fillPath = `${linePath}L${lastX},${priceY0 + priceH}L${firstX},${priceY0 + priceH}Z`;
-            return (
-              <>
-                <defs>
-                  <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d={fillPath} fill="url(#lineGradient)" />
-                <path d={linePath} fill="none" stroke="#f59e0b" strokeWidth={1.5} />
-              </>
-            );
-          })()
-        )}
-
-        {/* SMA overlays */}
-        {indicators.sma20 && (
-          <path d={buildLinePath(indicatorData.sma20, priceToY)} fill="none" stroke="#facc15" strokeWidth={1} opacity={0.8} />
-        )}
-        {indicators.sma50 && (
-          <path d={buildLinePath(indicatorData.sma50, priceToY)} fill="none" stroke="#3b82f6" strokeWidth={1} opacity={0.8} />
-        )}
-        {indicators.sma200 && (
-          <path d={buildLinePath(indicatorData.sma200, priceToY)} fill="none" stroke="#ef4444" strokeWidth={1} opacity={0.8} />
-        )}
-
-        {/* EMA overlays (dashed) */}
-        {indicators.ema20 && (
-          <path d={buildLinePath(indicatorData.ema20, priceToY)} fill="none" stroke="#facc15" strokeWidth={1} strokeDasharray="4,2" opacity={0.8} />
-        )}
-        {indicators.ema50 && (
-          <path d={buildLinePath(indicatorData.ema50, priceToY)} fill="none" stroke="#3b82f6" strokeWidth={1} strokeDasharray="4,2" opacity={0.8} />
-        )}
-        {indicators.ema200 && (
-          <path d={buildLinePath(indicatorData.ema200, priceToY)} fill="none" stroke="#ef4444" strokeWidth={1} strokeDasharray="4,2" opacity={0.8} />
-        )}
-
-        {/* Volume bars */}
-        {indicators.volume && candles.map((c, i) => {
-          const x = indexToX(i);
-          const isUp = c.close >= c.open;
-          const color = isUp ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)';
-          const barTop = volToY(c.volume);
-          const barH = volY0 + volH - barTop;
-          return (
-            <rect
-              key={`vol-${i}`}
-              x={x - candleW / 2}
-              y={barTop}
-              width={candleW}
-              height={Math.max(0, barH)}
-              fill={color}
-            />
-          );
-        })}
-
-        {/* Volume Y-axis labels */}
-        {indicators.volume && (
-          <>
-            <text x={W - RIGHT + 4} y={volY0 + 8} fill="rgba(255,255,255,0.25)" fontSize={7} fontFamily="monospace">
-              {formatVol(volRange.max)}
-            </text>
-            <text x={W - RIGHT + 4} y={volY0 + volH} fill="rgba(255,255,255,0.25)" fontSize={7} fontFamily="monospace">
-              0
-            </text>
-          </>
-        )}
-
-        {/* RSI chart */}
-        {indicators.rsi && rsiHeightPct > 0 && (
-          <>
-            {/* Overbought/oversold zones */}
-            <rect x={LEFT} y={rsiToY(70)} width={chartW} height={rsiToY(30) - rsiToY(70)} fill="rgba(255,255,255,0.02)" />
-            <line x1={LEFT} y1={rsiToY(70)} x2={W - RIGHT} y2={rsiToY(70)} stroke="rgba(239,68,68,0.3)" strokeWidth={0.5} strokeDasharray="4,3" />
-            <line x1={LEFT} y1={rsiToY(30)} x2={W - RIGHT} y2={rsiToY(30)} stroke="rgba(34,197,94,0.3)" strokeWidth={0.5} strokeDasharray="4,3" />
-            <line x1={LEFT} y1={rsiToY(50)} x2={W - RIGHT} y2={rsiToY(50)} stroke="rgba(255,255,255,0.06)" strokeWidth={0.5} />
-            <path d={buildLinePath(indicatorData.rsi, rsiToY)} fill="none" stroke="#a855f7" strokeWidth={1} />
-            {/* Labels */}
-            <text x={W - RIGHT + 4} y={rsiToY(70) + 3} fill="rgba(239,68,68,0.5)" fontSize={7} fontFamily="monospace">70</text>
-            <text x={W - RIGHT + 4} y={rsiToY(30) + 3} fill="rgba(34,197,94,0.5)" fontSize={7} fontFamily="monospace">30</text>
-            <text x={LEFT + 2} y={rsiY0 + 8} fill="rgba(168,85,247,0.6)" fontSize={7} fontFamily="monospace">RSI</text>
-          </>
-        )}
-
-        {/* MACD chart */}
-        {indicators.macd && macdHeightPct > 0 && (
-          <>
-            {/* Zero line */}
-            <line x1={LEFT} y1={macdToY(0)} x2={W - RIGHT} y2={macdToY(0)} stroke="rgba(255,255,255,0.08)" strokeWidth={0.5} />
-            {/* Histogram */}
-            {indicatorData.macd.histogram.map((v, i) => {
-              if (v == null) return null;
-              const x = indexToX(i);
-              const y0 = macdToY(0);
-              const y1 = macdToY(v);
-              const color = v >= 0 ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)';
-              return (
-                <rect
-                  key={`macd-h-${i}`}
-                  x={x - candleW / 2}
-                  y={Math.min(y0, y1)}
-                  width={candleW}
-                  height={Math.abs(y1 - y0) || 0.5}
-                  fill={color}
-                />
-              );
-            })}
-            {/* MACD line */}
-            <path d={buildLinePath(indicatorData.macd.macd, macdToY)} fill="none" stroke="#3b82f6" strokeWidth={1} />
-            {/* Signal line */}
-            <path d={buildLinePath(indicatorData.macd.signal, macdToY)} fill="none" stroke="#f97316" strokeWidth={1} />
-            <text x={LEFT + 2} y={macdY0 + 8} fill="rgba(59,130,246,0.6)" fontSize={7} fontFamily="monospace">MACD</text>
-          </>
-        )}
-
-        {/* Y-axis price labels */}
-        {yPriceLabels.map((l, i) => (
-          <text
-            key={`yp-${i}`}
-            x={W - RIGHT + 4}
-            y={l.y + 3}
-            fill="rgba(255,255,255,0.3)"
-            fontSize={8}
-            fontFamily="monospace"
-          >
-            {l.label}
-          </text>
-        ))}
-
-        {/* X-axis date labels */}
-        {xLabels.map((l, i) => (
-          <text
-            key={`xl-${i}`}
-            x={l.x}
-            y={H - 2}
-            fill="rgba(255,255,255,0.25)"
-            fontSize={7}
-            fontFamily="monospace"
-            textAnchor="middle"
-          >
-            {l.label}
-          </text>
-        ))}
-
-        {/* Crosshair */}
-        {hoverIndex != null && hoverIndex >= 0 && hoverIndex < candles.length && (
-          <>
-            {/* Vertical line */}
-            <line
-              x1={indexToX(hoverIndex)}
-              y1={TOP}
-              x2={indexToX(hoverIndex)}
-              y2={H - BOTTOM}
-              stroke="rgba(251,191,36,0.3)"
-              strokeWidth={0.5}
-              strokeDasharray="3,3"
-            />
-            {/* Horizontal line at close price */}
-            <line
-              x1={LEFT}
-              y1={priceToY(candles[hoverIndex].close)}
-              x2={W - RIGHT}
-              y2={priceToY(candles[hoverIndex].close)}
-              stroke="rgba(251,191,36,0.3)"
-              strokeWidth={0.5}
-              strokeDasharray="3,3"
-            />
-            {/* Price label on Y axis */}
-            <rect
-              x={W - RIGHT}
-              y={priceToY(candles[hoverIndex].close) - 6}
-              width={RIGHT}
-              height={12}
-              fill="rgba(251,191,36,0.9)"
-            />
-            <text
-              x={W - RIGHT + 4}
-              y={priceToY(candles[hoverIndex].close) + 3}
-              fill="black"
-              fontSize={8}
-              fontFamily="monospace"
-              fontWeight="bold"
-            >
-              {formatPrice(candles[hoverIndex].close)}
-            </text>
-          </>
-        )}
-
-        {/* Indicator legend (top-left of price chart) */}
-        {(() => {
-          const legends: { label: string; color: string; dashed?: boolean }[] = [];
-          if (indicators.sma20) legends.push({ label: 'SMA20', color: '#facc15' });
-          if (indicators.sma50) legends.push({ label: 'SMA50', color: '#3b82f6' });
-          if (indicators.sma200) legends.push({ label: 'SMA200', color: '#ef4444' });
-          if (indicators.ema20) legends.push({ label: 'EMA20', color: '#facc15', dashed: true });
-          if (indicators.ema50) legends.push({ label: 'EMA50', color: '#3b82f6', dashed: true });
-          if (indicators.ema200) legends.push({ label: 'EMA200', color: '#ef4444', dashed: true });
-          if (indicators.bollinger) legends.push({ label: 'BB(20,2)', color: '#fbbf24' });
-          return legends.map((l, i) => (
-            <g key={`legend-${i}`}>
-              <line
-                x1={LEFT + 4 + i * 60}
-                y1={priceY0 + 10}
-                x2={LEFT + 18 + i * 60}
-                y2={priceY0 + 10}
-                stroke={l.color}
-                strokeWidth={1.5}
-                strokeDasharray={l.dashed ? '4,2' : undefined}
-              />
-              <text
-                x={LEFT + 21 + i * 60}
-                y={priceY0 + 13}
-                fill={l.color}
-                fontSize={7}
-                fontFamily="monospace"
-                opacity={0.8}
-              >
-                {l.label}
-              </text>
-            </g>
-          ));
-        })()}
-      </svg>
+      </div>
+      {indicators.rsi && <div ref={rsiEl} className="h-[22%] min-h-[60px] border-t border-white/5" />}
+      {indicators.macd && <div ref={macdEl} className="h-[22%] min-h-[60px] border-t border-white/5" />}
     </div>
   );
 }

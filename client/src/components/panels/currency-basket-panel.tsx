@@ -213,8 +213,6 @@ function DxyDecomposition({ components }: { components: DxyComponent[] | undefin
       return Object.entries(DXY_WEIGHTS).map(([ccy, weight]) => ({
         currency: ccy,
         weight,
-        contribution: 0,
-        change: 0,
       }));
     }
     return components;
@@ -303,10 +301,10 @@ function DxyDecomposition({ components }: { components: DxyComponent[] | undefin
                 {weight.toFixed(1)}
               </span>
               <span className={`text-[8px] font-mono font-bold text-right ${changeColor(contribution)}`}>
-                {fmtPct(contribution, 3)}
+                {fmtPct(c?.contribution, 3)}
               </span>
               <span className={`text-[8px] font-mono text-right ${changeColor(change)}`}>
-                {fmtPct(change, 2)}
+                {fmtPct(c?.change, 2)}
               </span>
               <div className="flex justify-end pr-1">
                 <div className="w-14 h-[3px] bg-neutral-800 relative">

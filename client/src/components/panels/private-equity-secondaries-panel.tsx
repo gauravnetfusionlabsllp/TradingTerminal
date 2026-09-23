@@ -97,85 +97,6 @@ function percentileColor(pctile: number): string {
   return RED;
 }
 
-// ── Fallback data ──
-
-const FALLBACK_DATA = {
-  timestamp: '2026-03-19T14:30:00Z',
-  summary: {
-    totalVolume: 152.0,
-    dealCount: 487,
-    avgDiscount: -8.4,
-    gpLedPct: 52.3,
-    lpLedPct: 47.7,
-    yoyChange: 18.2,
-  },
-  deals: [
-    { fund: 'Apollo IX', strategy: 'Buyout', vintage: 2019, nav: 2.4, priceNavPct: 92.5, discount: -7.5, buyer: 'Lexington Partners' },
-    { fund: 'Sequoia Growth IV', strategy: 'Venture', vintage: 2021, nav: 1.8, priceNavPct: 78.2, discount: -21.8, buyer: 'Ardian' },
-    { fund: 'Blackstone RE VII', strategy: 'Real Estate', vintage: 2018, nav: 3.1, priceNavPct: 88.0, discount: -12.0, buyer: 'Coller Capital' },
-    { fund: 'KKR Americas XII', strategy: 'Buyout', vintage: 2017, nav: 4.2, priceNavPct: 96.8, discount: -3.2, buyer: 'Alpinvest' },
-    { fund: 'Insight Venture XI', strategy: 'Growth', vintage: 2020, nav: 1.5, priceNavPct: 85.4, discount: -14.6, buyer: 'HarbourVest' },
-    { fund: 'Carlyle Infra III', strategy: 'Infrastructure', vintage: 2016, nav: 2.8, priceNavPct: 101.2, discount: 1.2, buyer: 'StepStone' },
-    { fund: 'Tiger Global PIP XV', strategy: 'Venture', vintage: 2022, nav: 0.9, priceNavPct: 62.5, discount: -37.5, buyer: 'Ares Management' },
-    { fund: 'TPG Growth V', strategy: 'Growth', vintage: 2019, nav: 1.9, priceNavPct: 90.1, discount: -9.9, buyer: 'Pantheon' },
-    { fund: 'Warburg Pincus XIII', strategy: 'Buyout', vintage: 2020, nav: 3.5, priceNavPct: 94.3, discount: -5.7, buyer: 'ICG' },
-    { fund: 'a16z Crypto III', strategy: 'Venture', vintage: 2022, nav: 0.6, priceNavPct: 55.0, discount: -45.0, buyer: 'Lexington Partners' },
-  ],
-  pricing: [
-    { strategy: 'Buyout', currentDiscount: -5.8, prevQuarter: -7.2, yearAgo: -10.1, bidAskSpread: 3.2, dealCount: 142 },
-    { strategy: 'Venture', currentDiscount: -28.4, prevQuarter: -32.1, yearAgo: -38.5, bidAskSpread: 8.7, dealCount: 68 },
-    { strategy: 'Growth', currentDiscount: -12.3, prevQuarter: -14.8, yearAgo: -18.2, bidAskSpread: 5.1, dealCount: 85 },
-    { strategy: 'Real Estate', currentDiscount: -14.7, prevQuarter: -16.2, yearAgo: -19.8, bidAskSpread: 4.8, dealCount: 52 },
-    { strategy: 'Infrastructure', currentDiscount: -2.1, prevQuarter: -3.4, yearAgo: -5.8, bidAskSpread: 2.1, dealCount: 38 },
-    { strategy: 'Credit', currentDiscount: -3.5, prevQuarter: -4.1, yearAgo: -6.2, bidAskSpread: 1.8, dealCount: 61 },
-    { strategy: 'Energy', currentDiscount: -8.9, prevQuarter: -10.5, yearAgo: -14.3, bidAskSpread: 4.2, dealCount: 25 },
-    { strategy: 'Diversified', currentDiscount: -6.4, prevQuarter: -7.8, yearAgo: -9.5, bidAskSpread: 3.5, dealCount: 16 },
-  ],
-  volume: [
-    { quarter: 'Q1 2025', totalVolume: 28.5, gpLed: 14.8, lpLed: 13.7, yoyChange: 22.4, dealCount: 98 },
-    { quarter: 'Q2 2025', totalVolume: 34.2, gpLed: 18.1, lpLed: 16.1, yoyChange: 15.8, dealCount: 112 },
-    { quarter: 'Q3 2025', totalVolume: 41.8, gpLed: 21.5, lpLed: 20.3, yoyChange: 28.3, dealCount: 134 },
-    { quarter: 'Q4 2025', totalVolume: 47.5, gpLed: 25.2, lpLed: 22.3, yoyChange: 12.1, dealCount: 143 },
-    { quarter: 'Q1 2026', totalVolume: 38.6, gpLed: 20.1, lpLed: 18.5, yoyChange: 35.4, dealCount: 121 },
-  ],
-  participants: {
-    topBuyers: [
-      { name: 'Lexington Partners', volume: 18.2, dealCount: 42, type: 'Dedicated Secondary' },
-      { name: 'Ardian', volume: 15.8, dealCount: 38, type: 'Dedicated Secondary' },
-      { name: 'Coller Capital', volume: 12.4, dealCount: 31, type: 'Dedicated Secondary' },
-      { name: 'HarbourVest', volume: 11.9, dealCount: 35, type: 'Dedicated Secondary' },
-      { name: 'Alpinvest', volume: 10.5, dealCount: 28, type: 'Dedicated Secondary' },
-      { name: 'StepStone', volume: 8.7, dealCount: 24, type: 'Advisor/Buyer' },
-      { name: 'Pantheon', volume: 7.2, dealCount: 22, type: 'Dedicated Secondary' },
-      { name: 'Ares Management', volume: 6.8, dealCount: 19, type: 'Multi-Strategy' },
-    ],
-    topSellers: [
-      { name: 'CalPERS', volume: 8.5, dealCount: 12, type: 'Public Pension' },
-      { name: 'CPPIB', volume: 7.2, dealCount: 9, type: 'Sovereign Wealth' },
-      { name: 'GIC', volume: 6.8, dealCount: 8, type: 'Sovereign Wealth' },
-      { name: 'Ontario Teachers', volume: 5.4, dealCount: 7, type: 'Public Pension' },
-      { name: 'Yale Endowment', volume: 4.1, dealCount: 6, type: 'Endowment' },
-      { name: 'Harvard Management', volume: 3.8, dealCount: 5, type: 'Endowment' },
-    ],
-    buyerTypeBreakdown: [
-      { type: 'Dedicated Secondary', pct: 48.2, volume: 73.3 },
-      { type: 'Multi-Strategy', pct: 18.5, volume: 28.1 },
-      { type: 'Pension/SWF', pct: 14.8, volume: 22.5 },
-      { type: 'GP-Led Continuation', pct: 12.1, volume: 18.4 },
-      { type: 'Other', pct: 6.4, volume: 9.7 },
-    ],
-  },
-  trends: [
-    { strategy: 'Buyout', q1_2025: -7.2, q2_2025: -6.8, q3_2025: -6.1, q4_2025: -5.8, q1_2026: -5.4, percentile: 72 },
-    { strategy: 'Venture', q1_2025: -35.1, q2_2025: -33.2, q3_2025: -30.8, q4_2025: -28.4, q1_2026: -26.1, percentile: 18 },
-    { strategy: 'Growth', q1_2025: -18.2, q2_2025: -16.5, q3_2025: -14.1, q4_2025: -12.3, q1_2026: -11.0, percentile: 35 },
-    { strategy: 'Real Estate', q1_2025: -19.8, q2_2025: -18.1, q3_2025: -16.4, q4_2025: -14.7, q1_2026: -13.2, percentile: 28 },
-    { strategy: 'Infrastructure', q1_2025: -5.8, q2_2025: -4.5, q3_2025: -3.1, q4_2025: -2.1, q1_2026: -1.5, percentile: 85 },
-    { strategy: 'Credit', q1_2025: -6.2, q2_2025: -5.4, q3_2025: -4.5, q4_2025: -3.5, q1_2026: -2.8, percentile: 78 },
-    { strategy: 'Energy', q1_2025: -14.3, q2_2025: -12.8, q3_2025: -11.2, q4_2025: -8.9, q1_2026: -7.5, percentile: 42 },
-  ],
-};
-
 // ── Section Header ──
 
 function SectionHeader({ title }: { title: string }) {
@@ -195,7 +116,7 @@ export function PrivateEquitySecondariesPanel() {
   const { data: hookData, isLoading } = usePrivateEquitySecondaries();
   const [activeTab, setActiveTab] = useState<TabId>('deals');
 
-  const d = (hookData as any) ?? FALLBACK_DATA;
+  const d = hookData as any;
 
   if (isLoading && !hookData) {
     return (

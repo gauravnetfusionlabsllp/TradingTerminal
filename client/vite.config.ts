@@ -14,8 +14,6 @@ export default defineConfig({
         manualChunks: {
           'vendor': ['react', 'react-dom'],
           'query': ['@tanstack/react-query'],
-          'maplibre': ['maplibre-gl'],
-          'web3': ['wagmi', 'viem', '@rainbow-me/rainbowkit'],
           'charts': ['lightweight-charts'],
           'flexlayout': ['flexlayout-react'],
           'icons': ['lucide-react'],

@@ -69,66 +69,6 @@ interface BankEarningsData {
   timestamp: string;
 }
 
-// ── Fallback mock data ──
-
-const FALLBACK_DATA: BankEarningsData = {
-  timestamp: new Date().toISOString(),
-  overview: [
-    { name: 'JPMorgan Chase', ticker: 'JPM', revenue: 42.4, epsActual: 4.81, epsEstimate: 4.62, beat: true, nim: 2.72, roe: 17.2, stockReaction: 2.4 },
-    { name: 'Bank of America', ticker: 'BAC', revenue: 25.5, epsActual: 0.90, epsEstimate: 0.84, beat: true, nim: 2.19, roe: 11.8, stockReaction: 1.1 },
-    { name: 'Citigroup', ticker: 'C', revenue: 20.1, epsActual: 1.52, epsEstimate: 1.44, beat: true, nim: 2.48, roe: 7.1, stockReaction: 0.8 },
-    { name: 'Wells Fargo', ticker: 'WFC', revenue: 20.9, epsActual: 1.38, epsEstimate: 1.24, beat: true, nim: 2.81, roe: 13.1, stockReaction: 3.2 },
-    { name: 'Goldman Sachs', ticker: 'GS', revenue: 15.1, epsActual: 11.58, epsEstimate: 10.22, beat: true, nim: 0.0, roe: 14.6, stockReaction: 4.1 },
-    { name: 'Morgan Stanley', ticker: 'MS', revenue: 15.4, epsActual: 2.22, epsEstimate: 2.05, beat: true, nim: 0.0, roe: 16.8, stockReaction: 1.9 },
-    { name: 'US Bancorp', ticker: 'USB', revenue: 7.1, epsActual: 1.07, epsEstimate: 1.12, beat: false, nim: 2.68, roe: 12.4, stockReaction: -2.3 },
-    { name: 'PNC Financial', ticker: 'PNC', revenue: 5.6, epsActual: 3.74, epsEstimate: 3.58, beat: true, nim: 2.72, roe: 13.5, stockReaction: 1.5 },
-    { name: 'Truist Financial', ticker: 'TFC', revenue: 4.8, epsActual: 0.81, epsEstimate: 0.88, beat: false, nim: 3.01, roe: 8.2, stockReaction: -3.1 },
-    { name: 'Charles Schwab', ticker: 'SCHW', revenue: 5.2, epsActual: 0.93, epsEstimate: 0.90, beat: true, nim: 2.23, roe: 18.4, stockReaction: 0.6 },
-  ],
-  capital: [
-    { name: 'JPMorgan Chase', ticker: 'JPM', cet1: 15.2, tceRatio: 7.1, efficiencyRatio: 55.2, totalAssets: 3930, capitalAdequacy: 17.8 },
-    { name: 'Bank of America', ticker: 'BAC', cet1: 11.8, tceRatio: 5.9, efficiencyRatio: 62.1, totalAssets: 3180, capitalAdequacy: 15.4 },
-    { name: 'Citigroup', ticker: 'C', cet1: 13.4, tceRatio: 6.2, efficiencyRatio: 67.8, totalAssets: 2410, capitalAdequacy: 16.9 },
-    { name: 'Wells Fargo', ticker: 'WFC', cet1: 11.2, tceRatio: 5.5, efficiencyRatio: 60.3, totalAssets: 1930, capitalAdequacy: 14.8 },
-    { name: 'Goldman Sachs', ticker: 'GS', cet1: 14.8, tceRatio: 7.8, efficiencyRatio: 62.8, totalAssets: 1640, capitalAdequacy: 18.2 },
-    { name: 'Morgan Stanley', ticker: 'MS', cet1: 15.5, tceRatio: 7.4, efficiencyRatio: 72.1, totalAssets: 1200, capitalAdequacy: 18.5 },
-    { name: 'US Bancorp', ticker: 'USB', cet1: 10.2, tceRatio: 5.1, efficiencyRatio: 59.8, totalAssets: 668, capitalAdequacy: 13.6 },
-    { name: 'PNC Financial', ticker: 'PNC', cet1: 10.5, tceRatio: 6.8, efficiencyRatio: 57.4, totalAssets: 557, capitalAdequacy: 14.1 },
-    { name: 'Truist Financial', ticker: 'TFC', cet1: 10.1, tceRatio: 5.3, efficiencyRatio: 65.2, totalAssets: 535, capitalAdequacy: 13.2 },
-    { name: 'Charles Schwab', ticker: 'SCHW', cet1: 27.1, tceRatio: 8.9, efficiencyRatio: 58.6, totalAssets: 466, capitalAdequacy: 29.4 },
-  ],
-  trading: [
-    { name: 'JPMorgan Chase', ticker: 'JPM', ficcRevenue: 5.8, equitiesRevenue: 3.2, advisoryRevenue: 1.6, underwritingRevenue: 2.1, marketShare: 14.8 },
-    { name: 'Goldman Sachs', ticker: 'GS', ficcRevenue: 4.3, equitiesRevenue: 3.5, advisoryRevenue: 1.8, underwritingRevenue: 1.4, marketShare: 12.2 },
-    { name: 'Morgan Stanley', ticker: 'MS', ficcRevenue: 2.5, equitiesRevenue: 3.1, advisoryRevenue: 1.5, underwritingRevenue: 1.2, marketShare: 10.6 },
-    { name: 'Bank of America', ticker: 'BAC', ficcRevenue: 3.4, equitiesRevenue: 1.9, advisoryRevenue: 0.8, underwritingRevenue: 1.3, marketShare: 8.4 },
-    { name: 'Citigroup', ticker: 'C', ficcRevenue: 3.8, equitiesRevenue: 1.3, advisoryRevenue: 0.6, underwritingRevenue: 0.9, marketShare: 7.1 },
-    { name: 'Wells Fargo', ticker: 'WFC', ficcRevenue: 1.2, equitiesRevenue: 0.6, advisoryRevenue: 0.4, underwritingRevenue: 0.5, marketShare: 3.2 },
-    { name: 'PNC Financial', ticker: 'PNC', ficcRevenue: 0.3, equitiesRevenue: 0.1, advisoryRevenue: 0.2, underwritingRevenue: 0.2, marketShare: 0.8 },
-    { name: 'US Bancorp', ticker: 'USB', ficcRevenue: 0.2, equitiesRevenue: 0.1, advisoryRevenue: 0.1, underwritingRevenue: 0.1, marketShare: 0.5 },
-  ],
-  credit: [
-    { name: 'JPMorgan Chase', ticker: 'JPM', provisions: 2.76, nplRatio: 0.62, loanGrowth: 5.2, depositGrowth: 3.1 },
-    { name: 'Bank of America', ticker: 'BAC', provisions: 1.49, nplRatio: 0.48, loanGrowth: 2.1, depositGrowth: 1.8 },
-    { name: 'Citigroup', ticker: 'C', provisions: 2.42, nplRatio: 0.81, loanGrowth: 1.3, depositGrowth: -0.5 },
-    { name: 'Wells Fargo', ticker: 'WFC', provisions: 1.28, nplRatio: 0.55, loanGrowth: 0.8, depositGrowth: 2.4 },
-    { name: 'Goldman Sachs', ticker: 'GS', provisions: 0.45, nplRatio: 0.32, loanGrowth: 8.4, depositGrowth: 12.6 },
-    { name: 'Morgan Stanley', ticker: 'MS', provisions: 0.16, nplRatio: 0.18, loanGrowth: 6.1, depositGrowth: 4.2 },
-    { name: 'US Bancorp', ticker: 'USB', provisions: 0.62, nplRatio: 0.58, loanGrowth: -1.2, depositGrowth: -0.8 },
-    { name: 'PNC Financial', ticker: 'PNC', provisions: 0.24, nplRatio: 0.42, loanGrowth: 3.5, depositGrowth: 2.1 },
-    { name: 'Truist Financial', ticker: 'TFC', provisions: 0.58, nplRatio: 0.72, loanGrowth: -2.1, depositGrowth: -1.4 },
-    { name: 'Charles Schwab', ticker: 'SCHW', provisions: 0.02, nplRatio: 0.05, loanGrowth: 4.8, depositGrowth: 8.1 },
-  ],
-  trends: [
-    { name: 'JPMorgan Chase', ticker: 'JPM', nimTrend: [{ quarter: 'Q1', value: 2.63 }, { quarter: 'Q2', value: 2.68 }, { quarter: 'Q3', value: 2.70 }, { quarter: 'Q4', value: 2.72 }], provisionTrend: [{ quarter: 'Q1', value: 2.31 }, { quarter: 'Q2', value: 2.48 }, { quarter: 'Q3', value: 2.62 }, { quarter: 'Q4', value: 2.76 }], tradingRevenueTrend: [{ quarter: 'Q1', value: 8.4 }, { quarter: 'Q2', value: 8.1 }, { quarter: 'Q3', value: 8.8 }, { quarter: 'Q4', value: 9.0 }] },
-    { name: 'Bank of America', ticker: 'BAC', nimTrend: [{ quarter: 'Q1', value: 2.33 }, { quarter: 'Q2', value: 2.25 }, { quarter: 'Q3', value: 2.20 }, { quarter: 'Q4', value: 2.19 }], provisionTrend: [{ quarter: 'Q1', value: 1.12 }, { quarter: 'Q2', value: 1.28 }, { quarter: 'Q3', value: 1.38 }, { quarter: 'Q4', value: 1.49 }], tradingRevenueTrend: [{ quarter: 'Q1', value: 5.0 }, { quarter: 'Q2', value: 4.8 }, { quarter: 'Q3', value: 5.2 }, { quarter: 'Q4', value: 5.3 }] },
-    { name: 'Citigroup', ticker: 'C', nimTrend: [{ quarter: 'Q1', value: 2.52 }, { quarter: 'Q2', value: 2.50 }, { quarter: 'Q3', value: 2.49 }, { quarter: 'Q4', value: 2.48 }], provisionTrend: [{ quarter: 'Q1', value: 1.82 }, { quarter: 'Q2', value: 2.01 }, { quarter: 'Q3', value: 2.22 }, { quarter: 'Q4', value: 2.42 }], tradingRevenueTrend: [{ quarter: 'Q1', value: 4.8 }, { quarter: 'Q2', value: 4.5 }, { quarter: 'Q3', value: 5.0 }, { quarter: 'Q4', value: 5.1 }] },
-    { name: 'Wells Fargo', ticker: 'WFC', nimTrend: [{ quarter: 'Q1', value: 2.92 }, { quarter: 'Q2', value: 2.88 }, { quarter: 'Q3', value: 2.84 }, { quarter: 'Q4', value: 2.81 }], provisionTrend: [{ quarter: 'Q1', value: 0.94 }, { quarter: 'Q2', value: 1.08 }, { quarter: 'Q3', value: 1.18 }, { quarter: 'Q4', value: 1.28 }], tradingRevenueTrend: [{ quarter: 'Q1', value: 1.6 }, { quarter: 'Q2', value: 1.5 }, { quarter: 'Q3', value: 1.7 }, { quarter: 'Q4', value: 1.8 }] },
-    { name: 'Goldman Sachs', ticker: 'GS', nimTrend: [{ quarter: 'Q1', value: 0.0 }, { quarter: 'Q2', value: 0.0 }, { quarter: 'Q3', value: 0.0 }, { quarter: 'Q4', value: 0.0 }], provisionTrend: [{ quarter: 'Q1', value: 0.52 }, { quarter: 'Q2', value: 0.48 }, { quarter: 'Q3', value: 0.46 }, { quarter: 'Q4', value: 0.45 }], tradingRevenueTrend: [{ quarter: 'Q1', value: 7.2 }, { quarter: 'Q2', value: 7.0 }, { quarter: 'Q3', value: 7.6 }, { quarter: 'Q4', value: 7.8 }] },
-    { name: 'Morgan Stanley', ticker: 'MS', nimTrend: [{ quarter: 'Q1', value: 0.0 }, { quarter: 'Q2', value: 0.0 }, { quarter: 'Q3', value: 0.0 }, { quarter: 'Q4', value: 0.0 }], provisionTrend: [{ quarter: 'Q1', value: 0.22 }, { quarter: 'Q2', value: 0.19 }, { quarter: 'Q3', value: 0.17 }, { quarter: 'Q4', value: 0.16 }], tradingRevenueTrend: [{ quarter: 'Q1', value: 5.2 }, { quarter: 'Q2', value: 5.0 }, { quarter: 'Q3', value: 5.4 }, { quarter: 'Q4', value: 5.6 }] },
-  ],
-};
-
 // ── Color helpers ──
 
 function beatMissColor(beat: boolean): string {
@@ -563,10 +503,10 @@ export function BankEarningsPanel() {
   const { data: rawData, isLoading, refetch } = useBankEarnings();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
 
-  const data: BankEarningsData = (rawData as BankEarningsData) || FALLBACK_DATA;
+  const data = rawData as BankEarningsData | undefined;
 
-  const beatCount = data.overview.filter(b => b.beat).length;
-  const totalCount = data.overview.length;
+  const beatCount = (data?.overview ?? []).filter(b => b.beat).length;
+  const totalCount = data?.overview?.length ?? 0;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -579,7 +519,7 @@ export function BankEarningsPanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider border ${
+          {totalCount > 0 && <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider border ${
             beatCount / totalCount >= 0.7
               ? 'text-green-400 bg-green-500/10 border-green-500/30'
               : beatCount / totalCount >= 0.5
@@ -587,7 +527,7 @@ export function BankEarningsPanel() {
                 : 'text-red-400 bg-red-500/10 border-red-500/30'
           }`}>
             {beatCount}/{totalCount} Beat
-          </span>
+          </span>}
           <button
             onClick={() => refetch()}
             className="p-1 text-neutral-500 hover:text-blue-400 transition-colors"
@@ -615,7 +555,7 @@ export function BankEarningsPanel() {
           ))}
         </div>
         <div className="px-2 py-1 text-[7px] font-mono text-neutral-600">
-          {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {data?.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
         </div>
       </div>
 
@@ -627,7 +567,7 @@ export function BankEarningsPanel() {
           </div>
         )}
 
-        {!rawData && !isLoading && !data && (
+        {!isLoading && !data && (
           <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
             No data available
           </div>
@@ -635,11 +575,11 @@ export function BankEarningsPanel() {
 
         {data && (
           <>
-            {activeTab === 'overview' && <OverviewTab banks={data.overview} />}
-            {activeTab === 'capital' && <CapitalTab banks={data.capital} />}
-            {activeTab === 'trading' && <TradingTab banks={data.trading} />}
-            {activeTab === 'credit' && <CreditTab banks={data.credit} />}
-            {activeTab === 'trends' && <TrendsTab banks={data.trends} />}
+            {activeTab === 'overview' && <OverviewTab banks={data.overview ?? []} />}
+            {activeTab === 'capital' && <CapitalTab banks={data.capital ?? []} />}
+            {activeTab === 'trading' && <TradingTab banks={data.trading ?? []} />}
+            {activeTab === 'credit' && <CreditTab banks={data.credit ?? []} />}
+            {activeTab === 'trends' && <TrendsTab banks={data.trends ?? []} />}
           </>
         )}
       </div>

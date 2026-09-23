@@ -2,273 +2,6 @@ import { useState } from 'react';
 import { useBankStressTest } from '../../api/hooks/use-bank-stress-test';
 import { ShieldCheck, RefreshCw } from 'lucide-react';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  framework: 'Dodd-Frank Act Stress Test (DFAST)',
-  scenario: 'Severely Adverse',
-  asOfDate: '2026-Q1',
-  overview: {
-    participatingBanks: 23,
-    aggregateShortfall: 2.8,
-    baselineCET1: 12.4,
-    stressedCET1: 8.1,
-    drawdown: -4.3,
-  },
-  banks: [
-    {
-      name: 'JPMorgan Chase',
-      ticker: 'JPM',
-      country: 'US',
-      flag: '\u{1F1FA}\u{1F1F8}',
-      totalAssets: 3950,
-      baselineCET1: 12.5,
-      adverseCET1: 10.8,
-      severelyAdverseCET1: 9.2,
-      capitalBuffer: 2.7,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 48.2, tradingLosses: 12.7, operationalLosses: 5.1, otherLosses: 3.4 },
-        loanLossRate: 5.8,
-        minCET1Path: [12.5, 11.8, 10.9, 9.7, 9.2, 9.5],
-      },
-    },
-    {
-      name: 'Bank of America',
-      ticker: 'BAC',
-      country: 'US',
-      flag: '\u{1F1FA}\u{1F1F8}',
-      totalAssets: 3260,
-      baselineCET1: 11.8,
-      adverseCET1: 10.1,
-      severelyAdverseCET1: 8.6,
-      capitalBuffer: 2.1,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 42.1, tradingLosses: 9.8, operationalLosses: 4.6, otherLosses: 2.9 },
-        loanLossRate: 6.1,
-        minCET1Path: [11.8, 11.1, 10.2, 9.1, 8.6, 8.9],
-      },
-    },
-    {
-      name: 'Citigroup',
-      ticker: 'C',
-      country: 'US',
-      flag: '\u{1F1FA}\u{1F1F8}',
-      totalAssets: 2420,
-      baselineCET1: 13.1,
-      adverseCET1: 11.2,
-      severelyAdverseCET1: 9.8,
-      capitalBuffer: 3.3,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 35.6, tradingLosses: 10.3, operationalLosses: 3.8, otherLosses: 2.5 },
-        loanLossRate: 5.4,
-        minCET1Path: [13.1, 12.4, 11.5, 10.3, 9.8, 10.1],
-      },
-    },
-    {
-      name: 'Wells Fargo',
-      ticker: 'WFC',
-      country: 'US',
-      flag: '\u{1F1FA}\u{1F1F8}',
-      totalAssets: 1920,
-      baselineCET1: 10.6,
-      adverseCET1: 8.9,
-      severelyAdverseCET1: 7.1,
-      capitalBuffer: 0.6,
-      result: 'CONDITIONAL',
-      detail: {
-        stressedLosses: { creditLosses: 31.8, tradingLosses: 4.2, operationalLosses: 3.9, otherLosses: 2.1 },
-        loanLossRate: 6.8,
-        minCET1Path: [10.6, 9.7, 8.8, 7.5, 7.1, 7.3],
-      },
-    },
-    {
-      name: 'Goldman Sachs',
-      ticker: 'GS',
-      country: 'US',
-      flag: '\u{1F1FA}\u{1F1F8}',
-      totalAssets: 1630,
-      baselineCET1: 14.8,
-      adverseCET1: 12.6,
-      severelyAdverseCET1: 10.4,
-      capitalBuffer: 3.9,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 18.4, tradingLosses: 15.6, operationalLosses: 2.9, otherLosses: 3.7 },
-        loanLossRate: 4.2,
-        minCET1Path: [14.8, 13.9, 12.8, 11.1, 10.4, 10.8],
-      },
-    },
-    {
-      name: 'Morgan Stanley',
-      ticker: 'MS',
-      country: 'US',
-      flag: '\u{1F1FA}\u{1F1F8}',
-      totalAssets: 1190,
-      baselineCET1: 15.2,
-      adverseCET1: 13.1,
-      severelyAdverseCET1: 11.0,
-      capitalBuffer: 4.5,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 12.1, tradingLosses: 11.8, operationalLosses: 2.3, otherLosses: 2.6 },
-        loanLossRate: 3.9,
-        minCET1Path: [15.2, 14.3, 13.2, 11.8, 11.0, 11.4],
-      },
-    },
-    {
-      name: 'HSBC Holdings',
-      ticker: 'HSBC',
-      country: 'GB',
-      flag: '\u{1F1EC}\u{1F1E7}',
-      totalAssets: 2980,
-      baselineCET1: 14.1,
-      adverseCET1: 11.9,
-      severelyAdverseCET1: 9.6,
-      capitalBuffer: 3.1,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 39.8, tradingLosses: 8.7, operationalLosses: 4.1, otherLosses: 3.2 },
-        loanLossRate: 5.6,
-        minCET1Path: [14.1, 13.2, 12.1, 10.4, 9.6, 10.0],
-      },
-    },
-    {
-      name: 'Deutsche Bank',
-      ticker: 'DB',
-      country: 'DE',
-      flag: '\u{1F1E9}\u{1F1EA}',
-      totalAssets: 1540,
-      baselineCET1: 13.4,
-      adverseCET1: 10.7,
-      severelyAdverseCET1: 8.2,
-      capitalBuffer: 1.7,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 22.6, tradingLosses: 9.4, operationalLosses: 4.8, otherLosses: 2.8 },
-        loanLossRate: 6.3,
-        minCET1Path: [13.4, 12.3, 11.0, 9.2, 8.2, 8.6],
-      },
-    },
-    {
-      name: 'BNP Paribas',
-      ticker: 'BNP',
-      country: 'FR',
-      flag: '\u{1F1EB}\u{1F1F7}',
-      totalAssets: 2740,
-      baselineCET1: 12.8,
-      adverseCET1: 10.5,
-      severelyAdverseCET1: 8.4,
-      capitalBuffer: 1.9,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 36.2, tradingLosses: 7.9, operationalLosses: 3.5, otherLosses: 2.4 },
-        loanLossRate: 5.9,
-        minCET1Path: [12.8, 11.9, 10.8, 9.2, 8.4, 8.8],
-      },
-    },
-    {
-      name: 'UBS Group',
-      ticker: 'UBS',
-      country: 'CH',
-      flag: '\u{1F1E8}\u{1F1ED}',
-      totalAssets: 1680,
-      baselineCET1: 14.3,
-      adverseCET1: 12.0,
-      severelyAdverseCET1: 9.9,
-      capitalBuffer: 3.4,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 19.4, tradingLosses: 10.2, operationalLosses: 3.1, otherLosses: 2.7 },
-        loanLossRate: 4.8,
-        minCET1Path: [14.3, 13.4, 12.2, 10.7, 9.9, 10.3],
-      },
-    },
-    {
-      name: 'Barclays',
-      ticker: 'BCS',
-      country: 'GB',
-      flag: '\u{1F1EC}\u{1F1E7}',
-      totalAssets: 1560,
-      baselineCET1: 13.6,
-      adverseCET1: 10.8,
-      severelyAdverseCET1: 8.0,
-      capitalBuffer: 1.5,
-      result: 'PASS',
-      detail: {
-        stressedLosses: { creditLosses: 24.1, tradingLosses: 8.5, operationalLosses: 3.7, otherLosses: 2.3 },
-        loanLossRate: 6.5,
-        minCET1Path: [13.6, 12.5, 11.1, 9.0, 8.0, 8.4],
-      },
-    },
-    {
-      name: 'Societe Generale',
-      ticker: 'GLE',
-      country: 'FR',
-      flag: '\u{1F1EB}\u{1F1F7}',
-      totalAssets: 1480,
-      baselineCET1: 13.0,
-      adverseCET1: 10.2,
-      severelyAdverseCET1: 7.4,
-      capitalBuffer: 0.9,
-      result: 'CONDITIONAL',
-      detail: {
-        stressedLosses: { creditLosses: 21.3, tradingLosses: 7.8, operationalLosses: 3.4, otherLosses: 2.1 },
-        loanLossRate: 6.9,
-        minCET1Path: [13.0, 11.8, 10.4, 8.3, 7.4, 7.7],
-      },
-    },
-    {
-      name: 'Credit Agricole',
-      ticker: 'ACA',
-      country: 'FR',
-      flag: '\u{1F1EB}\u{1F1F7}',
-      totalAssets: 2310,
-      baselineCET1: 11.2,
-      adverseCET1: 8.6,
-      severelyAdverseCET1: 6.1,
-      capitalBuffer: -0.4,
-      result: 'FAIL',
-      detail: {
-        stressedLosses: { creditLosses: 33.7, tradingLosses: 5.4, operationalLosses: 4.2, otherLosses: 2.8 },
-        loanLossRate: 7.4,
-        minCET1Path: [11.2, 10.0, 8.5, 6.8, 6.1, 6.3],
-      },
-    },
-  ],
-  scenarioAssumptions: [
-    { metric: 'Real GDP Decline (Peak-to-Trough)', us: '-6.5%', eu: '-5.8%', global: '-4.2%' },
-    { metric: 'Unemployment Rate (Peak)', us: '10.8%', eu: '12.4%', global: '9.6%' },
-    { metric: 'Equity Market Decline', us: '-55%', eu: '-48%', global: '-50%' },
-    { metric: 'Housing Price Decline', us: '-28%', eu: '-22%', global: '-20%' },
-    { metric: 'CRE Price Decline', us: '-40%', eu: '-35%', global: '-32%' },
-    { metric: 'BBB Credit Spread Widening', us: '+450bp', eu: '+380bp', global: '+400bp' },
-    { metric: '10Y Treasury Yield', us: '0.8%', eu: '-0.3%', global: '0.5%' },
-    { metric: 'VIX Peak', us: '70', eu: 'N/A', global: 'N/A' },
-  ],
-  lossDistribution: [
-    { category: 'First Lien Mortgages', totalLosses: 38.2, lossRate: 3.8, contribution: 14.1 },
-    { category: 'Junior Liens / HELOCs', totalLosses: 12.6, lossRate: 8.2, contribution: 4.7 },
-    { category: 'Commercial & Industrial', totalLosses: 52.8, lossRate: 7.1, contribution: 19.5 },
-    { category: 'Commercial Real Estate', totalLosses: 45.3, lossRate: 9.4, contribution: 16.7 },
-    { category: 'Credit Cards', totalLosses: 41.7, lossRate: 14.6, contribution: 15.4 },
-    { category: 'Other Consumer', totalLosses: 22.4, lossRate: 6.3, contribution: 8.3 },
-    { category: 'Trading & Counterparty', totalLosses: 38.9, lossRate: 4.5, contribution: 14.4 },
-    { category: 'Other / Operational', totalLosses: 19.1, lossRate: 2.1, contribution: 7.1 },
-  ],
-  capitalRequirements: {
-    minimumCET1: 4.5,
-    capitalConservation: 2.5,
-    gSIBSurcharge: 1.5,
-    countercyclical: 0.0,
-    scb: 2.5,
-    totalRequired: 6.5,
-    systemMin: 11.0,
-  },
-};
-
 // ── Helpers ──
 
 function resultBadgeStyle(result: string): string {
@@ -299,10 +32,10 @@ function fmtAssets(n: number): string {
 
 export function BankStressTestPanel() {
   const { data: rawData, isLoading, refetch } = useBankStressTest();
-  const data = rawData || FALLBACK_DATA;
+  const data = rawData;
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
 
-  const selectedBank = selectedIdx !== null ? data.banks[selectedIdx] : null;
+  const selectedBank = selectedIdx !== null ? data?.banks?.[selectedIdx] : null;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -314,15 +47,15 @@ export function BankStressTestPanel() {
             Bank Stress Test
           </span>
           <span className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
-            {data.framework}
+            {data?.framework}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[7px] font-mono font-bold text-violet-400/70 uppercase px-1.5 py-0.5 bg-violet-400/10 border border-violet-400/30">
+          {data?.scenario && <span className="text-[7px] font-mono font-bold text-violet-400/70 uppercase px-1.5 py-0.5 bg-violet-400/10 border border-violet-400/30">
             {data.scenario}
-          </span>
+          </span>}
           <span className="text-[7px] font-mono text-neutral-600">
-            {data.asOfDate}
+            {data?.asOfDate}
           </span>
           <button
             onClick={() => refetch()}
@@ -340,7 +73,7 @@ export function BankStressTestPanel() {
           </div>
         )}
 
-        {!isLoading && !rawData && !data && (
+        {!isLoading && !data && (
           <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
             No data available
           </div>
@@ -348,16 +81,16 @@ export function BankStressTestPanel() {
 
         {data && (
           <>
-            <OverviewBar overview={data.overview} />
+            {data.overview && <OverviewBar overview={data.overview} />}
             <BankResultsTable
-              banks={data.banks}
+              banks={data.banks ?? []}
               selectedIdx={selectedIdx}
               onSelect={setSelectedIdx}
             />
-            {selectedBank && <BankDetail bank={selectedBank} />}
-            <ScenarioAssumptions assumptions={data.scenarioAssumptions} />
-            <LossDistribution losses={data.lossDistribution} />
-            <CapitalRequirements requirements={data.capitalRequirements} />
+            {selectedBank?.detail && <BankDetail bank={selectedBank} />}
+            <ScenarioAssumptions assumptions={data.scenarioAssumptions ?? []} />
+            <LossDistribution losses={data.lossDistribution ?? []} />
+            {data.capitalRequirements && <CapitalRequirements requirements={data.capitalRequirements} />}
           </>
         )}
       </div>

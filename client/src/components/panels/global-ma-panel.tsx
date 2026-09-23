@@ -63,266 +63,23 @@ function sectorColor(sector: string): string {
   return colors[sector] ?? 'rgba(255,255,255,0.3)';
 }
 
-// ── Fallback data ──
-
-const FALLBACK_DATA = {
-  timestamp: '2026-03-19T14:30:00Z',
-  summary: {
-    totalDeals: 1847,
-    totalValue: 2134.5,
-    avgDealSize: 1.16,
-    crossBorderPct: 38.2,
-    megaDeals: 23,
-    vsLastYearPct: 12.4,
-    ytdDealCount: 1847,
-    ytdTotalValue: 2134.5,
-  },
-  recentDeals: [
-    {
-      id: 'deal-001',
-      acquirer: 'Broadcom Inc.',
-      acquirerTicker: 'AVGO',
-      target: 'VMware Inc.',
-      targetTicker: 'VMW',
-      value: 69.0,
-      sector: 'Technology',
-      type: 'Strategic',
-      status: 'Completed',
-      premium: 44.6,
-      paymentType: 'Cash & Stock',
-      announcedDate: '2025-11-15',
-      expectedClose: '2026-04-30',
-      advisors: {
-        acquirerAdvisors: ['Goldman Sachs', 'Barclays'],
-        targetAdvisors: ['J.P. Morgan', 'Lazard'],
-      },
-      regulatoryStatus: 'All approvals received',
-    },
-    {
-      id: 'deal-002',
-      acquirer: 'Pfizer Inc.',
-      acquirerTicker: 'PFE',
-      target: 'Seagen Inc.',
-      targetTicker: 'SGEN',
-      value: 43.0,
-      sector: 'Healthcare',
-      type: 'Strategic',
-      status: 'Pending',
-      premium: 33.0,
-      paymentType: 'All Cash',
-      announcedDate: '2026-01-22',
-      expectedClose: '2026-06-15',
-      advisors: {
-        acquirerAdvisors: ['Morgan Stanley', 'Centerview'],
-        targetAdvisors: ['Goldman Sachs', 'Evercore'],
-      },
-      regulatoryStatus: 'EU Phase II review ongoing',
-    },
-    {
-      id: 'deal-003',
-      acquirer: 'Apollo Global',
-      acquirerTicker: 'APO',
-      target: 'Univision Holdings',
-      targetTicker: 'UVN',
-      value: 18.5,
-      sector: 'Media',
-      type: 'PE Buyout',
-      status: 'Announced',
-      premium: 28.7,
-      paymentType: 'All Cash',
-      announcedDate: '2026-03-10',
-      expectedClose: '2026-09-01',
-      advisors: {
-        acquirerAdvisors: ['Deutsche Bank', 'Moelis'],
-        targetAdvisors: ['Morgan Stanley'],
-      },
-      regulatoryStatus: 'FCC review pending',
-    },
-    {
-      id: 'deal-004',
-      acquirer: 'Exxon Mobil',
-      acquirerTicker: 'XOM',
-      target: 'Pioneer Natural Resources',
-      targetTicker: 'PXD',
-      value: 59.5,
-      sector: 'Energy',
-      type: 'Strategic',
-      status: 'Completed',
-      premium: 18.4,
-      paymentType: 'All Stock',
-      announcedDate: '2025-10-11',
-      expectedClose: '2026-02-28',
-      advisors: {
-        acquirerAdvisors: ['Citi', 'Evercore'],
-        targetAdvisors: ['J.P. Morgan', 'Goldman Sachs'],
-      },
-      regulatoryStatus: 'FTC cleared with conditions',
-    },
-    {
-      id: 'deal-005',
-      acquirer: 'KKR & Co.',
-      acquirerTicker: 'KKR',
-      target: 'Epicor Software',
-      targetTicker: 'EPOR',
-      value: 9.2,
-      sector: 'Technology',
-      type: 'PE Buyout',
-      status: 'Pending',
-      premium: 35.1,
-      paymentType: 'All Cash',
-      announcedDate: '2026-02-18',
-      expectedClose: '2026-07-01',
-      advisors: {
-        acquirerAdvisors: ['Jefferies', 'William Blair'],
-        targetAdvisors: ['Qatalyst Partners'],
-      },
-      regulatoryStatus: 'HSR filing submitted',
-    },
-    {
-      id: 'deal-006',
-      acquirer: 'Johnson & Johnson',
-      acquirerTicker: 'JNJ',
-      target: 'Shockwave Medical',
-      targetTicker: 'SWAV',
-      value: 13.1,
-      sector: 'Healthcare',
-      type: 'Strategic',
-      status: 'Announced',
-      premium: 26.3,
-      paymentType: 'All Cash',
-      announcedDate: '2026-03-05',
-      expectedClose: '2026-08-15',
-      advisors: {
-        acquirerAdvisors: ['Goldman Sachs'],
-        targetAdvisors: ['Centerview', 'Lazard'],
-      },
-      regulatoryStatus: 'Antitrust review initiated',
-    },
-    {
-      id: 'deal-007',
-      acquirer: 'Blackstone Inc.',
-      acquirerTicker: 'BX',
-      target: 'Emerson Climate Tech',
-      targetTicker: 'EMR-CT',
-      value: 14.0,
-      sector: 'Industrials',
-      type: 'PE Buyout',
-      status: 'Completed',
-      premium: 22.0,
-      paymentType: 'All Cash',
-      announcedDate: '2025-09-20',
-      expectedClose: '2026-01-31',
-      advisors: {
-        acquirerAdvisors: ['Morgan Stanley'],
-        targetAdvisors: ['J.P. Morgan', 'Barclays'],
-      },
-      regulatoryStatus: 'All approvals received',
-    },
-    {
-      id: 'deal-008',
-      acquirer: 'Microsoft Corp.',
-      acquirerTicker: 'MSFT',
-      target: 'Nuance Communications',
-      targetTicker: 'NUAN',
-      value: 19.7,
-      sector: 'Technology',
-      type: 'Strategic',
-      status: 'Hostile',
-      premium: 52.3,
-      paymentType: 'All Cash',
-      announcedDate: '2026-02-01',
-      expectedClose: '2026-10-01',
-      advisors: {
-        acquirerAdvisors: ['Goldman Sachs', 'Allen & Co.'],
-        targetAdvisors: ['Lazard', 'Evercore'],
-      },
-      regulatoryStatus: 'Target board reviewing poison pill',
-    },
-    {
-      id: 'deal-009',
-      acquirer: 'Chevron Corp.',
-      acquirerTicker: 'CVX',
-      target: 'Hess Corp.',
-      targetTicker: 'HES',
-      value: 53.0,
-      sector: 'Energy',
-      type: 'Strategic',
-      status: 'Terminated',
-      premium: 10.2,
-      paymentType: 'All Stock',
-      announcedDate: '2025-08-01',
-      expectedClose: null,
-      advisors: {
-        acquirerAdvisors: ['Evercore'],
-        targetAdvisors: ['Goldman Sachs', 'J.P. Morgan'],
-      },
-      regulatoryStatus: 'Terminated due to arbitration dispute',
-    },
-    {
-      id: 'deal-010',
-      acquirer: 'Brookfield Asset Mgmt',
-      acquirerTicker: 'BAM',
-      target: 'Origin Energy',
-      targetTicker: 'ORG.AX',
-      value: 12.3,
-      sector: 'Energy',
-      type: 'PE Buyout',
-      status: 'Pending',
-      premium: 19.8,
-      paymentType: 'All Cash',
-      announcedDate: '2026-01-15',
-      expectedClose: '2026-06-30',
-      advisors: {
-        acquirerAdvisors: ['Barclays', 'Macquarie'],
-        targetAdvisors: ['UBS', 'Greenhill'],
-      },
-      regulatoryStatus: 'FIRB approval pending',
-    },
-  ],
-  sectorBreakdown: [
-    { sector: 'Technology', dealCount: 412, totalValue: 587.3, avgPremium: 38.2, avgEvEbitda: 22.4 },
-    { sector: 'Healthcare', dealCount: 298, totalValue: 423.1, avgPremium: 31.5, avgEvEbitda: 18.7 },
-    { sector: 'Energy', dealCount: 187, totalValue: 312.6, avgPremium: 16.8, avgEvEbitda: 8.2 },
-    { sector: 'Financials', dealCount: 203, totalValue: 278.4, avgPremium: 22.1, avgEvEbitda: 12.5 },
-    { sector: 'Industrials', dealCount: 176, totalValue: 198.7, avgPremium: 24.6, avgEvEbitda: 14.3 },
-    { sector: 'Consumer', dealCount: 158, totalValue: 145.2, avgPremium: 29.3, avgEvEbitda: 16.1 },
-    { sector: 'Media', dealCount: 112, totalValue: 98.4, avgPremium: 33.7, avgEvEbitda: 19.8 },
-    { sector: 'Real Estate', dealCount: 89, totalValue: 54.6, avgPremium: 12.4, avgEvEbitda: 20.1 },
-    { sector: 'Telecom', dealCount: 72, totalValue: 36.2, avgPremium: 20.9, avgEvEbitda: 7.6 },
-  ],
-  advisoryLeagueTables: [
-    { rank: 1, advisor: 'Goldman Sachs', dealCount: 187, value: 412.3, marketSharePct: 19.3 },
-    { rank: 2, advisor: 'J.P. Morgan', dealCount: 172, value: 389.7, marketSharePct: 18.3 },
-    { rank: 3, advisor: 'Morgan Stanley', dealCount: 156, value: 342.1, marketSharePct: 16.0 },
-    { rank: 4, advisor: 'Evercore', dealCount: 98, value: 201.4, marketSharePct: 9.4 },
-    { rank: 5, advisor: 'Lazard', dealCount: 87, value: 178.6, marketSharePct: 8.4 },
-    { rank: 6, advisor: 'Barclays', dealCount: 82, value: 156.2, marketSharePct: 7.3 },
-    { rank: 7, advisor: 'Citi', dealCount: 79, value: 143.8, marketSharePct: 6.7 },
-    { rank: 8, advisor: 'Centerview Partners', dealCount: 64, value: 112.5, marketSharePct: 5.3 },
-    { rank: 9, advisor: 'Jefferies', dealCount: 58, value: 87.3, marketSharePct: 4.1 },
-    { rank: 10, advisor: 'Moelis & Co.', dealCount: 45, value: 67.8, marketSharePct: 3.2 },
-  ],
-  regionalActivity: [
-    { region: 'North America', dealCount: 742, value: 987.3, topDeal: 'AVGO/VMW $69B', crossBorderPct: 22.1 },
-    { region: 'Europe', dealCount: 398, value: 412.6, topDeal: 'Vodafone/Three UK $19B', crossBorderPct: 48.3 },
-    { region: 'Asia-Pacific', dealCount: 312, value: 298.4, topDeal: 'BAM/ORG.AX $12.3B', crossBorderPct: 41.7 },
-    { region: 'Middle East', dealCount: 87, value: 156.2, topDeal: 'ADNOC/Covestro $12.5B', crossBorderPct: 62.4 },
-    { region: 'Latin America', dealCount: 65, value: 43.8, topDeal: 'Nubank/Creditas $3.2B', crossBorderPct: 55.1 },
-    { region: 'Africa', dealCount: 28, value: 12.1, topDeal: 'MTN/Telkom SA $2.1B', crossBorderPct: 71.4 },
-  ],
-};
-
 // ── Main Panel ──
 
 export function GlobalMAPanel() {
   const { data: hookData, isLoading, refetch } = useGlobalMA();
-  const data = hookData ?? FALLBACK_DATA;
+  const data = hookData;
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
 
   const selectedDeal = useMemo(() => {
     if (!selectedDealId) return null;
-    return data.recentDeals.find((d: any) => d.id === selectedDealId) ?? null;
+    return data?.recentDeals?.find((d: any) => d.id === selectedDealId) ?? null;
   }, [data, selectedDealId]);
+
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">{isLoading ? 'Loading...' : 'No data available'}</div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden font-mono text-[9px]">
@@ -335,8 +92,8 @@ export function GlobalMAPanel() {
           </span>
         </div>
         <div className="flex items-center gap-3 text-[8px] text-neutral-400">
-          <span>YTD <span className="text-rose-400 font-bold">{data.summary.ytdDealCount.toLocaleString()}</span> deals</span>
-          <span>Total <span className="text-rose-400 font-bold">{fmtValue(data.summary.ytdTotalValue)}</span></span>
+          <span>YTD <span className="text-rose-400 font-bold">{data.summary?.ytdDealCount?.toLocaleString() ?? '--'}</span> deals</span>
+          <span>Total <span className="text-rose-400 font-bold">{data.summary?.ytdTotalValue != null ? fmtValue(data.summary.ytdTotalValue) : '--'}</span></span>
           <button
             onClick={() => refetch()}
             className="text-neutral-500 hover:text-rose-400 transition-colors"
@@ -352,7 +109,7 @@ export function GlobalMAPanel() {
       </div>
 
       {/* Summary Stats Bar */}
-      <SummaryStatsBar summary={data.summary} />
+      {data.summary && <SummaryStatsBar summary={data.summary} />}
 
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
@@ -360,10 +117,10 @@ export function GlobalMAPanel() {
           <DealDetailView deal={selectedDeal} onBack={() => setSelectedDealId(null)} />
         ) : (
           <>
-            <RecentDealsTable deals={data.recentDeals} onSelectDeal={setSelectedDealId} />
-            <SectorBreakdownSection sectors={data.sectorBreakdown} />
-            <AdvisoryLeagueTable advisors={data.advisoryLeagueTables} />
-            <RegionalActivitySection regions={data.regionalActivity} />
+            <RecentDealsTable deals={data.recentDeals ?? []} onSelectDeal={setSelectedDealId} />
+            <SectorBreakdownSection sectors={data.sectorBreakdown ?? []} />
+            <AdvisoryLeagueTable advisors={data.advisoryLeagueTables ?? []} />
+            <RegionalActivitySection regions={data.regionalActivity ?? []} />
           </>
         )}
       </div>

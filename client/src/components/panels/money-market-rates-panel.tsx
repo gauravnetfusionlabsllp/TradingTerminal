@@ -1,63 +1,6 @@
 import { Landmark, RefreshCw } from 'lucide-react';
 import { useMoneyMarketRates } from '../../api/hooks/use-money-market-rates';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  asOf: '2026-03-19T15:30:00Z',
-  fedFundsTarget: { lower: 4.25, upper: 4.50 },
-  overnightRates: [
-    { name: 'SOFR', rate: 4.30, change: -0.2, prior: 4.32, percentile1Y: 62 },
-    { name: 'EFFR', rate: 4.33, change: 0.0, prior: 4.33, percentile1Y: 55 },
-    { name: 'OBFR', rate: 4.32, change: -0.1, prior: 4.33, percentile1Y: 58 },
-    { name: 'TGCR', rate: 4.29, change: -0.3, prior: 4.32, percentile1Y: 60 },
-    { name: 'BGCR', rate: 4.30, change: -0.1, prior: 4.31, percentile1Y: 61 },
-  ],
-  tbillYields: [
-    { tenor: '4W', yield: 4.28, discountRate: 4.22, investmentRate: 4.31, change: -0.5 },
-    { tenor: '8W', yield: 4.30, discountRate: 4.24, investmentRate: 4.34, change: -0.3 },
-    { tenor: '13W', yield: 4.32, discountRate: 4.25, investmentRate: 4.37, change: 0.2 },
-    { tenor: '17W', yield: 4.33, discountRate: 4.26, investmentRate: 4.38, change: 0.4 },
-    { tenor: '26W', yield: 4.31, discountRate: 4.23, investmentRate: 4.38, change: -0.8 },
-    { tenor: '52W', yield: 4.18, discountRate: 4.02, investmentRate: 4.30, change: -1.2 },
-  ],
-  repoMarket: {
-    overnightRepo: 4.30,
-    overnightRepoChange: -0.2,
-    termRepos: [
-      { tenor: '1W', rate: 4.31 },
-      { tenor: '2W', rate: 4.32 },
-      { tenor: '1M', rate: 4.33 },
-      { tenor: '3M', rate: 4.30 },
-    ],
-    rrpVolume: 148.5,
-    rrpCounterparties: 52,
-    rrpRate: 4.25,
-  },
-  commercialPaper: [
-    { name: 'AA Financial CP', tenors: [{ tenor: 'O/N', rate: 4.35 }, { tenor: '1M', rate: 4.38 }, { tenor: '3M', rate: 4.40 }] },
-    { name: 'AA Non-Fin CP', tenors: [{ tenor: 'O/N', rate: 4.37 }, { tenor: '1M', rate: 4.42 }, { tenor: '3M', rate: 4.45 }] },
-    { name: 'Certificates of Deposit', tenors: [{ tenor: '1M', rate: 4.36 }, { tenor: '3M', rate: 4.39 }, { tenor: '6M', rate: 4.35 }] },
-  ],
-  globalReferenceRates: [
-    { name: 'SOFR 1M Term', rate: 4.31, change: -0.3, currency: 'USD' },
-    { name: 'SOFR 3M Term', rate: 4.28, change: -0.5, currency: 'USD' },
-    { name: 'SOFR 6M Term', rate: 4.22, change: -1.1, currency: 'USD' },
-    { name: 'EURIBOR 3M', rate: 2.65, change: -0.8, currency: 'EUR' },
-    { name: 'EURIBOR 6M', rate: 2.58, change: -1.2, currency: 'EUR' },
-    { name: 'SONIA', rate: 4.45, change: 0.0, currency: 'GBP' },
-    { name: 'TONAR', rate: 0.23, change: 0.1, currency: 'JPY' },
-  ],
-  fedFundsFutures: [
-    { contract: 'Apr 2026', impliedRate: 4.34, cutProb: 12.5, hikeProb: 0.0, holdProb: 87.5 },
-    { contract: 'May 2026', impliedRate: 4.30, cutProb: 28.4, hikeProb: 0.0, holdProb: 71.6 },
-    { contract: 'Jun 2026', impliedRate: 4.22, cutProb: 54.8, hikeProb: 0.0, holdProb: 45.2 },
-    { contract: 'Jul 2026', impliedRate: 4.15, cutProb: 68.2, hikeProb: 0.0, holdProb: 31.8 },
-    { contract: 'Sep 2026', impliedRate: 4.02, cutProb: 82.6, hikeProb: 0.0, holdProb: 17.4 },
-    { contract: 'Dec 2026', impliedRate: 3.80, cutProb: 94.1, hikeProb: 0.0, holdProb: 5.9 },
-  ],
-};
-
 // ── Formatting helpers ──
 
 function fmtRate(n: number): string {
@@ -93,10 +36,10 @@ function probColor(prob: number): string {
 
 export function MoneyMarketRatesPanel() {
   const { data: rawData, isLoading, refetch } = useMoneyMarketRates();
-  const data = rawData || FALLBACK_DATA;
+  const data = rawData;
 
-  const sofrRate = data.overnightRates.find((r: any) => r.name === 'SOFR');
-  const effrRate = data.overnightRates.find((r: any) => r.name === 'EFFR');
+  const sofrRate = data?.overnightRates?.find((r: any) => r.name === 'SOFR');
+  const effrRate = data?.overnightRates?.find((r: any) => r.name === 'EFFR');
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -114,7 +57,7 @@ export function MoneyMarketRatesPanel() {
               SOFR {fmtRate(sofrRate.rate)}%
             </span>
           )}
-          {effrRate && (
+          {effrRate && data.fedFundsTarget && (
             <span className="px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider text-neutral-400 bg-neutral-500/10 border border-neutral-500/30">
               FF {fmtRate(data.fedFundsTarget.lower)}–{fmtRate(data.fedFundsTarget.upper)}%
             </span>
@@ -136,25 +79,29 @@ export function MoneyMarketRatesPanel() {
           </div>
         )}
 
+        {!isLoading && !data && (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+        )}
+
         {data && (
           <>
             {/* Section 1: Key Overnight Rates */}
-            <OvernightRatesSection rates={data.overnightRates} />
+            <OvernightRatesSection rates={data.overnightRates ?? []} />
 
             {/* Section 2: T-Bill Yields */}
-            <TBillYieldsSection yields={data.tbillYields} />
+            <TBillYieldsSection yields={data.tbillYields ?? []} />
 
             {/* Section 3: Repo Market */}
-            <RepoMarketSection repo={data.repoMarket} />
+            {data.repoMarket && <RepoMarketSection repo={data.repoMarket} />}
 
             {/* Section 4: Commercial Paper & CD Rates */}
-            <CommercialPaperSection instruments={data.commercialPaper} />
+            <CommercialPaperSection instruments={data.commercialPaper ?? []} />
 
             {/* Section 5: Global Reference Rates */}
-            <GlobalRatesSection rates={data.globalReferenceRates} />
+            <GlobalRatesSection rates={data.globalReferenceRates ?? []} />
 
             {/* Section 6: Fed Funds Futures */}
-            <FedFundsFuturesSection contracts={data.fedFundsFutures} />
+            <FedFundsFuturesSection contracts={data.fedFundsFutures ?? []} />
           </>
         )}
       </div>
@@ -272,7 +219,7 @@ function RepoMarketSection({ repo }: { repo: any }) {
 
       {/* Term repo rates */}
       <div className="flex gap-0 border-t border-border/20">
-        {repo.termRepos.map((tr: any) => (
+        {(repo.termRepos ?? []).map((tr: any) => (
           <div key={tr.tenor} className="flex-1 px-2 py-1 border-r border-border/20 last:border-r-0 hover:bg-amber-400/[0.02] transition-colors">
             <div className="text-[7px] font-bold uppercase tracking-wider text-neutral-500">{tr.tenor}</div>
             <div className="text-[9px] font-bold text-neutral-300 tabular-nums">{fmtRate(tr.rate)}%</div>

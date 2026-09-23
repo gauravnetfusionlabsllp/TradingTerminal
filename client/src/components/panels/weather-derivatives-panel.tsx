@@ -2,64 +2,6 @@ import { useWeatherDerivatives } from '../../api/hooks/use-weather-derivatives';
 import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw } from 'lucide-react';
 
-// ── Fallback Mock Data ──
-
-const FALLBACK_DATA = {
-  marketSummary: {
-    totalNotional: 2.84,
-    totalNotionalUnit: 'B USD',
-    activeContracts: 36200,
-    avgVolatility: 14.3,
-    dominantSeason: 'Heating' as const,
-    mostActiveCity: 'Chicago',
-    yoyGrowth: 15.2,
-    yoyGrowthUnit: '%',
-  },
-  hddCddContracts: [
-    { city: 'New York', type: 'HDD', month: 'Jan 2026', strike: 930, last: 958, change: 12.4, changePercent: 1.31, volume: 1340, openInterest: 4820, impliedTemp: 34.1 },
-    { city: 'Chicago', type: 'HDD', month: 'Jan 2026', strike: 1170, last: 1195, change: -8.2, changePercent: -0.68, volume: 1580, openInterest: 5210, impliedTemp: 26.4 },
-    { city: 'London', type: 'HDD', month: 'Jan 2026', strike: 750, last: 738, change: 5.6, changePercent: 0.76, volume: 980, openInterest: 3640, impliedTemp: 41.2 },
-    { city: 'Tokyo', type: 'HDD', month: 'Jan 2026', strike: 720, last: 705, change: -3.1, changePercent: -0.44, volume: 860, openInterest: 3180, impliedTemp: 42.3 },
-    { city: 'Frankfurt', type: 'HDD', month: 'Jan 2026', strike: 930, last: 945, change: 7.8, changePercent: 0.83, volume: 1120, openInterest: 4050, impliedTemp: 34.5 },
-    { city: 'Sydney', type: 'CDD', month: 'Jan 2026', strike: 210, last: 225, change: 4.2, changePercent: 1.90, volume: 640, openInterest: 2180, impliedTemp: 72.3 },
-    { city: 'Toronto', type: 'HDD', month: 'Jan 2026', strike: 1260, last: 1285, change: -11.5, changePercent: -0.89, volume: 1420, openInterest: 4980, impliedTemp: 23.5 },
-    { city: 'Houston', type: 'HDD', month: 'Jan 2026', strike: 390, last: 402, change: 6.1, changePercent: 1.54, volume: 750, openInterest: 2840, impliedTemp: 52.0 },
-  ],
-  seasonalPatterns: [
-    { month: 'Jan', avgHDD: 1050, avgCDD: 0, maxDeviation: 185, currentDeviation: 42.3, percentile: 62 },
-    { month: 'Feb', avgHDD: 920, avgCDD: 0, maxDeviation: 170, currentDeviation: -28.5, percentile: 38 },
-    { month: 'Mar', avgHDD: 680, avgCDD: 0, maxDeviation: 140, currentDeviation: 15.8, percentile: 55 },
-    { month: 'Apr', avgHDD: 350, avgCDD: 20, maxDeviation: 95, currentDeviation: -12.4, percentile: 44 },
-    { month: 'May', avgHDD: 100, avgCDD: 120, maxDeviation: 60, currentDeviation: 8.6, percentile: 58 },
-    { month: 'Jun', avgHDD: 0, avgCDD: 310, maxDeviation: 85, currentDeviation: 22.1, percentile: 67 },
-    { month: 'Jul', avgHDD: 0, avgCDD: 450, maxDeviation: 110, currentDeviation: -18.3, percentile: 41 },
-    { month: 'Aug', avgHDD: 0, avgCDD: 420, maxDeviation: 105, currentDeviation: 31.7, percentile: 72 },
-    { month: 'Sep', avgHDD: 40, avgCDD: 240, maxDeviation: 75, currentDeviation: -5.9, percentile: 48 },
-    { month: 'Oct', avgHDD: 280, avgCDD: 60, maxDeviation: 80, currentDeviation: 14.2, percentile: 61 },
-    { month: 'Nov', avgHDD: 620, avgCDD: 0, maxDeviation: 120, currentDeviation: -35.6, percentile: 32 },
-    { month: 'Dec', avgHDD: 950, avgCDD: 0, maxDeviation: 175, currentDeviation: 27.4, percentile: 59 },
-  ],
-  cityPricing: [
-    { city: 'New York', currentTemp: 35.2, normalTemp: 33.0, deviation: 2.2, hddPremium: 0.145, cddPremium: 0.112, volatility: 18.2, correlation: 0.68 },
-    { city: 'Chicago', currentTemp: 22.8, normalTemp: 26.0, deviation: -3.2, hddPremium: 0.178, cddPremium: 0.098, volatility: 20.5, correlation: 0.74 },
-    { city: 'London', currentTemp: 42.1, normalTemp: 40.0, deviation: 2.1, hddPremium: 0.132, cddPremium: 0.105, volatility: 15.8, correlation: 0.62 },
-    { city: 'Tokyo', currentTemp: 39.5, normalTemp: 41.0, deviation: -1.5, hddPremium: 0.125, cddPremium: 0.118, volatility: 14.2, correlation: 0.48 },
-    { city: 'Frankfurt', currentTemp: 31.8, normalTemp: 34.0, deviation: -2.2, hddPremium: 0.152, cddPremium: 0.108, volatility: 17.1, correlation: 0.65 },
-    { city: 'Sydney', currentTemp: 74.6, normalTemp: 72.0, deviation: 2.6, hddPremium: 0.098, cddPremium: 0.135, volatility: 12.4, correlation: 0.31 },
-    { city: 'Toronto', currentTemp: 19.4, normalTemp: 23.0, deviation: -3.6, hddPremium: 0.185, cddPremium: 0.092, volatility: 21.8, correlation: 0.76 },
-    { city: 'Houston', currentTemp: 55.3, normalTemp: 52.0, deviation: 3.3, hddPremium: 0.115, cddPremium: 0.142, volatility: 13.6, correlation: 0.42 },
-  ],
-  hedgingStrategies: [
-    { strategy: 'HDD Collar', notional: 5200000, premium: 128000, maxPayout: 18200000, breakeven: 125, daysToExpiry: 62, status: 'Active' },
-    { strategy: 'CDD Swap', notional: 7800000, premium: 142000, maxPayout: 21800000, breakeven: 155, daysToExpiry: 98, status: 'Active' },
-    { strategy: 'Seasonal Strip', notional: 11500000, premium: 368000, maxPayout: 46000000, breakeven: 180, daysToExpiry: 145, status: 'Quoted' },
-    { strategy: 'Basis Swap', notional: 3800000, premium: 57000, maxPayout: 8360000, breakeven: 108, daysToExpiry: 0, status: 'Expired' },
-    { strategy: 'Temperature Put', notional: 6400000, premium: 179000, maxPayout: 19200000, breakeven: 142, daysToExpiry: 34, status: 'Active' },
-    { strategy: 'Dual-Trigger', notional: 10800000, premium: 454000, maxPayout: 59400000, breakeven: 210, daysToExpiry: 78, status: 'Quoted' },
-  ],
-  generatedAt: new Date().toISOString(),
-};
-
 // ── Formatting helpers ──
 
 function fmtNum(n: number): string {
@@ -129,7 +71,7 @@ export function WeatherDerivativesPanel() {
   const { data: rawData, isLoading, refetch } = useWeatherDerivatives();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = (rawData as any) || FALLBACK_DATA;
+  const data = rawData as any;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -142,9 +84,9 @@ export function WeatherDerivativesPanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {data && (
+          {data?.marketSummary?.dominantSeason && (
             <span className="px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider text-teal-400 bg-teal-500/10 border border-teal-500/30">
-              {data.marketSummary?.dominantSeason || 'Heating'} Season
+              {data.marketSummary.dominantSeason} Season
             </span>
           )}
           <button

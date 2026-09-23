@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useT } from '../../i18n';
+import { LEGAL_URL } from '../../lib/legal';
 
-const CONSENT_KEY = 'tnt-cookie-consent';
+const CONSENT_KEY = 'sgfx-cookie-consent';
 
 export function CookieConsent() {
   const t = useT();
@@ -25,9 +26,9 @@ export function CookieConsent() {
       <div className="bg-panel border border-border px-4 py-3 flex items-center gap-3 text-[10px] font-mono text-neutral shadow-lg">
         <p className="flex-1 leading-relaxed">
           {t('cookieConsent')}{' '}
-          <a href="https://github.com/KoNananachan/Neuberg/blob/main/PRIVACY_POLICY.md" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{t('privacyPolicy')}</a>
+          <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{t('privacyPolicy')}</a>
           {' '}{t('and')}{' '}
-          <a href="https://github.com/KoNananachan/Neuberg/blob/main/TERMS_OF_SERVICE.md" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{t('termsOfService')}</a>.
+          <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{t('termsOfService')}</a>.
         </p>
         <button
           onClick={accept}

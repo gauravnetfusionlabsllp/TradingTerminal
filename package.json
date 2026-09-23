@@ -1,14 +1,9 @@
 {
-  "name": "trading-news-terminal",
+  "name": "sgfx-terminal",
   "version": "1.0.0",
-  "description": "AI-powered trading news terminal with real-time sentiment analysis, market data, and prediction markets",
+  "description": "SGFX Terminal — MT5 web trading terminal",
   "private": true,
   "license": "BUSL-1.1",
-  "author": "Bauhinia AI Limited",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/KoNananachan/Neuberg.git"
-  },
   "engines": {
     "node": ">=20.0.0"
   },

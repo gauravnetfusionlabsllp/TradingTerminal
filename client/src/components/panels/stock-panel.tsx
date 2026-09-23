@@ -1,18 +1,13 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { useStockDetail, useStockExtended, type StockProfile, type StockQuote, type ExtendedStockData, type InsiderTransaction } from '../../api/hooks/use-stocks';
-import { StockChart as ChartWithIndicators } from '../chart/stock-chart';
-import { useMt5Symbols, useMt5Quotes, type Mt5Timeframe } from '../../api/hooks/use-mt5';
+import { useEffect, useRef, useState } from 'react';
+import { useMt5Symbols, useMt5Quotes } from '../../api/hooks/use-mt5';
 import { fmtPrice } from '../trading/mt5-trading';
 import { SymbolPicker, tradeModeLabel } from '../trading/symbol-picker';
 import { useAuthStore } from '../../stores/use-auth-store';
 import { useAppStore } from '../../stores/use-app-store';
 import { useT, type TranslationKey } from '../../i18n';
-import { getLocalizedTitle } from '../../api/hooks/use-news';
 import { GlassCard } from '../common/glass-card';
-import { Sparkline } from '../common/sparkline';
 import { ConfirmDialog } from '../common/confirm-dialog';
-import { Search, X, TrendingUp, TrendingDown, ArrowLeft, Plus, FolderPlus, Newspaper, Clock, Grid3X3, List, Columns, Pin, Building2, Target, DollarSign, BarChart3, ExternalLink, Users, FileText, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { cleanTitle } from '../../utils/clean-title';
+import { Search, X, TrendingUp, TrendingDown, Plus, FolderPlus, Grid3X3, List, Columns } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { lazy, Suspense } from 'react';
 
@@ -24,7 +19,6 @@ export function StockPanel() {
   const user = useAuthStore((s) => s.user);
   const setLoginModalOpen = useAuthStore((s) => s.setLoginModalOpen);
   const stockPanelView = useAppStore((s) => s.stockPanelView);
-  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
   const setSelectedSymbol = useAppStore((s) => s.setSelectedSymbol);
 
   // Watchlist + chart are MT5 data scoped to the logged-in account
@@ -43,11 +37,7 @@ export function StockPanel() {
 
   return (
     <AnimatePresence mode="wait">
-      {stockPanelView === 'chart' && selectedSymbol ? (
-        <motion.div key="chart" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="h-full">
-          <StockChart symbol={selectedSymbol} onBack={() => setSelectedSymbol(null)} />
-        </motion.div>
-      ) : stockPanelView === 'heatmap' ? (
+      {stockPanelView === 'heatmap' ? (
         <motion.div key="heatmap" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="h-full">
           <HeatmapWrapper />
         </motion.div>
@@ -62,15 +52,6 @@ export function StockPanel() {
       )}
     </AnimatePresence>
   );
-}
-
-function fmtCompact(n: number | null | undefined): string {
-  if (n == null) return '--';
-  if (n >= 1e12) return `${(n / 1e12).toFixed(1)}T`;
-  if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`;
-  return n.toFixed(0);
 }
 
 function HeatmapWrapper() {
@@ -119,10 +100,7 @@ function WatchlistView({
   const { data: allowed } = useMt5Symbols();
   const [isAddingTab, setIsAddingTab] = useState(false);
   const [newTabName, setNewTabName] = useState('');
-  const [flashMap, setFlashMap] = useState<Record<string, 'up' | 'down'>>({});
   const [deleteTabTarget, setDeleteTabTarget] = useState<string | null>(null);
-
-  const prevPricesRef = useRef<Record<string, number>>({});
 
   const activeTab = useAppStore(s => s.activeWatchlistTab);
   const tabs = useAppStore(s => s.watchlistTabs);
@@ -133,6 +111,7 @@ function WatchlistView({
   const addSymbolToTab = useAppStore(s => s.addSymbolToTab);
   const removeSymbolFromTab = useAppStore(s => s.removeSymbolFromTab);
   const setStockPanelView = useAppStore(s => s.setStockPanelView);
+  const selectedSymbol = useAppStore(s => s.selectedSymbol);
 
   const TAB_KEYS: Record<string, TranslationKey> = { WATCHLIST: 'watchlist', HOLDING: 'holding' };
   const tabLabel = (tab: string) => TAB_KEYS[tab] ? t(TAB_KEYS[tab]) : tab;
@@ -146,25 +125,6 @@ function WatchlistView({
     .map(symbol => ({ symbol, tradeMode: modeBySymbol.get(symbol)! }));
 
   const { data: quotes } = useMt5Quotes(filteredItems.map(i => i.symbol));
-
-  // Price Flash detection (on bid). No terminal-log entry per change — at live FIX tick rates it would flood the log.
-  useEffect(() => {
-    if (!quotes) return;
-    const newFlashes: Record<string, 'up' | 'down'> = {};
-    for (const q of Object.values(quotes)) {
-      const prev = prevPricesRef.current[q.symbol];
-      if (prev !== undefined && prev !== q.bid) {
-        newFlashes[q.symbol] = q.bid > prev ? 'up' : 'down';
-      }
-      prevPricesRef.current[q.symbol] = q.bid;
-    }
-    if (Object.keys(newFlashes).length > 0) {
-      setFlashMap(newFlashes);
-      const timer = setTimeout(() => setFlashMap({}), 800);
-      return () => clearTimeout(timer);
-    }
-  }, [quotes]);
-
 
   const handleAddTab = () => {
     if (newTabName.trim()) {
@@ -187,7 +147,8 @@ function WatchlistView({
     }
   };
 
-  const gridCols = 'grid-cols-[1.4fr_0.9fr_0.9fr_0.7fr_0.8fr_36px]';
+  // Columns drop out as the panel narrows (container queries): SPREAD below 300px, MODE below 420px
+  const gridCols = 'grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)] @min-[300px]:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.7fr)] @min-[420px]:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,0.6fr)]';
 
   return (
     <GlassCard
@@ -261,7 +222,7 @@ function WatchlistView({
         )}
       </AnimatePresence>
 
-      <div className="px-4 py-3 border-b border-border/30 bg-black/20">
+      <div className="px-3 py-2 border-b border-border/30 bg-black/20">
         <SymbolPicker
           symbols={allItems}
           clearOnSelect
@@ -270,16 +231,15 @@ function WatchlistView({
         />
       </div>
 
-      <div className="overflow-auto flex-1 no-scrollbar">
+      <div className="@container overflow-auto flex-1 no-scrollbar">
         <div>
           {/* Header */}
-          <div className={`grid ${gridCols} px-3 py-1.5 border-b border-border/20 text-[8px] font-black text-neutral/50 uppercase tracking-[0.15em]`}>
+          <div className={`grid ${gridCols} gap-x-2 px-3 py-1.5 border-b border-border/20 text-[8px] font-black text-neutral/50 uppercase tracking-[0.15em]`}>
             <span>{t('asset')}</span>
             <span className="text-right">BID</span>
             <span className="text-right">ASK</span>
-            <span className="text-right">SPREAD</span>
-            <span className="text-right">MODE</span>
-            <span />
+            <span className="text-right hidden @min-[300px]:block">SPREAD</span>
+            <span className="text-right hidden @min-[420px]:block">MODE</span>
           </div>
           {/* Rows */}
           {filteredItems.map((item) => {
@@ -287,34 +247,30 @@ function WatchlistView({
             return (
               <div
                 key={item.symbol}
-                className={`grid ${gridCols} px-3 py-2 border-b border-border/5 hover:bg-accent/[0.03] cursor-pointer transition-all group items-center`}
+                className={`grid ${gridCols} gap-x-2 px-3 py-2 border-b border-border/5 cursor-pointer transition-colors group items-center ${item.symbol === selectedSymbol ? 'bg-accent/10 shadow-[inset_2px_0_0_var(--color-accent)]' : 'hover:bg-white/[0.03]'}`}
                 onClick={() => onSelect(item.symbol)}
               >
-                <div className="font-mono font-black text-white text-[12px] group-hover:text-cyan-300 transition-colors truncate">{item.symbol}</div>
-                <span className={`text-right font-mono text-[12px] text-bearish font-bold ${flashMap[item.symbol] === 'up' ? 'flash-up' : flashMap[item.symbol] === 'down' ? 'flash-down' : ''}`}>
-                  {q ? fmtPrice(q.bid) : '--'}
-                </span>
-                <span className="text-right font-mono text-[12px] text-bullish font-bold">
-                  {q ? fmtPrice(q.ask) : '--'}
-                </span>
-                <span className="text-right font-mono text-[10px] text-neutral/60">
-                  {q ? fmtPrice(q.ask - q.bid) : '--'}
-                </span>
-                <span className="text-right font-mono text-[9px] text-neutral/60 uppercase">
-                  {tradeModeLabel(item.tradeMode)}
-                </span>
-                <div className="flex items-center justify-end">
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="font-mono font-black text-white text-[12px] group-hover:text-cyan-300 transition-colors truncate">{item.symbol}</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       removeSymbolFromTab(item.symbol, activeTab);
                     }}
                     aria-label={`Remove ${item.symbol}`}
-                    className="text-neutral hover:text-bearish opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all p-1.5"
+                    className="shrink-0 text-neutral hover:text-bearish opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-3 h-3" />
                   </button>
                 </div>
+                <TickPrice value={q?.bid} />
+                <TickPrice value={q?.ask} />
+                <span className="text-right font-mono text-[10px] text-neutral/60 truncate hidden @min-[300px]:block">
+                  {q ? fmtPrice(q.ask - q.bid) : '--'}
+                </span>
+                <span className="text-right font-mono text-[9px] text-neutral/60 uppercase truncate hidden @min-[420px]:block">
+                  {tradeModeLabel(item.tradeMode)}
+                </span>
               </div>
             );
           })}
@@ -340,612 +296,29 @@ function WatchlistView({
   );
 }
 
-function StockChart({ symbol, onBack }: { symbol: string; onBack: () => void }) {
-  const t = useT();
-  const [tf, setTf] = useState<Mt5Timeframe>('M5');
-  const { data: quotes } = useMt5Quotes([symbol]);
-  const q = quotes?.[symbol];
-  const addChatContext = useAppStore((s) => s.addChatContext);
-  const handleAskAi = () => {
-    addChatContext({ type: 'chart', symbol, label: `${symbol} Chart` });
-  };
+/**
+ * Live price cell: coloured by last tick direction, soft wash (index.css .tick-price) restarts on every tick.
+ * Imperative on purpose — at FIX tick rates per-symbol React state/timers would churn and drop flashes.
+ */
+function TickPrice({ value }: { value?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const prev = useRef(value);
+  // Pad to the most decimals seen so trailing-zero ticks don't make the number jump width
+  const digits = useRef(0);
+  if (value !== undefined) digits.current = Math.max(digits.current, fmtPrice(value).split('.')[1]?.length ?? 0);
+
+  useEffect(() => {
+    const el = ref.current, p = prev.current;
+    prev.current = value;
+    if (!el || p === undefined || value === undefined || p === value) return;
+    el.dataset.tick = value > p ? 'up' : 'down';
+    el.getAnimations().forEach(a => { a.cancel(); a.play(); }); // restart even on same-direction ticks
+  }, [value]);
 
   return (
-    <GlassCard
-      title={
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-1 -ml-1 text-neutral hover:text-white transition-colors" aria-label={t('back')}>
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="font-mono font-black text-white">{symbol}</span>
-            {q && (
-              <span className="font-mono text-[11px]">
-                <span className="text-bearish">{fmtPrice(q.bid)}</span>
-                <span className="text-neutral/40"> / </span>
-                <span className="text-bullish">{fmtPrice(q.ask)}</span>
-              </span>
-            )}
-          </div>
-        </div>
-      }
-      headerRight={
-        <button
-          onClick={handleAskAi}
-          className="text-[9px] font-mono font-bold text-ai/70 hover:text-ai uppercase tracking-tighter px-1.5 py-0.5 border border-ai/20 hover:border-ai/50 transition-colors"
-          title={t('askAiChartTitle')}
-        >
-          {t('askAiChart')}
-        </button>
-      }
-      className="h-full"
-    >
-      <div className="flex-1 min-h-0">
-        <ChartWithIndicators symbol={symbol} timeframe={tf} onTimeframeChange={setTf} />
-      </div>
-    </GlassCard>
+    <span ref={ref} className="tick-price justify-self-end max-w-full truncate px-1 rounded-sm font-mono text-[11px] font-bold text-white tabular-nums">
+      {value !== undefined ? value.toFixed(digits.current) : '--'}
+    </span>
   );
 }
 
-// ── Bloomberg-style Fundamentals View ──
-function FundamentalsView({ quote: q, profile: p }: { quote: StockQuote | null | undefined; profile: StockProfile | null | undefined }) {
-  const t = useT();
-  return (
-    <div className="p-3 space-y-3">
-      {/* Company Info */}
-      {p && (p.sector || p.industry) && (
-        <Section icon={<Building2 className="w-3 h-3" />} title={t('companySection')}>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <KV label={t('sector')} value={p.sector} />
-            <KV label={t('industry')} value={p.industry} />
-            <KV label={t('employeesLabel')} value={p.employees != null ? formatCompact(p.employees) : null} />
-            <KV label={t('hqLabel')} value={p.city && p.country ? `${p.city}, ${p.country}` : p.country} />
-          </div>
-          {p.website && (
-            <a href={p.website} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-mono text-accent/70 hover:text-accent">
-              <ExternalLink className="w-2.5 h-2.5" />{p.website.replace(/^https?:\/\/(www\.)?/, '')}
-            </a>
-          )}
-          {p.description && (
-            <p className="mt-2 text-[9px] font-mono text-neutral/60 leading-relaxed line-clamp-4">
-              {p.description}
-            </p>
-          )}
-        </Section>
-      )}
-
-      {/* Analyst Targets */}
-      {p && p.targetMeanPrice != null && (
-        <Section icon={<Target className="w-3 h-3" />} title={t('analystConsensus')}>
-          <div className="grid grid-cols-3 gap-x-4 gap-y-1">
-            <KV label={t('targetLow')} value={`$${p.targetLowPrice?.toFixed(2)}`} />
-            <KV label={t('targetMean')} value={`$${p.targetMeanPrice?.toFixed(2)}`} accent />
-            <KV label={t('targetHigh')} value={`$${p.targetHighPrice?.toFixed(2)}`} />
-          </div>
-          {q?.price && p.targetMeanPrice && (
-            <div className="mt-2">
-              <TargetBar current={q.price} low={p.targetLowPrice} mean={p.targetMeanPrice} high={p.targetHighPrice} />
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
-            <KV label={t('recommendationLabel')} value={p.recommendationKey?.toUpperCase()} />
-            <KV label={t('numAnalysts')} value={p.numberOfAnalysts?.toString()} />
-          </div>
-        </Section>
-      )}
-
-      {/* Valuation */}
-      <Section icon={<DollarSign className="w-3 h-3" />} title={t('valuationSection')}>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-          <KV label={t('peTtm')} value={q?.pe != null ? q.pe.toFixed(2) : null} />
-          <KV label={t('peFwd')} value={q?.forwardPE != null ? q.forwardPE.toFixed(2) : null} />
-          <KV label={t('pbLabel')} value={q?.priceToBook != null ? q.priceToBook.toFixed(2) : null} />
-          <KV label={t('bookValueLabel')} value={q?.bookValue != null ? `$${q.bookValue.toFixed(2)}` : null} />
-          <KV label={t('epsTtm')} value={q?.eps != null ? `$${q.eps.toFixed(2)}` : null} />
-          <KV label={t('epsFwd')} value={q?.epsForward != null ? `$${q.epsForward.toFixed(2)}` : null} />
-        </div>
-      </Section>
-
-      {/* Trading Data */}
-      <Section icon={<BarChart3 className="w-3 h-3" />} title={t('tradingSection')}>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-          <KV label={t('openLabel')} value={q?.open != null ? `$${q.open.toFixed(2)}` : null} />
-          <KV label={t('prevClose')} value={q?.previousClose != null ? `$${q.previousClose.toFixed(2)}` : null} />
-          <KV label={t('fiftyDayAvg')} value={q?.fiftyDayAvg != null ? `$${q.fiftyDayAvg.toFixed(2)}` : null} />
-          <KV label={t('twoHundredDayAvg')} value={q?.twoHundredDayAvg != null ? `$${q.twoHundredDayAvg.toFixed(2)}` : null} />
-          <KV label={t('betaLabel')} value={q?.beta != null ? q.beta.toFixed(2) : null} />
-          <KV label={t('shortRatioLabel')} value={q?.shortRatio != null ? q.shortRatio.toFixed(2) : null} />
-          <KV label={t('sharesOut')} value={formatCompact(q?.sharesOutstanding)} />
-          <KV label={t('floatLabel')} value={formatCompact(q?.floatShares)} />
-          <KV label={t('divYield')} value={q?.dividendYield != null ? `${(q.dividendYield * 100).toFixed(2)}%` : null} />
-          <KV label={t('divRate')} value={q?.dividendRate != null ? `$${q.dividendRate.toFixed(2)}` : null} />
-          {q?.earningsDate && <KV label={t('earningsLabel')} value={new Date(q.earningsDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} />}
-        </div>
-      </Section>
-    </div>
-  );
-}
-
-// ── Bloomberg-style Financials View ──
-function FinancialsView({ quote: _q, profile: p }: { quote: StockQuote | null | undefined; profile: StockProfile | null | undefined }) {
-  const t = useT();
-  if (!p) {
-    return (
-      <div className="flex items-center justify-center h-full text-[10px] font-mono text-neutral/40 uppercase">
-        {t('noFinancialData')}
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-3 space-y-3">
-      {/* Profitability */}
-      <Section icon={<TrendingUp className="w-3 h-3" />} title={t('profitability')}>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-          <KV label={t('profitMargin')} value={fmtPct(p.profitMargins)} />
-          <KV label={t('roe')} value={fmtPct(p.returnOnEquity)} />
-          <KV label={t('roa')} value={fmtPct(p.returnOnAssets)} />
-          <KV label={t('revGrowth')} value={fmtPct(p.revenueGrowth)} />
-          <KV label={t('earningsGrowthLabel')} value={fmtPct(p.earningsGrowth)} />
-        </div>
-      </Section>
-
-      {/* Income & Revenue */}
-      <Section icon={<DollarSign className="w-3 h-3" />} title={t('incomeStatement')}>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-          <KV label={t('revenueLabel')} value={formatCompact(p.totalRevenue)} />
-          <KV label={t('grossProfit')} value={formatCompact(p.grossProfit)} />
-          <KV label={t('ebitdaLabel')} value={formatCompact(p.ebitda)} />
-          <KV label={t('freeCashFlow')} value={formatCompact(p.freeCashflow)} />
-          <KV label={t('opCashFlow')} value={formatCompact(p.operatingCashflow)} />
-        </div>
-      </Section>
-
-      {/* Balance Sheet */}
-      <Section icon={<BarChart3 className="w-3 h-3" />} title={t('balanceSheet')}>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-          <KV label={t('totalCash')} value={formatCompact(p.totalCash)} />
-          <KV label={t('totalDebtLabel')} value={formatCompact(p.totalDebt)} />
-          <KV label={t('deRatio')} value={p.debtToEquity != null ? p.debtToEquity.toFixed(2) : null} />
-          <KV label={t('currentRatioLabel')} value={p.currentRatio != null ? p.currentRatio.toFixed(2) : null} />
-        </div>
-        {p.totalCash != null && p.totalDebt != null && (
-          <div className="mt-2">
-            <CashDebtBar cash={p.totalCash} debt={p.totalDebt} cashLabel={t('cashLabel')} debtLabel={t('debtLabel')} />
-          </div>
-        )}
-      </Section>
-    </div>
-  );
-}
-
-// ── Analysts View ──
-function AnalystsView({ extended, quote: q, profile: p }: { extended: ExtendedStockData | null; quote: StockQuote | null | undefined; profile: StockProfile | null | undefined }) {
-  const t = useT();
-
-  if (!extended) {
-    return (
-      <div className="flex items-center justify-center h-32">
-        <div className="w-4 h-4 border-2 border-accent/30 border-t-accent animate-spin" />
-      </div>
-    );
-  }
-
-  const hasData = extended.recommendationTrend.length > 0 || extended.earningsHistory.length > 0 || extended.upgradeDowngradeHistory.length > 0;
-  if (!hasData) {
-    return (
-      <div className="flex items-center justify-center h-full text-[10px] font-mono text-neutral/40 uppercase">
-        {t('noAnalystData')}
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-3 space-y-3">
-      {/* Analyst Targets (from profile) */}
-      {p && p.targetMeanPrice != null && (
-        <Section icon={<Target className="w-3 h-3" />} title={t('analystConsensus')}>
-          <div className="grid grid-cols-3 gap-x-4 gap-y-1">
-            <KV label={t('targetLow')} value={`$${p.targetLowPrice?.toFixed(2)}`} />
-            <KV label={t('targetMean')} value={`$${p.targetMeanPrice?.toFixed(2)}`} accent />
-            <KV label={t('targetHigh')} value={`$${p.targetHighPrice?.toFixed(2)}`} />
-          </div>
-          {q?.price && p.targetMeanPrice && (
-            <div className="mt-2">
-              <TargetBar current={q.price} low={p.targetLowPrice} mean={p.targetMeanPrice} high={p.targetHighPrice} />
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
-            <KV label={t('recommendationLabel')} value={p.recommendationKey?.toUpperCase()} />
-            <KV label={t('numAnalysts')} value={p.numberOfAnalysts?.toString()} />
-          </div>
-        </Section>
-      )}
-
-      {/* Recommendation Trend */}
-      {extended.recommendationTrend.length > 0 && (
-        <Section icon={<BarChart3 className="w-3 h-3" />} title={t('recTrend')}>
-          <RecTrendChart data={extended.recommendationTrend} />
-        </Section>
-      )}
-
-      {/* EPS History (Beat/Miss) */}
-      {extended.earningsHistory.length > 0 && (
-        <Section icon={<DollarSign className="w-3 h-3" />} title={t('epsHistory')}>
-          <div className="space-y-0.5">
-            <div className="grid grid-cols-[1fr_60px_60px_60px] gap-1 text-[7px] font-mono text-neutral/40 uppercase tracking-wider px-1">
-              <span>Q</span>
-              <span className="text-right">{t('estimate')}</span>
-              <span className="text-right">{t('actual')}</span>
-              <span className="text-right">{t('surprise')}</span>
-            </div>
-            {extended.earningsHistory.map((e, i) => {
-              const beat = e.epsDifference != null ? e.epsDifference > 0 : null;
-              return (
-                <div key={i} className="grid grid-cols-[1fr_60px_60px_60px] gap-1 px-1 py-0.5 text-[9px] font-mono hover:bg-white/[0.02]">
-                  <span className="text-neutral/60">{e.quarter}</span>
-                  <span className="text-right text-neutral/50">{e.epsEstimate != null ? `$${e.epsEstimate.toFixed(2)}` : '--'}</span>
-                  <span className={`text-right font-bold ${beat === true ? 'text-bullish' : beat === false ? 'text-bearish' : 'text-gray-300'}`}>
-                    {e.epsActual != null ? `$${e.epsActual.toFixed(2)}` : '--'}
-                  </span>
-                  <span className={`text-right ${beat === true ? 'text-bullish' : beat === false ? 'text-bearish' : 'text-neutral/40'}`}>
-                    {e.surprisePercent != null ? `${e.surprisePercent > 0 ? '+' : ''}${(e.surprisePercent * 100).toFixed(1)}%` : '--'}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </Section>
-      )}
-
-      {/* Earnings Estimates */}
-      {extended.earningsTrend.length > 0 && (
-        <Section icon={<TrendingUp className="w-3 h-3" />} title={t('earningsEstimates')}>
-          <div className="space-y-0.5">
-            <div className="grid grid-cols-[80px_1fr_1fr_1fr_60px] gap-1 text-[7px] font-mono text-neutral/40 uppercase tracking-wider px-1">
-              <span>Period</span>
-              <span className="text-right">Low</span>
-              <span className="text-right">Avg</span>
-              <span className="text-right">High</span>
-              <span className="text-right"># Est</span>
-            </div>
-            {extended.earningsTrend.map((e, i) => (
-              <div key={i} className="grid grid-cols-[80px_1fr_1fr_1fr_60px] gap-1 px-1 py-0.5 text-[9px] font-mono hover:bg-white/[0.02]">
-                <span className="text-neutral/60">{e.period}</span>
-                <span className="text-right text-neutral/50">{e.earningsEstimate.low != null ? `$${e.earningsEstimate.low.toFixed(2)}` : '--'}</span>
-                <span className="text-right text-gray-300 font-bold">{e.earningsEstimate.avg != null ? `$${e.earningsEstimate.avg.toFixed(2)}` : '--'}</span>
-                <span className="text-right text-neutral/50">{e.earningsEstimate.high != null ? `$${e.earningsEstimate.high.toFixed(2)}` : '--'}</span>
-                <span className="text-right text-neutral/40">{e.earningsEstimate.numberOfAnalysts ?? '--'}</span>
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Upgrade/Downgrade History */}
-      {extended.upgradeDowngradeHistory.length > 0 && (
-        <Section icon={<ArrowUpRight className="w-3 h-3" />} title={t('upgradeDowngrade')}>
-          <div className="space-y-0.5 max-h-[200px] overflow-y-auto no-scrollbar">
-            {extended.upgradeDowngradeHistory.map((u, i) => {
-              const isUpgrade = u.action.toLowerCase().includes('upgrade') || u.action.toLowerCase() === 'init' || u.action.toLowerCase() === 'reiterated';
-              const isDowngrade = u.action.toLowerCase().includes('downgrade');
-              return (
-                <div key={i} className="flex items-center gap-2 px-1 py-1 text-[9px] font-mono hover:bg-white/[0.02] border-b border-border/10 last:border-0">
-                  <span className="text-neutral/40 w-[65px] shrink-0">{u.date}</span>
-                  <span className={`w-3 h-3 shrink-0 ${isUpgrade ? 'text-bullish' : isDowngrade ? 'text-bearish' : 'text-neutral/40'}`}>
-                    {isUpgrade ? <ArrowUpRight className="w-3 h-3" /> : isDowngrade ? <ArrowDownRight className="w-3 h-3" /> : null}
-                  </span>
-                  <span className="text-gray-300 truncate flex-1">{u.firm}</span>
-                  <span className="text-neutral/50 shrink-0">{u.fromGrade || '--'}</span>
-                  <span className="text-neutral/30 shrink-0">&rarr;</span>
-                  <span className={`font-bold shrink-0 ${isUpgrade ? 'text-bullish' : isDowngrade ? 'text-bearish' : 'text-gray-300'}`}>{u.toGrade || '--'}</span>
-                </div>
-              );
-            })}
-          </div>
-        </Section>
-      )}
-    </div>
-  );
-}
-
-// ── Recommendation Trend Chart ──
-function RecTrendChart({ data }: { data: ExtendedStockData['recommendationTrend'] }) {
-  const t = useT();
-  if (data.length === 0) return null;
-
-  // Reverse so oldest is on left
-  const items = [...data].reverse();
-  const maxTotal = Math.max(...items.map(d => d.strongBuy + d.buy + d.hold + d.sell + d.strongSell), 1);
-
-  return (
-    <div className="space-y-1">
-      <div className="flex gap-1 items-end h-[60px]">
-        {items.map((d, i) => {
-          const total = d.strongBuy + d.buy + d.hold + d.sell + d.strongSell;
-          if (total === 0) return <div key={i} className="flex-1" />;
-          const h = (total / maxTotal) * 60;
-          return (
-            <div key={i} className="flex-1 flex flex-col justify-end" style={{ height: 60 }}>
-              <div className="flex flex-col overflow-hidden" style={{ height: h }}>
-                {d.strongBuy > 0 && <div className="bg-bullish" style={{ height: `${(d.strongBuy / total) * 100}%` }} />}
-                {d.buy > 0 && <div className="bg-bullish/60" style={{ height: `${(d.buy / total) * 100}%` }} />}
-                {d.hold > 0 && <div className="bg-neutral/40" style={{ height: `${(d.hold / total) * 100}%` }} />}
-                {d.sell > 0 && <div className="bg-bearish/60" style={{ height: `${(d.sell / total) * 100}%` }} />}
-                {d.strongSell > 0 && <div className="bg-bearish" style={{ height: `${(d.strongSell / total) * 100}%` }} />}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="flex gap-1">
-        {items.map((d, i) => (
-          <div key={i} className="flex-1 text-center text-[7px] font-mono text-neutral/40">{d.period}</div>
-        ))}
-      </div>
-      {/* Legend */}
-      <div className="flex items-center gap-3 justify-center mt-1">
-        {[
-          { color: 'bg-bullish', label: t('strongBuy') },
-          { color: 'bg-bullish/60', label: t('buy') },
-          { color: 'bg-neutral/40', label: 'Hold' },
-          { color: 'bg-bearish/60', label: t('sell') },
-          { color: 'bg-bearish', label: t('strongSell') },
-        ].map(l => (
-          <div key={l.label} className="flex items-center gap-1">
-            <div className={`w-2 h-2 ${l.color}`} />
-            <span className="text-[7px] font-mono text-neutral/40">{l.label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── Ownership View ──
-function OwnershipView({ extended, insiders }: { extended: ExtendedStockData | null; insiders: InsiderTransaction[] }) {
-  const t = useT();
-
-  if (!extended) {
-    return (
-      <div className="flex items-center justify-center h-32">
-        <div className="w-4 h-4 border-2 border-accent/30 border-t-accent animate-spin" />
-      </div>
-    );
-  }
-
-  const mh = extended.majorHolders;
-  const ks = extended.keyStats;
-  const hasData = mh || insiders.length > 0 || extended.secFilings.length > 0;
-
-  if (!hasData) {
-    return (
-      <div className="flex items-center justify-center h-full text-[10px] font-mono text-neutral/40 uppercase">
-        {t('noOwnershipData')}
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-3 space-y-3">
-      {/* Ownership Breakdown */}
-      {mh && (mh.insidersPercentHeld != null || mh.institutionsPercentHeld != null) && (
-        <Section icon={<Users className="w-3 h-3" />} title={t('ownershipBreakdown')}>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <KV label={t('insiders')} value={fmtPct(mh.insidersPercentHeld)} />
-            <KV label={t('institutions')} value={fmtPct(mh.institutionsPercentHeld)} />
-            <KV label={t('floatHeld')} value={fmtPct(mh.institutionsFloatPercentHeld)} />
-            <KV label={t('instCount')} value={mh.institutionsCount != null ? formatCompact(mh.institutionsCount) : null} />
-          </div>
-          {mh.insidersPercentHeld != null && mh.institutionsPercentHeld != null && (
-            <div className="mt-2">
-              <OwnershipBar insider={mh.insidersPercentHeld} inst={mh.institutionsPercentHeld} />
-            </div>
-          )}
-        </Section>
-      )}
-
-      {/* Short Interest */}
-      {ks && (ks.shortPercentOfFloat != null || ks.sharesShort != null) && (
-        <Section icon={<TrendingDown className="w-3 h-3" />} title={t('shortInterest')}>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <KV label={t('shortFloat')} value={fmtPct(ks.shortPercentOfFloat)} />
-            <KV label={t('sharesShort')} value={formatCompact(ks.sharesShort)} />
-            <KV label={t('shortPriorMonth')} value={formatCompact(ks.sharesShortPriorMonth)} />
-            <KV label={t('shortDate')} value={ks.dateShortInterest} />
-          </div>
-        </Section>
-      )}
-
-      {/* Key Stats extras */}
-      {ks && (ks.enterpriseValue != null || ks.pegRatio != null) && (
-        <Section icon={<BarChart3 className="w-3 h-3" />} title="Key Statistics">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <KV label={t('evLabel')} value={formatCompact(ks.enterpriseValue)} />
-            <KV label={t('pegLabel')} value={ks.pegRatio != null ? ks.pegRatio.toFixed(2) : null} />
-            <KV label={t('fiftyTwoWkChg')} value={fmtPct(ks.fiftyTwoWeekChange)} />
-            <KV label={t('sp500Chg')} value={fmtPct(ks.sp500FiftyTwoWeekChange)} />
-          </div>
-        </Section>
-      )}
-
-      {/* Insider Transactions */}
-      {insiders.length > 0 && (
-        <Section icon={<Users className="w-3 h-3" />} title={t('insiderTransactions')}>
-          <div className="space-y-0.5 max-h-[200px] overflow-y-auto no-scrollbar">
-            {insiders.map((tx, i) => {
-              const isPurchase = tx.transactionType === 'P';
-              const isSale = tx.transactionType === 'S';
-              return (
-                <div key={i} className="flex items-center gap-2 px-1 py-1 text-[9px] font-mono hover:bg-white/[0.02] border-b border-border/10 last:border-0">
-                  <span className="text-neutral/40 w-[65px] shrink-0">{tx.transactionDate}</span>
-                  <span className={`text-[7px] font-black uppercase px-1 py-0.5 border shrink-0 ${
-                    isPurchase ? 'text-bullish border-bullish/30 bg-bullish/10' :
-                    isSale ? 'text-bearish border-bearish/30 bg-bearish/10' :
-                    'text-neutral/50 border-border/30 bg-white/5'
-                  }`}>
-                    {isPurchase ? t('purchase') : isSale ? t('sale') : t('award')}
-                  </span>
-                  <span className="text-gray-300 truncate flex-1">{tx.ownerName}</span>
-                  <span className="text-neutral/50 shrink-0">{formatCompact(tx.shares)}</span>
-                  {tx.value != null && <span className="text-neutral/40 shrink-0">${formatCompact(tx.value)}</span>}
-                </div>
-              );
-            })}
-          </div>
-        </Section>
-      )}
-
-      {/* SEC Filings */}
-      {extended.secFilings.length > 0 && (
-        <Section icon={<FileText className="w-3 h-3" />} title={t('filings')}>
-          <div className="space-y-0.5 max-h-[200px] overflow-y-auto no-scrollbar">
-            {extended.secFilings.map((f, i) => (
-              <a
-                key={i}
-                href={f.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-1 py-1 text-[9px] font-mono hover:bg-white/[0.02] border-b border-border/10 last:border-0 group"
-              >
-                <span className="text-neutral/40 w-[65px] shrink-0">{f.date}</span>
-                <span className="text-accent/70 font-bold shrink-0 w-[50px]">{f.type}</span>
-                <span className="text-gray-300 truncate flex-1 group-hover:text-accent transition-colors">{f.title}</span>
-                <ExternalLink className="w-2.5 h-2.5 text-neutral/30 group-hover:text-accent shrink-0" />
-              </a>
-            ))}
-          </div>
-        </Section>
-      )}
-    </div>
-  );
-}
-
-function OwnershipBar({ insider, inst }: { insider: number; inst: number }) {
-  const t = useT();
-  const other = Math.max(0, 1 - insider - inst);
-  return (
-    <div className="space-y-1">
-      <div className="flex h-1.5 overflow-hidden">
-        <div className="bg-accent/60" style={{ width: `${insider * 100}%` }} />
-        <div className="bg-bullish/60" style={{ width: `${inst * 100}%` }} />
-        <div className="bg-neutral/20" style={{ width: `${other * 100}%` }} />
-      </div>
-      <div className="flex justify-between text-[7px] font-mono text-neutral/40">
-        <span>{t('insiders')} {(insider * 100).toFixed(1)}%</span>
-        <span>{t('institutions')} {(inst * 100).toFixed(1)}%</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Reusable sub-components ──
-
-function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
-  return (
-    <div className="border border-border/20 bg-black/20">
-      <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-border/20 bg-black/30">
-        <span className="text-accent/60">{icon}</span>
-        <span className="text-[9px] font-black uppercase tracking-widest text-neutral">{title}</span>
-      </div>
-      <div className="px-3 py-2">{children}</div>
-    </div>
-  );
-}
-
-function KV({ label, value, accent }: { label: string; value: string | null | undefined; accent?: boolean }) {
-  return (
-    <div className="flex items-baseline justify-between py-0.5">
-      <span className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{label}</span>
-      <span className={`text-[10px] font-mono font-bold ${accent ? 'text-accent' : 'text-gray-300'}`}>
-        {value || '--'}
-      </span>
-    </div>
-  );
-}
-
-function TargetBar({ current, low, mean, high }: { current: number; low: number | null; mean: number; high: number | null }) {
-  const lo = low ?? mean * 0.8;
-  const hi = high ?? mean * 1.2;
-  const range = hi - lo || 1;
-  const pctCurrent = Math.max(0, Math.min(100, ((current - lo) / range) * 100));
-  const pctMean = Math.max(0, Math.min(100, ((mean - lo) / range) * 100));
-
-  return (
-    <div className="relative h-2 bg-white/5 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-bearish/30 via-neutral/10 to-bullish/30" />
-      <div className="absolute top-0 bottom-0 w-0.5 bg-accent" style={{ left: `${pctMean}%` }} title={`Target: $${mean.toFixed(2)}`} />
-      <div className="absolute top-0 bottom-0 w-1 bg-white" style={{ left: `${pctCurrent}%`, transform: 'translateX(-50%)' }} title={`Current: $${current.toFixed(2)}`} />
-    </div>
-  );
-}
-
-function CashDebtBar({ cash, debt, cashLabel, debtLabel }: { cash: number; debt: number; cashLabel: string; debtLabel: string }) {
-  const total = cash + debt || 1;
-  const cashPct = (cash / total) * 100;
-  return (
-    <div className="space-y-1">
-      <div className="flex h-1.5 overflow-hidden">
-        <div className="bg-bullish/60" style={{ width: `${cashPct}%` }} />
-        <div className="bg-bearish/60" style={{ width: `${100 - cashPct}%` }} />
-      </div>
-      <div className="flex justify-between text-[7px] font-mono text-neutral/40">
-        <span>{cashLabel} {formatCompact(cash)}</span>
-        <span>{debtLabel} {formatCompact(debt)}</span>
-      </div>
-    </div>
-  );
-}
-
-function fmtPct(v: number | null | undefined): string | null {
-  if (v == null) return null;
-  return `${(v * 100).toFixed(2)}%`;
-}
-
-function getActionColor(action: string) {
-  switch (action) {
-    case 'BUY': return '#22c55e';
-    case 'SELL': return '#ef4444';
-    case 'HOLD': return '#3b82f6';
-    case 'WATCH': return '#f97316';
-    default: return '#a1a1aa';
-  }
-}
-
-function formatCompact(n: number | null | undefined): string {
-  if (n == null) return '--';
-  if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
-  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
-  if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-  return n.toLocaleString();
-}
-
-function StatCell({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="px-2 py-1 border-r border-border/10 last:border-r-0 text-center">
-      <div className="text-[7px] font-black uppercase tracking-[0.1em] text-neutral/40">{label}</div>
-      <div className="text-[10px] font-mono font-bold text-gray-300">{value}</div>
-    </div>
-  );
-}
-
-function miniTrend(
-  price: number,
-  changePercent: number | null,
-  dayHigh: number | null,
-  dayLow: number | null,
-  previousClose: number | null,
-): number[] {
-  const prev = previousClose ?? price;
-  const low = dayLow ?? Math.min(prev, price);
-  const high = dayHigh ?? Math.max(prev, price);
-  const mid = (prev + price) / 2;
-  const cp = changePercent ?? 0;
-  if (cp >= 0) {
-    return [prev, prev * 0.998, low, mid, high * 0.999, price];
-  } else {
-    return [prev, prev * 1.002, high, mid, low * 1.001, price];
-  }
-}

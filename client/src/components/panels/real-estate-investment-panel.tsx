@@ -1,78 +1,6 @@
 import { useRealEstateInvestment } from '../../api/hooks/use-real-estate-investment';
 import { Building2, RefreshCw } from 'lucide-react';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  overview: {
-    transactionVolume: 482.6,
-    volumeYoY: -8.4,
-    avgCapRate: 5.72,
-    capRateChange: 0.34,
-    spreadOverTreasury: 1.48,
-    vacancyRate: 12.8,
-    priceIndex: 214.3,
-    priceIndexChange: -2.1,
-  },
-  reits: [
-    { name: 'Prologis', ticker: 'PLD', sector: 'Industrial', marketCap: 112.4, divYield: 2.84, priceChange: 3.21, ffo: 5.48, occupancy: 97.2, leverage: 22.1 },
-    { name: 'American Tower', ticker: 'AMT', sector: 'Infrastructure', marketCap: 94.8, divYield: 3.12, priceChange: -1.45, ffo: 10.72, occupancy: 98.5, leverage: 38.4 },
-    { name: 'Equinix', ticker: 'EQIX', sector: 'Data Center', marketCap: 82.1, divYield: 1.92, priceChange: 5.67, ffo: 32.18, occupancy: 94.8, leverage: 28.6 },
-    { name: 'Simon Property', ticker: 'SPG', sector: 'Retail', marketCap: 52.6, divYield: 5.24, priceChange: -2.38, ffo: 12.34, occupancy: 95.1, leverage: 34.2 },
-    { name: 'Realty Income', ticker: 'O', sector: 'Net Lease', marketCap: 46.2, divYield: 5.48, priceChange: 0.82, ffo: 4.18, occupancy: 98.7, leverage: 32.8 },
-    { name: 'Public Storage', ticker: 'PSA', sector: 'Self Storage', marketCap: 53.4, divYield: 4.15, priceChange: -0.94, ffo: 16.82, occupancy: 92.4, leverage: 14.8 },
-    { name: 'Welltower', ticker: 'WELL', sector: 'Healthcare', marketCap: 48.9, divYield: 2.48, priceChange: 4.12, ffo: 4.06, occupancy: 85.6, leverage: 30.1 },
-    { name: 'Digital Realty', ticker: 'DLR', sector: 'Data Center', marketCap: 44.7, divYield: 3.36, priceChange: 6.84, ffo: 6.92, occupancy: 96.2, leverage: 35.7 },
-    { name: 'AvalonBay', ticker: 'AVB', sector: 'Residential', marketCap: 31.2, divYield: 3.18, priceChange: 1.56, ffo: 10.84, occupancy: 96.1, leverage: 26.4 },
-    { name: 'Ventas', ticker: 'VTR', sector: 'Healthcare', marketCap: 24.8, divYield: 3.64, priceChange: -1.22, ffo: 3.18, occupancy: 83.2, leverage: 40.2 },
-  ],
-  capRates: [
-    { sector: 'Multifamily', us: 5.10, eu: 3.80, apac: 3.40, trend: 'rising' },
-    { sector: 'Industrial', us: 5.40, eu: 4.20, apac: 3.90, trend: 'stable' },
-    { sector: 'Office (CBD)', us: 6.80, eu: 4.60, apac: 3.60, trend: 'rising' },
-    { sector: 'Office (Suburban)', us: 7.50, eu: 5.40, apac: 4.80, trend: 'rising' },
-    { sector: 'Retail (Mall)', us: 6.20, eu: 5.10, apac: 4.50, trend: 'stable' },
-    { sector: 'Retail (Strip)', us: 6.50, eu: 5.30, apac: 4.70, trend: 'falling' },
-    { sector: 'Data Center', us: 5.00, eu: 4.40, apac: 4.10, trend: 'falling' },
-    { sector: 'Self Storage', us: 5.30, eu: 4.80, apac: 5.20, trend: 'stable' },
-    { sector: 'Healthcare', us: 6.40, eu: 5.00, apac: 4.60, trend: 'rising' },
-    { sector: 'Hospitality', us: 7.80, eu: 5.80, apac: 5.10, trend: 'falling' },
-  ],
-  transactions: [
-    { property: 'One Vanderbilt Tower', location: 'New York, NY', buyer: 'Brookfield Asset Mgmt', seller: 'SL Green Realty', price: 3200, priceSqft: 1842, capRate: 4.90, dealType: 'Core' },
-    { property: 'Prologis Park Grande', location: 'Los Angeles, CA', buyer: 'GIC', seller: 'Prologis', price: 1850, priceSqft: 312, capRate: 4.20, dealType: 'Core-Plus' },
-    { property: 'Hudson Yards Tower C', location: 'New York, NY', buyer: 'Abu Dhabi Investment', seller: 'Related Companies', price: 2400, priceSqft: 1520, capRate: 5.10, dealType: 'Core' },
-    { property: 'The Wharf Phase III', location: 'Washington, DC', buyer: 'Mitsui Fudosan', seller: 'Hoffman & Associates', price: 980, priceSqft: 685, capRate: 5.80, dealType: 'Value-Add' },
-    { property: 'Aria Resort Portfolio', location: 'Las Vegas, NV', buyer: 'Blackstone RE', seller: 'MGM Growth Prop', price: 4100, priceSqft: 428, capRate: 6.20, dealType: 'Opportunistic' },
-    { property: 'Samsung SDS Campus', location: 'Seoul, KR', buyer: 'ADIA', seller: 'Samsung C&T', price: 1620, priceSqft: 892, capRate: 3.80, dealType: 'Core' },
-    { property: 'Canary Wharf Block E', location: 'London, UK', buyer: 'Qatar Investment', seller: 'British Land', price: 1340, priceSqft: 1125, capRate: 4.50, dealType: 'Core-Plus' },
-    { property: 'Logicor Portfolio DE', location: 'Frankfurt, DE', buyer: 'CPPIB', seller: 'CIC Capital', price: 2100, priceSqft: 245, capRate: 4.10, dealType: 'Core' },
-  ],
-  regionalVacancy: [
-    { market: 'New York', officeVacancy: 18.4, industrialVacancy: 4.2, retailVacancy: 8.6, officeRent: 78.50, rentChange: -3.2 },
-    { market: 'San Francisco', officeVacancy: 24.8, industrialVacancy: 5.8, retailVacancy: 9.1, officeRent: 72.40, rentChange: -6.8 },
-    { market: 'Los Angeles', officeVacancy: 20.2, industrialVacancy: 3.4, retailVacancy: 7.2, officeRent: 48.60, rentChange: -2.4 },
-    { market: 'Chicago', officeVacancy: 21.6, industrialVacancy: 5.2, retailVacancy: 10.4, officeRent: 38.20, rentChange: -4.1 },
-    { market: 'Miami', officeVacancy: 14.2, industrialVacancy: 3.8, retailVacancy: 5.4, officeRent: 52.80, rentChange: 2.6 },
-    { market: 'Dallas', officeVacancy: 22.4, industrialVacancy: 6.8, retailVacancy: 6.8, officeRent: 32.40, rentChange: -1.8 },
-    { market: 'London', officeVacancy: 10.6, industrialVacancy: 3.2, retailVacancy: 11.8, officeRent: 82.30, rentChange: 1.4 },
-    { market: 'Tokyo', officeVacancy: 5.8, industrialVacancy: 2.4, retailVacancy: 4.6, officeRent: 94.20, rentChange: 0.8 },
-    { market: 'Singapore', officeVacancy: 8.4, industrialVacancy: 6.2, retailVacancy: 7.8, officeRent: 68.40, rentChange: 3.2 },
-    { market: 'Sydney', officeVacancy: 12.8, industrialVacancy: 2.8, retailVacancy: 6.4, officeRent: 56.80, rentChange: -0.6 },
-  ],
-  debtMarket: {
-    cmbsSpreads: { aaa: 82, aa: 115, a: 168, bbb: 245, bb: 420 },
-    avgLTV: 58.4,
-    avgDSCR: 1.72,
-    lendingVolume: 128.4,
-    lendingVolumeChange: -14.2,
-    delinquencyRate: 4.86,
-    delinquencyChange: 0.42,
-    maturingLoans12m: 186.2,
-    maturingLoans24m: 312.8,
-  },
-};
-
 // ── Formatting Helpers ──
 
 function fmtB(n: number): string {
@@ -142,7 +70,7 @@ function vacancyColor(v: number): string {
 
 export function RealEstateInvestmentPanel() {
   const { data: rawData, isLoading, refetch } = useRealEstateInvestment();
-  const data = rawData || FALLBACK_DATA;
+  const data = rawData;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -154,12 +82,12 @@ export function RealEstateInvestmentPanel() {
             Real Estate Investment
           </span>
           <span className="text-[7px] text-neutral-600 uppercase tracking-wider">
-            Vol {fmtB(data.overview.transactionVolume)}
+            Vol {data?.overview?.transactionVolume != null ? fmtB(data.overview.transactionVolume) : '--'}
           </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[7px] font-bold text-indigo-400/70 uppercase px-1.5 py-0.5 bg-indigo-400/10 border border-indigo-400/30">
-            Cap Rate {data.overview.avgCapRate.toFixed(2)}%
+            Cap Rate {data?.overview?.avgCapRate != null ? `${data.overview.avgCapRate.toFixed(2)}%` : '--'}
           </span>
           <button
             onClick={() => refetch()}
@@ -177,7 +105,7 @@ export function RealEstateInvestmentPanel() {
           </div>
         )}
 
-        {!isLoading && !rawData && !data && (
+        {!isLoading && !data && (
           <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
             No data available
           </div>

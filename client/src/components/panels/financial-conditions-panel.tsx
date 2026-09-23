@@ -57,14 +57,6 @@ const REGIONS: { code: RegionCode; label: string }[] = [
   { code: 'GLOBAL', label: 'GLOBAL' },
 ];
 
-const DEFAULT_COMPONENTS: FciComponent[] = [
-  { name: 'Interest Rates', value: 0, weight: 0.30, contribution: 0, subComponents: [{ name: 'Fed Funds Rate', zScore: 0 }, { name: '2Y Treasury', zScore: 0 }, { name: '10Y Treasury', zScore: 0 }] },
-  { name: 'Credit', value: 0, weight: 0.25, contribution: 0, subComponents: [{ name: 'IG Spread', zScore: 0 }, { name: 'HY Spread', zScore: 0 }, { name: 'CDS Index', zScore: 0 }] },
-  { name: 'Equity', value: 0, weight: 0.20, contribution: 0, subComponents: [{ name: 'S&P 500', zScore: 0 }, { name: 'VIX', zScore: 0 }, { name: 'Market Cap/GDP', zScore: 0 }] },
-  { name: 'Currency', value: 0, weight: 0.15, contribution: 0, subComponents: [{ name: 'DXY Index', zScore: 0 }, { name: 'EUR/USD', zScore: 0 }, { name: 'Trade-Weighted USD', zScore: 0 }] },
-  { name: 'Housing', value: 0, weight: 0.10, contribution: 0, subComponents: [{ name: 'Mortgage Rate', zScore: 0 }, { name: 'Housing Starts', zScore: 0 }, { name: 'Case-Shiller', zScore: 0 }] },
-];
-
 // ── Helpers ──
 
 function getRegime(fci: number): Regime {
@@ -137,22 +129,8 @@ function parseData(raw: unknown): FinancialConditionsData | null {
   return raw as FinancialConditionsData;
 }
 
-function getRegionData(data: FinancialConditionsData, region: RegionCode): RegionData {
-  const r = data.regions?.[region];
-  if (r) return r;
-  // Fallback empty region
-  return {
-    fci: 0,
-    regime: 'NEUTRAL',
-    change1d: 0,
-    change1w: 0,
-    change1m: 0,
-    percentile: 50,
-    components: DEFAULT_COMPONENTS,
-    history30d: [],
-    policyImplications: [],
-    stressEvents: [],
-  };
+function getRegionData(data: FinancialConditionsData, region: RegionCode): RegionData | null {
+  return data.regions?.[region] ?? null;
 }
 
 // ── Main Panel ──
@@ -214,7 +192,7 @@ export function FinancialConditionsPanel() {
           </div>
         )}
 
-        {!data && !isLoading && (
+        {((!data && !isLoading) || (data && !regionData)) && (
           <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
             No data available
           </div>
@@ -224,7 +202,7 @@ export function FinancialConditionsPanel() {
           <>
             <FciDisplay region={selectedRegion} regionData={regionData} />
             <ComponentBreakdown
-              components={regionData.components ?? DEFAULT_COMPONENTS}
+              components={regionData.components ?? []}
               expandedComponent={expandedComponent}
               onToggle={(name) => setExpandedComponent(expandedComponent === name ? null : name)}
             />
@@ -250,7 +228,7 @@ export function FinancialConditionsPanel() {
 function FciDisplay({ region, regionData }: { region: RegionCode; regionData: RegionData }) {
   const regime = regionData.regime ?? getRegime(regionData.fci);
   const rc = regimeColor(regime);
-  const pct = Math.max(0, Math.min(100, regionData.percentile ?? 50));
+  const pct = Math.max(0, Math.min(100, regionData.percentile));
 
   return (
     <div className="px-3 py-3 border-b border-border/20">
@@ -292,6 +270,7 @@ function FciDisplay({ region, regionData }: { region: RegionCode; regionData: Re
       </div>
 
       {/* Percentile Bar */}
+      {regionData.percentile != null && (
       <div className="mt-3">
         <div className="flex items-center justify-between mb-0.5">
           <span className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
@@ -326,6 +305,7 @@ function FciDisplay({ region, regionData }: { region: RegionCode; regionData: Re
           <span className="text-[6px] font-mono text-red-400/50">TIGHT</span>
         </div>
       </div>
+      )}
     </div>
   );
 }

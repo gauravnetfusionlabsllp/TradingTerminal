@@ -2,77 +2,6 @@ import { useTradeFinance } from '../../api/hooks/use-trade-finance';
 import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw, Ship } from 'lucide-react';
 
-// ── Fallback data ──
-
-const FALLBACK_DATA = {
-  timestamp: new Date().toISOString(),
-  overview: {
-    totalVolume: 5.2e12,
-    tradeFinanceGap: 2.5e12,
-    lcVolume: 2.8e12,
-    scfVolume: 1.1e12,
-    factoringVolume: 820e9,
-    forfaitingVolume: 470e9,
-  },
-  lcRates: [
-    { corridor: 'Asia-Europe', pricingBps: 85, confirmationFee: 0.15, tenor: '90D', avgSize: 2.4e6, defaultRate: 0.04, trend: 'stable' },
-    { corridor: 'US-Asia', pricingBps: 72, confirmationFee: 0.12, tenor: '60D', avgSize: 3.1e6, defaultRate: 0.03, trend: 'tightening' },
-    { corridor: 'Europe-Africa', pricingBps: 145, confirmationFee: 0.35, tenor: '120D', avgSize: 1.2e6, defaultRate: 0.12, trend: 'widening' },
-    { corridor: 'Intra-Asia', pricingBps: 55, confirmationFee: 0.08, tenor: '45D', avgSize: 1.8e6, defaultRate: 0.02, trend: 'tightening' },
-    { corridor: 'US-Europe', pricingBps: 48, confirmationFee: 0.06, tenor: '60D', avgSize: 5.6e6, defaultRate: 0.01, trend: 'stable' },
-    { corridor: 'ME-Asia', pricingBps: 110, confirmationFee: 0.22, tenor: '90D', avgSize: 4.2e6, defaultRate: 0.06, trend: 'widening' },
-    { corridor: 'LatAm-US', pricingBps: 125, confirmationFee: 0.28, tenor: '90D', avgSize: 1.5e6, defaultRate: 0.09, trend: 'stable' },
-    { corridor: 'Africa-Europe', pricingBps: 165, confirmationFee: 0.42, tenor: '150D', avgSize: 0.8e6, defaultRate: 0.15, trend: 'widening' },
-  ],
-  supplyChainFinance: [
-    { buyer: 'Samsung Elec.', facility: 1.2e9, utilization: 78.4, discountRate: 4.85, supplierCount: 342, paymentTerms: '120D' },
-    { buyer: 'Apple Inc.', facility: 2.5e9, utilization: 65.2, discountRate: 4.15, supplierCount: 518, paymentTerms: '90D' },
-    { buyer: 'Volkswagen AG', facility: 1.8e9, utilization: 82.1, discountRate: 5.10, supplierCount: 1245, paymentTerms: '105D' },
-    { buyer: 'Toyota Motor', facility: 1.5e9, utilization: 71.6, discountRate: 3.90, supplierCount: 876, paymentTerms: '90D' },
-    { buyer: 'Walmart Inc.', facility: 3.2e9, utilization: 88.3, discountRate: 4.55, supplierCount: 2100, paymentTerms: '120D' },
-    { buyer: 'Siemens AG', facility: 0.9e9, utilization: 59.8, discountRate: 4.70, supplierCount: 430, paymentTerms: '75D' },
-  ],
-  tradeReceivables: {
-    outstanding: 3.8e12,
-    securitized: 1.2e12,
-    avgYield: 5.42,
-    defaultRate: 0.78,
-    byRegion: [
-      { region: 'Asia-Pacific', amount: 1.4e12, share: 36.8, yield: 5.15, defaultRate: 0.52 },
-      { region: 'Europe', amount: 1.1e12, share: 28.9, yield: 4.85, defaultRate: 0.38 },
-      { region: 'North America', amount: 0.8e12, share: 21.1, yield: 5.92, defaultRate: 0.25 },
-      { region: 'Middle East', amount: 0.3e12, share: 7.9, yield: 6.20, defaultRate: 0.91 },
-      { region: 'Latin America', amount: 0.15e12, share: 3.9, yield: 7.45, defaultRate: 1.65 },
-      { region: 'Africa', amount: 0.05e12, share: 1.4, yield: 9.10, defaultRate: 3.20 },
-    ],
-  },
-  countryRisk: [
-    { country: 'Bangladesh', stRisk: 5, mtRisk: 6, premiumBps: 320, paymentDelay: 45, coverAvailability: 'restricted' },
-    { country: 'Nigeria', stRisk: 6, mtRisk: 7, premiumBps: 480, paymentDelay: 62, coverAvailability: 'limited' },
-    { country: 'Turkey', stRisk: 5, mtRisk: 5, premiumBps: 275, paymentDelay: 38, coverAvailability: 'available' },
-    { country: 'Vietnam', stRisk: 3, mtRisk: 3, premiumBps: 145, paymentDelay: 22, coverAvailability: 'available' },
-    { country: 'Egypt', stRisk: 6, mtRisk: 6, premiumBps: 410, paymentDelay: 55, coverAvailability: 'restricted' },
-    { country: 'India', stRisk: 3, mtRisk: 3, premiumBps: 130, paymentDelay: 18, coverAvailability: 'available' },
-    { country: 'Pakistan', stRisk: 7, mtRisk: 7, premiumBps: 560, paymentDelay: 78, coverAvailability: 'off_cover' },
-    { country: 'Argentina', stRisk: 7, mtRisk: 7, premiumBps: 620, paymentDelay: 85, coverAvailability: 'off_cover' },
-    { country: 'Ethiopia', stRisk: 7, mtRisk: 7, premiumBps: 540, paymentDelay: 90, coverAvailability: 'off_cover' },
-    { country: 'Indonesia', stRisk: 3, mtRisk: 4, premiumBps: 155, paymentDelay: 20, coverAvailability: 'available' },
-  ],
-  digitalization: {
-    blockchainLcPct: 4.2,
-    eblPenetration: 2.8,
-    eblGrowthPct: 68.5,
-    platforms: [
-      { name: 'Contour', type: 'Blockchain LC', status: 'active', transactions: 12500, volume: 45e9 },
-      { name: 'Marco Polo', type: 'Trade Finance', status: 'restructuring', transactions: 3200, volume: 12e9 },
-      { name: 'TradeLens', type: 'Supply Chain', status: 'discontinued', transactions: 0, volume: 0 },
-      { name: 'Komgo', type: 'Commodity TF', status: 'active', transactions: 8900, volume: 32e9 },
-      { name: 'WAVE BL', type: 'e-BL', status: 'active', transactions: 18200, volume: 28e9 },
-      { name: 'Bolero', type: 'e-BL', status: 'active', transactions: 6500, volume: 15e9 },
-    ],
-  },
-};
-
 // ── Formatting helpers ──
 
 function fmtVol(n: number): string {
@@ -430,7 +359,7 @@ export function TradeFinancePanel() {
   const t = useT();
   const { data, isLoading, refetch } = useTradeFinance();
 
-  const d = data || FALLBACK_DATA;
+  const d = data;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -441,19 +370,19 @@ export function TradeFinancePanel() {
           <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-yellow-400">
             {tr(t, 'tfTitle', 'Trade Finance')}
           </span>
-          {d.overview && (
+          {d?.overview && (
             <span className="text-[7px] font-mono text-neutral-600 ml-1">
               Vol {fmtVol(d.overview.totalVolume)}
             </span>
           )}
-          {d.overview && (
+          {d?.overview && (
             <span className="text-[7px] font-mono text-red-400/70 ml-1">
               Gap {fmtVol(d.overview.tradeFinanceGap)}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {d.timestamp && (
+          {d?.timestamp && (
             <span className="text-[6px] font-mono text-neutral-700">
               {new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
@@ -475,7 +404,7 @@ export function TradeFinancePanel() {
           </div>
         )}
 
-        {!isLoading && !data && !FALLBACK_DATA && (
+        {!isLoading && !data && (
           <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
             {tr(t, 'tfNoData', 'No data available')}
           </div>

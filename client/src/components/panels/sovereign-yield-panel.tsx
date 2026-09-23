@@ -58,80 +58,6 @@ interface AuctionEntry {
   tailBps?: number;
 }
 
-// ── Fallback data ──
-
-const FALLBACK_BENCHMARKS: BenchmarkYield[] = [
-  { country: 'US', ticker: 'UST', yield10y: 4.452, change1d: -0.023, change1w: -0.048, change1m: 0.112, high52w: 4.739, low52w: 3.621 },
-  { country: 'DE', ticker: 'DBR', yield10y: 2.447, change1d: -0.018, change1w: -0.032, change1m: 0.067, high52w: 2.774, low52w: 2.024 },
-  { country: 'GB', ticker: 'UKT', yield10y: 4.581, change1d: -0.011, change1w: 0.023, change1m: 0.094, high52w: 4.821, low52w: 3.732 },
-  { country: 'JP', ticker: 'JGB', yield10y: 1.312, change1d: 0.008, change1w: 0.024, change1m: 0.087, high52w: 1.455, low52w: 0.605 },
-  { country: 'FR', ticker: 'OAT', yield10y: 3.241, change1d: -0.014, change1w: -0.019, change1m: 0.053, high52w: 3.456, low52w: 2.681 },
-  { country: 'IT', ticker: 'BTP', yield10y: 3.712, change1d: -0.009, change1w: -0.007, change1m: 0.041, high52w: 4.122, low52w: 3.198 },
-  { country: 'ES', ticker: 'SPGB', yield10y: 3.187, change1d: -0.012, change1w: -0.015, change1m: 0.038, high52w: 3.521, low52w: 2.874 },
-  { country: 'CA', ticker: 'CAN', yield10y: 3.421, change1d: -0.019, change1w: -0.041, change1m: 0.078, high52w: 3.812, low52w: 2.984 },
-  { country: 'AU', ticker: 'ACGB', yield10y: 4.287, change1d: -0.015, change1w: -0.028, change1m: 0.064, high52w: 4.612, low52w: 3.741 },
-  { country: 'CN', ticker: 'CGB', yield10y: 1.721, change1d: 0.003, change1w: -0.011, change1m: -0.034, high52w: 2.301, low52w: 1.582 },
-  { country: 'KR', ticker: 'KTB', yield10y: 2.841, change1d: -0.007, change1w: 0.014, change1m: 0.041, high52w: 3.241, low52w: 2.521 },
-  { country: 'CH', ticker: 'CONF', yield10y: 0.542, change1d: -0.004, change1w: -0.008, change1m: 0.012, high52w: 0.891, low52w: 0.387 },
-];
-
-const FALLBACK_CURVE: CurvePoint[] = [
-  { tenor: '1M', months: 1, yield: 5.341, change: -0.002 },
-  { tenor: '3M', months: 3, yield: 5.297, change: -0.004 },
-  { tenor: '6M', months: 6, yield: 5.102, change: -0.008 },
-  { tenor: '1Y', months: 12, yield: 4.821, change: -0.014 },
-  { tenor: '2Y', months: 24, yield: 4.612, change: -0.021 },
-  { tenor: '3Y', months: 36, yield: 4.491, change: -0.019 },
-  { tenor: '5Y', months: 60, yield: 4.387, change: -0.018 },
-  { tenor: '7Y', months: 84, yield: 4.412, change: -0.016 },
-  { tenor: '10Y', months: 120, yield: 4.452, change: -0.023 },
-  { tenor: '20Y', months: 240, yield: 4.721, change: -0.014 },
-  { tenor: '30Y', months: 360, yield: 4.612, change: -0.011 },
-];
-
-const FALLBACK_CURVE_SPREADS: CurveSpread[] = [
-  { name: '2s10s', value: -16.0, change: -2.1 },
-  { name: '2s30s', value: 0.0, change: -1.4 },
-  { name: '5s30s', value: 22.5, change: 0.8 },
-  { name: '3m10y', value: -84.5, change: -1.9 },
-  { name: '2s5s', value: -22.5, change: 0.3 },
-  { name: '10s30s', value: 16.0, change: 0.5 },
-];
-
-const FALLBACK_SOV_SPREADS: SovereignSpread[] = [
-  { country: 'Germany (Bund)', spread: -200.5, change1d: 0.5, change1w: 1.6, rating: 'AAA' },
-  { country: 'UK (Gilt)', spread: 12.9, change1d: 1.2, change1w: 7.1, rating: 'AA' },
-  { country: 'Japan (JGB)', spread: -314.0, change1d: 3.1, change1w: 7.2, rating: 'A+' },
-  { country: 'France (OAT)', spread: -121.1, change1d: 0.9, change1w: 2.9, rating: 'AA-' },
-  { country: 'Italy (BTP)', spread: -74.0, change1d: 1.4, change1w: 4.1, rating: 'BBB' },
-  { country: 'Spain (SPGB)', spread: -126.5, change1d: 1.1, change1w: 2.3, rating: 'A' },
-  { country: 'Canada', spread: -103.1, change1d: 0.4, change1w: 0.7, rating: 'AAA' },
-  { country: 'Australia', spread: -16.5, change1d: 0.8, change1w: 2.0, rating: 'AAA' },
-  { country: 'China (CGB)', spread: -273.1, change1d: 2.6, change1w: 3.7, rating: 'A+' },
-];
-
-const FALLBACK_REAL_YIELDS: RealYield[] = [
-  { country: 'US 10Y', nominal: 4.452, breakeven: 2.341, realYield: 2.111, change: -0.018 },
-  { country: 'US 5Y', nominal: 4.387, breakeven: 2.412, realYield: 1.975, change: -0.014 },
-  { country: 'US 30Y', nominal: 4.612, breakeven: 2.287, realYield: 2.325, change: -0.009 },
-  { country: 'DE 10Y', nominal: 2.447, breakeven: 2.112, realYield: 0.335, change: -0.012 },
-  { country: 'UK 10Y', nominal: 4.581, breakeven: 3.647, realYield: 0.934, change: 0.005 },
-  { country: 'JP 10Y', nominal: 1.312, breakeven: 1.241, realYield: 0.071, change: 0.011 },
-];
-
-const FALLBACK_AUCTIONS: AuctionEntry[] = [
-  { date: '2026-03-19', country: 'US', tenor: '20Y Bond', size: '$16B', coupon: 4.625, status: 'today', bidCover: 2.41, tailBps: 0.3 },
-  { date: '2026-03-20', country: 'US', tenor: '10Y TIPS', size: '$18B', coupon: null, status: 'upcoming' },
-  { date: '2026-03-20', country: 'DE', tenor: '10Y Bund', size: '\u20AC4B', coupon: 2.50, status: 'upcoming' },
-  { date: '2026-03-21', country: 'JP', tenor: '20Y JGB', size: '\u00A51.1T', coupon: 1.90, status: 'upcoming' },
-  { date: '2026-03-24', country: 'US', tenor: '2Y Note', size: '$69B', coupon: null, status: 'upcoming' },
-  { date: '2026-03-25', country: 'US', tenor: '5Y Note', size: '$70B', coupon: null, status: 'upcoming' },
-  { date: '2026-03-25', country: 'GB', tenor: '30Y Gilt', size: '\u00A32.5B', coupon: 4.375, status: 'upcoming' },
-  { date: '2026-03-26', country: 'US', tenor: '7Y Note', size: '$44B', coupon: null, status: 'upcoming' },
-  { date: '2026-03-18', country: 'US', tenor: '3M Bill', size: '$76B', coupon: null, status: 'completed', bidCover: 2.87, tailBps: 0.0 },
-  { date: '2026-03-18', country: 'US', tenor: '6M Bill', size: '$68B', coupon: null, status: 'completed', bidCover: 2.74, tailBps: 0.1 },
-];
-
 // ── Formatting ──
 
 function fmtBps(n: number): string {
@@ -164,12 +90,12 @@ export function SovereignYieldPanel() {
   const { data, isLoading, refetch } = useSovereignYield();
   const [activeTab, setActiveTab] = useState<Tab>('benchmark');
 
-  const benchmarks: BenchmarkYield[] = data?.benchmarks ?? FALLBACK_BENCHMARKS;
-  const curve: CurvePoint[] = data?.curve ?? FALLBACK_CURVE;
-  const curveSpreads: CurveSpread[] = data?.curveSpreads ?? FALLBACK_CURVE_SPREADS;
-  const sovSpreads: SovereignSpread[] = data?.sovereignSpreads ?? FALLBACK_SOV_SPREADS;
-  const realYields: RealYield[] = data?.realYields ?? FALLBACK_REAL_YIELDS;
-  const auctions: AuctionEntry[] = data?.auctions ?? FALLBACK_AUCTIONS;
+  const benchmarks: BenchmarkYield[] = data?.benchmarks ?? [];
+  const curve: CurvePoint[] = data?.curve ?? [];
+  const curveSpreads: CurveSpread[] = data?.curveSpreads ?? [];
+  const sovSpreads: SovereignSpread[] = data?.sovereignSpreads ?? [];
+  const realYields: RealYield[] = data?.realYields ?? [];
+  const auctions: AuctionEntry[] = data?.auctions ?? [];
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'benchmark', label: tr(t, 'syTabBenchmark', '10Y Benchmarks') },
@@ -192,7 +118,7 @@ export function SovereignYieldPanel() {
         <div className="flex items-center gap-2">
           {/* UST 10Y quick badge */}
           <span className="px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/30">
-            UST 10Y {fmtYield(benchmarks[0]?.yield10y ?? 4.452)}%
+            UST 10Y {benchmarks[0] ? `${fmtYield(benchmarks[0].yield10y)}%` : '--'}
           </span>
           <button
             onClick={() => refetch()}
@@ -227,11 +153,15 @@ export function SovereignYieldPanel() {
           </div>
         )}
 
-        {activeTab === 'benchmark' && <BenchmarkSection benchmarks={benchmarks} t={t} />}
-        {activeTab === 'curve' && <CurveSection curve={curve} spreads={curveSpreads} t={t} />}
-        {activeTab === 'spreads' && <SpreadsSection sovSpreads={sovSpreads} t={t} />}
-        {activeTab === 'real' && <RealYieldsSection realYields={realYields} t={t} />}
-        {activeTab === 'auction' && <AuctionSection auctions={auctions} t={t} />}
+        {!isLoading && !data && (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+        )}
+
+        {data && activeTab === 'benchmark' && <BenchmarkSection benchmarks={benchmarks} t={t} />}
+        {data && activeTab === 'curve' && <CurveSection curve={curve} spreads={curveSpreads} t={t} />}
+        {data && activeTab === 'spreads' && <SpreadsSection sovSpreads={sovSpreads} t={t} />}
+        {data && activeTab === 'real' && <RealYieldsSection realYields={realYields} t={t} />}
+        {data && activeTab === 'auction' && <AuctionSection auctions={auctions} t={t} />}
       </div>
     </div>
   );

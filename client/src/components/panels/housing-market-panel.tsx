@@ -2,7 +2,7 @@ import { useHousingMarket } from '../../api/hooks/use-housing-market';
 import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw } from 'lucide-react';
 
-// ── Fallback mock data ──
+// ── Types ──
 
 interface HomePriceIndex {
   name: string;
@@ -63,58 +63,6 @@ interface HousingMarketData {
   affordability: AffordabilityEntry[];
   lastUpdated: string;
 }
-
-const MOCK_DATA: HousingMarketData = {
-  homePrices: [
-    { name: 'S&P/CS 20-City', value: 330.45, yoy: 4.68, mom: 0.32, peak: 332.10, fromPeak: -0.50 },
-    { name: 'S&P/CS National', value: 318.72, yoy: 5.12, mom: 0.41, peak: 320.50, fromPeak: -0.56 },
-    { name: 'FHFA HPI', value: 424.30, yoy: 5.74, mom: 0.38, peak: 426.00, fromPeak: -0.40 },
-    { name: 'Median Existing', value: 407.60, yoy: 3.82, mom: -0.65, peak: 413.80, fromPeak: -1.50 },
-    { name: 'Median New Home', value: 420.30, yoy: 2.15, mom: 0.28, peak: 496.80, fromPeak: -15.40 },
-    { name: 'Zillow ZHVI', value: 362.48, yoy: 3.24, mom: 0.18, peak: 365.20, fromPeak: -0.75 },
-  ],
-  mortgageRates: [
-    { type: '30Y Fixed', rate: 6.87, change1w: 0.05, change1m: -0.12, yearAgo: 7.22 },
-    { type: '15Y Fixed', rate: 6.12, change1w: 0.03, change1m: -0.08, yearAgo: 6.51 },
-    { type: '5/1 ARM', rate: 6.38, change1w: -0.02, change1m: -0.15, yearAgo: 6.74 },
-    { type: 'Jumbo 30Y', rate: 7.14, change1w: 0.04, change1m: -0.09, yearAgo: 7.48 },
-    { type: 'FHA 30Y', rate: 6.42, change1w: 0.03, change1m: -0.10, yearAgo: 6.78 },
-  ],
-  housingActivity: [
-    { metric: 'Existing Home Sales', value: '4.15M', change: -1.2, period: 'Feb 2026', prior: '4.20M' },
-    { metric: 'New Home Sales', value: '0.664M', change: 3.8, period: 'Feb 2026', prior: '0.640M' },
-    { metric: 'Pending Home Sales', value: '77.4', change: -2.1, period: 'Feb 2026', prior: '79.1' },
-    { metric: 'Housing Starts', value: '1.388M', change: 5.2, period: 'Feb 2026', prior: '1.320M' },
-    { metric: 'Building Permits', value: '1.456M', change: 1.9, period: 'Feb 2026', prior: '1.429M' },
-    { metric: 'NAHB Housing Idx', value: '42', change: -4.5, period: 'Mar 2026', prior: '44' },
-  ],
-  inventory: [
-    { metric: 'Total Listings', value: '1.24M', change: 12.8, level: 'low' },
-    { metric: 'Months of Supply', value: '3.5', change: 8.3, level: 'low' },
-    { metric: 'New Listings', value: '412K', change: 5.2, level: 'normal' },
-    { metric: 'Days on Market', value: '54', change: 14.9, level: 'normal' },
-    { metric: 'Active Inventory YoY', value: '+17.2%', change: 17.2, level: 'normal' },
-    { metric: 'Price Reductions', value: '36.8%', change: 4.1, level: 'high' },
-  ],
-  homebuilderStocks: [
-    { symbol: 'DHI', name: 'D.R. Horton', price: 148.32, changePct: 1.24, ytd: 8.7, pe: 10.2 },
-    { symbol: 'LEN', name: 'Lennar', price: 162.85, changePct: -0.38, ytd: 5.3, pe: 9.8 },
-    { symbol: 'NVR', name: 'NVR Inc', price: 7842.50, changePct: 0.72, ytd: 12.1, pe: 18.4 },
-    { symbol: 'PHM', name: 'PulteGroup', price: 118.64, changePct: 1.85, ytd: 10.4, pe: 8.6 },
-    { symbol: 'TOL', name: 'Toll Brothers', price: 124.18, changePct: -0.92, ytd: -2.1, pe: 7.9 },
-    { symbol: 'KBH', name: 'KB Home', price: 72.34, changePct: 0.54, ytd: 4.8, pe: 8.1 },
-    { symbol: 'MTH', name: 'Meritage Homes', price: 185.40, changePct: 2.12, ytd: 14.6, pe: 9.3 },
-    { symbol: 'ITB', name: 'iShares Home ETF', price: 102.56, changePct: 0.68, ytd: 7.2, pe: 11.5 },
-  ],
-  affordability: [
-    { region: 'National', index: 98.2, change: -3.4, medianPrice: '$407,600', medianIncome: '$78,500', ratio: 5.19 },
-    { region: 'Northeast', index: 85.6, change: -4.1, medianPrice: '$462,300', medianIncome: '$82,100', ratio: 5.63 },
-    { region: 'Midwest', index: 128.4, change: -1.8, medianPrice: '$298,400', medianIncome: '$72,800', ratio: 4.10 },
-    { region: 'South', index: 104.7, change: -2.9, medianPrice: '$372,100', medianIncome: '$74,200', ratio: 5.01 },
-    { region: 'West', index: 72.3, change: -5.2, medianPrice: '$598,700', medianIncome: '$86,400', ratio: 6.93 },
-  ],
-  lastUpdated: new Date().toISOString(),
-};
 
 // ── Format helpers ──
 
@@ -483,7 +431,7 @@ export function HousingMarketPanel() {
   const t = useT();
   const { data: hookData, isLoading, refetch } = useHousingMarket();
 
-  const data: HousingMarketData = hookData ?? MOCK_DATA;
+  const data: HousingMarketData | undefined = hookData;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -497,7 +445,7 @@ export function HousingMarketPanel() {
         </div>
         <div className="flex items-center gap-2">
           {/* 30Y rate badge */}
-          {data.mortgageRates.length > 0 && (
+          {!!data?.mortgageRates?.length && (
             <span className="px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider text-rose-400 bg-rose-500/10 border border-rose-500/30">
               30Y: {fmtRate(data.mortgageRates[0].rate)}
             </span>
@@ -518,31 +466,18 @@ export function HousingMarketPanel() {
           </div>
         )}
 
-        {!hookData && !isLoading && (
-          <>
-            <HomePricesSection data={data.homePrices} t={t} />
-            <MortgageRatesSection data={data.mortgageRates} t={t} />
-            <HousingActivitySection data={data.housingActivity} t={t} />
-            <InventorySection data={data.inventory} t={t} />
-            <HomebuilderStocksSection data={data.homebuilderStocks} t={t} />
-            <AffordabilitySection data={data.affordability} t={t} />
-            {/* Timestamp */}
-            <div className="px-3 py-1.5 border-t border-border/10">
-              <span className="text-[7px] font-mono text-neutral-700">
-                {tr(t, 'hmMockData', 'Displaying sample data')} &mdash; {new Date(data.lastUpdated).toLocaleTimeString()}
-              </span>
-            </div>
-          </>
+        {!data && !isLoading && (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
         )}
 
-        {hookData && (
+        {data && (
           <>
-            <HomePricesSection data={data.homePrices} t={t} />
-            <MortgageRatesSection data={data.mortgageRates} t={t} />
-            <HousingActivitySection data={data.housingActivity} t={t} />
-            <InventorySection data={data.inventory} t={t} />
-            <HomebuilderStocksSection data={data.homebuilderStocks} t={t} />
-            <AffordabilitySection data={data.affordability} t={t} />
+            <HomePricesSection data={data.homePrices ?? []} t={t} />
+            <MortgageRatesSection data={data.mortgageRates ?? []} t={t} />
+            <HousingActivitySection data={data.housingActivity ?? []} t={t} />
+            <InventorySection data={data.inventory ?? []} t={t} />
+            <HomebuilderStocksSection data={data.homebuilderStocks ?? []} t={t} />
+            <AffordabilitySection data={data.affordability ?? []} t={t} />
             {/* Timestamp */}
             <div className="px-3 py-1.5 border-t border-border/10">
               <span className="text-[7px] font-mono text-neutral-700">

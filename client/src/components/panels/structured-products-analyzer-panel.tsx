@@ -112,78 +112,15 @@ const RATING_LINE_COLORS: Record<string, string> = {
   B: '#fb923c',
 };
 
-// -- Static mock data --
+// -- Types --
 
-const PRODUCT_UNIVERSE = [
-  { type: 'CLO', tranche: 'AAA', rating: 'AAA', spread: 118, wal: 4.2, oas: 125, price: 100.125 },
-  { type: 'CLO', tranche: 'AA', rating: 'AA', spread: 175, wal: 5.1, oas: 182, price: 99.875 },
-  { type: 'CLO', tranche: 'A', rating: 'A', spread: 228, wal: 5.8, oas: 240, price: 99.250 },
-  { type: 'CLO', tranche: 'BBB', rating: 'BBB', spread: 345, wal: 6.2, oas: 365, price: 97.500 },
-  { type: 'CLO', tranche: 'BB', rating: 'BB', spread: 525, wal: 6.8, oas: 560, price: 94.750 },
-  { type: 'RMBS', tranche: 'Senior', rating: 'AAA', spread: 68, wal: 3.5, oas: 72, price: 101.234 },
-  { type: 'RMBS', tranche: 'Mezz', rating: 'A', spread: 185, wal: 4.8, oas: 195, price: 98.625 },
-  { type: 'CMBS', tranche: 'A4', rating: 'AAA', spread: 108, wal: 4.5, oas: 115, price: 100.375 },
-  { type: 'CMBS', tranche: 'AS', rating: 'AA-', spread: 142, wal: 5.2, oas: 150, price: 99.750 },
-  { type: 'CMBS', tranche: 'B', rating: 'A-', spread: 218, wal: 5.8, oas: 232, price: 98.125 },
-  { type: 'ABS Auto', tranche: 'A', rating: 'AAA', spread: 42, wal: 1.8, oas: 45, price: 100.875 },
-  { type: 'ABS Card', tranche: 'A', rating: 'AAA', spread: 38, wal: 2.2, oas: 40, price: 101.062 },
-];
-
-const PREPAYMENT_METRICS = [
-  { label: 'CPR (1M)', value: 8.4, prev: 7.9, trend: 'up' },
-  { label: 'CPR (3M)', value: 7.8, prev: 7.5, trend: 'up' },
-  { label: 'CPR (6M)', value: 7.2, prev: 7.4, trend: 'down' },
-  { label: 'CPR (LIFE)', value: 6.8, prev: 6.8, trend: 'stable' },
-  { label: 'PSA', value: 142, prev: 138, trend: 'up' },
-  { label: 'SMM (1M)', value: 0.73, prev: 0.68, trend: 'up' },
-  { label: 'SMM (3M)', value: 0.67, prev: 0.65, trend: 'up' },
-  { label: 'SMM (LIFE)', value: 0.59, prev: 0.59, trend: 'stable' },
-];
-
-const TRANCHE_WATERFALL = [
-  { name: 'AAA', pct: 62, subordination: 38.0 },
-  { name: 'AA', pct: 12, subordination: 26.0 },
-  { name: 'A', pct: 8, subordination: 18.0 },
-  { name: 'BBB', pct: 6, subordination: 12.0 },
-  { name: 'BB', pct: 4, subordination: 8.0 },
-  { name: 'Equity', pct: 8, subordination: 0.0 },
-];
-
-const CREDIT_ENHANCEMENT = [
-  { type: 'CLO', aaa: 38.0, aa: 26.0, a: 18.0, bbb: 12.0, bb: 8.0 },
-  { type: 'RMBS Agency', aaa: 100, aa: null, a: null, bbb: null, bb: null },
-  { type: 'RMBS Non-Agency', aaa: 28.5, aa: 18.2, a: 12.4, bbb: 7.8, bb: 4.2 },
-  { type: 'CMBS Conduit', aaa: 30.0, aa: 20.5, a: 14.0, bbb: 8.5, bb: 5.0 },
-  { type: 'ABS Auto', aaa: 22.0, aa: 14.5, a: 9.0, bbb: 5.5, bb: null },
-  { type: 'ABS Card', aaa: 18.0, aa: 12.0, a: 7.5, bbb: 4.0, bb: null },
-];
-
-const COLLATERAL_PERFORMANCE = [
-  { sector: 'Prime RMBS', delinquency30: 1.12, delinquency60: 0.45, delinquency90: 0.28, defaultRate: 0.42, recovery: 72.5 },
-  { sector: 'Subprime RMBS', delinquency30: 4.82, delinquency60: 2.15, delinquency90: 1.68, defaultRate: 2.85, recovery: 58.2 },
-  { sector: 'CMBS Office', delinquency30: 6.15, delinquency60: 3.42, delinquency90: 2.85, defaultRate: 3.95, recovery: 45.8 },
-  { sector: 'CMBS Multifamily', delinquency30: 1.08, delinquency60: 0.52, delinquency90: 0.35, defaultRate: 0.68, recovery: 75.2 },
-  { sector: 'CLO Leveraged', delinquency30: 2.35, delinquency60: 1.12, delinquency90: 0.85, defaultRate: 1.52, recovery: 68.4 },
-  { sector: 'Auto ABS', delinquency30: 2.48, delinquency60: 0.95, delinquency90: 0.58, defaultRate: 1.82, recovery: 52.1 },
-  { sector: 'Card ABS', delinquency30: 1.95, delinquency60: 0.82, delinquency90: 0.55, defaultRate: 3.15, recovery: 15.8 },
-];
-
-const ISSUANCE_PIPELINE = [
-  { deal: 'ARES CLO 2025-3', type: 'CLO', size: 600e6, status: 'MARKETING', spread: 118, date: '2025-03-21' },
-  { deal: 'FNMA 2025-TBA', type: 'RMBS', size: 2.5e9, status: 'PRICED', spread: 68, date: '2025-03-18' },
-  { deal: 'BANK 2025-BNK51', type: 'CMBS', size: 1.1e9, status: 'LAUNCHED', spread: 112, date: '2025-03-20' },
-  { deal: 'AMCAR 2025-2', type: 'ABS Auto', size: 1.8e9, status: 'PRICED', spread: 40, date: '2025-03-17' },
-  { deal: 'CITICC 2025-B1', type: 'ABS Card', size: 2.2e9, status: 'MARKETING', spread: 36, date: '2025-03-22' },
-  { deal: 'KKR CLO 44', type: 'CLO', size: 500e6, status: 'ROADSHOW', spread: 125, date: '2025-03-24' },
-];
-
-const SPREAD_CURVES = [
-  { rating: 'AAA', tenors: [{ t: 1, s: 32 }, { t: 2, s: 48 }, { t: 3, s: 68 }, { t: 5, s: 95 }, { t: 7, s: 112 }, { t: 10, s: 128 }] },
-  { rating: 'AA', tenors: [{ t: 1, s: 55 }, { t: 2, s: 78 }, { t: 3, s: 108 }, { t: 5, s: 148 }, { t: 7, s: 172 }, { t: 10, s: 195 }] },
-  { rating: 'A', tenors: [{ t: 1, s: 82 }, { t: 2, s: 115 }, { t: 3, s: 155 }, { t: 5, s: 205 }, { t: 7, s: 238 }, { t: 10, s: 265 }] },
-  { rating: 'BBB', tenors: [{ t: 1, s: 125 }, { t: 2, s: 175 }, { t: 3, s: 225 }, { t: 5, s: 305 }, { t: 7, s: 355 }, { t: 10, s: 395 }] },
-  { rating: 'BB', tenors: [{ t: 1, s: 210 }, { t: 2, s: 285 }, { t: 3, s: 365 }, { t: 5, s: 465 }, { t: 7, s: 525 }, { t: 10, s: 575 }] },
-];
+type ProductUniverse = { type: string; tranche: string; rating: string; spread: number; wal: number; oas: number; price: number }[];
+type PrepaymentMetrics = { label: string; value: number; prev: number; trend: string }[];
+type TrancheWaterfall = { name: string; pct: number; subordination: number }[];
+type CreditEnhancement = { type: string; aaa: number | null; aa: number | null; a: number | null; bbb: number | null; bb: number | null }[];
+type CollateralPerformance = { sector: string; delinquency30: number; delinquency60: number; delinquency90: number; defaultRate: number; recovery: number }[];
+type IssuancePipeline = { deal: string; type: string; size: number; status: string; spread: number; date: string }[];
+type SpreadCurves = { rating: string; tenors: { t: number; s: number }[] }[];
 
 // -- Main Panel --
 
@@ -192,13 +129,13 @@ export function StructuredProductsAnalyzerPanel() {
   const { data, isLoading, refetch } = useStructuredProductsAnalyzer();
   const d = data as Record<string, unknown> | null;
 
-  const products = (d?.productUniverse as typeof PRODUCT_UNIVERSE) ?? PRODUCT_UNIVERSE;
-  const prepay = (d?.prepaymentMetrics as typeof PREPAYMENT_METRICS) ?? PREPAYMENT_METRICS;
-  const waterfall = (d?.trancheWaterfall as typeof TRANCHE_WATERFALL) ?? TRANCHE_WATERFALL;
-  const enhancement = (d?.creditEnhancement as typeof CREDIT_ENHANCEMENT) ?? CREDIT_ENHANCEMENT;
-  const collateral = (d?.collateralPerformance as typeof COLLATERAL_PERFORMANCE) ?? COLLATERAL_PERFORMANCE;
-  const pipeline = (d?.issuancePipeline as typeof ISSUANCE_PIPELINE) ?? ISSUANCE_PIPELINE;
-  const curves = (d?.spreadCurves as typeof SPREAD_CURVES) ?? SPREAD_CURVES;
+  const products = (d?.productUniverse as ProductUniverse) ?? [];
+  const prepay = (d?.prepaymentMetrics as PrepaymentMetrics) ?? [];
+  const waterfall = (d?.trancheWaterfall as TrancheWaterfall) ?? [];
+  const enhancement = (d?.creditEnhancement as CreditEnhancement) ?? [];
+  const collateral = (d?.collateralPerformance as CollateralPerformance) ?? [];
+  const pipeline = (d?.issuancePipeline as IssuancePipeline) ?? [];
+  const curves = (d?.spreadCurves as SpreadCurves) ?? [];
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -232,13 +169,17 @@ export function StructuredProductsAnalyzerPanel() {
           </div>
         )}
 
-        <ProductUniverseSection products={products} t={t} />
-        <PrepaymentMetricsSection metrics={prepay} t={t} />
-        <TrancheWaterfallSection waterfall={waterfall} t={t} />
-        <CreditEnhancementSection enhancement={enhancement} t={t} />
-        <CollateralPerformanceSection collateral={collateral} t={t} />
-        <IssuancePipelineSection pipeline={pipeline} t={t} />
-        <SpreadCurveSection curves={curves} t={t} />
+        {d && (
+          <>
+            <ProductUniverseSection products={products} t={t} />
+            <PrepaymentMetricsSection metrics={prepay} t={t} />
+            <TrancheWaterfallSection waterfall={waterfall} t={t} />
+            <CreditEnhancementSection enhancement={enhancement} t={t} />
+            <CollateralPerformanceSection collateral={collateral} t={t} />
+            <IssuancePipelineSection pipeline={pipeline} t={t} />
+            {curves.length > 0 && <SpreadCurveSection curves={curves} t={t} />}
+          </>
+        )}
       </div>
     </div>
   );
@@ -250,7 +191,7 @@ function ProductUniverseSection({
   products,
   t,
 }: {
-  products: typeof PRODUCT_UNIVERSE;
+  products: ProductUniverse;
   t: TFn;
 }) {
   return (
@@ -312,7 +253,7 @@ function PrepaymentMetricsSection({
   metrics,
   t,
 }: {
-  metrics: typeof PREPAYMENT_METRICS;
+  metrics: PrepaymentMetrics;
   t: TFn;
 }) {
   return (
@@ -362,7 +303,7 @@ function TrancheWaterfallSection({
   waterfall,
   t,
 }: {
-  waterfall: typeof TRANCHE_WATERFALL;
+  waterfall: TrancheWaterfall;
   t: TFn;
 }) {
   const chartW = 400;
@@ -477,7 +418,7 @@ function CreditEnhancementSection({
   enhancement,
   t,
 }: {
-  enhancement: typeof CREDIT_ENHANCEMENT;
+  enhancement: CreditEnhancement;
   t: TFn;
 }) {
   return (
@@ -551,7 +492,7 @@ function CollateralPerformanceSection({
   collateral,
   t,
 }: {
-  collateral: typeof COLLATERAL_PERFORMANCE;
+  collateral: CollateralPerformance;
   t: TFn;
 }) {
   return (
@@ -611,7 +552,7 @@ function IssuancePipelineSection({
   pipeline,
   t,
 }: {
-  pipeline: typeof ISSUANCE_PIPELINE;
+  pipeline: IssuancePipeline;
   t: TFn;
 }) {
   return (
@@ -698,7 +639,7 @@ function SpreadCurveSection({
   curves,
   t,
 }: {
-  curves: typeof SPREAD_CURVES;
+  curves: SpreadCurves;
   t: TFn;
 }) {
   const chartW = 400;

@@ -1,12 +1,5 @@
 import { prisma } from './prisma.js';
 
-const categories = [
-  { slug: 'finance', name: 'Finance', color: '#2196f3', icon: '💰' },
-  { slug: 'world', name: 'World', color: '#ff1744', icon: '🌍' },
-  { slug: 'business', name: 'Business', color: '#ff8c00', icon: '🏢' },
-  { slug: 'politics', name: 'Politics', color: '#9c27b0', icon: '🏛️' },
-];
-
 const defaultStocks = [
   { symbol: 'AAPL', name: 'Apple Inc.' },
   { symbol: 'MSFT', name: 'Microsoft Corp.' },
@@ -22,15 +15,6 @@ const defaultStocks = [
 
 export async function seedDatabase() {
   console.log('[Seed] Seeding database...');
-
-  for (const cat of categories) {
-    await prisma.newsCategory.upsert({
-      where: { slug: cat.slug },
-      update: cat,
-      create: cat,
-    });
-  }
-  console.log(`[Seed] ${categories.length} categories`);
 
   for (const stock of defaultStocks) {
     await prisma.trackedStock.upsert({

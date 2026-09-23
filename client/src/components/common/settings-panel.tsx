@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, RefreshCw, Gauge, Palette, Rss, Brain, ArrowRightLeft } from 'lucide-react';
+import { Bell, RefreshCw, Gauge, Palette } from 'lucide-react';
 import { useAppStore, type UserSettings } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
 
@@ -101,10 +101,6 @@ export function SettingsPanel() {
               </div>
               <div className="space-y-2.5 pl-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-gray-300">{t('breakingAlerts')}</span>
-                  <Toggle checked={settings.breakingAlerts} onChange={(v) => set('breakingAlerts', v)} />
-                </div>
-                <div className="flex items-center justify-between">
                   <span className="text-[11px] text-gray-300">{t('sound')}</span>
                   <Toggle checked={settings.soundEnabled} onChange={(v) => set('soundEnabled', v)} />
                 </div>
@@ -143,6 +139,22 @@ export function SettingsPanel() {
                     onChange={(v) => set('autoRefreshInterval', v)}
                   />
                 </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] text-gray-300">{t('throttleQuotes')}</span>
+                    <Toggle checked={settings.quoteThrottle} onChange={(v) => set('quoteThrottle', v)} />
+                  </div>
+                  {settings.quoteThrottle && (
+                    <Slider
+                      value={settings.quoteThrottleMs}
+                      min={100}
+                      max={1000}
+                      step={50}
+                      label={`${settings.quoteThrottleMs}ms`}
+                      onChange={(v) => set('quoteThrottleMs', v)}
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -168,102 +180,9 @@ export function SettingsPanel() {
                 ))}
               </div>
             </div>
-
-            {/* Data Source */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-neutral">
-                <Rss className="w-3 h-3" />
-                {t('dataSource')}
-              </div>
-              <div className="pl-5 space-y-1.5">
-                <RadioOption
-                  name="dataSource"
-                  value="neuberg"
-                  label={t('neubergOfficial')}
-                  checked={settings.dataSource === 'neuberg'}
-                  onChange={(v) => set('dataSource', v)}
-                />
-                <p className="text-[9px] text-neutral/40 font-mono pl-5">{t('comingSoon')}</p>
-              </div>
-            </div>
-
-            {/* AI Analysis */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-neutral">
-                <Brain className="w-3 h-3" />
-                {t('aiAnalysis')}
-              </div>
-              <div className="pl-5 space-y-1.5">
-                <RadioOption
-                  name="aiProvider"
-                  value="neuberg"
-                  label={t('neubergOfficial')}
-                  checked={settings.aiProvider === 'neuberg'}
-                  onChange={(v) => set('aiProvider', v)}
-                />
-                <p className="text-[9px] text-neutral/40 font-mono pl-5">{t('comingSoon')}</p>
-              </div>
-            </div>
-
-            {/* Trading Channel */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-neutral">
-                <ArrowRightLeft className="w-3 h-3" />
-                {t('tradingChannel')}
-              </div>
-              <div className="pl-5 space-y-1.5">
-                <RadioOption
-                  name="tradingChannel"
-                  value="hyperliquid"
-                  label={t('hyperLiquid')}
-                  checked={settings.tradingChannel === 'hyperliquid'}
-                  onChange={(v) => set('tradingChannel', v)}
-                />
-                <p className="text-[9px] text-neutral/40 font-mono pl-5">{t('comingSoon')}</p>
-              </div>
-            </div>
-
           </div>
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-function RadioOption({
-  name,
-  value,
-  label,
-  checked,
-  onChange,
-}: {
-  name: string;
-  value: string;
-  label: string;
-  checked: boolean;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <label className="flex items-center gap-2.5 cursor-pointer group py-0.5">
-      <span
-        className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-          checked ? 'border-accent' : 'border-border/60 group-hover:border-border'
-        }`}
-        onClick={() => onChange(value)}
-      >
-        {checked && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}
-      </span>
-      <input
-        type="radio"
-        name={name}
-        value={value}
-        checked={checked}
-        onChange={() => onChange(value)}
-        className="sr-only"
-      />
-      <span className={`text-[11px] font-mono ${checked ? 'text-white' : 'text-neutral/60'}`}>
-        {label}
-      </span>
-    </label>
   );
 }

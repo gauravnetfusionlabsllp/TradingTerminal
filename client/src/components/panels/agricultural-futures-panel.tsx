@@ -44,113 +44,6 @@ function conditionColor(ge: number): string {
   return 'text-red-400';
 }
 
-// ── Fallback data ──
-
-const FALLBACK_GRAINS = [
-  { name: 'Corn', symbol: 'ZC', price: 4.52, change: -0.08, changePct: -1.74, basis: -0.12, w52High: 5.42, w52Low: 3.85 },
-  { name: 'Soybeans', symbol: 'ZS', price: 12.38, change: 0.15, changePct: 1.23, basis: -0.08, w52High: 14.10, w52Low: 10.90 },
-  { name: 'Wheat (SRW)', symbol: 'ZW', price: 5.89, change: -0.12, changePct: -2.00, basis: -0.25, w52High: 7.20, w52Low: 5.10 },
-  { name: 'Wheat (HRW)', symbol: 'KE', price: 6.15, change: -0.09, changePct: -1.44, basis: -0.18, w52High: 7.50, w52Low: 5.40 },
-  { name: 'Soybean Oil', symbol: 'ZL', price: 46.32, change: 0.58, changePct: 1.27, basis: 0.04, w52High: 54.80, w52Low: 38.20 },
-  { name: 'Soybean Meal', symbol: 'ZM', price: 348.60, change: -2.40, changePct: -0.68, basis: 1.50, w52High: 410.00, w52Low: 305.00 },
-  { name: 'Oats', symbol: 'ZO', price: 3.78, change: 0.04, changePct: 1.07, basis: -0.06, w52High: 4.65, w52Low: 3.12 },
-  { name: 'Rice (Rough)', symbol: 'ZR', price: 17.25, change: 0.22, changePct: 1.29, basis: 0.10, w52High: 19.80, w52Low: 14.50 },
-];
-
-const FALLBACK_SOFTS = [
-  { name: 'Coffee (Arabica)', symbol: 'KC', price: 1.9500, change: 0.0345, changePct: 1.80, basis: 0.02, w52High: 2.45, w52Low: 1.48 },
-  { name: 'Sugar #11', symbol: 'SB', price: 26.50, change: -0.38, changePct: -1.41, basis: -0.15, w52High: 28.90, w52Low: 18.50 },
-  { name: 'Cocoa', symbol: 'CC', price: 6800, change: 125, changePct: 1.87, basis: 45, w52High: 8200, w52Low: 4100 },
-  { name: 'Cotton #2', symbol: 'CT', price: 82.45, change: -0.72, changePct: -0.87, basis: -0.30, w52High: 92.40, w52Low: 72.10 },
-  { name: 'Orange Juice', symbol: 'OJ', price: 4.25, change: 0.08, changePct: 1.92, basis: 0.05, w52High: 5.10, w52Low: 3.20 },
-];
-
-const FALLBACK_LIVESTOCK = [
-  { name: 'Live Cattle', symbol: 'LE', price: 186.25, change: 1.05, changePct: 0.57, basis: -1.50, w52High: 192.40, w52Low: 168.30 },
-  { name: 'Feeder Cattle', symbol: 'GF', price: 252.80, change: 0.75, changePct: 0.30, basis: -2.10, w52High: 262.00, w52Low: 218.50 },
-  { name: 'Lean Hogs', symbol: 'HE', price: 89.42, change: -1.20, changePct: -1.32, basis: 0.80, w52High: 108.50, w52Low: 72.60 },
-];
-
-const FALLBACK_CROP_CONDITIONS = [
-  { crop: 'Corn', excellent: 12, good: 53, fair: 25, poor: 7, veryPoor: 3, goodExcellent: 65, prevWeek: 64, prevYear: 61 },
-  { crop: 'Soybeans', excellent: 10, good: 52, fair: 26, poor: 8, veryPoor: 4, goodExcellent: 62, prevWeek: 63, prevYear: 59 },
-  { crop: 'Winter Wheat', excellent: 8, good: 42, fair: 30, poor: 13, veryPoor: 7, goodExcellent: 50, prevWeek: 51, prevYear: 48 },
-  { crop: 'Spring Wheat', excellent: 11, good: 47, fair: 28, poor: 10, veryPoor: 4, goodExcellent: 58, prevWeek: 57, prevYear: 55 },
-  { crop: 'Cotton', excellent: 7, good: 38, fair: 32, poor: 15, veryPoor: 8, goodExcellent: 45, prevWeek: 46, prevYear: 42 },
-  { crop: 'Sorghum', excellent: 9, good: 44, fair: 29, poor: 12, veryPoor: 6, goodExcellent: 53, prevWeek: 52, prevYear: 50 },
-];
-
-const FALLBACK_EXPORTS = [
-  { commodity: 'Corn', weeklyInspections: 1245, yearAgo: 1080, marketYearTotal: 22450, yearAgoTotal: 20890, yoyPct: 7.5 },
-  { commodity: 'Soybeans', weeklyInspections: 680, yearAgo: 725, marketYearTotal: 41250, yearAgoTotal: 39800, yoyPct: 3.6 },
-  { commodity: 'Wheat', weeklyInspections: 385, yearAgo: 410, marketYearTotal: 15680, yearAgoTotal: 16200, yoyPct: -3.2 },
-  { commodity: 'Sorghum', weeklyInspections: 142, yearAgo: 98, marketYearTotal: 4580, yearAgoTotal: 3950, yoyPct: 15.9 },
-  { commodity: 'Soybean Meal', weeklyInspections: 290, yearAgo: 265, marketYearTotal: 11200, yearAgoTotal: 10850, yoyPct: 3.2 },
-  { commodity: 'Soybean Oil', weeklyInspections: 45, yearAgo: 52, marketYearTotal: 1850, yearAgoTotal: 2100, yoyPct: -11.9 },
-];
-
-const FALLBACK_WEATHER = [
-  { region: 'US Corn Belt', droughtLevel: 'D0 - Abnormally Dry', areaPct: 18.5, condition: 'Favorable', temp: 'Normal', precip: 'Adequate' },
-  { region: 'US Southern Plains', droughtLevel: 'D2 - Severe Drought', areaPct: 42.3, condition: 'Stressed', temp: 'Above Normal', precip: 'Below Normal' },
-  { region: 'US Northern Plains', droughtLevel: 'None', areaPct: 0, condition: 'Favorable', temp: 'Normal', precip: 'Above Normal' },
-  { region: 'US Delta', droughtLevel: 'D1 - Moderate Drought', areaPct: 28.7, condition: 'Mixed', temp: 'Above Normal', precip: 'Below Normal' },
-  { region: 'Brazil Central', droughtLevel: 'None', areaPct: 0, condition: 'Favorable', temp: 'Normal', precip: 'Above Normal' },
-  { region: 'Argentina Pampas', droughtLevel: 'D1 - Moderate Drought', areaPct: 35.2, condition: 'Stressed', temp: 'Above Normal', precip: 'Below Normal' },
-  { region: 'EU Western', droughtLevel: 'None', areaPct: 5.4, condition: 'Cool/Wet', temp: 'Below Normal', precip: 'Above Normal' },
-  { region: 'Black Sea Region', droughtLevel: 'D0 - Abnormally Dry', areaPct: 12.8, condition: 'Mixed', temp: 'Normal', precip: 'Below Normal' },
-];
-
-const FALLBACK_CURVES: Record<string, { month: string; price: number; change: number }[]> = {
-  ZC: [
-    { month: 'Jul 26', price: 4.52, change: -0.08 },
-    { month: 'Sep 26', price: 4.61, change: -0.06 },
-    { month: 'Dec 26', price: 4.72, change: -0.04 },
-    { month: 'Mar 27', price: 4.82, change: -0.02 },
-    { month: 'May 27', price: 4.88, change: 0.01 },
-    { month: 'Jul 27', price: 4.92, change: 0.02 },
-  ],
-  ZS: [
-    { month: 'Jul 26', price: 12.38, change: 0.15 },
-    { month: 'Aug 26', price: 12.28, change: 0.12 },
-    { month: 'Sep 26', price: 12.15, change: 0.10 },
-    { month: 'Nov 26', price: 12.05, change: 0.08 },
-    { month: 'Jan 27', price: 12.18, change: 0.06 },
-    { month: 'Mar 27', price: 12.30, change: 0.05 },
-  ],
-  ZW: [
-    { month: 'Jul 26', price: 5.89, change: -0.12 },
-    { month: 'Sep 26', price: 6.02, change: -0.10 },
-    { month: 'Dec 26', price: 6.18, change: -0.08 },
-    { month: 'Mar 27', price: 6.30, change: -0.05 },
-    { month: 'May 27', price: 6.38, change: -0.03 },
-    { month: 'Jul 27', price: 6.42, change: -0.01 },
-  ],
-  KC: [
-    { month: 'Jul 26', price: 1.9500, change: 0.0345 },
-    { month: 'Sep 26', price: 1.9280, change: 0.0310 },
-    { month: 'Dec 26', price: 1.8950, change: 0.0280 },
-    { month: 'Mar 27', price: 1.8700, change: 0.0240 },
-    { month: 'May 27', price: 1.8520, change: 0.0200 },
-    { month: 'Jul 27', price: 1.8400, change: 0.0180 },
-  ],
-  LE: [
-    { month: 'Jun 26', price: 186.25, change: 1.05 },
-    { month: 'Aug 26', price: 183.50, change: 0.85 },
-    { month: 'Oct 26', price: 185.20, change: 0.70 },
-    { month: 'Dec 26', price: 187.80, change: 0.55 },
-    { month: 'Feb 27', price: 190.40, change: 0.40 },
-    { month: 'Apr 27', price: 192.10, change: 0.30 },
-  ],
-  CC: [
-    { month: 'Jul 26', price: 6800, change: 125 },
-    { month: 'Sep 26', price: 6650, change: 110 },
-    { month: 'Dec 26', price: 6480, change: 95 },
-    { month: 'Mar 27', price: 6350, change: 80 },
-    { month: 'May 27', price: 6280, change: 65 },
-    { month: 'Jul 27', price: 6220, change: 55 },
-  ],
-};
-
 const CURVE_COMMODITIES = [
   { symbol: 'ZC', label: 'CORN' },
   { symbol: 'ZS', label: 'SOYBEANS' },
@@ -167,13 +60,13 @@ export function AgriculturalFuturesPanel() {
   const [activeTab, setActiveTab] = useState<Tab>('markets');
   const [selectedCurve, setSelectedCurve] = useState('ZC');
 
-  const grains = data?.grains ?? FALLBACK_GRAINS;
-  const softs = data?.softs ?? FALLBACK_SOFTS;
-  const livestock = data?.livestock ?? FALLBACK_LIVESTOCK;
-  const cropConditions = data?.cropConditions ?? FALLBACK_CROP_CONDITIONS;
-  const exports = data?.exports ?? FALLBACK_EXPORTS;
-  const weather = data?.weather ?? FALLBACK_WEATHER;
-  const curves = data?.curves ?? FALLBACK_CURVES;
+  const grains = data?.grains ?? [];
+  const softs = data?.softs ?? [];
+  const livestock = data?.livestock ?? [];
+  const cropConditions = data?.cropConditions ?? [];
+  const exports = data?.exports ?? [];
+  const weather = data?.weather ?? [];
+  const curves = data?.curves ?? {};
 
   if (isLoading && !data) {
     return (
@@ -186,6 +79,10 @@ export function AgriculturalFuturesPanel() {
         </div>
       </div>
     );
+  }
+
+  if (!data) {
+    return <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>;
   }
 
   return (

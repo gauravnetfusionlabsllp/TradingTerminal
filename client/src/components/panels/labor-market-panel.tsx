@@ -77,79 +77,6 @@ interface LaborMarketData {
   wages: WageTracker[];
 }
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA: LaborMarketData = {
-  timestamp: '2026-03-19T14:30:00Z',
-  employment: {
-    nfp: 151,
-    nfpPrevious: 125,
-    nfpForecast: 160,
-    unemploymentRate: 4.1,
-    unemploymentPrevious: 4.0,
-    participationRate: 62.4,
-    participationPrevious: 62.6,
-    u6Rate: 7.9,
-    averageHourlyEarningsYoY: 4.0,
-    averageHourlyEarningsMoM: 0.3,
-    averageWeeklyHours: 34.1,
-    reportDate: '2026-03-07',
-  },
-  claims: {
-    initialClaims: 221,
-    initialPrevious: 242,
-    initialForecast: 225,
-    continuingClaims: 1897,
-    continuingPrevious: 1862,
-    fourWeekAvg: 227,
-    fourWeekAvgPrevious: 231,
-    reportDate: '2026-03-14',
-  },
-  jolts: {
-    jobOpenings: 7740,
-    jobOpeningsPrevious: 7508,
-    hires: 5388,
-    hiresPrevious: 5310,
-    quits: 3195,
-    quitsPrevious: 3280,
-    layoffs: 1799,
-    layoffsPrevious: 1765,
-    quitRate: 2.1,
-    openingsToUnemployed: 1.13,
-    reportDate: '2026-02-04',
-  },
-  sectorEmployment: [
-    { sector: 'Health Care', change: 52, previous: 44, threeMonthAvg: 48 },
-    { sector: 'Government', change: 11, previous: 32, threeMonthAvg: 22 },
-    { sector: 'Financial', change: 21, previous: 15, threeMonthAvg: 18 },
-    { sector: 'Construction', change: 19, previous: 10, threeMonthAvg: 14 },
-    { sector: 'Leisure & Hospitality', change: 26, previous: 18, threeMonthAvg: 22 },
-    { sector: 'Professional & Business', change: -4, previous: 8, threeMonthAvg: 3 },
-    { sector: 'Manufacturing', change: -10, previous: -6, threeMonthAvg: -7 },
-    { sector: 'Retail Trade', change: -8, previous: 2, threeMonthAvg: -2 },
-    { sector: 'Information', change: -5, previous: -3, threeMonthAvg: -4 },
-    { sector: 'Transportation', change: 5, previous: -2, threeMonthAvg: 1 },
-  ],
-  globalLabor: [
-    { country: 'United States', code: 'US', unemploymentRate: 4.1, previous: 4.0, trend: 'deteriorating', participationRate: 62.4 },
-    { country: 'Eurozone', code: 'EU', unemploymentRate: 6.3, previous: 6.3, trend: 'stable', participationRate: 65.1 },
-    { country: 'United Kingdom', code: 'GB', unemploymentRate: 4.4, previous: 4.3, trend: 'deteriorating', participationRate: 62.8 },
-    { country: 'Japan', code: 'JP', unemploymentRate: 2.5, previous: 2.4, trend: 'stable', participationRate: 63.4 },
-    { country: 'Canada', code: 'CA', unemploymentRate: 6.6, previous: 6.7, trend: 'improving', participationRate: 65.0 },
-    { country: 'Germany', code: 'DE', unemploymentRate: 6.2, previous: 6.1, trend: 'deteriorating', participationRate: 64.3 },
-    { country: 'Australia', code: 'AU', unemploymentRate: 4.1, previous: 4.0, trend: 'stable', participationRate: 67.0 },
-    { country: 'China', code: 'CN', unemploymentRate: 5.2, previous: 5.1, trend: 'stable', participationRate: 68.2 },
-  ],
-  wages: [
-    { metric: 'Avg Hourly Earnings', current: 35.93, previous: 35.82, yoyChange: 4.0 },
-    { metric: 'Employment Cost Index', current: 1.1, previous: 0.9, yoyChange: 3.8 },
-    { metric: 'Atlanta Fed Wage Tracker', current: 4.6, previous: 4.8, yoyChange: -0.2 },
-    { metric: 'Real Wage Growth', current: 1.2, previous: 1.0, yoyChange: 0.2 },
-    { metric: 'Unit Labor Cost', current: 2.8, previous: 3.1, yoyChange: -0.3 },
-    { metric: 'Productivity (QoQ)', current: 1.5, previous: 2.2, yoyChange: -0.7 },
-  ],
-};
-
 // ── Formatting Helpers ──
 
 function fmtK(n: number): string {
@@ -688,8 +615,7 @@ export function LaborMarketPanel() {
   const t = useT();
   const { data: rawData, isLoading, refetch } = useLaborMarket();
 
-  const data: LaborMarketData = rawData ?? FALLBACK_DATA;
-  const hasLiveData = !!rawData;
+  const data = rawData as LaborMarketData | undefined;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -702,12 +628,7 @@ export function LaborMarketPanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {!hasLiveData && !isLoading && (
-            <span className="text-[7px] font-mono text-neutral-600 uppercase">
-              {tr(t, 'lmStatic', 'Static')}
-            </span>
-          )}
-          {data.timestamp && (
+          {data?.timestamp && (
             <span className="text-[7px] font-mono text-neutral-600">
               {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
@@ -730,15 +651,19 @@ export function LaborMarketPanel() {
         </div>
       )}
 
+      {!isLoading && !data && (
+        <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+      )}
+
       {/* Content */}
-      {(!isLoading || rawData) && (
+      {data && (
         <div className="flex-1 overflow-auto no-scrollbar">
-          <EmploymentSummarySection data={data.employment} t={t} />
-          <JoblessClaimsSection data={data.claims} t={t} />
-          <JoltsSection data={data.jolts} t={t} />
-          <SectorEmploymentSection sectors={data.sectorEmployment} t={t} />
-          <GlobalLaborSection data={data.globalLabor} t={t} />
-          <WageTrackerSection wages={data.wages} t={t} />
+          {data.employment && <EmploymentSummarySection data={data.employment} t={t} />}
+          {data.claims && <JoblessClaimsSection data={data.claims} t={t} />}
+          {data.jolts && <JoltsSection data={data.jolts} t={t} />}
+          <SectorEmploymentSection sectors={data.sectorEmployment ?? []} t={t} />
+          <GlobalLaborSection data={data.globalLabor ?? []} t={t} />
+          <WageTrackerSection wages={data.wages ?? []} t={t} />
 
           {/* Footer */}
           <div className="px-3 py-2 border-t border-border/20">

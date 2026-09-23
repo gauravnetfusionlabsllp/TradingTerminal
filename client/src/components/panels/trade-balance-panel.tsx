@@ -46,7 +46,7 @@ function changeColor(n: number): string {
   return AMBER;
 }
 
-// ── Fallback data (realistic US trade figures, $B) ──
+// ── Types ($B) ──
 
 interface CountryBalance {
   country: string;
@@ -109,70 +109,6 @@ interface TradeBalanceData {
   containers: ContainerEntry[];
   policies: PolicyEntry[];
 }
-
-const FALLBACK_DATA: TradeBalanceData = {
-  timestamp: new Date().toISOString(),
-  headlineBalance: -68.3,
-  headlineChangePct: -2.4,
-  period: 'JAN 2026',
-  countries: [
-    { country: 'China', code: 'CN', balance: 75.2, exports: 142.8, imports: 67.6, changePct: 3.1, trend: 'improving' },
-    { country: 'United States', code: 'US', balance: -68.3, exports: 176.4, imports: 244.7, changePct: -2.4, trend: 'worsening' },
-    { country: 'Germany', code: 'DE', balance: 22.4, exports: 134.5, imports: 112.1, changePct: 1.8, trend: 'improving' },
-    { country: 'Japan', code: 'JP', balance: -3.8, exports: 62.1, imports: 65.9, changePct: -12.5, trend: 'worsening' },
-    { country: 'South Korea', code: 'KR', balance: 4.2, exports: 55.3, imports: 51.1, changePct: 5.6, trend: 'improving' },
-    { country: 'India', code: 'IN', balance: -23.4, exports: 34.2, imports: 57.6, changePct: -4.1, trend: 'worsening' },
-    { country: 'Mexico', code: 'MX', balance: -12.8, exports: 26.7, imports: 39.5, changePct: -1.9, trend: 'stable' },
-    { country: 'Canada', code: 'CA', balance: -8.1, exports: 31.4, imports: 39.5, changePct: 0.4, trend: 'stable' },
-    { country: 'Vietnam', code: 'VN', balance: 10.6, exports: 31.2, imports: 20.6, changePct: 8.3, trend: 'improving' },
-    { country: 'Taiwan', code: 'TW', balance: 5.8, exports: 38.7, imports: 32.9, changePct: 2.1, trend: 'improving' },
-    { country: 'United Kingdom', code: 'GB', balance: -2.4, exports: 56.8, imports: 59.2, changePct: -0.8, trend: 'stable' },
-    { country: 'Brazil', code: 'BR', balance: 6.3, exports: 28.9, imports: 22.6, changePct: 4.7, trend: 'improving' },
-  ],
-  currentAccount: [
-    { component: 'Goods Balance', value: -88.2, prevValue: -85.6, changePct: -3.0 },
-    { component: 'Services Balance', value: 22.4, prevValue: 21.8, changePct: 2.8 },
-    { component: 'Primary Income', value: 4.8, prevValue: 5.1, changePct: -5.9 },
-    { component: 'Secondary Income', value: -7.3, prevValue: -7.0, changePct: -4.3 },
-    { component: 'Current Account', value: -68.3, prevValue: -65.7, changePct: -4.0 },
-  ],
-  topPartners: [
-    { country: 'Canada', code: 'CA', totalTrade: 70.9, exports: 31.4, imports: 39.5, sharePct: 15.2 },
-    { country: 'Mexico', code: 'MX', totalTrade: 66.2, exports: 26.7, imports: 39.5, sharePct: 14.2 },
-    { country: 'China', code: 'CN', totalTrade: 55.8, exports: 12.2, imports: 43.6, sharePct: 12.0 },
-    { country: 'Japan', code: 'JP', totalTrade: 24.3, exports: 8.1, imports: 16.2, sharePct: 5.2 },
-    { country: 'Germany', code: 'DE', totalTrade: 22.8, exports: 7.4, imports: 15.4, sharePct: 4.9 },
-    { country: 'South Korea', code: 'KR', totalTrade: 19.5, exports: 6.8, imports: 12.7, sharePct: 4.2 },
-    { country: 'United Kingdom', code: 'GB', totalTrade: 17.2, exports: 8.9, imports: 8.3, sharePct: 3.7 },
-    { country: 'India', code: 'IN', totalTrade: 14.8, exports: 4.2, imports: 10.6, sharePct: 3.2 },
-  ],
-  categories: [
-    { category: 'Petroleum & Products', exports: 18.2, imports: 24.6, balance: -6.4, changePct: -8.2 },
-    { category: 'Automotive', exports: 12.8, imports: 32.4, balance: -19.6, changePct: -3.1 },
-    { category: 'Consumer Electronics', exports: 8.4, imports: 28.7, balance: -20.3, changePct: -1.4 },
-    { category: 'Pharmaceuticals', exports: 6.2, imports: 18.9, balance: -12.7, changePct: -5.7 },
-    { category: 'Semiconductors', exports: 5.8, imports: 14.2, balance: -8.4, changePct: 12.3 },
-    { category: 'Agricultural Products', exports: 16.4, imports: 12.1, balance: 4.3, changePct: 2.8 },
-    { category: 'Aerospace', exports: 14.2, imports: 3.8, balance: 10.4, changePct: 6.1 },
-    { category: 'Services (Tech)', exports: 22.4, imports: 8.2, balance: 14.2, changePct: 4.5 },
-  ],
-  containers: [
-    { port: 'Los Angeles/Long Beach', teus: 892000, changePct: -3.2, utilizationPct: 87 },
-    { port: 'New York/New Jersey', teus: 734000, changePct: 1.8, utilizationPct: 91 },
-    { port: 'Savannah', teus: 528000, changePct: 5.4, utilizationPct: 82 },
-    { port: 'Houston', teus: 346000, changePct: 2.1, utilizationPct: 78 },
-    { port: 'Seattle/Tacoma', teus: 312000, changePct: -1.6, utilizationPct: 72 },
-    { port: 'Norfolk', teus: 298000, changePct: 4.2, utilizationPct: 85 },
-  ],
-  policies: [
-    { action: 'Section 301 Tariff', target: 'China (25%)', status: 'active', effectDate: '2025-02-04', impactB: -32.4 },
-    { action: 'Steel/Aluminum Tariff', target: 'Global (25%)', status: 'active', effectDate: '2025-03-12', impactB: -8.7 },
-    { action: 'Reciprocal Tariff', target: 'EU (20%)', status: 'active', effectDate: '2025-04-09', impactB: -14.2 },
-    { action: 'Auto Tariff', target: 'Global (25%)', status: 'active', effectDate: '2025-04-03', impactB: -11.3 },
-    { action: 'USMCA Review', target: 'CA/MX', status: 'proposed', effectDate: '2026-07-01', impactB: -5.8 },
-    { action: 'Tech Export Control', target: 'China (Chips)', status: 'active', effectDate: '2025-01-15', impactB: -4.1 },
-  ],
-};
 
 // ── Horizontal balance bar ──
 
@@ -270,10 +206,9 @@ export function TradeBalancePanel() {
   const t = useT();
   const { data: hookData, isLoading, refetch } = useTradeBalance();
 
-  // Use hook data if available, otherwise fallback
-  const data: TradeBalanceData = hookData ?? FALLBACK_DATA;
+  const data = hookData as TradeBalanceData | undefined;
 
-  const maxAbsBalance = Math.max(...data.countries.map(c => Math.abs(c.balance)), 1);
+  const maxAbsBalance = Math.max(...(data?.countries ?? []).map(c => Math.abs(c.balance)), 1);
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -290,6 +225,8 @@ export function TradeBalancePanel() {
           </span>
         </div>
         <div className="flex items-center gap-1.5">
+          {data && (
+          <>
           <span className="text-[7px] font-mono text-white/20">{data.period}</span>
           <span
             className="text-[7px] font-mono font-bold px-1 py-0.5"
@@ -306,6 +243,8 @@ export function TradeBalancePanel() {
           >
             {fmtPct(data.headlineChangePct)}
           </span>
+          </>
+          )}
           <button onClick={() => refetch()} className="p-0.5 text-white/30 hover:text-cyan-400 transition-colors">
             <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -323,6 +262,8 @@ export function TradeBalancePanel() {
               </span>
             </div>
           </div>
+        ) : !data ? (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
         ) : (
           <>
             {/* ── Trade Balance by Country ── */}

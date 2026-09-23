@@ -2,26 +2,12 @@ import { env } from './config/env.js';
 import { createApp } from './app.js';
 import { startWebSocketServer } from './services/websocket/ws-server.js';
 import { startMarketFeed, stopMarketFeed } from './services/market-feed.js';
-import { startScraperScheduler } from './services/scraper/scraper-scheduler.js';
 import { startStockTracker, stopStockTracker } from './services/stocks/stock-tracker.js';
 import { seedDatabase } from './lib/seed.js';
 import { backupDatabase } from './lib/gcs-backup.js';
 import { startCalendarTracker, stopCalendarTracker } from './services/calendar/calendar-tracker.js';
 import { startInsiderTracker, stopInsiderTracker } from './services/stocks/insider-tracker.js';
-import { startDataRetention, stopDataRetention } from './services/data-retention.js';
-import { startHyperliquidTracker, stopHyperliquidTracker } from './services/hyperliquid/hl-tracker.js';
-import { fetchConflicts } from './services/acled/acled-client.js';
 import { prisma } from './lib/prisma.js';
-
-// Validate ENCRYPTION_KEY at startup — fail early in production if missing
-if (!process.env.ENCRYPTION_KEY) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('[Server] FATAL: ENCRYPTION_KEY is required in production');
-    process.exit(1);
-  } else {
-    console.warn('[Server] WARNING: ENCRYPTION_KEY is not set — Alpaca credential encryption will fail');
-  }
-}
 
 for (const key of ['JWT_SECRET', 'MT5_BRIDGE_API_KEY'] as const) {
   if (env[key]) continue;
@@ -50,31 +36,9 @@ const server = app.listen(env.PORT, async () => {
 
   startWebSocketServer(server);
   startMarketFeed();
-  startScraperScheduler();
   startStockTracker();
   startCalendarTracker();
   startInsiderTracker();
-  startHyperliquidTracker();
-  startDataRetention();
-
-  // Pre-warm conflicts cache so first client request is instant
-  fetchConflicts().catch(() => {});
-
-  // Clean up expired sessions and verification codes every hour
-  intervals.push(setInterval(async () => {
-    try {
-      const now = new Date();
-      const [sessions, codes] = await Promise.all([
-        prisma.authSession.deleteMany({ where: { expiresAt: { lt: now } } }),
-        prisma.verificationCode.deleteMany({ where: { expiresAt: { lt: now } } }),
-      ]);
-      if (sessions.count || codes.count) {
-        console.log(`[Auth] Cleaned ${sessions.count} expired sessions, ${codes.count} expired codes`);
-      }
-    } catch (err) {
-      console.error('[Auth] Cleanup error:', err);
-    }
-  }, 60 * 60 * 1000));
 
   // Periodic database backup to GCS (adaptive: normal interval when active, 60min when idle)
   if (env.GCS_BUCKET) {
@@ -102,8 +66,6 @@ async function shutdown(signal: string) {
   stopStockTracker();
   stopCalendarTracker();
   stopInsiderTracker();
-  stopHyperliquidTracker();
-  stopDataRetention();
   stopMarketFeed();
   // Clear additional tracked intervals
   for (const id of intervals) clearInterval(id);

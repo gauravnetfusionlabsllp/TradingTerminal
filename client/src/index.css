@@ -3,7 +3,7 @@
 @import "./styles/flexlayout-theme.css";
 
 @theme {
-  /* Bloomberg Terminal Theme */
+  /* Terminal theme */
   --color-bg: #000000;
   --color-panel: #000000;
   --color-hover: #111111;
@@ -48,7 +48,7 @@
   background-image: none;
 }
 
-/* Bloomberg Terminal Inspired Background */
+/* Terminal background */
 body {
   margin: 0;
   padding: 0;
@@ -68,7 +68,7 @@ body {
   user-select: none;
 }
 
-/* Scrollbar styling - Bloomberg style (hidden or ultra-thin, solid color) */
+/* Scrollbar styling (hidden or ultra-thin, solid color) */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) var(--color-bg);
@@ -104,7 +104,7 @@ body {
   flex-direction: column;
 }
 
-/* Bloomberg Terminal Utilities */
+/* Terminal utilities */
 .glass {
   background: var(--color-panel);
   /* Remove blur and transparency for solid terminal look */
@@ -228,17 +228,20 @@ body {
 .conflict-marker[data-size="lg"]::before,
 .conflict-marker[data-size="lg"]::after { width: 20px; height: 2px; }
 
-/* Price Flash Animations */
-@keyframes price-flash-up {
-  0% { background: rgba(0,255,0,0.4); color: #fff; }
-  100% { background: transparent; }
+/* Live price tick: text keeps last-tick direction colour, a soft tinted pill fades out on every tick */
+@keyframes tick-up {
+  0%   { background-color: color-mix(in srgb, var(--color-bullish) 22%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-bullish) 35%, transparent); }
+  100% { background-color: transparent; box-shadow: inset 0 0 0 1px transparent; }
 }
-@keyframes price-flash-down {
-  0% { background: rgba(255,0,0,0.4); color: #fff; }
-  100% { background: transparent; }
+@keyframes tick-down {
+  0%   { background-color: color-mix(in srgb, var(--color-bearish) 22%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-bearish) 35%, transparent); }
+  100% { background-color: transparent; box-shadow: inset 0 0 0 1px transparent; }
 }
-.flash-up { animation: price-flash-up 0.8s ease-out }
-.flash-down { animation: price-flash-down 0.8s ease-out }
+.tick-price[data-tick="up"]   { color: var(--color-bullish); animation: tick-up 650ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.tick-price[data-tick="down"] { color: var(--color-bearish); animation: tick-down 650ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .tick-price[data-tick] { animation: none; }
+}
 
 /* Panel Focus Glow */
 .panel-focused {
@@ -251,8 +254,8 @@ body {
   box-shadow: 0 0 0 1px var(--color-accent);
 }
 
-/* Sharp focus states */
-input:focus, button:focus {
+/* Sharp focus states — buttons only for keyboard focus, so a clicked toggle keeps its own selected border */
+input:focus, button:focus-visible {
   outline: none;
   border-color: var(--color-accent) !important;
   box-shadow: 0 0 0 1px var(--color-accent) !important;

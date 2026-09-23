@@ -21,6 +21,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   try {
     const res = await fetch(`${BASE_URL}${path}`, {
+      // Live trading data: bypass copies browsers stored when /mt5 was still sent with max-age=3600
+      ...(path.startsWith('/mt5') && { cache: 'no-store' as const }),
       ...init,
       credentials: 'include',
       signal: init?.signal || controller.signal,

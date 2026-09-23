@@ -2,56 +2,6 @@ import { useState } from 'react';
 import { ShieldAlert, RefreshCw } from 'lucide-react';
 import { useCyberRiskInsurance } from '../../api/hooks/use-cyber-risk-insurance';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  insurerMarket: [
-    { insurer: 'Chubb', marketShare: 14.2, gwp: 2.10, lossRatio: 62.8, combinedRatio: 88.5, premiumChange: 12.4, capacity: 850 },
-    { insurer: 'AIG', marketShare: 11.8, gwp: 1.75, lossRatio: 71.2, combinedRatio: 97.3, premiumChange: 8.6, capacity: 720 },
-    { insurer: 'Beazley', marketShare: 9.4, gwp: 1.39, lossRatio: 58.4, combinedRatio: 82.1, premiumChange: 15.2, capacity: 580 },
-    { insurer: 'Zurich', marketShare: 8.1, gwp: 1.20, lossRatio: 65.1, combinedRatio: 91.4, premiumChange: 9.8, capacity: 650 },
-    { insurer: 'Travelers', marketShare: 6.9, gwp: 1.02, lossRatio: 69.8, combinedRatio: 95.1, premiumChange: 7.2, capacity: 520 },
-    { insurer: 'Allianz', marketShare: 6.2, gwp: 0.92, lossRatio: 63.5, combinedRatio: 89.8, premiumChange: 11.0, capacity: 480 },
-    { insurer: 'Hiscox', marketShare: 5.4, gwp: 0.80, lossRatio: 54.2, combinedRatio: 78.6, premiumChange: 18.4, capacity: 420 },
-    { insurer: 'Axis Capital', marketShare: 4.8, gwp: 0.71, lossRatio: 67.4, combinedRatio: 93.2, premiumChange: 6.5, capacity: 380 },
-    { insurer: 'Coalition', marketShare: 3.6, gwp: 0.53, lossRatio: 48.8, combinedRatio: 74.2, premiumChange: 22.8, capacity: 300 },
-    { insurer: 'Corvus', marketShare: 2.9, gwp: 0.43, lossRatio: 52.1, combinedRatio: 79.5, premiumChange: 19.6, capacity: 250 },
-  ],
-  threatLandscape: [
-    { type: 'RANSOMWARE', frequency: 412, avgCost: 4.88, yoyChange: 18.4, targetedSector: 'Healthcare', mitigationRate: 34.2 },
-    { type: 'PHISHING', frequency: 1842, avgCost: 1.24, yoyChange: 12.6, targetedSector: 'Financial Services', mitigationRate: 52.8 },
-    { type: 'SUPPLY CHAIN', frequency: 198, avgCost: 6.42, yoyChange: 28.5, targetedSector: 'Technology', mitigationRate: 22.4 },
-    { type: 'ZERO-DAY', frequency: 47, avgCost: 8.94, yoyChange: 35.2, targetedSector: 'Government', mitigationRate: 14.8 },
-    { type: 'DDoS', frequency: 2456, avgCost: 0.52, yoyChange: -4.2, targetedSector: 'E-Commerce', mitigationRate: 68.4 },
-    { type: 'INSIDER THREAT', frequency: 287, avgCost: 3.18, yoyChange: 8.8, targetedSector: 'Finance', mitigationRate: 28.6 },
-    { type: 'APT', frequency: 86, avgCost: 12.45, yoyChange: 22.1, targetedSector: 'Defense', mitigationRate: 18.2 },
-    { type: 'BEC', frequency: 624, avgCost: 2.76, yoyChange: 15.4, targetedSector: 'Manufacturing', mitigationRate: 42.1 },
-    { type: 'CREDENTIAL STUFFING', frequency: 3218, avgCost: 0.34, yoyChange: -8.6, targetedSector: 'Retail', mitigationRate: 74.2 },
-  ],
-  sectorRiskProfiles: [
-    { sector: 'Healthcare', breachCost: 10.93, containmentDays: 287, adoptionPct: 42.6, premium: 385, attackVector: 'PHISHING' },
-    { sector: 'Financial Services', breachCost: 5.90, containmentDays: 224, adoptionPct: 78.4, premium: 312, attackVector: 'CREDENTIAL' },
-    { sector: 'Energy', breachCost: 4.72, containmentDays: 329, adoptionPct: 38.2, premium: 428, attackVector: 'RANSOMWARE' },
-    { sector: 'Technology', breachCost: 4.97, containmentDays: 200, adoptionPct: 82.6, premium: 245, attackVector: 'ZERO-DAY' },
-    { sector: 'Government', breachCost: 4.18, containmentDays: 379, adoptionPct: 24.8, premium: 512, attackVector: 'APT' },
-    { sector: 'Manufacturing', breachCost: 4.47, containmentDays: 312, adoptionPct: 35.4, premium: 368, attackVector: 'RANSOMWARE' },
-    { sector: 'Retail', breachCost: 3.28, containmentDays: 260, adoptionPct: 56.2, premium: 198, attackVector: 'MALWARE' },
-    { sector: 'Education', breachCost: 3.65, containmentDays: 352, adoptionPct: 18.4, premium: 442, attackVector: 'RANSOMWARE' },
-    { sector: 'Telecom', breachCost: 4.01, containmentDays: 232, adoptionPct: 64.8, premium: 276, attackVector: 'SUPPLY CHAIN' },
-  ],
-  recentIncidents: [
-    { org: 'National Health Corp', type: 'RANSOMWARE', impact: '$2.4B', recordsAffected: 112000000, coverage: 'PARTIAL' },
-    { org: 'MegaBank Intl', type: 'APT', impact: '$1.8B', recordsAffected: 78000000, coverage: 'COVERED' },
-    { org: 'Federal Energy Grid', type: 'SUPPLY CHAIN', impact: '$3.2B', recordsAffected: 45000000, coverage: 'DENIED' },
-    { org: 'CloudServe Pro', type: 'ZERO-DAY', impact: '$1.5B', recordsAffected: 89000000, coverage: 'PENDING' },
-    { org: 'GlobalRetail Inc', type: 'CREDENTIAL', impact: '$0.9B', recordsAffected: 34000000, coverage: 'COVERED' },
-    { org: 'Defense Systems Ltd', type: 'APT', impact: '$4.1B', recordsAffected: 12000000, coverage: 'EXCLUDED' },
-    { org: 'EduNet Alliance', type: 'RANSOMWARE', impact: '$0.7B', recordsAffected: 28000000, coverage: 'PARTIAL' },
-    { org: 'AutoMfg Global', type: 'INSIDER', impact: '$1.1B', recordsAffected: 18000000, coverage: 'COVERED' },
-    { org: 'TelcoNet Corp', type: 'DDoS', impact: '$0.4B', recordsAffected: 8500000, coverage: 'COVERED' },
-  ],
-};
-
 // ── Types ──
 
 type Tab = 'INSURANCE' | 'THREATS' | 'SECTORS' | 'INCIDENTS';
@@ -112,11 +62,11 @@ export function CyberRiskInsurancePanel() {
   const [activeTab, setActiveTab] = useState<Tab>('INSURANCE');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const d = (rawData as any) ?? FALLBACK_DATA;
-  const insurerMarket = d.insurerMarket ?? FALLBACK_DATA.insurerMarket;
-  const threatLandscape = d.threatLandscape ?? FALLBACK_DATA.threatLandscape;
-  const sectorRiskProfiles = d.sectorRiskProfiles ?? FALLBACK_DATA.sectorRiskProfiles;
-  const recentIncidents = d.recentIncidents ?? FALLBACK_DATA.recentIncidents;
+  const d = rawData as any;
+  const insurerMarket = d?.insurerMarket ?? [];
+  const threatLandscape = d?.threatLandscape ?? [];
+  const sectorRiskProfiles = d?.sectorRiskProfiles ?? [];
+  const recentIncidents = d?.recentIncidents ?? [];
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden font-mono text-[9px]">
@@ -169,10 +119,10 @@ export function CyberRiskInsurancePanel() {
           </div>
         )}
 
-        {activeTab === 'INSURANCE' && <InsuranceTab data={insurerMarket} />}
-        {activeTab === 'THREATS' && <ThreatsTab data={threatLandscape} />}
-        {activeTab === 'SECTORS' && <SectorsTab data={sectorRiskProfiles} />}
-        {activeTab === 'INCIDENTS' && <IncidentsTab data={recentIncidents} />}
+        {d && activeTab === 'INSURANCE' && <InsuranceTab data={insurerMarket} />}
+        {d && activeTab === 'THREATS' && <ThreatsTab data={threatLandscape} />}
+        {d && activeTab === 'SECTORS' && <SectorsTab data={sectorRiskProfiles} />}
+        {d && activeTab === 'INCIDENTS' && <IncidentsTab data={recentIncidents} />}
       </div>
     </div>
   );
@@ -180,7 +130,7 @@ export function CyberRiskInsurancePanel() {
 
 // ── Tab 1: Insurance ──
 
-function InsuranceTab({ data }: { data: typeof FALLBACK_DATA.insurerMarket }) {
+function InsuranceTab({ data }: { data: any[] }) {
   return (
     <div className="px-2 py-2">
       <div className="flex items-center gap-1.5 mb-1.5 px-1">
@@ -226,7 +176,7 @@ function InsuranceTab({ data }: { data: typeof FALLBACK_DATA.insurerMarket }) {
 
 // ── Tab 2: Threats ──
 
-function ThreatsTab({ data }: { data: typeof FALLBACK_DATA.threatLandscape }) {
+function ThreatsTab({ data }: { data: any[] }) {
   return (
     <div className="px-2 py-2">
       <div className="flex items-center gap-1.5 mb-1.5 px-1">
@@ -271,7 +221,7 @@ function ThreatsTab({ data }: { data: typeof FALLBACK_DATA.threatLandscape }) {
 
 // ── Tab 3: Sectors ──
 
-function SectorsTab({ data }: { data: typeof FALLBACK_DATA.sectorRiskProfiles }) {
+function SectorsTab({ data }: { data: any[] }) {
   return (
     <div className="px-2 py-2">
       <div className="flex items-center gap-1.5 mb-1.5 px-1">
@@ -322,7 +272,7 @@ function SectorsTab({ data }: { data: typeof FALLBACK_DATA.sectorRiskProfiles })
 
 // ── Tab 4: Incidents ──
 
-function IncidentsTab({ data }: { data: typeof FALLBACK_DATA.recentIncidents }) {
+function IncidentsTab({ data }: { data: any[] }) {
   return (
     <div className="px-2 py-2">
       <div className="flex items-center gap-1.5 mb-1.5 px-1">

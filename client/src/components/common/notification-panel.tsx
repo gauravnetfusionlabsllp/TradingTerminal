@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCheck, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '../../stores/use-app-store';
-import { getLocalizedTitle } from '../../api/hooks/use-news';
 
 function timeAgo(date: Date) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
@@ -26,7 +25,6 @@ export function NotificationPanel() {
   const markRead = useAppStore((s) => s.markRead);
   const markAllRead = useAppStore((s) => s.markAllRead);
   const setNotifPanelOpen = useAppStore((s) => s.setNotifPanelOpen);
-  const setSelectedArticleId = useAppStore((s) => s.setSelectedArticleId);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -82,8 +80,6 @@ export function NotificationPanel() {
                   key={n.id}
                   onClick={() => {
                     markRead(n.id);
-                    setSelectedArticleId(n.id);
-                    setNotifPanelOpen(false);
                   }}
                   className={`w-full text-left px-4 py-3 border-b border-border/20 hover:bg-white/5 transition-colors group ${
                     n.read ? 'opacity-60' : ''
@@ -101,7 +97,7 @@ export function NotificationPanel() {
 
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] text-gray-200 leading-snug line-clamp-2 group-hover:text-white transition-colors">
-                        {getLocalizedTitle(n)}
+                        {n.title}
                       </p>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="text-[10px] text-neutral font-mono">{timeAgo(n.time)}</span>

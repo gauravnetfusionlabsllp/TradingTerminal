@@ -1,89 +1,6 @@
 import { ShieldAlert } from 'lucide-react';
 import { useCybersecurity } from '../../api/hooks/use-cybersecurity';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  threatLevel: 7.8,
-  threatLabel: 'ELEVATED',
-  cybercrimeCostYearly: 9.5,
-  overview: {
-    crimeCostYearly: 9.5,
-    avgBreachCost: 4.88,
-    ransomwarePerDay: 24,
-    avgRansomPayment: 1.54,
-    cvesYTD: 18420,
-    criticalVulns: 1247,
-  },
-  sectorRisk: [
-    { sector: 'Healthcare', riskScore: 92, breachesYTD: 387, avgCost: 10.93, detectDays: 212, containDays: 75, topVector: 'PHISHING', trend: 'up' },
-    { sector: 'Financial Services', riskScore: 88, breachesYTD: 312, avgCost: 5.90, detectDays: 168, containDays: 56, topVector: 'CREDENTIAL', trend: 'up' },
-    { sector: 'Energy', riskScore: 85, breachesYTD: 198, avgCost: 4.72, detectDays: 245, containDays: 84, topVector: 'RANSOMWARE', trend: 'up' },
-    { sector: 'Government', riskScore: 82, breachesYTD: 276, avgCost: 4.18, detectDays: 287, containDays: 92, topVector: 'APT', trend: 'stable' },
-    { sector: 'Technology', riskScore: 78, breachesYTD: 245, avgCost: 4.97, detectDays: 152, containDays: 48, topVector: 'ZERO-DAY', trend: 'down' },
-    { sector: 'Manufacturing', riskScore: 76, breachesYTD: 189, avgCost: 4.47, detectDays: 234, containDays: 78, topVector: 'RANSOMWARE', trend: 'up' },
-    { sector: 'Retail', riskScore: 71, breachesYTD: 156, avgCost: 3.28, detectDays: 198, containDays: 62, topVector: 'MALWARE', trend: 'stable' },
-    { sector: 'Education', riskScore: 68, breachesYTD: 142, avgCost: 3.65, detectDays: 264, containDays: 88, topVector: 'RANSOMWARE', trend: 'up' },
-    { sector: 'Telecom', riskScore: 65, breachesYTD: 118, avgCost: 4.01, detectDays: 178, containDays: 54, topVector: 'SUPPLY CHAIN', trend: 'stable' },
-  ],
-  majorBreaches: [
-    { org: 'National Health Corp', sector: 'Healthcare', date: '2026-02-18', recordsAffected: 112000000, costEstimate: 2.4, attackType: 'RANSOMWARE', attribution: 'CRIMINAL' },
-    { org: 'MegaBank Intl', sector: 'Finance', date: '2026-01-22', recordsAffected: 78000000, costEstimate: 1.8, attackType: 'APT', attribution: 'NATION-STATE' },
-    { org: 'Federal Energy Grid', sector: 'Energy', date: '2026-03-05', recordsAffected: 45000000, costEstimate: 3.2, attackType: 'SUPPLY CHAIN', attribution: 'NATION-STATE' },
-    { org: 'CloudServe Pro', sector: 'Technology', date: '2026-02-28', recordsAffected: 89000000, costEstimate: 1.5, attackType: 'ZERO-DAY', attribution: 'UNKNOWN' },
-    { org: 'GlobalRetail Inc', sector: 'Retail', date: '2026-01-10', recordsAffected: 34000000, costEstimate: 0.9, attackType: 'CREDENTIAL', attribution: 'CRIMINAL' },
-    { org: 'Defense Systems Ltd', sector: 'Government', date: '2026-03-12', recordsAffected: 12000000, costEstimate: 4.1, attackType: 'APT', attribution: 'NATION-STATE' },
-    { org: 'EduNet Alliance', sector: 'Education', date: '2026-02-04', recordsAffected: 28000000, costEstimate: 0.7, attackType: 'RANSOMWARE', attribution: 'CRIMINAL' },
-    { org: 'AutoMfg Global', sector: 'Manufacturing', date: '2026-01-30', recordsAffected: 18000000, costEstimate: 1.1, attackType: 'INSIDER', attribution: 'INSIDER' },
-  ],
-  ransomwareGroups: [
-    { group: 'LockBit 4.0', attacksYTD: 412, avgDemand: 4.2, avgPayment: 1.8, targetSectors: 'Healthcare, Finance', status: 'ACTIVE' },
-    { group: 'BlackCat/ALPHV', attacksYTD: 287, avgDemand: 3.8, avgPayment: 1.5, targetSectors: 'Energy, Govt', status: 'REBRANDED' },
-    { group: 'Cl0p', attacksYTD: 198, avgDemand: 5.1, avgPayment: 2.2, targetSectors: 'Tech, Finance', status: 'ACTIVE' },
-    { group: 'Play', attacksYTD: 165, avgDemand: 2.4, avgPayment: 0.9, targetSectors: 'Mfg, Retail', status: 'ACTIVE' },
-    { group: 'Royal/BlackSuit', attacksYTD: 142, avgDemand: 3.2, avgPayment: 1.4, targetSectors: 'Healthcare, Edu', status: 'ACTIVE' },
-    { group: 'Akira', attacksYTD: 128, avgDemand: 1.8, avgPayment: 0.7, targetSectors: 'SMB, Mfg', status: 'ACTIVE' },
-    { group: 'Hive', attacksYTD: 0, avgDemand: 0, avgPayment: 0, targetSectors: 'N/A', status: 'DISRUPTED' },
-    { group: 'Conti', attacksYTD: 0, avgDemand: 0, avgPayment: 0, targetSectors: 'N/A', status: 'DISRUPTED' },
-  ],
-  vulnerabilityMetrics: {
-    totalCVEs: 18420,
-    criticalCVEs: 1247,
-    highCVEs: 4832,
-    mediumCVEs: 8456,
-    lowCVEs: 3885,
-    zeroDaysExploited: 47,
-    avgPatchTime: 62,
-    patchAdoptionRate: 34.2,
-    topVendors: [
-      { vendor: 'Microsoft', cves: 1842, critical: 187 },
-      { vendor: 'Google', cves: 1256, critical: 98 },
-      { vendor: 'Apple', cves: 892, critical: 72 },
-      { vendor: 'Cisco', cves: 745, critical: 89 },
-      { vendor: 'Adobe', cves: 612, critical: 54 },
-      { vendor: 'Oracle', cves: 584, critical: 67 },
-      { vendor: 'Linux Kernel', cves: 478, critical: 42 },
-      { vendor: 'Fortinet', cves: 312, critical: 38 },
-    ],
-  },
-  cyberInsurance: {
-    globalPremiums: 14.8,
-    premiumGrowthYoY: 18.5,
-    avgRateIncrease: 11.2,
-    lossRatio: 67.4,
-    denialRate: 24.8,
-    avgCoverage: 5.2,
-    topInsurers: [
-      { insurer: 'Chubb', marketShare: 14.2, premiumVol: 2.1, lossRatio: 62.8 },
-      { insurer: 'AIG', marketShare: 11.8, premiumVol: 1.75, lossRatio: 71.2 },
-      { insurer: 'Beazley', marketShare: 9.4, premiumVol: 1.39, lossRatio: 58.4 },
-      { insurer: 'Zurich', marketShare: 8.1, premiumVol: 1.20, lossRatio: 65.1 },
-      { insurer: 'Travelers', marketShare: 6.9, premiumVol: 1.02, lossRatio: 69.8 },
-      { insurer: 'Allianz', marketShare: 6.2, premiumVol: 0.92, lossRatio: 63.5 },
-    ],
-  },
-};
-
 // ── Helpers ──
 
 function threatLevelColor(level: number): string {
@@ -156,18 +73,22 @@ function sectorBadgeStyle(_s: string): string {
 // ── Main Panel ──
 
 export function CybersecurityPanel() {
-  const { data: rawData } = useCybersecurity();
+  const { data: rawData, isLoading } = useCybersecurity();
 
-  const d = (rawData as Record<string, unknown>) ?? FALLBACK_DATA;
-  const threatLevel = (d.threatLevel as number) ?? FALLBACK_DATA.threatLevel;
-  const threatLabel = (d.threatLabel as string) ?? FALLBACK_DATA.threatLabel;
-  const cybercrimeCostYearly = (d.cybercrimeCostYearly as number) ?? FALLBACK_DATA.cybercrimeCostYearly;
-  const overview = (d.overview as typeof FALLBACK_DATA.overview) ?? FALLBACK_DATA.overview;
-  const sectorRisk = (d.sectorRisk as typeof FALLBACK_DATA.sectorRisk) ?? FALLBACK_DATA.sectorRisk;
-  const majorBreaches = (d.majorBreaches as typeof FALLBACK_DATA.majorBreaches) ?? FALLBACK_DATA.majorBreaches;
-  const ransomwareGroups = (d.ransomwareGroups as typeof FALLBACK_DATA.ransomwareGroups) ?? FALLBACK_DATA.ransomwareGroups;
-  const vulnMetrics = (d.vulnerabilityMetrics as typeof FALLBACK_DATA.vulnerabilityMetrics) ?? FALLBACK_DATA.vulnerabilityMetrics;
-  const cyberInsurance = (d.cyberInsurance as typeof FALLBACK_DATA.cyberInsurance) ?? FALLBACK_DATA.cyberInsurance;
+  const d = rawData as any;
+  const threatLevel: number | undefined = d?.threatLevel;
+  const threatLabel: string | undefined = d?.threatLabel;
+  const cybercrimeCostYearly: number | undefined = d?.cybercrimeCostYearly;
+  const overview = d?.overview;
+  const sectorRisk: any[] = d?.sectorRisk ?? [];
+  const majorBreaches: any[] = d?.majorBreaches ?? [];
+  const ransomwareGroups: any[] = d?.ransomwareGroups ?? [];
+  const vulnMetrics = d?.vulnerabilityMetrics;
+  const cyberInsurance = d?.cyberInsurance;
+
+  if (!d) {
+    return <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">{isLoading ? 'Loading...' : 'No data available'}</div>;
+  }
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden font-mono text-[9px]">
@@ -180,20 +101,20 @@ export function CybersecurityPanel() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 ${threatLevelColor(threatLevel)} ${threatLevelBg(threatLevel)}`}>
+          {threatLevel != null && <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 ${threatLevelColor(threatLevel)} ${threatLevelBg(threatLevel)}`}>
             {threatLabel} {threatLevel.toFixed(1)}/10
-          </span>
+          </span>}
           <div className="flex items-center gap-1">
             <span className="text-[7px] uppercase text-neutral-500">CYBERCRIME</span>
             <span className="text-[9px] font-bold text-red-400 tabular-nums">
-              ${cybercrimeCostYearly.toFixed(1)}T/yr
+              {cybercrimeCostYearly != null ? `$${cybercrimeCostYearly.toFixed(1)}T/yr` : '--'}
             </span>
           </div>
         </div>
       </div>
 
       {/* ── Overview Stats Bar ── */}
-      <div className="grid grid-cols-6 border-b border-red-400/30 shrink-0">
+      {overview && <div className="grid grid-cols-6 border-b border-red-400/30 shrink-0">
         {[
           { label: 'CRIME COST/YR', value: `$${overview.crimeCostYearly.toFixed(1)}T` },
           { label: 'AVG BREACH', value: `$${overview.avgBreachCost.toFixed(2)}M` },
@@ -207,7 +128,7 @@ export function CybersecurityPanel() {
             <div className="text-[10px] font-black text-red-400 tabular-nums">{stat.value}</div>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* ── Scrollable Content ── */}
       <div className="flex-1 overflow-auto no-scrollbar">
@@ -338,7 +259,7 @@ export function CybersecurityPanel() {
         </div>
 
         {/* ── Section 4: Vulnerability Metrics ── */}
-        <div className="px-2 py-2 border-t border-red-400/30">
+        {vulnMetrics && <div className="px-2 py-2 border-t border-red-400/30">
           <div className="flex items-center gap-1.5 mb-1.5 px-1">
             <div className="w-1 h-1 bg-red-400" />
             <span className="text-[7px] font-black uppercase tracking-widest text-red-400">
@@ -394,7 +315,7 @@ export function CybersecurityPanel() {
                 </span>
               ))}
             </div>
-            {vulnMetrics.topVendors.map((v: any) => (
+            {(vulnMetrics.topVendors ?? []).map((v: any) => (
               <div
                 key={v.vendor}
                 className="grid grid-cols-[1.2fr_0.6fr_0.6fr] gap-1 py-0.5 border-b border-border/20 hover:bg-red-400/[0.02] transition-colors items-center"
@@ -417,10 +338,10 @@ export function CybersecurityPanel() {
               <div className="text-[10px] font-black text-orange-400 tabular-nums">{vulnMetrics.highCVEs.toLocaleString()}</div>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* ── Section 5: Cyber Insurance ── */}
-        <div className="px-2 py-2 border-t border-red-400/30">
+        {cyberInsurance && <div className="px-2 py-2 border-t border-red-400/30">
           <div className="flex items-center gap-1.5 mb-1.5 px-1">
             <div className="w-1 h-1 bg-red-400" />
             <span className="text-[7px] font-black uppercase tracking-widest text-red-400">
@@ -456,7 +377,7 @@ export function CybersecurityPanel() {
                 </span>
               ))}
             </div>
-            {cyberInsurance.topInsurers.map((ins: any) => (
+            {(cyberInsurance.topInsurers ?? []).map((ins: any) => (
               <div
                 key={ins.insurer}
                 className="grid grid-cols-[1.2fr_0.7fr_0.7fr_0.7fr] gap-1 py-0.5 border-b border-border/20 hover:bg-red-400/[0.02] transition-colors items-center"
@@ -470,7 +391,7 @@ export function CybersecurityPanel() {
               </div>
             ))}
           </div>
-        </div>
+        </div>}
 
       </div>
     </div>

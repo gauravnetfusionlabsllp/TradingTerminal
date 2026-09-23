@@ -24,59 +24,6 @@ function changeColor(n: number): string {
   return 'rgba(255,255,255,0.3)';
 }
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  processors: [
-    { name: 'Visa', ticker: 'V', tpvBn: 3420, revenueBn: 36.8, takeRateBps: 10.8, growthPct: 9.2, marketCapBn: 612, ps: 16.6 },
-    { name: 'Mastercard', ticker: 'MA', tpvBn: 2280, revenueBn: 28.2, takeRateBps: 12.4, growthPct: 11.4, marketCapBn: 478, ps: 17.0 },
-    { name: 'PayPal', ticker: 'PYPL', tpvBn: 1680, revenueBn: 32.6, takeRateBps: 19.4, growthPct: 6.8, marketCapBn: 82, ps: 2.5 },
-    { name: 'Stripe', ticker: 'PRIVATE', tpvBn: 1250, revenueBn: 18.6, takeRateBps: 14.9, growthPct: 24.5, marketCapBn: 91, ps: 4.9 },
-    { name: 'Adyen', ticker: 'ADYEN', tpvBn: 1120, revenueBn: 9.4, takeRateBps: 8.4, growthPct: 22.1, marketCapBn: 58, ps: 6.2 },
-    { name: 'Block (SQ)', ticker: 'XYZ', tpvBn: 245, revenueBn: 24.1, takeRateBps: 98.4, growthPct: 8.2, marketCapBn: 42, ps: 1.7 },
-    { name: 'Fiserv', ticker: 'FI', tpvBn: 980, revenueBn: 20.1, takeRateBps: 20.5, growthPct: 7.4, marketCapBn: 118, ps: 5.9 },
-    { name: 'FIS', ticker: 'FIS', tpvBn: 720, revenueBn: 14.8, takeRateBps: 20.6, growthPct: 3.2, marketCapBn: 48, ps: 3.2 },
-    { name: 'Global Payments', ticker: 'GPN', tpvBn: 410, revenueBn: 9.6, takeRateBps: 23.4, growthPct: 5.8, marketCapBn: 28, ps: 2.9 },
-    { name: 'Worldline', ticker: 'WLN', tpvBn: 380, revenueBn: 4.8, takeRateBps: 12.6, growthPct: -1.2, marketCapBn: 6.2, ps: 1.3 },
-  ],
-  neobanks: [
-    { name: 'Nubank', ticker: 'NU', usersM: 105, depositsBn: 28.4, revenueBn: 12.8, valuationBn: 62, breakeven: 'YES', region: 'LATAM' },
-    { name: 'Revolut', ticker: 'PRIVATE', usersM: 48, depositsBn: 24.2, revenueBn: 3.4, valuationBn: 45, breakeven: 'YES', region: 'EMEA' },
-    { name: 'Chime', ticker: 'PRIVATE', usersM: 22, depositsBn: 18.6, revenueBn: 1.8, valuationBn: 25, breakeven: 'NO', region: 'US' },
-    { name: 'N26', ticker: 'PRIVATE', usersM: 8, depositsBn: 8.4, revenueBn: 0.38, valuationBn: 9.2, breakeven: 'NO', region: 'EMEA' },
-    { name: 'Monzo', ticker: 'PRIVATE', usersM: 10, depositsBn: 7.8, revenueBn: 0.84, valuationBn: 5.8, breakeven: 'YES', region: 'UK' },
-    { name: 'SoFi', ticker: 'SOFI', usersM: 9.4, depositsBn: 22.1, revenueBn: 2.6, valuationBn: 14.2, breakeven: 'YES', region: 'US' },
-    { name: 'Starling', ticker: 'PRIVATE', usersM: 4.2, depositsBn: 12.8, revenueBn: 0.62, valuationBn: 3.2, breakeven: 'YES', region: 'UK' },
-    { name: 'Cash App', ticker: 'XYZ', usersM: 57, depositsBn: 14.2, revenueBn: 15.4, valuationBn: 0, breakeven: 'YES', region: 'US' },
-    { name: 'Wise', ticker: 'WISE', usersM: 16.5, depositsBn: 12.4, revenueBn: 1.2, valuationBn: 11.8, breakeven: 'YES', region: 'GLOBAL' },
-    { name: 'Mercado Pago', ticker: 'MELI', usersM: 52, depositsBn: 9.8, revenueBn: 6.2, valuationBn: 0, breakeven: 'YES', region: 'LATAM' },
-  ],
-  bnpl: [
-    { name: 'Klarna', ticker: 'KLAR', gmvBn: 105, revenueBn: 2.8, takeRatePct: 2.67, lossRatePct: 1.8, activeUsersM: 85 },
-    { name: 'Affirm', ticker: 'AFRM', gmvBn: 32, revenueBn: 2.4, takeRatePct: 7.5, lossRatePct: 4.2, activeUsersM: 19 },
-    { name: 'Afterpay (Block)', ticker: 'XYZ', gmvBn: 28, revenueBn: 1.1, takeRatePct: 3.93, lossRatePct: 2.1, activeUsersM: 24 },
-    { name: 'Zip', ticker: 'ZIP', gmvBn: 10.4, revenueBn: 0.78, takeRatePct: 7.5, lossRatePct: 3.8, activeUsersM: 6.2 },
-    { name: 'Sezzle', ticker: 'SEZL', gmvBn: 2.4, revenueBn: 0.24, takeRatePct: 10.0, lossRatePct: 2.4, activeUsersM: 4.8 },
-    { name: 'PayPal BNPL', ticker: 'PYPL', gmvBn: 38, revenueBn: 1.6, takeRatePct: 4.21, lossRatePct: 1.5, activeUsersM: 32 },
-    { name: 'Apple Pay Later', ticker: 'AAPL', gmvBn: 18, revenueBn: 0, takeRatePct: 0, lossRatePct: 0.8, activeUsersM: 14 },
-    { name: 'Tabby', ticker: 'PRIVATE', gmvBn: 8.2, revenueBn: 0.42, takeRatePct: 5.12, lossRatePct: 1.9, activeUsersM: 12 },
-  ],
-  rtp: [
-    { country: 'India (UPI)', volumeBn: 172, growthPct: 42.8, adoptionPct: 78.2, provider: 'NPCI', launchYear: 2016 },
-    { country: 'Brazil (PIX)', volumeBn: 52.4, growthPct: 65.2, adoptionPct: 72.4, provider: 'BCB', launchYear: 2020 },
-    { country: 'Thailand (PromptPay)', volumeBn: 18.6, growthPct: 38.4, adoptionPct: 64.8, provider: 'BOT', launchYear: 2017 },
-    { country: 'South Korea', volumeBn: 14.2, growthPct: 12.4, adoptionPct: 58.2, provider: 'KFTC', launchYear: 2001 },
-    { country: 'UK (Faster Payments)', volumeBn: 12.8, growthPct: 8.6, adoptionPct: 52.4, provider: 'Pay.UK', launchYear: 2008 },
-    { country: 'Nigeria (NIP)', volumeBn: 8.4, growthPct: 54.2, adoptionPct: 42.8, provider: 'NIBSS', launchYear: 2011 },
-    { country: 'USA (FedNow)', volumeBn: 4.8, growthPct: 285.0, adoptionPct: 12.4, provider: 'Fed Reserve', launchYear: 2023 },
-    { country: 'Singapore (PayNow)', volumeBn: 3.2, growthPct: 28.4, adoptionPct: 68.2, provider: 'ABS', launchYear: 2017 },
-    { country: 'EU (TIPS)', volumeBn: 6.8, growthPct: 42.1, adoptionPct: 18.6, provider: 'ECB', launchYear: 2018 },
-    { country: 'Australia (NPP)', volumeBn: 5.4, growthPct: 22.8, adoptionPct: 48.6, provider: 'NPPA', launchYear: 2018 },
-    { country: 'Japan (Zengin)', volumeBn: 8.2, growthPct: 6.4, adoptionPct: 34.2, provider: 'BOJ', launchYear: 1973 },
-    { country: 'Mexico (SPEI)', volumeBn: 7.6, growthPct: 32.4, adoptionPct: 38.4, provider: 'Banxico', launchYear: 2004 },
-  ],
-};
-
 // ── Tab type ──
 
 type Tab = 'processors' | 'neobanks' | 'bnpl' | 'rtp';
@@ -101,7 +48,7 @@ function SectionHeader({ title }: { title: string }) {
 
 // ── Processors Tab ──
 
-function ProcessorsTab({ processors }: { processors: typeof FALLBACK_DATA.processors }) {
+function ProcessorsTab({ processors }: { processors: any[] }) {
   return (
     <>
       <SectionHeader title="Payment Processor Overview" />
@@ -155,7 +102,7 @@ function ProcessorsTab({ processors }: { processors: typeof FALLBACK_DATA.proces
 
 // ── Neobanks Tab ──
 
-function NeobanksTab({ neobanks }: { neobanks: typeof FALLBACK_DATA.neobanks }) {
+function NeobanksTab({ neobanks }: { neobanks: any[] }) {
   return (
     <>
       <SectionHeader title="Digital Banks & Neobanks" />
@@ -224,7 +171,7 @@ function NeobanksTab({ neobanks }: { neobanks: typeof FALLBACK_DATA.neobanks }) 
 
 // ── BNPL Tab ──
 
-function BnplTab({ bnpl }: { bnpl: typeof FALLBACK_DATA.bnpl }) {
+function BnplTab({ bnpl }: { bnpl: any[] }) {
   return (
     <>
       <SectionHeader title="Buy Now Pay Later Providers" />
@@ -310,7 +257,7 @@ function BnplTab({ bnpl }: { bnpl: typeof FALLBACK_DATA.bnpl }) {
 
 // ── RTP Tab ──
 
-function RtpTab({ rtp }: { rtp: typeof FALLBACK_DATA.rtp }) {
+function RtpTab({ rtp }: { rtp: any[] }) {
   return (
     <>
       <SectionHeader title="Real-Time Payment Systems by Country" />
@@ -433,7 +380,8 @@ export function FintechDigitalPaymentsPanel() {
     );
   }
 
-  const d = data || FALLBACK_DATA;
+  const d = data as any;
+  const rows: any[] | undefined = d[activeTab];
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -469,10 +417,13 @@ export function FintechDigitalPaymentsPanel() {
 
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
-        {activeTab === 'processors' && <ProcessorsTab processors={(d as any).processors || FALLBACK_DATA.processors} />}
-        {activeTab === 'neobanks' && <NeobanksTab neobanks={(d as any).neobanks || FALLBACK_DATA.neobanks} />}
-        {activeTab === 'bnpl' && <BnplTab bnpl={(d as any).bnpl || FALLBACK_DATA.bnpl} />}
-        {activeTab === 'rtp' && <RtpTab rtp={(d as any).rtp || FALLBACK_DATA.rtp} />}
+        {!rows?.length && (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+        )}
+        {!!rows?.length && activeTab === 'processors' && <ProcessorsTab processors={rows} />}
+        {!!rows?.length && activeTab === 'neobanks' && <NeobanksTab neobanks={rows} />}
+        {!!rows?.length && activeTab === 'bnpl' && <BnplTab bnpl={rows} />}
+        {!!rows?.length && activeTab === 'rtp' && <RtpTab rtp={rows} />}
       </div>
     </div>
   );

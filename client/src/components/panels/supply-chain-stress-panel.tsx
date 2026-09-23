@@ -2,63 +2,17 @@ import { useSupplyChainStress } from '../../api/hooks/use-supply-chain-stress';
 import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw } from 'lucide-react';
 
-// ── Fallback mock data ──
+// ── Types ──
 
-const MOCK_DATA = {
-  timestamp: new Date().toISOString(),
-  pressureIndex: {
-    current: 2.14,
-    previous: 1.87,
-    change: 0.27,
-    level: 'elevated' as const,
-    percentile: 78,
-    history: [0.82, 0.95, 1.12, 1.34, 1.18, 1.45, 1.62, 1.78, 1.55, 1.87, 2.14],
-  },
-  shippingRates: [
-    { route: 'SCFI Composite', rate: 1842, change: 12.4, unit: '$/TEU', status: 'elevated' as const },
-    { route: 'Shanghai-USWC', rate: 2650, change: 8.7, unit: '$/FEU', status: 'elevated' as const },
-    { route: 'Shanghai-Europe', rate: 2180, change: -3.2, unit: '$/TEU', status: 'normal' as const },
-    { route: 'Baltic Dry Index', rate: 1534, change: 5.1, unit: 'pts', status: 'normal' as const },
-    { route: 'Shanghai-USEC', rate: 3820, change: 18.6, unit: '$/FEU', status: 'severe' as const },
-    { route: 'Trans-Pacific Avg', rate: 3235, change: 14.2, unit: '$/FEU', status: 'elevated' as const },
-  ],
-  portCongestion: [
-    { port: 'Los Angeles', vessels: 28, avgWait: 4.2, change: 1.3, status: 'elevated' as const },
-    { port: 'Long Beach', vessels: 22, avgWait: 3.8, change: 0.9, status: 'elevated' as const },
-    { port: 'Shanghai', vessels: 14, avgWait: 1.6, change: -0.4, status: 'normal' as const },
-    { port: 'Rotterdam', vessels: 18, avgWait: 2.4, change: 0.6, status: 'normal' as const },
-    { port: 'Singapore', vessels: 32, avgWait: 5.1, change: 2.8, status: 'severe' as const },
-    { port: 'Busan', vessels: 11, avgWait: 1.2, change: -0.2, status: 'normal' as const },
-    { port: 'Savannah', vessels: 16, avgWait: 2.8, change: 1.1, status: 'elevated' as const },
-    { port: 'Hamburg', vessels: 9, avgWait: 1.4, change: 0.1, status: 'normal' as const },
-  ],
-  supplierDeliveryTimes: [
-    { region: 'US Manufacturing', current: 52.8, baseline: 50.0, change: 1.4, trend: 'worsening' as const },
-    { region: 'EU Manufacturing', current: 48.6, baseline: 50.0, change: -0.8, trend: 'improving' as const },
-    { region: 'China Manufacturing', current: 51.2, baseline: 50.0, change: 0.6, trend: 'worsening' as const },
-    { region: 'Japan Manufacturing', current: 49.4, baseline: 50.0, change: -1.2, trend: 'improving' as const },
-    { region: 'EM Asia', current: 53.6, baseline: 50.0, change: 2.1, trend: 'worsening' as const },
-    { region: 'UK Manufacturing', current: 50.8, baseline: 50.0, change: 0.3, trend: 'worsening' as const },
-  ],
-  commodityFreight: [
-    { commodity: 'Crude Oil', route: 'MEG-Asia', rate: 48500, unit: '$/day', change: 6.2, status: 'elevated' as const },
-    { commodity: 'Iron Ore', route: 'Brazil-China', rate: 22.4, unit: '$/mt', change: -2.1, status: 'normal' as const },
-    { commodity: 'Coal', route: 'Australia-Asia', rate: 14.8, unit: '$/mt', change: 3.4, status: 'normal' as const },
-    { commodity: 'LNG', route: 'US-Europe', rate: 82000, unit: '$/day', change: 15.8, status: 'severe' as const },
-    { commodity: 'Grain', route: 'US Gulf-Asia', rate: 38.2, unit: '$/mt', change: 4.6, status: 'elevated' as const },
-    { commodity: 'Chemicals', route: 'Trans-Pacific', rate: 62.5, unit: '$/mt', change: 1.2, status: 'normal' as const },
-  ],
-  inventoryToSales: [
-    { sector: 'Retail', ratio: 1.24, baseline: 1.30, change: -0.04, trend: 'tightening' as const },
-    { sector: 'Wholesale', ratio: 1.35, baseline: 1.32, change: 0.02, trend: 'building' as const },
-    { sector: 'Manufacturing', ratio: 1.48, baseline: 1.42, change: 0.08, trend: 'building' as const },
-    { sector: 'Auto Dealers', ratio: 0.94, baseline: 1.15, change: -0.06, trend: 'tightening' as const },
-    { sector: 'Electronics', ratio: 1.18, baseline: 1.25, change: -0.03, trend: 'tightening' as const },
-    { sector: 'Food & Bev', ratio: 1.41, baseline: 1.38, change: 0.01, trend: 'stable' as const },
-  ],
+type SupplyChainData = {
+  timestamp: string;
+  pressureIndex: { current: number; previous: number; change: number; level: string; percentile: number; history: number[] };
+  shippingRates: { route: string; rate: number; change: number; unit: string; status: StatusLevel }[];
+  portCongestion: { port: string; vessels: number; avgWait: number; change: number; status: StatusLevel }[];
+  supplierDeliveryTimes: { region: string; current: number; baseline: number; change: number; trend: TrendDirection }[];
+  commodityFreight: { commodity: string; route: string; rate: number; unit: string; change: number; status: StatusLevel }[];
+  inventoryToSales: { sector: string; ratio: number; baseline: number; change: number; trend: InventoryTrend }[];
 };
-
-type MockData = typeof MOCK_DATA;
 type StatusLevel = 'normal' | 'elevated' | 'severe';
 type TrendDirection = 'improving' | 'worsening';
 type InventoryTrend = 'tightening' | 'building' | 'stable';
@@ -195,7 +149,7 @@ function PressureIndexSection({
   pressureIndex,
   t,
 }: {
-  pressureIndex: MockData['pressureIndex'];
+  pressureIndex: SupplyChainData['pressureIndex'];
   t: ReturnType<typeof useT>;
 }) {
   const changeSign = pressureIndex.change >= 0 ? '+' : '';
@@ -259,7 +213,7 @@ function ShippingRatesSection({
   rates,
   t,
 }: {
-  rates: MockData['shippingRates'];
+  rates: SupplyChainData['shippingRates'];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -307,7 +261,7 @@ function PortCongestionSection({
   ports,
   t,
 }: {
-  ports: MockData['portCongestion'];
+  ports: SupplyChainData['portCongestion'];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -367,7 +321,7 @@ function SupplierDeliverySection({
   deliveryTimes,
   t,
 }: {
-  deliveryTimes: MockData['supplierDeliveryTimes'];
+  deliveryTimes: SupplyChainData['supplierDeliveryTimes'];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -439,7 +393,7 @@ function CommodityFreightSection({
   freight,
   t,
 }: {
-  freight: MockData['commodityFreight'];
+  freight: SupplyChainData['commodityFreight'];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -489,7 +443,7 @@ function InventoryToSalesSection({
   inventory,
   t,
 }: {
-  inventory: MockData['inventoryToSales'];
+  inventory: SupplyChainData['inventoryToSales'];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -558,16 +512,16 @@ export function SupplyChainStressPanel() {
   const t = useT();
   const { data: hookData, isLoading, refetch } = useSupplyChainStress();
 
-  const data = hookData || MOCK_DATA;
+  const data = hookData;
 
   // Count stress levels for header summary
-  const severeCount = [
+  const severeCount = !data ? 0 : [
     ...data.shippingRates.filter((r: any) => r.status === 'severe'),
     ...data.portCongestion.filter((p: any) => p.status === 'severe'),
     ...data.commodityFreight.filter((f: any) => f.status === 'severe'),
   ].length;
 
-  const elevatedCount = [
+  const elevatedCount = !data ? 0 : [
     ...data.shippingRates.filter((r: any) => r.status === 'elevated'),
     ...data.portCongestion.filter((p: any) => p.status === 'elevated'),
     ...data.commodityFreight.filter((f: any) => f.status === 'elevated'),

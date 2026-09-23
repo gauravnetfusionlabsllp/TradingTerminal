@@ -6,8 +6,7 @@ import { NotificationPanel } from '../common/notification-panel';
 import { SettingsPanel } from '../common/settings-panel';
 import { PanelToggleMenu } from '../common/panel-toggle-menu';
 import { UserMenu } from '../auth/user-menu';
-import { WalletButton } from '../common/wallet-button';
-import { useAuthStore } from '../../stores/use-auth-store';
+import logoSvg from '../../assets/logo.svg?raw';
 
 export function TopBar() {
   const [localTime, setLocalTime] = useState(getLocalTime());
@@ -21,7 +20,6 @@ export function TopBar() {
   const settingsPanelOpen = useAppStore((s) => s.settingsPanelOpen);
   const setSettingsPanelOpen = useAppStore((s) => s.setSettingsPanelOpen);
   const t = useT();
-  const user = useAuthStore((s) => s.user);
 
   const locale = useAppStore((s) => s.locale);
   const setLocale = useAppStore((s) => s.setLocale);
@@ -55,9 +53,9 @@ export function TopBar() {
   return (
     <header className="bg-panel border-b border-border flex items-center justify-between px-2 h-10 shrink-0 z-20 sticky top-0">
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-2 py-1 bg-accent text-black font-bold uppercase tracking-widest text-xs">
-          <img src="/logo.png" alt="Logo" className="w-4 h-4" />
-          <span>NEUBERG</span>
+        <div className="flex items-center gap-2 px-2 py-1 text-white font-bold uppercase tracking-widest text-xs" aria-label="SGFX Terminal">
+          <span className="block h-4 w-[62px] [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: logoSvg }} />
+          <span className="text-neutral/60 text-[9px]">TERMINAL</span>
         </div>
         <div className="h-5 w-px bg-border mx-1" />
         <span className="text-xs font-mono text-neutral px-2 py-0.5 border border-border bg-black">
@@ -87,7 +85,7 @@ export function TopBar() {
               aria-label={t('togglePanels')}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[9px] font-mono font-black tracking-widest uppercase">DIY with 500+ Panels</span>
+              <span className="hidden sm:inline text-[9px] font-mono font-black tracking-widest uppercase">Panels</span>
             </button>
             <PanelToggleMenu open={panelMenuOpen} onClose={() => setPanelMenuOpen(false)} containerRef={panelMenuRef} />
           </div>
@@ -168,38 +166,9 @@ export function TopBar() {
               </div>
             )}
           </div>
-
-          {/* API */}
-          <a
-            href="https://tradingnews.press"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] font-mono font-bold bg-accent/10 text-accent hover:bg-accent/20 transition-colors px-2.5 py-1 border border-accent/30 hover:border-accent/60 uppercase tracking-wider"
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            Build yours with News API
-          </a>
-
-          {/* GitHub */}
-          <a
-            href="https://github.com/KoNananachan/Neuberg"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-neutral hover:text-white transition-colors p-1.5"
-            aria-label="GitHub"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          </a>
         </div>
 
         <div className="h-5 w-px bg-border mx-1" />
-
-        {user && (
-          <>
-            <WalletButton />
-            <div className="h-5 w-px bg-border mx-1" />
-          </>
-        )}
 
         <UserMenu />
 

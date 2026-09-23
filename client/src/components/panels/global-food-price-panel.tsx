@@ -3,149 +3,6 @@ import { useGlobalFoodPrice } from '../../api/hooks/use-global-food-price';
 import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw, Wheat } from 'lucide-react';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  timestamp: new Date().toISOString(),
-  faoIndex: {
-    overall: 124.3,
-    momChange: 1.2,
-    yoyChange: -3.8,
-    meat: 118.6,
-    meatChange: 0.4,
-    dairy: 131.2,
-    dairyChange: 2.8,
-    cereals: 115.8,
-    cerealsChange: -0.6,
-    oils: 138.4,
-    oilsChange: 3.1,
-    sugar: 142.7,
-    sugarChange: -2.4,
-  },
-  commodityPrices: [
-    { commodity: 'Wheat (CBOT)', price: 642.50, unit: 'USc/bu', dailyChange: 1.24, monthChange: 3.8, yearChange: -8.2, low52w: 548.25, high52w: 748.00 },
-    { commodity: 'Corn (CBOT)', price: 458.75, unit: 'USc/bu', dailyChange: -0.68, monthChange: 2.1, yearChange: -12.4, low52w: 388.50, high52w: 532.00 },
-    { commodity: 'Soybeans (CBOT)', price: 1142.00, unit: 'USc/bu', dailyChange: 0.32, monthChange: -1.4, yearChange: -6.8, low52w: 985.00, high52w: 1285.50 },
-    { commodity: 'Rice (CBOT)', price: 18.24, unit: '$/cwt', dailyChange: -0.42, monthChange: -3.2, yearChange: 14.6, low52w: 14.80, high52w: 21.50 },
-    { commodity: 'Sugar #11', price: 22.86, unit: 'USc/lb', dailyChange: 2.18, monthChange: 8.4, yearChange: -5.2, low52w: 17.40, high52w: 27.80 },
-    { commodity: 'Coffee (Arabica)', price: 248.35, unit: 'USc/lb', dailyChange: 1.56, monthChange: 12.3, yearChange: 42.8, low52w: 158.20, high52w: 268.40 },
-    { commodity: 'Cocoa (ICE)', price: 8420, unit: '$/t', dailyChange: 3.42, monthChange: 18.6, yearChange: 85.2, low52w: 3860, high52w: 9240 },
-    { commodity: 'Cotton #2', price: 78.60, unit: 'USc/lb', dailyChange: -0.84, monthChange: -2.6, yearChange: -14.8, low52w: 68.40, high52w: 98.20 },
-    { commodity: 'Palm Oil (MYX)', price: 4128, unit: 'MYR/t', dailyChange: 0.92, monthChange: 5.4, yearChange: 8.6, low52w: 3420, high52w: 4580 },
-    { commodity: 'Lean Hogs (CME)', price: 88.45, unit: 'USc/lb', dailyChange: -1.12, monthChange: 4.2, yearChange: 6.8, low52w: 72.30, high52w: 106.80 },
-    { commodity: 'Live Cattle (CME)', price: 198.20, unit: 'USc/lb', dailyChange: 0.28, monthChange: 2.8, yearChange: 12.4, low52w: 168.40, high52w: 204.60 },
-    { commodity: 'Orange Juice (ICE)', price: 485.60, unit: 'USc/lb', dailyChange: -2.34, monthChange: -6.8, yearChange: 32.4, low52w: 312.00, high52w: 528.40 },
-  ],
-  foodInflation: [
-    { country: 'United States', foodInflation: 2.8, coreInflation: 3.2, foodShareCPI: 13.4, trend: 'declining' },
-    { country: 'Eurozone', foodInflation: 3.4, coreInflation: 2.8, foodShareCPI: 16.2, trend: 'stable' },
-    { country: 'United Kingdom', foodInflation: 4.2, coreInflation: 3.6, foodShareCPI: 11.8, trend: 'declining' },
-    { country: 'Japan', foodInflation: 5.8, coreInflation: 2.4, foodShareCPI: 26.4, trend: 'rising' },
-    { country: 'China', foodInflation: -1.2, coreInflation: 0.8, foodShareCPI: 28.6, trend: 'declining' },
-    { country: 'India', foodInflation: 8.6, coreInflation: 4.2, foodShareCPI: 39.1, trend: 'rising' },
-    { country: 'Brazil', foodInflation: 6.4, coreInflation: 4.8, foodShareCPI: 21.8, trend: 'stable' },
-    { country: 'Turkey', foodInflation: 42.8, coreInflation: 38.6, foodShareCPI: 24.5, trend: 'rising' },
-    { country: 'Nigeria', foodInflation: 34.2, coreInflation: 22.4, foodShareCPI: 51.8, trend: 'rising' },
-    { country: 'Egypt', foodInflation: 28.6, coreInflation: 18.2, foodShareCPI: 36.4, trend: 'declining' },
-    { country: 'Argentina', foodInflation: 52.4, coreInflation: 48.2, foodShareCPI: 28.2, trend: 'declining' },
-    { country: 'Indonesia', foodInflation: 4.8, coreInflation: 2.6, foodShareCPI: 32.4, trend: 'stable' },
-  ],
-  supplyDemand: [
-    { commodity: 'Wheat', production: 798.2, consumption: 800.6, endingStocks: 258.4, stocksToUse: 32.3, yoyChange: -2.4 },
-    { commodity: 'Corn', production: 1228.4, consumption: 1212.8, endingStocks: 312.6, stocksToUse: 25.8, yoyChange: 1.8 },
-    { commodity: 'Rice', production: 523.8, consumption: 520.4, endingStocks: 172.2, stocksToUse: 33.1, yoyChange: 0.6 },
-    { commodity: 'Soybeans', production: 398.6, consumption: 392.4, endingStocks: 112.8, stocksToUse: 28.8, yoyChange: 3.2 },
-    { commodity: 'Sugar', production: 186.4, consumption: 180.2, endingStocks: 42.6, stocksToUse: 23.6, yoyChange: -1.4 },
-    { commodity: 'Palm Oil', production: 78.2, consumption: 76.8, endingStocks: 10.4, stocksToUse: 13.5, yoyChange: -4.2 },
-    { commodity: 'Cotton', production: 25.8, consumption: 26.4, endingStocks: 18.2, stocksToUse: 68.9, yoyChange: 2.8 },
-    { commodity: 'Coffee', production: 172.6, consumption: 178.4, endingStocks: 28.2, stocksToUse: 15.8, yoyChange: -6.4 },
-  ],
-  tradeFlows: [
-    {
-      commodity: 'Wheat',
-      exporters: [
-        { country: 'Russia', volume: 48.2, marketShare: 24.1 },
-        { country: 'EU', volume: 36.8, marketShare: 18.4 },
-        { country: 'Australia', volume: 28.4, marketShare: 14.2 },
-        { country: 'Canada', volume: 24.6, marketShare: 12.3 },
-        { country: 'United States', volume: 22.8, marketShare: 11.4 },
-      ],
-      importers: [
-        { country: 'Egypt', volume: 13.8, marketShare: 6.9 },
-        { country: 'Indonesia', volume: 11.2, marketShare: 5.6 },
-        { country: 'Algeria', volume: 8.4, marketShare: 4.2 },
-        { country: 'Turkey', volume: 8.2, marketShare: 4.1 },
-        { country: 'China', volume: 7.8, marketShare: 3.9 },
-      ],
-    },
-    {
-      commodity: 'Corn',
-      exporters: [
-        { country: 'United States', volume: 56.4, marketShare: 28.2 },
-        { country: 'Brazil', volume: 48.6, marketShare: 24.3 },
-        { country: 'Argentina', volume: 36.2, marketShare: 18.1 },
-        { country: 'Ukraine', volume: 22.4, marketShare: 11.2 },
-        { country: 'EU', volume: 6.8, marketShare: 3.4 },
-      ],
-      importers: [
-        { country: 'China', volume: 18.6, marketShare: 9.3 },
-        { country: 'Japan', volume: 15.2, marketShare: 7.6 },
-        { country: 'Mexico', volume: 14.8, marketShare: 7.4 },
-        { country: 'South Korea', volume: 11.4, marketShare: 5.7 },
-        { country: 'EU', volume: 18.2, marketShare: 9.1 },
-      ],
-    },
-    {
-      commodity: 'Soybeans',
-      exporters: [
-        { country: 'Brazil', volume: 98.4, marketShare: 52.8 },
-        { country: 'United States', volume: 52.6, marketShare: 28.2 },
-        { country: 'Argentina', volume: 6.2, marketShare: 3.3 },
-        { country: 'Paraguay', volume: 6.8, marketShare: 3.6 },
-        { country: 'Canada', volume: 5.4, marketShare: 2.9 },
-      ],
-      importers: [
-        { country: 'China', volume: 102.4, marketShare: 54.9 },
-        { country: 'EU', volume: 14.8, marketShare: 7.9 },
-        { country: 'Japan', volume: 3.4, marketShare: 1.8 },
-        { country: 'Mexico', volume: 6.2, marketShare: 3.3 },
-        { country: 'Thailand', volume: 4.8, marketShare: 2.6 },
-      ],
-    },
-    {
-      commodity: 'Rice',
-      exporters: [
-        { country: 'India', volume: 22.4, marketShare: 38.6 },
-        { country: 'Thailand', volume: 8.2, marketShare: 14.1 },
-        { country: 'Vietnam', volume: 7.8, marketShare: 13.4 },
-        { country: 'Pakistan', volume: 4.6, marketShare: 7.9 },
-        { country: 'United States', volume: 2.8, marketShare: 4.8 },
-      ],
-      importers: [
-        { country: 'Philippines', volume: 4.2, marketShare: 7.2 },
-        { country: 'China', volume: 3.8, marketShare: 6.6 },
-        { country: 'Nigeria', volume: 2.6, marketShare: 4.5 },
-        { country: 'Saudi Arabia', volume: 1.8, marketShare: 3.1 },
-        { country: 'Ivory Coast', volume: 1.6, marketShare: 2.8 },
-      ],
-    },
-  ],
-  foodSecurity: [
-    { region: 'East Africa (Horn)', alertLevel: 'EMERGENCY', populationAffected: 28.4, drivers: 'Drought, conflict, displacement' },
-    { region: 'Sudan', alertLevel: 'FAMINE', populationAffected: 18.2, drivers: 'Civil war, crop failure, aid blockade' },
-    { region: 'Gaza Strip', alertLevel: 'FAMINE', populationAffected: 2.1, drivers: 'Conflict, siege, aid restriction' },
-    { region: 'Haiti', alertLevel: 'CRISIS', populationAffected: 4.8, drivers: 'Gang violence, economic collapse' },
-    { region: 'Yemen', alertLevel: 'EMERGENCY', populationAffected: 16.4, drivers: 'Conflict, import dependency, currency' },
-    { region: 'Afghanistan', alertLevel: 'EMERGENCY', populationAffected: 14.2, drivers: 'Economic crisis, drought, displacement' },
-    { region: 'South Sudan', alertLevel: 'EMERGENCY', populationAffected: 7.8, drivers: 'Flooding, conflict, displacement' },
-    { region: 'Sahel Region', alertLevel: 'CRISIS', populationAffected: 12.6, drivers: 'Conflict, climate shock, displacement' },
-    { region: 'Myanmar', alertLevel: 'CRISIS', populationAffected: 6.4, drivers: 'Conflict, economic disruption' },
-    { region: 'Pakistan (South)', alertLevel: 'WATCH', populationAffected: 8.2, drivers: 'Post-flood recovery, inflation' },
-    { region: 'Central America', alertLevel: 'WATCH', populationAffected: 5.6, drivers: 'El Nino impact, food inflation' },
-    { region: 'Madagascar', alertLevel: 'WATCH', populationAffected: 2.4, drivers: 'Drought, cyclone damage, poverty' },
-  ],
-};
-
 // ── Formatting helpers ──
 
 function fmtPrice(n: number): string {
@@ -543,7 +400,7 @@ export function GlobalFoodPricePanel() {
   const t = useT();
   const { data, isLoading, refetch } = useGlobalFoodPrice();
 
-  const d = data || FALLBACK_DATA;
+  const d = data;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -556,6 +413,7 @@ export function GlobalFoodPricePanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {d?.faoIndex && (<>
           <span className="text-[7px] font-mono text-neutral-500">FAO</span>
           <span className="text-[9px] font-mono font-bold text-white tabular-nums">
             {d.faoIndex.overall.toFixed(1)}
@@ -566,6 +424,7 @@ export function GlobalFoodPricePanel() {
           <span className={`text-[7px] font-mono font-bold tabular-nums ${d.faoIndex.yoyChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             YoY {fmtPct(d.faoIndex.yoyChange)}
           </span>
+          </>)}
           <button
             onClick={() => refetch()}
             className="p-0.5 text-neutral-500 hover:text-amber-400 transition-colors"
@@ -586,14 +445,16 @@ export function GlobalFoodPricePanel() {
               </span>
             </div>
           </div>
+        ) : !d ? (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
         ) : (
           <>
-            <FaoIndicesSection fao={d.faoIndex} t={t} />
-            <CommodityPricesSection commodities={d.commodityPrices} t={t} />
-            <FoodInflationSection countries={d.foodInflation} t={t} />
-            <SupplyDemandSection items={d.supplyDemand} t={t} />
-            <TradeFlowsSection flows={d.tradeFlows} t={t} />
-            <FoodSecuritySection alerts={d.foodSecurity} t={t} />
+            {d.faoIndex && <FaoIndicesSection fao={d.faoIndex} t={t} />}
+            <CommodityPricesSection commodities={d.commodityPrices ?? []} t={t} />
+            <FoodInflationSection countries={d.foodInflation ?? []} t={t} />
+            <SupplyDemandSection items={d.supplyDemand ?? []} t={t} />
+            <TradeFlowsSection flows={d.tradeFlows ?? []} t={t} />
+            <FoodSecuritySection alerts={d.foodSecurity ?? []} t={t} />
           </>
         )}
       </div>

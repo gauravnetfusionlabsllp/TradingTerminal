@@ -3,7 +3,7 @@ import { env } from '../config/env.js';
 
 /**
  * Single upstream client of the Python FXCubic FIX bridge (D:\apps\MarketData, ws_server.py).
- * Neuberg browsers never talk to it directly: ws-server.ts acquires/releases symbols here and
+ * Browsers never talk to it directly: ws-server.ts acquires/releases symbols here and
  * we keep one upstream subscription per symbol, however many browsers want it.
  */
 

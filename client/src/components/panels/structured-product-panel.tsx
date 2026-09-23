@@ -94,74 +94,15 @@ function trancheTextColor(level: string): string {
   return 'text-neutral-400';
 }
 
-// ── Static mock data ──
+// ── Types ──
 
-const SUMMARY = {
-  totalAbsOutstanding: 4.28e12,
-  ytdIssuance: 482e9,
-  avgSpread: 128,
-  spreadTrend: -4,
-  riskLevel: 'MODERATE',
-};
-
-const RISK_INDICATORS = [
-  { name: 'CMBS Delinquency', rate: 4.82 },
-  { name: 'Auto Loan Delinquency', rate: 2.48 },
-  { name: 'Credit Card Delinquency', rate: 1.95 },
-  { name: 'Student Loan Delinquency', rate: 4.15 },
-  { name: 'Mortgage Delinquency', rate: 3.21 },
-  { name: 'CLO Default Rate', rate: 1.85 },
-];
-
-const ABS_MARKET = [
-  { type: 'Auto Loan', spread: 85, change1w: 3, yield: 5.42, aum: 1.42e12, delinquency: 2.48, prepayment: 1.45 },
-  { type: 'Credit Card', spread: 62, change1w: -2, yield: 5.18, aum: 980e9, delinquency: 1.95, prepayment: 18.2 },
-  { type: 'Student Loan', spread: 45, change1w: 1, yield: 4.92, aum: 1.76e12, delinquency: 4.15, prepayment: 5.8 },
-  { type: 'Equipment', spread: 78, change1w: -5, yield: 5.35, aum: 320e9, delinquency: 1.22, prepayment: 8.4 },
-  { type: 'Floorplan', spread: 92, change1w: 4, yield: 5.48, aum: 185e9, delinquency: 0.85, prepayment: 42.1 },
-  { type: 'Cell Tower', spread: 68, change1w: -1, yield: 5.12, aum: 145e9, delinquency: 0.12, prepayment: 2.1 },
-  { type: 'Data Center', spread: 72, change1w: -3, yield: 5.22, aum: 98e9, delinquency: 0.08, prepayment: 1.8 },
-  { type: 'Whole Business', spread: 142, change1w: 6, yield: 5.95, aum: 52e9, delinquency: 1.45, prepayment: 3.2 },
-];
-
-const MBS_MARKET = [
-  { name: 'Agency 30Y', coupon: 5.50, price: 101.234, spread: 68, oas: 52, duration: 6.2, prepayment: 8.2 },
-  { name: 'Agency 15Y', coupon: 5.00, price: 100.875, spread: 48, oas: 38, duration: 3.8, prepayment: 12.4 },
-  { name: 'GNMA 30Y', coupon: 5.50, price: 101.562, spread: 58, oas: 45, duration: 5.8, prepayment: 9.4 },
-  { name: 'Non-Agency', coupon: 6.25, price: 99.875, spread: 185, oas: 162, duration: 4.5, prepayment: 6.1 },
-];
-
-const TRANCHE_ANALYSIS = [
-  { level: 'AAA', typicalSpread: 118, subordination: 38.5, expectedLoss: 0.01, rating: 'Aaa/AAA' },
-  { level: 'AA', typicalSpread: 175, subordination: 26.8, expectedLoss: 0.08, rating: 'Aa2/AA' },
-  { level: 'A', typicalSpread: 225, subordination: 18.2, expectedLoss: 0.35, rating: 'A2/A' },
-  { level: 'BBB', typicalSpread: 340, subordination: 12.5, expectedLoss: 1.42, rating: 'Baa2/BBB' },
-  { level: 'BB', typicalSpread: 520, subordination: 7.8, expectedLoss: 4.85, rating: 'Ba2/BB' },
-  { level: 'B', typicalSpread: 780, subordination: 4.2, expectedLoss: 12.30, rating: 'B2/B' },
-  { level: 'Equity', typicalSpread: 0, subordination: 0, expectedLoss: 42.50, rating: 'NR' },
-];
-
-const PERFORMANCE = [
-  { type: 'ABS Index', return1m: 0.42, return3m: 1.28, returnYtd: 2.15, volatility: 1.85, sharpe: 1.42 },
-  { type: 'CMBS Index', return1m: -0.18, return3m: 0.65, returnYtd: 1.42, volatility: 3.12, sharpe: 0.68 },
-  { type: 'CLO AAA', return1m: 0.38, return3m: 1.15, returnYtd: 1.98, volatility: 0.92, sharpe: 2.15 },
-  { type: 'CLO BB', return1m: 0.85, return3m: 2.42, returnYtd: 4.28, volatility: 4.85, sharpe: 1.08 },
-  { type: 'Agency MBS', return1m: -0.12, return3m: 0.48, returnYtd: 1.05, volatility: 2.45, sharpe: 0.52 },
-  { type: 'Non-Agency', return1m: 0.62, return3m: 1.85, returnYtd: 3.42, volatility: 3.68, sharpe: 1.12 },
-];
-
-const RECENT_ISSUANCE = [
-  { issuer: 'JP Morgan', type: 'Auto ABS', size: 1.5e9, tranche: 'AAA/AA/A', rating: 'Aaa', spread: 42, wal: 2.8, collateral: 'Prime Auto' },
-  { issuer: 'Citigroup', type: 'Credit Card', size: 2.0e9, tranche: 'AAA/A/BBB', rating: 'Aaa', spread: 38, wal: 3.2, collateral: 'Revolving' },
-  { issuer: 'Goldman Sachs', type: 'CRT', size: 850e6, tranche: 'M1/M2/B1', rating: 'BBB', spread: 155, wal: 5.1, collateral: 'Residential' },
-  { issuer: 'BofA', type: 'CMBS', size: 1.2e9, tranche: 'A/AS/B', rating: 'AAA', spread: 118, wal: 4.8, collateral: 'Diversified' },
-  { issuer: 'Morgan Stanley', type: 'CLO', size: 600e6, tranche: 'AAA-Eq', rating: 'Aaa', spread: 125, wal: 5.5, collateral: 'Lev Loans' },
-  { issuer: 'Barclays', type: 'Student', size: 750e6, tranche: 'A/B/C', rating: 'AAA', spread: 35, wal: 4.2, collateral: 'FFELP' },
-  { issuer: 'Wells Fargo', type: 'Auto ABS', size: 1.1e9, tranche: 'AAA/AA', rating: 'Aaa', spread: 48, wal: 2.5, collateral: 'Subprime Auto' },
-  { issuer: 'Deutsche Bank', type: 'CMBS', size: 950e6, tranche: 'A/B/C', rating: 'AA', spread: 135, wal: 5.2, collateral: 'Office/Retail' },
-  { issuer: 'Credit Suisse', type: 'CLO', size: 520e6, tranche: 'AAA-BB', rating: 'Aaa', spread: 132, wal: 5.8, collateral: 'Broadly Synd' },
-  { issuer: 'RBC', type: 'Equipment', size: 480e6, tranche: 'A/B', rating: 'AAA', spread: 52, wal: 3.1, collateral: 'Industrial Equip' },
-];
+type Summary = { totalAbsOutstanding: number; ytdIssuance: number; avgSpread: number; spreadTrend: number; riskLevel: string };
+type RiskIndicator = { name: string; rate: number };
+type AbsRow = { type: string; spread: number; change1w: number; yield: number; aum: number; delinquency: number; prepayment: number };
+type MbsRow = { name: string; coupon: number; price: number; spread: number; oas: number; duration: number; prepayment: number };
+type Tranche = { level: string; typicalSpread: number; subordination: number; expectedLoss: number; rating: string };
+type PerformanceRow = { type: string; return1m: number; return3m: number; returnYtd: number; volatility: number; sharpe: number };
+type IssuanceRow = { issuer: string; type: string; size: number; tranche: string; rating: string; spread: number; wal: number; collateral: string };
 
 // ── Main Panel ──
 
@@ -169,13 +110,13 @@ export function StructuredProductPanel() {
   const { data, isLoading, error, refetch } = useStructuredProduct();
   const d = data as any;
 
-  const summary = d?.summary ?? SUMMARY;
-  const riskIndicators = d?.riskIndicators ?? RISK_INDICATORS;
-  const absMarket = d?.absMarket ?? ABS_MARKET;
-  const mbsMarket = d?.mbsMarket ?? MBS_MARKET;
-  const tranches = d?.trancheAnalysis ?? TRANCHE_ANALYSIS;
-  const performance = d?.performance ?? PERFORMANCE;
-  const issuance = d?.recentIssuance ?? RECENT_ISSUANCE;
+  const summary = d?.summary;
+  const riskIndicators = d?.riskIndicators ?? [];
+  const absMarket = d?.absMarket ?? [];
+  const mbsMarket = d?.mbsMarket ?? [];
+  const tranches = d?.trancheAnalysis ?? [];
+  const performance = d?.performance ?? [];
+  const issuance = d?.recentIssuance ?? [];
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -217,9 +158,13 @@ export function StructuredProductPanel() {
           </div>
         )}
 
-        {(d || summary) && (
+        {!isLoading && !error && !d && (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+        )}
+
+        {d && (
           <>
-            <SummaryBar summary={summary} />
+            {summary && <SummaryBar summary={summary} />}
             <RiskIndicators indicators={riskIndicators} />
             <ABSMarketTable rows={absMarket} />
             <MBSMarketTable rows={mbsMarket} />
@@ -235,7 +180,7 @@ export function StructuredProductPanel() {
 
 // ── Summary Bar ──
 
-function SummaryBar({ summary }: { summary: typeof SUMMARY }) {
+function SummaryBar({ summary }: { summary: Summary }) {
   const trendIcon = summary.spreadTrend < 0 ? '\u25BC' : summary.spreadTrend > 0 ? '\u25B2' : '\u25CF';
   const trendColor = spreadColor(summary.spreadTrend);
 
@@ -283,7 +228,7 @@ function SummaryBar({ summary }: { summary: typeof SUMMARY }) {
 
 // ── Risk Indicators ──
 
-function RiskIndicators({ indicators }: { indicators: typeof RISK_INDICATORS }) {
+function RiskIndicators({ indicators }: { indicators: RiskIndicator[] }) {
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
@@ -307,7 +252,7 @@ function RiskIndicators({ indicators }: { indicators: typeof RISK_INDICATORS }) 
 
 // ── ABS Market Table ──
 
-function ABSMarketTable({ rows }: { rows: typeof ABS_MARKET }) {
+function ABSMarketTable({ rows }: { rows: AbsRow[] }) {
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
@@ -353,7 +298,7 @@ function ABSMarketTable({ rows }: { rows: typeof ABS_MARKET }) {
 
 // ── MBS Market Table ──
 
-function MBSMarketTable({ rows }: { rows: typeof MBS_MARKET }) {
+function MBSMarketTable({ rows }: { rows: MbsRow[] }) {
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
@@ -395,7 +340,7 @@ function MBSMarketTable({ rows }: { rows: typeof MBS_MARKET }) {
 
 // ── Tranche Analysis ──
 
-function TrancheAnalysisSection({ tranches }: { tranches: typeof TRANCHE_ANALYSIS }) {
+function TrancheAnalysisSection({ tranches }: { tranches: Tranche[] }) {
   const maxSubordination = Math.max(...tranches.map((t) => t.subordination));
 
   return (
@@ -464,7 +409,7 @@ function TrancheAnalysisSection({ tranches }: { tranches: typeof TRANCHE_ANALYSI
 
 // ── Performance Table ──
 
-function PerformanceTable({ rows }: { rows: typeof PERFORMANCE }) {
+function PerformanceTable({ rows }: { rows: PerformanceRow[] }) {
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
@@ -514,7 +459,7 @@ function PerformanceTable({ rows }: { rows: typeof PERFORMANCE }) {
 
 // ── Recent Issuance Table ──
 
-function RecentIssuanceTable({ rows }: { rows: typeof RECENT_ISSUANCE }) {
+function RecentIssuanceTable({ rows }: { rows: IssuanceRow[] }) {
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">

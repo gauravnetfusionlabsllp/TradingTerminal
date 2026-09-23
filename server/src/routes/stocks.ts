@@ -229,16 +229,10 @@ router.get('/:symbol', async (req, res) => {
     const range = (req.query.range as string) || undefined;
     const interval = (req.query.interval as string) || undefined;
 
-    const [dbQuote, liveQuote, history, recommendations, profile] = await Promise.all([
+    const [dbQuote, liveQuote, history, profile] = await Promise.all([
       prisma.stockQuote.findUnique({ where: { symbol } }),
       getQuote(symbol).catch(() => null),
       getHistory(symbol, { range, interval }),
-      prisma.stockRecommendation.findMany({
-        where: { symbol },
-        include: { article: { select: { id: true, title: true, titleTranslations: true, scrapedAt: true } } },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-      }),
       getProfile(symbol).catch(() => null),
     ]);
 
@@ -285,7 +279,6 @@ router.get('/:symbol', async (req, res) => {
         close: h.close,
         volume: h.volume,
       })),
-      recommendations,
     });
   } catch (err: any) {
     console.error('[Stocks] Error fetching stock detail:', err?.message || err);

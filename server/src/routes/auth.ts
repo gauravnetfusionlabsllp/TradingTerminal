@@ -61,13 +61,7 @@ const COOKIE_OPTIONS = {
 function publicUser(u: AuthUser) {
   return {
     id: u.id,
-    email: u.email,
     name: u.name,
-    avatarUrl: u.avatarUrl,
-    plan: u.plan,
-    planExpiresAt: u.planExpiresAt,
-    hasAlpaca: !!u.alpacaApiKey,
-    alpacaPaper: u.alpacaPaper,
     mt5Login: u.mt5Login,
     readOnly: u.readOnly,
   };
@@ -151,35 +145,12 @@ router.get('/me/export', exportLimiter, requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
 
-    const [user, sessions, trades, alerts, userSessions] = await Promise.all([
+    const [user, alerts] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
-        select: {
-          id: true,
-          email: true,
-          mt5Login: true,
-          name: true,
-          avatarUrl: true,
-          plan: true,
-          planExpiresAt: true,
-          alpacaPaper: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      }),
-      prisma.authSession.findMany({
-        where: { userId },
-        select: { id: true, createdAt: true, expiresAt: true },
-      }),
-      prisma.tradeOrder.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
+        select: { id: true, mt5Login: true, name: true, createdAt: true, updatedAt: true },
       }),
       prisma.alert.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.userSession.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
       }),
@@ -188,14 +159,7 @@ router.get('/me/export', exportLimiter, requireAuth, async (req, res) => {
     res.json({
       exportedAt: new Date().toISOString(),
       user,
-      sessions: sessions.map((s) => ({
-        id: s.id,
-        createdAt: s.createdAt,
-        expiresAt: s.expiresAt,
-      })),
-      trades,
       alerts,
-      walletSessions: userSessions,
     });
   } catch (err: any) {
     console.error('[Auth] Data export error:', err?.message);
@@ -208,15 +172,12 @@ router.delete('/me', requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
 
-    // Delete all user data in a transaction (cascade covers alerts, trades, sessions)
+    // Delete all user data in a transaction
     await prisma.$transaction([
       prisma.alertTrigger.deleteMany({
         where: { alert: { userId } },
       }),
       prisma.alert.deleteMany({ where: { userId } }),
-      prisma.tradeOrder.deleteMany({ where: { userId } }),
-      prisma.userSession.deleteMany({ where: { userId } }),
-      prisma.authSession.deleteMany({ where: { userId } }),
       prisma.user.delete({ where: { id: userId } }),
     ]);
 

@@ -1,65 +1,6 @@
 import { Leaf } from 'lucide-react';
 import { useClimateRisk } from '../../api/hooks/use-climate-risk';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  carbonPrice: 68.42,
-  tempAnomaly: 1.48,
-  summaryStats: {
-    globalEmissions: 37.4,
-    greenBondIssuance: 582,
-    carbonMarketCap: 948,
-    climateFinanceGap: 2800,
-  },
-  sectorRisk: [
-    { sector: 'Oil & Gas', physicalRisk: 42, transitionRisk: 92, strandedAssets: 1320, carbonIntensity: 548, regulatoryExposure: 'CRITICAL' },
-    { sector: 'Utilities', physicalRisk: 58, transitionRisk: 78, strandedAssets: 890, carbonIntensity: 412, regulatoryExposure: 'HIGH' },
-    { sector: 'Mining', physicalRisk: 55, transitionRisk: 71, strandedAssets: 640, carbonIntensity: 385, regulatoryExposure: 'HIGH' },
-    { sector: 'Transport', physicalRisk: 38, transitionRisk: 65, strandedAssets: 420, carbonIntensity: 298, regulatoryExposure: 'MEDIUM' },
-    { sector: 'Agriculture', physicalRisk: 72, transitionRisk: 45, strandedAssets: 310, carbonIntensity: 195, regulatoryExposure: 'MEDIUM' },
-    { sector: 'Real Estate', physicalRisk: 64, transitionRisk: 52, strandedAssets: 580, carbonIntensity: 142, regulatoryExposure: 'MEDIUM' },
-    { sector: 'Industrials', physicalRisk: 35, transitionRisk: 58, strandedAssets: 290, carbonIntensity: 178, regulatoryExposure: 'LOW' },
-    { sector: 'Technology', physicalRisk: 18, transitionRisk: 22, strandedAssets: 45, carbonIntensity: 32, regulatoryExposure: 'LOW' },
-  ],
-  regionalRisk: [
-    { region: 'South Asia', flood: 88, drought: 72, heat: 94, seaLevel: 82, wildfire: 35 },
-    { region: 'Southeast Asia', flood: 85, drought: 55, heat: 78, seaLevel: 90, wildfire: 42 },
-    { region: 'Sub-Saharan Africa', flood: 62, drought: 88, heat: 85, seaLevel: 48, wildfire: 58 },
-    { region: 'Mediterranean', flood: 52, drought: 78, heat: 82, seaLevel: 55, wildfire: 88 },
-    { region: 'Central America', flood: 75, drought: 68, heat: 72, seaLevel: 70, wildfire: 45 },
-    { region: 'Pacific Islands', flood: 70, drought: 42, heat: 65, seaLevel: 95, wildfire: 22 },
-    { region: 'North America', flood: 55, drought: 62, heat: 58, seaLevel: 45, wildfire: 72 },
-    { region: 'Northern Europe', flood: 48, drought: 32, heat: 42, seaLevel: 52, wildfire: 28 },
-  ],
-  carbonMarkets: [
-    { market: 'EU ETS', price: 68.42, dailyChange: 1.24, ytdChange: 12.8, volume: '14.2M' },
-    { market: 'UK ETS', price: 42.18, dailyChange: -0.56, ytdChange: 8.4, volume: '2.8M' },
-    { market: 'CA RGGI', price: 15.85, dailyChange: 0.32, ytdChange: 5.2, volume: '4.1M' },
-    { market: 'NZ ETS', price: 52.30, dailyChange: -1.10, ytdChange: -3.6, volume: '1.2M' },
-    { market: 'KR ETS', price: 8.92, dailyChange: 0.15, ytdChange: -8.2, volume: '0.9M' },
-    { market: 'CN ETS', price: 11.45, dailyChange: 0.28, ytdChange: 22.4, volume: '6.5M' },
-  ],
-  policyTracker: [
-    { jurisdiction: 'EU', policy: 'CBAM Phase 2', status: 'ACTIVE', impact: 'HIGH', sectors: 'Steel, Cement, Aluminum' },
-    { jurisdiction: 'US', policy: 'IRA Clean Energy Credits', status: 'ACTIVE', impact: 'HIGH', sectors: 'Renewables, EV, Storage' },
-    { jurisdiction: 'UK', policy: 'Green Taxonomy', status: 'PENDING', impact: 'MEDIUM', sectors: 'All Financial Services' },
-    { jurisdiction: 'JP', policy: 'GX Transition Bonds', status: 'ACTIVE', impact: 'MEDIUM', sectors: 'Heavy Industry, Transport' },
-    { jurisdiction: 'AU', policy: 'Safeguard Mechanism', status: 'ACTIVE', impact: 'HIGH', sectors: 'Mining, Oil & Gas' },
-    { jurisdiction: 'CA', policy: 'Clean Fuel Standard', status: 'ACTIVE', impact: 'MEDIUM', sectors: 'Transport, Refining' },
-    { jurisdiction: 'IN', policy: 'Carbon Credit Trading', status: 'DRAFT', impact: 'HIGH', sectors: 'Power, Steel, Cement' },
-    { jurisdiction: 'SG', policy: 'Carbon Tax Increase', status: 'PENDING', impact: 'LOW', sectors: 'All Emitters >25k tCO2' },
-  ],
-  greenFinance: {
-    greenBondYTD: 582,
-    sustainabilityLinked: 198,
-    transitionBonds: 85,
-    greenLoanVolume: 312,
-    esgAUM: 41200,
-    carbonOffsetMarket: 2.4,
-  },
-};
-
 // ── Helpers ──
 
 function riskBarColor(score: number): string {
@@ -108,17 +49,21 @@ function fmtPctChange(n: number): string {
 // ── Main Panel ──
 
 export function ClimateRiskPanel() {
-  const { data: rawData } = useClimateRisk();
+  const { data: rawData, isLoading } = useClimateRisk();
 
-  const d = (rawData as Record<string, unknown>) ?? FALLBACK_DATA;
-  const carbonPrice = (d.carbonPrice as number) ?? FALLBACK_DATA.carbonPrice;
-  const tempAnomaly = (d.tempAnomaly as number) ?? FALLBACK_DATA.tempAnomaly;
-  const summaryStats = (d.summaryStats as typeof FALLBACK_DATA.summaryStats) ?? FALLBACK_DATA.summaryStats;
-  const sectorRisk = (d.sectorRisk as typeof FALLBACK_DATA.sectorRisk) ?? FALLBACK_DATA.sectorRisk;
-  const regionalRisk = (d.regionalRisk as typeof FALLBACK_DATA.regionalRisk) ?? FALLBACK_DATA.regionalRisk;
-  const carbonMarkets = (d.carbonMarkets as typeof FALLBACK_DATA.carbonMarkets) ?? FALLBACK_DATA.carbonMarkets;
-  const policyTracker = (d.policyTracker as typeof FALLBACK_DATA.policyTracker) ?? FALLBACK_DATA.policyTracker;
-  const greenFinance = (d.greenFinance as typeof FALLBACK_DATA.greenFinance) ?? FALLBACK_DATA.greenFinance;
+  const d = rawData;
+  const carbonPrice: number | undefined = d?.carbonPrice;
+  const tempAnomaly: number | undefined = d?.tempAnomaly;
+  const summaryStats = d?.summaryStats;
+  const sectorRisk: any[] = d?.sectorRisk ?? [];
+  const regionalRisk: any[] = d?.regionalRisk ?? [];
+  const carbonMarkets: any[] = d?.carbonMarkets ?? [];
+  const policyTracker: any[] = d?.policyTracker ?? [];
+  const greenFinance = d?.greenFinance;
+
+  if (!d) {
+    return <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">{isLoading ? 'Loading...' : 'No data available'}</div>;
+  }
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden font-mono text-[9px]">
@@ -134,20 +79,20 @@ export function ClimateRiskPanel() {
           <div className="flex items-center gap-1">
             <span className="text-[7px] uppercase text-neutral-500">CARBON</span>
             <span className="text-[9px] font-bold text-emerald-400 tabular-nums">
-              ${carbonPrice.toFixed(2)}
+              {carbonPrice != null ? `$${carbonPrice.toFixed(2)}` : '--'}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-[7px] uppercase text-neutral-500">TEMP</span>
             <span className="text-[9px] font-bold text-red-400 tabular-nums">
-              +{tempAnomaly.toFixed(2)}C
+              {tempAnomaly != null ? `+${tempAnomaly.toFixed(2)}C` : '--'}
             </span>
           </div>
         </div>
       </div>
 
       {/* ── Summary Stats Bar ── */}
-      <div className="grid grid-cols-4 border-b border-emerald-400/30 shrink-0">
+      {summaryStats && <div className="grid grid-cols-4 border-b border-emerald-400/30 shrink-0">
         {[
           { label: 'GLOBAL EMISSIONS', value: `${summaryStats.globalEmissions} GtCO2`, accent: true },
           { label: 'GREEN BOND YTD', value: `$${summaryStats.greenBondIssuance}B`, accent: false },
@@ -161,7 +106,7 @@ export function ClimateRiskPanel() {
             </div>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* ── Scrollable Content ── */}
       <div className="flex-1 overflow-auto no-scrollbar">
@@ -339,7 +284,7 @@ export function ClimateRiskPanel() {
         </div>
 
         {/* ── Section 5: Green Finance ── */}
-        <div className="px-2 py-2 border-t border-emerald-400/30">
+        {greenFinance && <div className="px-2 py-2 border-t border-emerald-400/30">
           <div className="flex items-center gap-1.5 mb-1.5 px-1">
             <div className="w-1 h-1 bg-emerald-400" />
             <span className="text-[7px] font-black uppercase tracking-widest text-neutral-400">
@@ -363,7 +308,7 @@ export function ClimateRiskPanel() {
               </div>
             ))}
           </div>
-        </div>
+        </div>}
 
       </div>
     </div>

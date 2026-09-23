@@ -85,70 +85,13 @@ function greenCategoryBadge(cat: string): { color: string; bg: string } {
   }
 }
 
-// ── Fallback mock data matching server route structure ──
-
-const FALLBACK_DATA = {
-  cleanEnergyStocks: [
-    { ticker: 'ENPH', name: 'Enphase Energy', price: 128.45, change: 2.34, changePercent: 1.86, marketCap: '15.2B', sector: 'Solar' as const },
-    { ticker: 'SEDG', name: 'SolarEdge Technologies', price: 68.92, change: -1.15, changePercent: -1.64, marketCap: '4.1B', sector: 'Solar' as const },
-    { ticker: 'FSLR', name: 'First Solar', price: 185.30, change: 3.72, changePercent: 2.05, marketCap: '18.5B', sector: 'Solar' as const },
-    { ticker: 'NEE', name: 'NextEra Energy', price: 72.18, change: 0.45, changePercent: 0.63, marketCap: '142.8B', sector: 'Wind' as const },
-    { ticker: 'PLUG', name: 'Plug Power', price: 4.28, change: -0.18, changePercent: -4.04, marketCap: '2.3B', sector: 'Hydrogen' as const },
-    { ticker: 'RIVN', name: 'Rivian Automotive', price: 12.56, change: 0.32, changePercent: 2.61, marketCap: '11.4B', sector: 'EV' as const },
-    { ticker: 'TSLA', name: 'Tesla Inc', price: 218.45, change: 5.60, changePercent: 2.63, marketCap: '595.0B', sector: 'EV' as const },
-    { ticker: 'BEP', name: 'Brookfield Renewable', price: 27.30, change: -0.22, changePercent: -0.80, marketCap: '17.2B', sector: 'Wind' as const },
-    { ticker: 'RUN', name: 'Sunrun Inc', price: 14.85, change: 0.68, changePercent: 4.80, marketCap: '2.8B', sector: 'Solar' as const },
-    { ticker: 'CHPT', name: 'ChargePoint Holdings', price: 1.92, change: -0.08, changePercent: -4.00, marketCap: '0.7B', sector: 'Battery' as const },
-  ],
-  cleanEnergyETFs: [
-    { ticker: 'ICLN', name: 'iShares Global Clean Energy', price: 14.52, change: 0.18, aum: '3.0B', ytdReturn: 8.45, flows1m: '+120.5M' },
-    { ticker: 'TAN', name: 'Invesco Solar ETF', price: 38.70, change: 0.85, aum: '1.6B', ytdReturn: 12.30, flows1m: '+85.2M' },
-    { ticker: 'FAN', name: 'First Trust Global Wind Energy', price: 15.22, change: -0.12, aum: '0.26B', ytdReturn: 5.10, flows1m: '-15.8M' },
-    { ticker: 'QCLN', name: 'First Trust NASDAQ Clean Edge', price: 32.45, change: 0.52, aum: '1.0B', ytdReturn: 10.85, flows1m: '+42.0M' },
-    { ticker: 'LIT', name: 'Global X Lithium & Battery', price: 42.18, change: -0.35, aum: '2.2B', ytdReturn: -3.20, flows1m: '-68.4M' },
-    { ticker: 'DRIV', name: 'Global X Autonomous & EV', price: 25.60, change: 0.40, aum: '0.88B', ytdReturn: 14.50, flows1m: '+35.0M' },
-  ],
-  capacityAdditions: [
-    { type: 'Solar', capacityGW: 398.5, changeYoY: 22.4, investmentBn: 295.0, region: 'Global' },
-    { type: 'Onshore Wind', capacityGW: 104.2, changeYoY: 12.8, investmentBn: 112.5, region: 'Global' },
-    { type: 'Offshore Wind', capacityGW: 16.8, changeYoY: 18.5, investmentBn: 51.2, region: 'Europe/Asia' },
-    { type: 'Battery Storage', capacityGW: 42.0, changeYoY: 28.6, investmentBn: 38.4, region: 'Global' },
-    { type: 'Hydrogen', capacityGW: 3.0, changeYoY: 15.2, investmentBn: 16.8, region: 'Europe/Middle East' },
-  ],
-  evAdoption: [
-    { market: 'China', evSalesM: 9.12, marketSharePct: 36.5, yoyGrowthPct: 20.8, topBrand: 'BYD' },
-    { market: 'Europe', evSalesM: 3.05, marketSharePct: 22.8, yoyGrowthPct: 11.5, topBrand: 'Tesla' },
-    { market: 'US', evSalesM: 1.72, marketSharePct: 9.5, yoyGrowthPct: 16.2, topBrand: 'Tesla' },
-    { market: 'Global', evSalesM: 15.80, marketSharePct: 19.2, yoyGrowthPct: 18.0, topBrand: 'BYD' },
-  ],
-  greenBondMarket: [
-    { issuer: 'European Investment Bank', size: 4.8, coupon: 3.15, tenor: '10Y', greenCategory: 'renewable' as const, spread: 42 },
-    { issuer: 'Republic of France', size: 8.2, coupon: 2.72, tenor: '20Y', greenCategory: 'efficiency' as const, spread: 35 },
-    { issuer: 'Apple Inc', size: 1.9, coupon: 3.48, tenor: '7Y', greenCategory: 'efficiency' as const, spread: 52 },
-    { issuer: 'Iberdrola', size: 1.4, coupon: 4.05, tenor: '5Y', greenCategory: 'renewable' as const, spread: 68 },
-    { issuer: 'Toyota Motor', size: 2.8, coupon: 2.95, tenor: '10Y', greenCategory: 'transport' as const, spread: 48 },
-    { issuer: 'World Bank', size: 3.8, coupon: 2.45, tenor: '15Y', greenCategory: 'renewable' as const, spread: 28 },
-  ],
-  policyTracker: [
-    { country: 'United States', policy: 'Inflation Reduction Act Extension', type: 'subsidy' as const, impact: 'positive' as const, effectiveDate: '2026-01-01' },
-    { country: 'European Union', policy: 'Carbon Border Adjustment Mechanism Phase 2', type: 'tax' as const, impact: 'positive' as const, effectiveDate: '2026-01-01' },
-    { country: 'China', policy: 'New Energy Vehicle Purchase Tax Exemption', type: 'subsidy' as const, impact: 'positive' as const, effectiveDate: '2025-12-31' },
-    { country: 'India', policy: 'Green Hydrogen Mission Mandate', type: 'mandate' as const, impact: 'positive' as const, effectiveDate: '2026-03-01' },
-    { country: 'United Kingdom', policy: 'Zero Emission Vehicle Mandate 2035', type: 'mandate' as const, impact: 'positive' as const, effectiveDate: '2025-06-01' },
-    { country: 'Germany', policy: 'Renewable Energy Surcharge Reform', type: 'subsidy' as const, impact: 'positive' as const, effectiveDate: '2026-04-01' },
-    { country: 'Japan', policy: 'Green Transformation Bonds', type: 'subsidy' as const, impact: 'positive' as const, effectiveDate: '2025-10-01' },
-    { country: 'Australia', policy: 'Safeguard Mechanism Carbon Cap', type: 'mandate' as const, impact: 'negative' as const, effectiveDate: '2025-07-01' },
-  ],
-  generatedAt: new Date().toISOString(),
-};
-
 // ── Main Panel ──
 
 export function EnergyTransitionPanel() {
   const t = useT();
   const { data: apiData, isLoading, refetch } = useEnergyTransition();
 
-  const data = apiData || FALLBACK_DATA;
+  const data = apiData;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -166,7 +109,7 @@ export function EnergyTransitionPanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {data.generatedAt && (
+          {data?.generatedAt && (
             <span className="text-[6px] text-white/20">
               {new Date(data.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
@@ -187,25 +130,27 @@ export function EnergyTransitionPanel() {
               </div>
             </div>
           </div>
+        ) : !data ? (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
         ) : (
           <>
             {/* Clean Energy Stocks */}
-            <CleanEnergyStocksSection stocks={data.cleanEnergyStocks} t={t} />
+            <CleanEnergyStocksSection stocks={data.cleanEnergyStocks ?? []} t={t} />
 
             {/* Clean Energy ETFs */}
-            <CleanEnergyETFsSection etfs={data.cleanEnergyETFs} t={t} />
+            <CleanEnergyETFsSection etfs={data.cleanEnergyETFs ?? []} t={t} />
 
             {/* Capacity Additions */}
-            <CapacityAdditionsSection capacity={data.capacityAdditions} t={t} />
+            <CapacityAdditionsSection capacity={data.capacityAdditions ?? []} t={t} />
 
             {/* EV Adoption */}
-            <EVAdoptionSection evData={data.evAdoption} t={t} />
+            <EVAdoptionSection evData={data.evAdoption ?? []} t={t} />
 
             {/* Green Bond Market */}
-            <GreenBondSection bonds={data.greenBondMarket} t={t} />
+            <GreenBondSection bonds={data.greenBondMarket ?? []} t={t} />
 
             {/* Policy Tracker */}
-            <PolicyTrackerSection policies={data.policyTracker} t={t} />
+            <PolicyTrackerSection policies={data.policyTracker ?? []} t={t} />
           </>
         )}
       </div>

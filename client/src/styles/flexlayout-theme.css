@@ -1,4 +1,4 @@
-/* FlexLayout Bloomberg Terminal Theme Override */
+/* FlexLayout terminal theme override */
 /* Import base dark theme from flexlayout-react */
 
 /* Global Layout */
@@ -117,16 +117,6 @@
 .flexlayout__splitter_drag {
   background-color: #ff9900;
   z-index: 1000;
-}
-
-/* Horizontal splitter */
-.flexlayout__splitter_vert {
-  width: 2px !important;
-}
-
-/* Vertical splitter */
-.flexlayout__splitter_horz {
-  height: 2px !important;
 }
 
 /* Drag drop indicator (when dragging tabs) */

@@ -65,73 +65,15 @@ function supplyStatusStyle(status: string): { color: string; bg: string } {
   }
 }
 
-// ── Fallback data ──
-
-const FALLBACK_DATA = {
-  timestamp: '2026-03-19T14:30:00Z',
-  overview: {
-    totalCapex: 342.0,
-    aiRelatedCapex: 198.5,
-    yoyGrowth: 38.2,
-    dataCenterConstruction: 127.4,
-    aiChipRevenue: 184.6,
-  },
-  hyperscalers: [
-    { company: 'Microsoft', ticker: 'MSFT', totalCapex: 80.0, aiCapexEstimate: 52.0, capexRevenueRatio: 29.4, yoyChange: 42.1, guidanceLow: 75.0, guidanceHigh: 85.0, dataCenterMW: 4800 },
-    { company: 'Alphabet', ticker: 'GOOG', totalCapex: 75.0, aiCapexEstimate: 48.0, capexRevenueRatio: 19.8, yoyChange: 55.3, guidanceLow: 70.0, guidanceHigh: 80.0, dataCenterMW: 4200 },
-    { company: 'Amazon', ticker: 'AMZN', totalCapex: 100.0, aiCapexEstimate: 55.0, capexRevenueRatio: 14.7, yoyChange: 32.8, guidanceLow: 90.0, guidanceHigh: 110.0, dataCenterMW: 5500 },
-    { company: 'Meta', ticker: 'META', totalCapex: 45.0, aiCapexEstimate: 32.0, capexRevenueRatio: 24.1, yoyChange: 28.6, guidanceLow: 40.0, guidanceHigh: 50.0, dataCenterMW: 2800 },
-    { company: 'Apple', ticker: 'AAPL', totalCapex: 12.0, aiCapexEstimate: 5.0, capexRevenueRatio: 2.9, yoyChange: 15.2, guidanceLow: 10.0, guidanceHigh: 14.0, dataCenterMW: 800 },
-    { company: 'Oracle', ticker: 'ORCL', totalCapex: 16.0, aiCapexEstimate: 10.5, capexRevenueRatio: 28.6, yoyChange: 88.2, guidanceLow: 14.0, guidanceHigh: 18.0, dataCenterMW: 1200 },
-    { company: 'ByteDance', ticker: 'PRIVATE', totalCapex: 14.0, aiCapexEstimate: 11.0, capexRevenueRatio: 12.3, yoyChange: 62.5, guidanceLow: 12.0, guidanceHigh: 16.0, dataCenterMW: 950 },
-  ],
-  aiChipMarket: [
-    { company: 'NVIDIA', ticker: 'NVDA', revenue: 130.0, marketShare: 70.4, latestGpu: 'B200 / GB200 NVL72', supplyStatus: 'Constrained' },
-    { company: 'AMD', ticker: 'AMD', revenue: 28.0, marketShare: 15.2, latestGpu: 'MI350X', supplyStatus: 'Limited' },
-    { company: 'Intel', ticker: 'INTC', revenue: 4.2, marketShare: 2.3, latestGpu: 'Gaudi 3', supplyStatus: 'Available' },
-    { company: 'Broadcom', ticker: 'AVGO', revenue: 12.0, marketShare: 6.5, latestGpu: 'Custom ASIC (Google TPU v6)', supplyStatus: 'Moderate' },
-    { company: 'Marvell', ticker: 'MRVL', revenue: 5.8, marketShare: 3.1, latestGpu: 'Custom ASIC (AWS Trainium3)', supplyStatus: 'Limited' },
-    { company: 'Cerebras', ticker: 'PRIVATE', revenue: 2.4, marketShare: 1.3, latestGpu: 'WSE-3', supplyStatus: 'Constrained' },
-  ],
-  dataCenterBuildOut: [
-    { market: 'Northern Virginia', powerMW: 5200, availability: 'Tight', constructionPipeline: 3400, renewablePct: 42 },
-    { market: 'Dallas/Ft. Worth', powerMW: 2800, availability: 'Moderate', constructionPipeline: 2100, renewablePct: 35 },
-    { market: 'Phoenix/Mesa', powerMW: 1900, availability: 'Moderate', constructionPipeline: 1600, renewablePct: 58 },
-    { market: 'Chicago', powerMW: 1400, availability: 'Adequate', constructionPipeline: 800, renewablePct: 31 },
-    { market: 'Silicon Valley', powerMW: 1200, availability: 'Tight', constructionPipeline: 600, renewablePct: 52 },
-    { market: 'Columbus, OH', powerMW: 950, availability: 'Available', constructionPipeline: 1200, renewablePct: 28 },
-    { market: 'London', powerMW: 1100, availability: 'Tight', constructionPipeline: 700, renewablePct: 65 },
-    { market: 'Frankfurt', powerMW: 900, availability: 'Moderate', constructionPipeline: 550, renewablePct: 72 },
-    { market: 'Singapore', powerMW: 600, availability: 'Tight', constructionPipeline: 350, renewablePct: 18 },
-    { market: 'Tokyo', powerMW: 800, availability: 'Moderate', constructionPipeline: 450, renewablePct: 24 },
-  ],
-  regionalInvestment: [
-    { region: 'United States', investment: 210.0, majorProjects: 'Project Stargate ($500B JV), MSFT Iowa campus, GOOG Kansas City', keyInvestors: 'MSFT, GOOG, AMZN, ORCL' },
-    { region: 'Europe', investment: 48.0, majorProjects: 'MSFT Sweden $3.2B, GOOG UK $1B, AWS Spain $17B', keyInvestors: 'MSFT, AMZN, GOOG, META' },
-    { region: 'Asia-Pacific', investment: 52.0, majorProjects: 'MSFT Japan $2.9B, GOOG Malaysia $2B, AWS Thailand $5B', keyInvestors: 'AMZN, MSFT, GOOG, ByteDance' },
-    { region: 'Middle East', investment: 18.5, majorProjects: 'MSFT UAE $1.5B, GOOG Saudi $10B, AWS Bahrain expansion', keyInvestors: 'GOOG, MSFT, AMZN, ORCL' },
-    { region: 'Latin America', investment: 8.2, majorProjects: 'MSFT Brazil $2.7B, AWS Mexico expansion, GOOG Chile DC', keyInvestors: 'MSFT, AMZN, GOOG' },
-    { region: 'Africa', investment: 3.8, majorProjects: 'MSFT South Africa $1B, GOOG Kenya, AWS Nigeria', keyInvestors: 'MSFT, GOOG, AMZN' },
-  ],
-  supplyChainBottlenecks: [
-    { component: 'HBM3E Memory', leadTime: '26 weeks', priceChange: 42.5, supplier: 'SK Hynix / Samsung', constraintLevel: 'CRITICAL' },
-    { component: 'CoWoS Packaging', leadTime: '20 weeks', priceChange: 35.0, supplier: 'TSMC', constraintLevel: 'CRITICAL' },
-    { component: 'Advanced Node Wafers (3nm)', leadTime: '18 weeks', priceChange: 22.0, supplier: 'TSMC', constraintLevel: 'SEVERE' },
-    { component: 'GPU Modules (B200)', leadTime: '16 weeks', priceChange: 18.5, supplier: 'NVIDIA / Foxconn', constraintLevel: 'SEVERE' },
-    { component: 'Power Transformers', leadTime: '52 weeks', priceChange: 28.0, supplier: 'Hitachi Energy / Siemens', constraintLevel: 'SEVERE' },
-    { component: 'Networking (800G)', leadTime: '12 weeks', priceChange: 8.2, supplier: 'Arista / Cisco', constraintLevel: 'MOD' },
-    { component: 'Cooling Systems (Liquid)', leadTime: '14 weeks', priceChange: 15.4, supplier: 'Vertiv / Schneider', constraintLevel: 'MOD' },
-    { component: 'Rack PDUs', leadTime: '8 weeks', priceChange: 5.1, supplier: 'Eaton / Schneider', constraintLevel: 'LOW' },
-    { component: 'Fiber Optic Cable', leadTime: '6 weeks', priceChange: -2.3, supplier: 'Corning / Prysmian', constraintLevel: 'LOW' },
-    { component: 'Diesel Generators', leadTime: '24 weeks', priceChange: 12.8, supplier: 'Caterpillar / Cummins', constraintLevel: 'MOD' },
-  ],
-};
-
 // ── Main Panel ──
 
 export function AITechCapexPanel() {
   const { data: hookData, isLoading, refetch } = useAITechCapex();
-  const data = hookData ?? FALLBACK_DATA;
+  const data = hookData;
+
+  if (!data) {
+    return <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">{isLoading ? 'Loading...' : 'No data available'}</div>;
+  }
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden font-mono text-[9px]">
@@ -144,8 +86,8 @@ export function AITechCapexPanel() {
           </span>
         </div>
         <div className="flex items-center gap-3 text-[8px] text-neutral-400">
-          <span>Hyperscaler Capex <span className="text-blue-400 font-bold">{fmtDollar(data.overview.totalCapex)}</span></span>
-          <span>AI Chip TAM <span className="text-blue-400 font-bold">{fmtDollar(data.overview.aiChipRevenue)}</span></span>
+          <span>Hyperscaler Capex <span className="text-blue-400 font-bold">{data.overview?.totalCapex != null ? fmtDollar(data.overview.totalCapex) : '--'}</span></span>
+          <span>AI Chip TAM <span className="text-blue-400 font-bold">{data.overview?.aiChipRevenue != null ? fmtDollar(data.overview.aiChipRevenue) : '--'}</span></span>
           <button
             onClick={() => refetch()}
             className="text-neutral-500 hover:text-blue-400 transition-colors"
@@ -161,15 +103,15 @@ export function AITechCapexPanel() {
       </div>
 
       {/* Overview Stats Bar */}
-      <OverviewBar overview={data.overview} />
+      {data.overview && <OverviewBar overview={data.overview} />}
 
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
-        <HyperscalerCapexSection hyperscalers={data.hyperscalers} />
-        <AIChipMarketSection chips={data.aiChipMarket} />
-        <DataCenterBuildOutSection markets={data.dataCenterBuildOut} />
-        <RegionalInvestmentSection regions={data.regionalInvestment} />
-        <SupplyChainSection bottlenecks={data.supplyChainBottlenecks} />
+        <HyperscalerCapexSection hyperscalers={data.hyperscalers ?? []} />
+        <AIChipMarketSection chips={data.aiChipMarket ?? []} />
+        <DataCenterBuildOutSection markets={data.dataCenterBuildOut ?? []} />
+        <RegionalInvestmentSection regions={data.regionalInvestment ?? []} />
+        <SupplyChainSection bottlenecks={data.supplyChainBottlenecks ?? []} />
       </div>
     </div>
   );

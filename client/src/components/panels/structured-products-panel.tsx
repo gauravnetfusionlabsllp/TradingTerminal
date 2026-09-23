@@ -44,101 +44,16 @@ function ratingColor(rating: string): string {
   return 'text-red-400';
 }
 
-// ── Static mock data (replaced by API when available) ──
+// ── Types ──
 
-const MARKET_OVERVIEW = {
-  totalOutstanding: 12.8e12,
-  ytdIssuance: 1.42e12,
-  avgSpread: 142,
-  delinquencyRate: 2.31,
-};
-
-const RMBS_AGENCY = [
-  { issuer: 'FNMA', coupon: 5.5, price: 101.234, spread: 68, cpr: 8.2, delinquency: 1.12 },
-  { issuer: 'FNMA', coupon: 6.0, price: 103.456, spread: 52, cpr: 12.4, delinquency: 0.98 },
-  { issuer: 'FNMA', coupon: 6.5, price: 105.012, spread: 41, cpr: 18.6, delinquency: 0.87 },
-  { issuer: 'FHLMC', coupon: 5.5, price: 101.187, spread: 70, cpr: 7.9, delinquency: 1.15 },
-  { issuer: 'FHLMC', coupon: 6.0, price: 103.389, spread: 54, cpr: 11.8, delinquency: 1.01 },
-  { issuer: 'GNMA', coupon: 5.5, price: 101.562, spread: 58, cpr: 9.4, delinquency: 2.34 },
-  { issuer: 'GNMA', coupon: 6.0, price: 103.891, spread: 45, cpr: 14.1, delinquency: 2.18 },
-];
-
-const RMBS_NON_AGENCY = [
-  { name: 'CAS 2024-R08', coupon: 6.25, price: 99.875, spread: 185, cpr: 6.1, delinquency: 3.42 },
-  { name: 'STACR 2024-HQA3', coupon: 5.95, price: 100.125, spread: 162, cpr: 5.8, delinquency: 2.87 },
-  { name: 'AGATE 2025-1', coupon: 6.50, price: 98.750, spread: 210, cpr: 4.2, delinquency: 4.15 },
-];
-
-const CMBS_DEALS = [
-  { name: 'BANK 2024-BNK48', vintage: 2024, collateral: 'Diversified', balance: 1.2e9, delinquency: 1.45, wal: 4.8, spread: 125, rating: 'AAA' },
-  { name: 'BBCMS 2024-C28', vintage: 2024, collateral: 'Office', balance: 890e6, delinquency: 4.82, wal: 5.2, spread: 195, rating: 'AA' },
-  { name: 'BMARK 2024-V9', vintage: 2024, collateral: 'Retail', balance: 1.05e9, delinquency: 3.21, wal: 4.5, spread: 168, rating: 'AA-' },
-  { name: 'WFCM 2023-C57', vintage: 2023, collateral: 'Hotel', balance: 750e6, delinquency: 6.15, wal: 3.8, spread: 245, rating: 'A' },
-  { name: 'CSAIL 2024-C8', vintage: 2024, collateral: 'Industrial', balance: 680e6, delinquency: 0.92, wal: 5.6, spread: 108, rating: 'AAA' },
-  { name: 'JPMCC 2024-CBM2', vintage: 2024, collateral: 'Multifamily', balance: 1.1e9, delinquency: 1.08, wal: 4.1, spread: 112, rating: 'AAA' },
-];
-
-const CLO_DATA = [
-  {
-    name: 'ARES CLO XXIV',
-    manager: 'Ares Management',
-    aum: 4.2e9,
-    defaultRate: 1.85,
-    recovery: 68.2,
-    tranches: { AAA: 118, AA: 175, A: 225, BBB: 340, BB: 520, equity: 12.4 },
-  },
-  {
-    name: 'CARLYLE US CLO 2024-3',
-    manager: 'Carlyle Group',
-    aum: 3.8e9,
-    defaultRate: 2.12,
-    recovery: 65.8,
-    tranches: { AAA: 122, AA: 182, A: 238, BBB: 365, BB: 548, equity: 11.8 },
-  },
-  {
-    name: 'KKR CLO 42',
-    manager: 'KKR Credit',
-    aum: 5.1e9,
-    defaultRate: 1.52,
-    recovery: 71.4,
-    tranches: { AAA: 112, AA: 168, A: 218, BBB: 328, BB: 495, equity: 13.2 },
-  },
-  {
-    name: 'BAIN CAPITAL CLO 2024-6',
-    manager: 'Bain Capital',
-    aum: 2.9e9,
-    defaultRate: 2.35,
-    recovery: 62.1,
-    tranches: { AAA: 128, AA: 192, A: 248, BBB: 382, BB: 575, equity: 10.5 },
-  },
-];
-
-const ABS_SECTORS = [
-  { sector: 'Auto', outstanding: 1.42e12, spread: 85, delinquency: 2.48, chargeOff: 1.82 },
-  { sector: 'Credit Card', outstanding: 980e9, spread: 62, delinquency: 1.95, chargeOff: 3.15 },
-  { sector: 'Student', outstanding: 1.76e12, spread: 45, delinquency: 4.82, chargeOff: 0.95 },
-  { sector: 'Equipment', outstanding: 320e9, spread: 78, delinquency: 1.22, chargeOff: 0.68 },
-];
-
-const RECENT_ISSUANCE = [
-  { name: 'AMCAR 2025-1', type: 'Auto ABS', size: 1.5e9, date: '2025-03-14', lead: 'JP Morgan', topSpread: 42 },
-  { name: 'CITICC 2025-A2', type: 'Credit Card', size: 2.0e9, date: '2025-03-13', lead: 'Citigroup', topSpread: 38 },
-  { name: 'STACR 2025-DNA2', type: 'CRT', size: 850e6, date: '2025-03-12', lead: 'Goldman Sachs', topSpread: 155 },
-  { name: 'BANK 2025-BNK50', type: 'CMBS', size: 1.2e9, date: '2025-03-11', lead: 'BofA', topSpread: 118 },
-  { name: 'TPVG 2025-1', type: 'CLO', size: 600e6, date: '2025-03-10', lead: 'Morgan Stanley', topSpread: 125 },
-  { name: 'NAVSL 2025-A', type: 'Student', size: 750e6, date: '2025-03-07', lead: 'Barclays', topSpread: 35 },
-];
-
-const PREPAYMENT_COUPONS = [
-  { coupon: 4.0, cpr: 3.2, change1m: -0.4 },
-  { coupon: 4.5, cpr: 4.8, change1m: -0.2 },
-  { coupon: 5.0, cpr: 6.5, change1m: 0.3 },
-  { coupon: 5.5, cpr: 8.2, change1m: 0.8 },
-  { coupon: 6.0, cpr: 12.4, change1m: 1.5 },
-  { coupon: 6.5, cpr: 18.6, change1m: 2.8 },
-  { coupon: 7.0, cpr: 26.1, change1m: 4.2 },
-  { coupon: 7.5, cpr: 32.4, change1m: 3.1 },
-];
+type MarketOverview = { totalOutstanding: number; ytdIssuance: number; avgSpread: number; delinquencyRate: number };
+type RmbsAgencyRow = { issuer: string; coupon: number; price: number; spread: number; cpr: number; delinquency: number };
+type RmbsNonAgencyRow = { name: string; coupon: number; price: number; spread: number; cpr: number; delinquency: number };
+type CmbsDeal = { name: string; vintage: number; collateral: string; balance: number; delinquency: number; wal: number; spread: number; rating: string };
+type CloRow = { name: string; manager: string; aum: number; defaultRate: number; recovery: number; tranches: Record<string, number> };
+type AbsSector = { sector: string; outstanding: number; spread: number; delinquency: number; chargeOff: number };
+type IssuanceDeal = { name: string; type: string; size: number; date: string; lead: string; topSpread: number };
+type PrepaymentCoupon = { coupon: number; cpr: number; change1m: number };
 
 // ── Collateral badge ──
 
@@ -182,15 +97,14 @@ export function StructuredProductsPanel() {
   const t = useT();
   const { data, isLoading, refetch } = useStructuredProducts();
 
-  // Use API data if available, otherwise fall back to static data
-  const overview = data?.overview ?? MARKET_OVERVIEW;
-  const rmbsAgency = data?.rmbsAgency ?? RMBS_AGENCY;
-  const rmbsNonAgency = data?.rmbsNonAgency ?? RMBS_NON_AGENCY;
-  const cmbs = data?.cmbs ?? CMBS_DEALS;
-  const clo = data?.clo ?? CLO_DATA;
-  const abs = data?.abs ?? ABS_SECTORS;
-  const issuance = data?.recentIssuance ?? RECENT_ISSUANCE;
-  const prepayment = data?.prepayment ?? PREPAYMENT_COUPONS;
+  const overview = data?.overview;
+  const rmbsAgency = data?.rmbsAgency ?? [];
+  const rmbsNonAgency = data?.rmbsNonAgency ?? [];
+  const cmbs = data?.cmbs ?? [];
+  const clo = data?.clo ?? [];
+  const abs = data?.abs ?? [];
+  const issuance = data?.recentIssuance ?? [];
+  const prepayment = data?.prepayment ?? [];
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -223,9 +137,9 @@ export function StructuredProductsPanel() {
           </div>
         )}
 
-        {overview && (
+        {data && (
           <>
-            <MarketOverviewBanner overview={overview} t={t} />
+            {overview && <MarketOverviewBanner overview={overview} t={t} />}
             <RMBSSection agency={rmbsAgency} nonAgency={rmbsNonAgency} t={t} />
             <CMBSSection deals={cmbs} t={t} />
             <CLOSection data={clo} t={t} />
@@ -245,7 +159,7 @@ function MarketOverviewBanner({
   overview,
   t,
 }: {
-  overview: typeof MARKET_OVERVIEW;
+  overview: MarketOverview;
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -289,8 +203,8 @@ function RMBSSection({
   nonAgency,
   t,
 }: {
-  agency: typeof RMBS_AGENCY;
-  nonAgency: typeof RMBS_NON_AGENCY;
+  agency: RmbsAgencyRow[];
+  nonAgency: RmbsNonAgencyRow[];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -380,7 +294,7 @@ function CMBSSection({
   deals,
   t,
 }: {
-  deals: typeof CMBS_DEALS;
+  deals: CmbsDeal[];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -436,7 +350,7 @@ function CLOSection({
   data,
   t,
 }: {
-  data: typeof CLO_DATA;
+  data: CloRow[];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -504,7 +418,7 @@ function ABSGrid({
   sectors,
   t,
 }: {
-  sectors: typeof ABS_SECTORS;
+  sectors: AbsSector[];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -549,7 +463,7 @@ function RecentIssuanceSection({
   issuance,
   t,
 }: {
-  issuance: typeof RECENT_ISSUANCE;
+  issuance: IssuanceDeal[];
   t: ReturnType<typeof useT>;
 }) {
   return (
@@ -597,7 +511,7 @@ function PrepaymentMonitor({
   coupons,
   t,
 }: {
-  coupons: typeof PREPAYMENT_COUPONS;
+  coupons: PrepaymentCoupon[];
   t: ReturnType<typeof useT>;
 }) {
   const maxCpr = Math.max(...coupons.map((c) => c.cpr));

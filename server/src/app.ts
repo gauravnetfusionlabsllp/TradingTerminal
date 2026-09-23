@@ -8,35 +8,21 @@ import compression from 'compression';
 import { lazyRoute } from './lib/lazy-route.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import newsRouter from './routes/news.js';
 import stocksRouter from './routes/stocks.js';
-import recommendationsRouter from './routes/recommendations.js';
-import categoriesRouter from './routes/categories.js';
-import mapEventsRouter from './routes/map-events.js';
 import watchlistRouter from './routes/watchlist.js';
-import auditRouter from './routes/audit.js';
-import conflictsRouter from './routes/conflicts.js';
-import sentimentRouter from './routes/sentiment.js';
 import sectorsRouter from './routes/sectors.js';
 import calendarRouter from './routes/calendar.js';
 import alertsRouter from './routes/alerts.js';
-import clustersRouter from './routes/clusters.js';
 import optionsRouter from './routes/options.js';
 import insidersRouter from './routes/insiders.js';
 import correlationsRouter from './routes/correlations.js';
 import authRouter from './routes/auth.js';
-import billingRouter, { billingWebhookHandler } from './routes/billing.js';
-import alpacaRouter from './routes/alpaca.js';
 import mt5Router from './routes/mt5.js';
 import streamsRouter from './routes/streams.js';
-import polymarketRouter from './routes/polymarket.js';
-import hyperliquidRouter from './routes/hyperliquid.js';
-import missedOpportunitiesRouter from './routes/missed-opportunities.js';
 import marketMoversRouter from './routes/market-movers.js';
 import forexRouter from './routes/forex.js';
 import bondsRouter from './routes/bonds.js';
 import commoditiesRouter from './routes/commodities.js';
-import cryptoRouter from './routes/crypto.js';
 import globalMarketsRouter from './routes/global-markets.js';
 import scannerRouter from './routes/scanner.js';
 import screenerRouter from './routes/screener.js';
@@ -58,14 +44,11 @@ import fibonacciRouter from './routes/fibonacci.js';
 import volatilityRouter from './routes/volatility.js';
 import relativeStrengthRouter from './routes/relative-strength.js';
 import fxCrossRouter from './routes/fx-cross.js';
-import fearGreedRouter from './routes/fear-greed.js';
 import yieldCurveRouter from './routes/yield-curve.js';
 import currencyStrengthRouter from './routes/currency-strength.js';
 import moneyFlowRouter from './routes/money-flow.js';
-import chartRouter from './routes/chart.js';
 import centralBankRouter from './routes/central-bank.js';
 import { attachUser } from './middleware/auth.js';
-import { runScrapeAndAnalyze } from './services/scraper/scraper-scheduler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -93,14 +76,6 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts, please try again later' },
 });
 
-const chatLimiter = rateLimit({
-  windowMs: 60 * 1000,  // 1 minute
-  max: 10,               // 10 AI chat messages per minute
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-  message: { error: 'Rate limit reached for AI chat, please try again shortly' },
-});
-
 export function createApp() {
   const app = express();
 
@@ -112,26 +87,17 @@ export function createApp() {
     typeof value === 'bigint' ? Number(value) : value,
   );
 
-  // Stripe webhook must come BEFORE express.json() — needs raw body
-  app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), billingWebhookHandler);
-
   // ── Security headers ──
   app.use(helmet({
     contentSecurityPolicy: isProd ? {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com", "https://www.youtube.com", "https://s.ytimg.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://www.youtube.com", "https://s.ytimg.com"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
-        connectSrc: [
-          "'self'",
-          "https://api.hyperliquid.xyz", "wss://api.hyperliquid.xyz",
-          "https://accounts.google.com",
-          "https://basemaps.cartocdn.com", "https://*.basemaps.cartocdn.com",
-          "https://*.cartocdn.com",
-        ],
+        connectSrc: ["'self'"],
         workerSrc: ["'self'", "blob:"],
-        frameSrc: ["'self'", "https://accounts.google.com", "https://www.youtube.com"],
+        frameSrc: ["'self'", "https://www.youtube.com"],
         fontSrc: ["'self'", "data:"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -152,17 +118,6 @@ export function createApp() {
     maxAge: 3600, // Cache preflight for 1h
   }));
 
-  // ── Domain redirect — old domains → neuberg.ai ──
-  if (isProd) {
-    app.use((req, res, next) => {
-      const host = req.hostname;
-      if (host && host !== 'neuberg.ai') {
-        return res.redirect(301, `https://neuberg.ai${req.originalUrl}`);
-      }
-      next();
-    });
-  }
-
   app.use(compression({ threshold: 1024 })); // Gzip responses > 1KB
   app.use(cookieParser());
   app.use(express.json({ limit: '1mb' })); // Cap body size
@@ -170,15 +125,16 @@ export function createApp() {
   app.use(globalLimiter);
 
   // ── Cache-Control for data API routes ──
-  // Most data routes use date-seeded PRNG (data changes daily, not per-request).
-  // Cache aggressively to reduce Cloud Run compute and bandwidth.
+  // Market-data routes cache their upstream results server-side; browsers may reuse a copy only briefly,
+  // or panels that refetch every 60s would keep showing hour-old quotes and calendar actuals.
   app.use('/api', (req: Request, res: Response, next: NextFunction) => {
-    // Skip caching for auth, mutations, and streaming endpoints
-    const skip = ['/api/auth', '/api/billing', '/api/alpaca', '/api/mt5', '/api/streams', '/api/audit', '/api/chat', '/api/scrape', '/api/export'];
+    // Skip caching for per-user, mutation and streaming endpoints (req.path is relative to /api)
+    const skip = ['/auth', '/mt5', '/streams', '/watchlist', '/alerts'];
     if (req.method !== 'GET' || skip.some(p => req.path.startsWith(p))) {
+      res.setHeader('Cache-Control', 'no-store'); // per-user / live data: never reuse a stored copy
       return next();
     }
-    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=1800');
+    res.setHeader('Cache-Control', 'public, max-age=30');
     next();
   });
 
@@ -187,34 +143,20 @@ export function createApp() {
   // Auth routes — stricter rate limit on the login attempt itself (not /me)
   app.use('/api/auth/login', authLimiter);
   app.use('/api/auth', authRouter);
-  app.use('/api/billing', billingRouter);
-  app.use('/api/alpaca', alpacaRouter);
   app.use('/api/mt5', mt5Router);
   app.use('/api/streams', streamsRouter);
-  app.use('/api/news', newsRouter);
   app.use('/api/stocks', stocksRouter);
-  app.use('/api/recommendations', recommendationsRouter);
-  app.use('/api/categories', categoriesRouter);
-  app.use('/api/map-events', mapEventsRouter);
   app.use('/api/watchlist', watchlistRouter);
-  app.use('/api/audit', auditRouter);
-  app.use('/api/conflicts', conflictsRouter);
-  app.use('/api/sentiment', sentimentRouter);
   app.use('/api/sectors', sectorsRouter);
   app.use('/api/calendar', calendarRouter);
   app.use('/api/alerts', alertsRouter);
-  app.use('/api/clusters', clustersRouter);
   app.use('/api/options', optionsRouter);
   app.use('/api/insiders', insidersRouter);
   app.use('/api/correlations', correlationsRouter);
-  app.use('/api/missed-opportunities', missedOpportunitiesRouter);
-  app.use('/api/polymarket', polymarketRouter);
-  app.use('/api/hyperliquid', hyperliquidRouter);
   app.use('/api/market-movers', marketMoversRouter);
   app.use('/api/forex', forexRouter);
   app.use('/api/bonds', bondsRouter);
   app.use('/api/commodities', commoditiesRouter);
-  app.use('/api/crypto', cryptoRouter);
   app.use('/api/global-markets', globalMarketsRouter);
   app.use('/api/scanner', scannerRouter);
   app.use('/api/screener', screenerRouter);
@@ -236,11 +178,9 @@ export function createApp() {
   app.use('/api/volatility', volatilityRouter);
   app.use('/api/relative-strength', relativeStrengthRouter);
   app.use('/api/fx-cross', fxCrossRouter);
-  app.use('/api/fear-greed', fearGreedRouter);
   app.use('/api/yield-curve', yieldCurveRouter);
   app.use('/api/currency-strength', currencyStrengthRouter);
   app.use('/api/money-flow', moneyFlowRouter);
-  app.use('/api/chart', chartRouter);
   app.use('/api/central-bank', centralBankRouter);
 
   // ── Lazy-loaded panel routes (loaded on first request to save startup memory) ──
@@ -279,38 +219,12 @@ export function createApp() {
     ['risk-parity', () => import('./routes/risk-parity.js')],
     ['market-anomalies', () => import('./routes/market-anomalies.js')],
     ['carry-trade', () => import('./routes/carry-trade.js')],
-    ['cot-report', () => import('./routes/cot-report.js')],
     ['iv-rank', () => import('./routes/iv-rank.js')],
-    ['performance-attribution', () => import('./routes/performance-attribution.js')],
     ['market-microstructure', () => import('./routes/market-microstructure.js')],
     ['positioning', () => import('./routes/positioning.js')],
-    ['repo-rates', () => import('./routes/repo-rates.js')],
-    ['xccy-basis', () => import('./routes/xccy-basis.js')],
     ['style-box', () => import('./routes/style-box.js')],
-    ['swap-rates', () => import('./routes/swap-rates.js')],
-    ['earnings-calendar', () => import('./routes/earnings-calendar.js')],
-    ['corporate-cds', () => import('./routes/corporate-cds.js')],
-    ['event-driven', () => import('./routes/event-driven.js')],
     ['debt-maturity', () => import('./routes/debt-maturity.js')],
-    ['equity-risk-premium', () => import('./routes/equity-risk-premium.js')],
-    ['central-banks', () => import('./routes/central-banks.js')],
-    ['vol-skew', () => import('./routes/vol-skew.js')],
-    ['global-rates', () => import('./routes/global-rates.js')],
-    ['supply-chain', () => import('./routes/supply-chain.js')],
-    ['gamma-exposure', () => import('./routes/gamma-exposure.js')],
-    ['sovereign-spreads', () => import('./routes/sovereign-spreads.js')],
-    ['earnings-revisions', () => import('./routes/earnings-revisions.js')],
-    ['dividend-forecast', () => import('./routes/dividend-forecast.js')],
-    ['credit-ratings', () => import('./routes/credit-ratings.js')],
-    ['volatility-cone', () => import('./routes/volatility-cone.js')],
-    ['term-structure', () => import('./routes/term-structure.js')],
-    ['institutional-ownership', () => import('./routes/institutional-ownership.js')],
-    ['implied-correlation', () => import('./routes/implied-correlation.js')],
-    ['earnings-quality', () => import('./routes/earnings-quality.js')],
-    ['vol-surface', () => import('./routes/vol-surface.js')],
     ['global-flows', () => import('./routes/global-flows.js')],
-    ['regression-analysis', () => import('./routes/regression-analysis.js')],
-    ['covenant-monitor', () => import('./routes/covenant-monitor.js')],
     ['market-internals', () => import('./routes/market-internals.js')],
     ['valuation-multiples', () => import('./routes/valuation-multiples.js')],
     ['fixed-income-analytics', () => import('./routes/fixed-income-analytics.js')],
@@ -328,14 +242,11 @@ export function createApp() {
     ['alternative-data', () => import('./routes/alternative-data.js')],
     ['trade-ideas', () => import('./routes/trade-ideas.js')],
     ['debt-issuance', () => import('./routes/debt-issuance.js')],
-    ['fx-options', () => import('./routes/fx-options.js')],
     ['multi-factor', () => import('./routes/multi-factor.js')],
     ['treasury-auctions', () => import('./routes/treasury-auctions.js')],
     ['commodity-curves', () => import('./routes/commodity-curves.js')],
     ['em-bonds', () => import('./routes/em-bonds.js')],
-    ['reit-monitor', () => import('./routes/reit-monitor.js')],
     ['money-market', () => import('./routes/money-market.js')],
-    ['convertible-bonds', () => import('./routes/convertible-bonds.js')],
     ['global-pmi', () => import('./routes/global-pmi.js')],
     ['leveraged-loans', () => import('./routes/leveraged-loans.js')],
     ['swaption-vol', () => import('./routes/swaption-vol.js')],
@@ -346,15 +257,11 @@ export function createApp() {
     ['variance-swaps', () => import('./routes/variance-swaps.js')],
     ['carbon-credits', () => import('./routes/carbon-credits.js')],
     ['weather-derivatives', () => import('./routes/weather-derivatives.js')],
-    ['dark-pool', () => import('./routes/dark-pool.js')],
     ['total-return-swaps', () => import('./routes/total-return-swaps.js')],
-    ['cat-bonds', () => import('./routes/cat-bonds.js')],
     ['inflation-linked-bonds', () => import('./routes/inflation-linked-bonds.js')],
     ['equity-basket-swaps', () => import('./routes/equity-basket-swaps.js')],
     ['cross-currency-swaps', () => import('./routes/cross-currency-swaps.js')],
-    ['commodity-options', () => import('./routes/commodity-options.js')],
     ['loan-cds', () => import('./routes/loan-cds.js')],
-    ['convertible-arb', () => import('./routes/convertible-arb.js')],
     ['shipping-rates', () => import('./routes/shipping-rates.js')],
     ['credit-auction', () => import('./routes/credit-auction.js')],
     ['muni-yield-curves', () => import('./routes/muni-yield-curves.js')],
@@ -364,12 +271,10 @@ export function createApp() {
     ['equity-linked-notes', () => import('./routes/equity-linked-notes.js')],
     ['trade-finance', () => import('./routes/trade-finance.js')],
     ['repo-market', () => import('./routes/repo-market.js')],
-    ['commodity-inventory', () => import('./routes/commodity-inventory.js')],
     ['sovereign-wealth', () => import('./routes/sovereign-wealth.js')],
     ['agency-mbs-tba', () => import('./routes/agency-mbs-tba.js')],
     ['etf-flows', () => import('./routes/etf-flows.js')],
     ['credit-flow', () => import('./routes/credit-flow.js')],
-    ['commodity-seasonality', () => import('./routes/commodity-seasonality.js')],
     ['fx-volatility', () => import('./routes/fx-volatility.js')],
     ['primary-dealer', () => import('./routes/primary-dealer.js')],
     ['real-estate-capital', () => import('./routes/real-estate-capital.js')],
@@ -410,7 +315,6 @@ export function createApp() {
     ['structured-notes', () => import('./routes/structured-notes.js')],
     ['securities-finance', () => import('./routes/securities-finance.js')],
     ['credit-curve-builder', () => import('./routes/credit-curve-builder.js')],
-    ['execution-analytics', () => import('./routes/execution-analytics.js')],
     ['bond-auction-calendar', () => import('./routes/bond-auction-calendar.js')],
     ['fx-carry-monitor', () => import('./routes/fx-carry-monitor.js')],
     ['equity-capital-markets', () => import('./routes/equity-capital-markets.js')],
@@ -426,13 +330,10 @@ export function createApp() {
     ['macro-surprise-tracker', () => import('./routes/macro-surprise-tracker.js')],
     ['fx-volatility-surface', () => import('./routes/fx-volatility-surface.js')],
     ['commodity-fundamental', () => import('./routes/commodity-fundamental.js')],
-    ['etf-flow-monitor', () => import('./routes/etf-flow-monitor.js')],
     ['equity-factor-monitor', () => import('./routes/equity-factor-monitor.js')],
     ['rates-strategy', () => import('./routes/rates-strategy.js')],
     ['credit-portfolio', () => import('./routes/credit-portfolio.js')],
     ['macro-regime-monitor', () => import('./routes/macro-regime-monitor.js')],
-    ['dividend-calendar', () => import('./routes/dividend-calendar.js')],
-    ['convertible-arbitrage', () => import('./routes/convertible-arbitrage.js')],
     ['realtime-pnl', () => import('./routes/realtime-pnl.js')],
     ['market-breadth-advanced', () => import('./routes/market-breadth-advanced.js')],
     ['volatility-dashboard', () => import('./routes/volatility-dashboard.js')],
@@ -443,7 +344,6 @@ export function createApp() {
     ['ipo-calendar', () => import('./routes/ipo-calendar.js')],
     ['municipal-bond-monitor', () => import('./routes/municipal-bond-monitor.js')],
     ['structured-credit', () => import('./routes/structured-credit.js')],
-    ['currency-options', () => import('./routes/currency-options.js')],
     ['swap-curve-monitor', () => import('./routes/swap-curve-monitor.js')],
     ['fund-flow-analytics', () => import('./routes/fund-flow-analytics.js')],
     ['trade-cost-analysis', () => import('./routes/trade-cost-analysis.js')],
@@ -453,8 +353,6 @@ export function createApp() {
     ['inflation-monitor', () => import('./routes/inflation-monitor.js')],
     ['merger-arbitrage', () => import('./routes/merger-arbitrage.js')],
     ['sovereign-debt', () => import('./routes/sovereign-debt.js')],
-    ['etf-premium', () => import('./routes/etf-premium.js')],
-    ['etf-creation-redemption', () => import('./routes/etf-creation-redemption.js')],
     ['commodity-demand', () => import('./routes/commodity-demand.js')],
     ['global-dividend', () => import('./routes/global-dividend.js')],
     ['cds-index-monitor', () => import('./routes/cds-index-monitor.js')],
@@ -467,14 +365,12 @@ export function createApp() {
     ['global-pmi-dashboard', () => import('./routes/global-pmi-dashboard.js')],
     ['earnings-whisper', () => import('./routes/earnings-whisper.js')],
     ['portfolio-hedging', () => import('./routes/portfolio-hedging.js')],
-    ['market-depth', () => import('./routes/market-depth.js')],
     ['irs-monitor', () => import('./routes/irs-monitor.js')],
     ['equity-capital-raise', () => import('./routes/equity-capital-raise.js')],
     ['volatility-smile', () => import('./routes/volatility-smile.js')],
     ['trade-blotter', () => import('./routes/trade-blotter.js')],
     ['country-risk', () => import('./routes/country-risk.js')],
     ['central-bank-balance-sheet', () => import('./routes/central-bank-balance-sheet.js')],
-    ['corporate-buyback', () => import('./routes/corporate-buyback.js')],
     ['corporate-actions', () => import('./routes/corporate-actions.js')],
     ['margin-debt', () => import('./routes/margin-debt.js')],
     ['fiscal-policy', () => import('./routes/fiscal-policy.js')],
@@ -499,14 +395,11 @@ export function createApp() {
     ['prime-brokerage', () => import('./routes/prime-brokerage.js')],
     ['election-risk', () => import('./routes/election-risk.js')],
     ['cva-monitor', () => import('./routes/cva-monitor.js')],
-    ['algo-execution', () => import('./routes/algo-execution.js')],
     ['securities-class-action', () => import('./routes/securities-class-action.js')],
     ['proxy-voting', () => import('./routes/proxy-voting.js')],
     ['index-rebalance', () => import('./routes/index-rebalance.js')],
     ['shareholder-activism', () => import('./routes/shareholder-activism.js')],
     ['fund-flow-tracker', () => import('./routes/fund-flow-tracker.js')],
-    ['insider-transaction', () => import('./routes/insider-transaction.js')],
-    ['short-squeeze', () => import('./routes/short-squeeze.js')],
     ['spac-monitor', () => import('./routes/spac-monitor.js')],
     ['block-trade', () => import('./routes/block-trade.js')],
     ['regulatory-filing', () => import('./routes/regulatory-filing.js')],
@@ -515,11 +408,8 @@ export function createApp() {
     ['credit-rating-migration', () => import('./routes/credit-rating-migration.js')],
     ['merger-arb-monitor', () => import('./routes/merger-arb-monitor.js')],
     ['market-making', () => import('./routes/market-making.js')],
-    ['rate-probability', () => import('./routes/rate-probability.js')],
-    ['fx-forward', () => import('./routes/fx-forward.js')],
     ['credit-event', () => import('./routes/credit-event.js')],
     ['portfolio-margin', () => import('./routes/portfolio-margin.js')],
-    ['corporate-governance', () => import('./routes/corporate-governance.js')],
     ['treasury-bill', () => import('./routes/treasury-bill.js')],
     ['equity-lending', () => import('./routes/equity-lending.js')],
     ['trade-settlement', () => import('./routes/trade-settlement.js')],
@@ -544,7 +434,6 @@ export function createApp() {
     ['securities-valuation', () => import('./routes/securities-valuation.js')],
     ['benchmark-analytics', () => import('./routes/benchmark-analytics.js')],
     ['counterparty-risk', () => import('./routes/counterparty-risk.js')],
-    ['equity-valuation', () => import('./routes/equity-valuation.js')],
     ['macro-indicators', () => import('./routes/macro-indicators.js')],
     ['volatility-skew', () => import('./routes/volatility-skew.js')],
     ['order-book', () => import('./routes/order-book.js')],
@@ -552,28 +441,21 @@ export function createApp() {
     ['cds-monitor', () => import('./routes/cds-monitor.js')],
     ['sovereign-debt-monitor', () => import('./routes/sovereign-debt-monitor.js')],
     ['liquidity-dashboard', () => import('./routes/liquidity-dashboard.js')],
-    ['precious-metals', () => import('./routes/precious-metals.js')],
-    ['bank-capital', () => import('./routes/bank-capital.js')],
-    ['agricultural-commodities', () => import('./routes/agricultural-commodities.js')],
     ['energy-transition', () => import('./routes/energy-transition.js')],
     ['geopolitical-risk', () => import('./routes/geopolitical-risk.js')],
     ['labor-market', () => import('./routes/labor-market.js')],
     ['housing-market', () => import('./routes/housing-market.js')],
     ['supply-chain-stress', () => import('./routes/supply-chain-stress.js')],
     ['credit-impulse', () => import('./routes/credit-impulse.js')],
-    ['consumer-confidence', () => import('./routes/consumer-confidence.js')],
     ['sovereign-yield', () => import('./routes/sovereign-yield.js')],
     ['trade-balance', () => import('./routes/trade-balance.js')],
-    ['semiconductor', () => import('./routes/semiconductor.js')],
     ['infrastructure-investment', () => import('./routes/infrastructure-investment.js')],
     ['insurance-market', () => import('./routes/insurance-market.js')],
-    ['shipping-index', () => import('./routes/shipping-index.js')],
     ['venture-capital', () => import('./routes/venture-capital.js')],
     ['demographic-trends', () => import('./routes/demographic-trends.js')],
     ['economic-forecast', () => import('./routes/economic-forecast.js')],
     ['global-index-monitor', () => import('./routes/global-index-monitor.js')],
     ['league-tables', () => import('./routes/league-tables.js')],
-    ['gdp-nowcast', () => import('./routes/gdp-nowcast.js')],
     ['recession-probability', () => import('./routes/recession-probability.js')],
     ['financial-conditions', () => import('./routes/financial-conditions.js')],
     ['commodity-fundamentals', () => import('./routes/commodity-fundamentals.js')],
@@ -617,7 +499,6 @@ export function createApp() {
     ['leveraged-loan', () => import('./routes/leveraged-loan.js')],
     ['structured-product', () => import('./routes/structured-product.js')],
     ['merger-arb', () => import('./routes/merger-arb.js')],
-    ['green-bond', () => import('./routes/green-bond.js')],
     ['market-breadth', () => import('./routes/market-breadth.js')],
     ['liquidity-monitor', () => import('./routes/liquidity-monitor.js')],
     ['covered-bond', () => import('./routes/covered-bond.js')],
@@ -638,31 +519,26 @@ export function createApp() {
     ['abs', () => import('./routes/abs.js')],
     ['total-return-swap', () => import('./routes/total-return-swap.js')],
     ['variance-swap', () => import('./routes/variance-swap.js')],
-    ['convertible-bond', () => import('./routes/convertible-bond.js')],
     ['credit-index', () => import('./routes/credit-index.js')],
     ['dividend-swap', () => import('./routes/dividend-swap.js')],
     ['commercial-paper', () => import('./routes/commercial-paper.js')],
     ['fx-reserves', () => import('./routes/fx-reserves.js')],
     ['equity-index-futures', () => import('./routes/equity-index-futures.js')],
-    ['preferred-stock', () => import('./routes/preferred-stock.js')],
     ['treasury-strips', () => import('./routes/treasury-strips.js')],
     ['commodity-warehouse', () => import('./routes/commodity-warehouse.js')],
     ['agency-debt', () => import('./routes/agency-debt.js')],
     ['loan-syndication-pipeline', () => import('./routes/loan-syndication-pipeline.js')],
     ['sovereign-bond-auction', () => import('./routes/sovereign-bond-auction.js')],
-    ['cross-currency-basis-swap', () => import('./routes/cross-currency-basis-swap.js')],
     ['securities-borrowing-lending', () => import('./routes/securities-borrowing-lending.js')],
     ['equity-total-return-index', () => import('./routes/equity-total-return-index.js')],
     ['global-credit-monitor', () => import('./routes/global-credit-monitor.js')],
     ['bond-index-monitor', () => import('./routes/bond-index-monitor.js')],
-    ['fx-option-vol-matrix', () => import('./routes/fx-option-vol-matrix.js')],
     ['equity-swap-pricing', () => import('./routes/equity-swap-pricing.js')],
     ['credit-valuation-adjustment', () => import('./routes/credit-valuation-adjustment.js')],
     ['interest-rate-vol-surface', () => import('./routes/interest-rate-vol-surface.js')],
     ['municipal-credit-analysis', () => import('./routes/municipal-credit-analysis.js')],
     ['structured-products-analyzer', () => import('./routes/structured-products-analyzer.js')],
     ['risk-scenario-analysis', () => import('./routes/risk-scenario-analysis.js')],
-    ['convertible-bond-analyzer', () => import('./routes/convertible-bond-analyzer.js')],
     ['commodities-forward-curve', () => import('./routes/commodities-forward-curve.js')],
     ['variance-swap-monitor', () => import('./routes/variance-swap-monitor.js')],
     ['securities-lending-revenue', () => import('./routes/securities-lending-revenue.js')],
@@ -677,16 +553,12 @@ export function createApp() {
     ['credit-index-tranches', () => import('./routes/credit-index-tranches.js')],
     ['mortgage-prepayment', () => import('./routes/mortgage-prepayment.js')],
     ['option-skew-surface', () => import('./routes/option-skew-surface.js')],
-    ['equity-short-interest', () => import('./routes/equity-short-interest.js')],
     ['warrant-pricing', () => import('./routes/warrant-pricing.js')],
     ['trade-execution-quality', () => import('./routes/trade-execution-quality.js')],
     ['freight-rate-monitor', () => import('./routes/freight-rate-monitor.js')],
-    ['power-market', () => import('./routes/power-market.js')],
     ['special-situations', () => import('./routes/special-situations.js')],
-    ['industrial-metals', () => import('./routes/industrial-metals.js')],
     ['securitization-pipeline', () => import('./routes/securitization-pipeline.js')],
     ['equity-analyst-revisions', () => import('./routes/equity-analyst-revisions.js')],
-    ['natural-gas-storage', () => import('./routes/natural-gas-storage.js')],
     ['precious-metals-lease', () => import('./routes/precious-metals-lease.js')],
     ['corporate-action-calendar', () => import('./routes/corporate-action-calendar.js')],
     ['sovereign-debt-maturity', () => import('./routes/sovereign-debt-maturity.js')],
@@ -706,17 +578,6 @@ export function createApp() {
   for (const [routePath, importFn] of panelRoutes) {
     app.use(`/api/${routePath}`, lazyRoute(importFn));
   }
-
-  // Manual scrape trigger
-  const scrapeLimiter = rateLimit({ windowMs: 60_000, max: 1, message: { error: 'Too many scrape requests' } });
-  app.post('/api/scrape', scrapeLimiter, async (_req, res) => {
-    try {
-      runScrapeAndAnalyze();
-      res.json({ message: 'Scrape triggered' });
-    } catch (err) {
-      res.status(500).json({ error: 'Failed to trigger scrape' });
-    }
-  });
 
   // Health check (excluded from rate limit above)
   app.get('/api/health', (_req, res) => {

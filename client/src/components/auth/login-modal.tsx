@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '../../stores/use-auth-store';
 import { useAuthActions } from '../../api/hooks/use-auth';
 import { useT } from '../../i18n';
+import { LEGAL_URL } from '../../lib/legal';
 import { X, Shield } from 'lucide-react';
 
 export function LoginModal() {
@@ -113,9 +114,9 @@ export function LoginModal() {
         {/* Terms consent note */}
         <p className="mt-4 text-[9px] font-mono text-neutral/50 text-center leading-relaxed">
           {t('cookieConsent')}{' '}
-          <a href="https://github.com/KoNananachan/Neuberg/blob/main/TERMS_OF_SERVICE.md" target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('termsOfService')}</a>
+          <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('termsOfService')}</a>
           {' '}{t('and')}{' '}
-          <a href="https://github.com/KoNananachan/Neuberg/blob/main/PRIVACY_POLICY.md" target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('privacyPolicy')}</a>.
+          <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('privacyPolicy')}</a>.
         </p>
 
         {/* Error */}

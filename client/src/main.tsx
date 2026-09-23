@@ -1,22 +1,28 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Web3Provider } from './components/providers/web3-provider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from './components/common/error-boundary';
 import App from './App';
 import './index.css';
 
-function AppWithProviders() {
-  return (
-    <Web3Provider>
-      <App />
-    </Web3Provider>
-  );
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 10 * 60_000,              // 10 min — most data is date-seeded, changes daily
+      gcTime: 5 * 60_000,                  // GC unused queries after 5 min (frees memory)
+      refetchOnWindowFocus: false,          // Don't refetch on tab switch
+      refetchIntervalInBackground: false,   // Don't refetch when tab is not visible
+      retry: 1,                             // Reduce retries
+    },
+  },
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <AppWithProviders />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>,
 );

@@ -2,70 +2,6 @@ import { useCriticalMinerals } from '../../api/hooks/use-critical-minerals';
 import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw, Gem } from 'lucide-react';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  timestamp: new Date().toISOString(),
-  overview: {
-    totalMarket: 320e9,
-    growthRate: 12.4,
-    chinaSupplyShare: 63.2,
-    supplyRiskIndex: 7.8,
-  },
-  mineralPrices: [
-    { mineral: 'Lithium Carbonate', price: 12.40, unit: '$/kg', dailyChange: -1.82, ytdChange: -24.6, low52w: 9.80, high52w: 22.50, primaryUse: 'EV Batteries', supplyConcentration: 'high' },
-    { mineral: 'Cobalt', price: 29350, unit: '$/t', dailyChange: 0.74, ytdChange: -8.3, low52w: 24100, high52w: 38200, primaryUse: 'Battery Cathodes', supplyConcentration: 'critical' },
-    { mineral: 'Nickel (Class 1)', price: 16420, unit: '$/t', dailyChange: -0.45, ytdChange: -18.7, low52w: 14850, high52w: 21300, primaryUse: 'Stainless/Batteries', supplyConcentration: 'moderate' },
-    { mineral: 'Rare Earth (NdPr)', price: 62.80, unit: '$/kg', dailyChange: 2.14, ytdChange: 8.5, low52w: 48.20, high52w: 78.60, primaryUse: 'Magnets/Motors', supplyConcentration: 'critical' },
-    { mineral: 'Graphite (Flake)', price: 538, unit: '$/t', dailyChange: -0.22, ytdChange: -32.1, low52w: 420, high52w: 890, primaryUse: 'Battery Anodes', supplyConcentration: 'high' },
-    { mineral: 'Manganese', price: 4.85, unit: '$/kg', dailyChange: 0.62, ytdChange: -5.2, low52w: 3.90, high52w: 6.40, primaryUse: 'Steel/Batteries', supplyConcentration: 'moderate' },
-    { mineral: 'Vanadium', price: 32.10, unit: '$/kg', dailyChange: 1.28, ytdChange: 14.3, low52w: 24.50, high52w: 38.20, primaryUse: 'Energy Storage', supplyConcentration: 'high' },
-    { mineral: 'Gallium', price: 315, unit: '$/kg', dailyChange: 3.42, ytdChange: 42.8, low52w: 195, high52w: 340, primaryUse: 'Semiconductors', supplyConcentration: 'critical' },
-    { mineral: 'Germanium', price: 1850, unit: '$/kg', dailyChange: 1.95, ytdChange: 38.2, low52w: 1120, high52w: 2050, primaryUse: 'Fiber Optics/IR', supplyConcentration: 'critical' },
-    { mineral: 'Tungsten', price: 325, unit: '$/mtu', dailyChange: 0.31, ytdChange: 6.8, low52w: 270, high52w: 365, primaryUse: 'Cutting Tools', supplyConcentration: 'high' },
-    { mineral: 'Antimony', price: 25400, unit: '$/t', dailyChange: 4.12, ytdChange: 68.5, low52w: 12800, high52w: 28600, primaryUse: 'Flame Retardant', supplyConcentration: 'critical' },
-    { mineral: 'Titanium Sponge', price: 12.50, unit: '$/kg', dailyChange: 0.16, ytdChange: 3.2, low52w: 10.80, high52w: 14.20, primaryUse: 'Aerospace', supplyConcentration: 'moderate' },
-  ],
-  supplyChain: [
-    { mineral: 'Lithium', topProducer: 'Australia', topProducerShare: 46.9, topProcessor: 'China', topProcessorShare: 65.3, chinaProcessing: 65.3 },
-    { mineral: 'Cobalt', topProducer: 'DRC', topProducerShare: 72.6, topProcessor: 'China', topProcessorShare: 74.1, chinaProcessing: 74.1 },
-    { mineral: 'Rare Earths', topProducer: 'China', topProducerShare: 69.8, topProcessor: 'China', topProcessorShare: 90.2, chinaProcessing: 90.2 },
-    { mineral: 'Graphite', topProducer: 'China', topProducerShare: 65.4, topProcessor: 'China', topProcessorShare: 93.0, chinaProcessing: 93.0 },
-    { mineral: 'Nickel', topProducer: 'Indonesia', topProducerShare: 48.6, topProcessor: 'China', topProcessorShare: 68.2, chinaProcessing: 68.2 },
-    { mineral: 'Manganese', topProducer: 'South Africa', topProducerShare: 36.8, topProcessor: 'China', topProcessorShare: 58.4, chinaProcessing: 58.4 },
-    { mineral: 'Gallium', topProducer: 'China', topProducerShare: 98.2, topProcessor: 'China', topProcessorShare: 98.8, chinaProcessing: 98.8 },
-    { mineral: 'Germanium', topProducer: 'China', topProducerShare: 68.5, topProcessor: 'China', topProcessorShare: 83.7, chinaProcessing: 83.7 },
-    { mineral: 'Tungsten', topProducer: 'China', topProducerShare: 82.4, topProcessor: 'China', topProcessorShare: 86.3, chinaProcessing: 86.3 },
-    { mineral: 'Antimony', topProducer: 'China', topProducerShare: 48.1, topProcessor: 'China', topProcessorShare: 79.5, chinaProcessing: 79.5 },
-  ],
-  strategicReserves: [
-    { entity: 'US (NDS)', reservesStatus: 'rebuilding', monthsOfSupply: 4.2, stockpilingTarget: '180-day', budget: 1.5e9 },
-    { entity: 'EU (CRMA)', reservesStatus: 'establishing', monthsOfSupply: 1.8, stockpilingTarget: '90-day', budget: 3.4e9 },
-    { entity: 'Japan (JOGMEC)', reservesStatus: 'adequate', monthsOfSupply: 8.6, stockpilingTarget: '60-day', budget: 820e6 },
-    { entity: 'South Korea', reservesStatus: 'expanding', monthsOfSupply: 3.4, stockpilingTarget: '100-day', budget: 640e6 },
-    { entity: 'India (KABIL)', reservesStatus: 'nascent', monthsOfSupply: 0.6, stockpilingTarget: 'TBD', budget: 210e6 },
-    { entity: 'China (SRB)', reservesStatus: 'dominant', monthsOfSupply: 18.5, stockpilingTarget: 'classified', budget: 4.8e9 },
-  ],
-  demandDrivers: [
-    { sector: 'Electric Vehicles', growth: 28.4, keyMinerals: ['Lithium', 'Cobalt', 'Nickel', 'Graphite', 'Rare Earths'], demandMultiple2030: 4.2 },
-    { sector: 'Energy Storage', growth: 35.6, keyMinerals: ['Lithium', 'Vanadium', 'Iron Phosphate'], demandMultiple2030: 5.8 },
-    { sector: 'Wind Turbines', growth: 18.2, keyMinerals: ['Rare Earths', 'Copper', 'Zinc'], demandMultiple2030: 2.4 },
-    { sector: 'Semiconductors', growth: 22.8, keyMinerals: ['Gallium', 'Germanium', 'Silicon'], demandMultiple2030: 3.1 },
-    { sector: 'Defense/Aerospace', growth: 14.6, keyMinerals: ['Titanium', 'Tungsten', 'Rare Earths', 'Cobalt'], demandMultiple2030: 1.9 },
-    { sector: 'Hydrogen Economy', growth: 42.1, keyMinerals: ['Platinum', 'Iridium', 'Nickel'], demandMultiple2030: 7.2 },
-  ],
-  tradePolicy: [
-    { date: '2026-03-15', country: 'China', action: 'Extended export controls on gallium & germanium compounds', affectedMinerals: ['Gallium', 'Germanium'], impact: 'high' },
-    { date: '2026-03-08', country: 'US', action: 'Expanded critical minerals tax credits under IRA extension', affectedMinerals: ['Lithium', 'Nickel', 'Cobalt', 'Graphite'], impact: 'positive' },
-    { date: '2026-02-28', country: 'EU', action: 'CRMA implementation: mandatory recycling targets enacted', affectedMinerals: ['Rare Earths', 'Cobalt', 'Lithium'], impact: 'moderate' },
-    { date: '2026-02-20', country: 'Indonesia', action: 'Nickel ore export ban extended to processed products', affectedMinerals: ['Nickel'], impact: 'high' },
-    { date: '2026-02-12', country: 'China', action: 'New antimony export licensing regime effective', affectedMinerals: ['Antimony'], impact: 'critical' },
-    { date: '2026-01-30', country: 'Australia', action: 'Fast-track approvals for lithium & rare earth mining', affectedMinerals: ['Lithium', 'Rare Earths'], impact: 'positive' },
-    { date: '2026-01-18', country: 'DRC', action: 'Revised mining code increases cobalt royalties 5% to 10%', affectedMinerals: ['Cobalt'], impact: 'moderate' },
-    { date: '2026-01-05', country: 'US', action: 'Defense Production Act invoked for graphite processing', affectedMinerals: ['Graphite'], impact: 'moderate' },
-  ],
-};
-
 // ── Formatting helpers ──
 
 function fmtVol(n: number): string {
@@ -407,7 +343,7 @@ export function CriticalMineralsPanel() {
   const t = useT();
   const { data, isLoading, refetch } = useCriticalMinerals();
 
-  const d = data || FALLBACK_DATA;
+  const d = data;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -421,10 +357,10 @@ export function CriticalMineralsPanel() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[7px] font-mono text-neutral-500 tabular-nums">
-            {fmtVol(d.overview.totalMarket)}
+            {d?.overview?.totalMarket != null ? fmtVol(d.overview.totalMarket) : '--'}
           </span>
           <span className="text-[7px] font-mono font-bold text-orange-400 tabular-nums">
-            CN {d.overview.chinaSupplyShare.toFixed(1)}%
+            CN {d?.overview?.chinaSupplyShare != null ? `${d.overview.chinaSupplyShare.toFixed(1)}%` : '--'}
           </span>
           <button
             onClick={() => refetch()}
@@ -446,14 +382,16 @@ export function CriticalMineralsPanel() {
               </span>
             </div>
           </div>
+        ) : !d ? (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
         ) : (
           <>
-            <OverviewSection overview={d.overview} t={t} />
-            <MineralPricesSection minerals={d.mineralPrices} t={t} />
-            <SupplyChainSection supplyChain={d.supplyChain} t={t} />
-            <StrategicReservesSection reserves={d.strategicReserves} t={t} />
-            <DemandDriversSection drivers={d.demandDrivers} t={t} />
-            <TradePolicySection policies={d.tradePolicy} t={t} />
+            {d.overview && <OverviewSection overview={d.overview} t={t} />}
+            <MineralPricesSection minerals={d.mineralPrices ?? []} t={t} />
+            <SupplyChainSection supplyChain={d.supplyChain ?? []} t={t} />
+            <StrategicReservesSection reserves={d.strategicReserves ?? []} t={t} />
+            <DemandDriversSection drivers={d.demandDrivers ?? []} t={t} />
+            <TradePolicySection policies={d.tradePolicy ?? []} t={t} />
           </>
         )}
       </div>

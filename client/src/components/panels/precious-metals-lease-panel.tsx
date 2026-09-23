@@ -70,48 +70,6 @@ interface PreciousMetalsLeaseData {
   timestamp: string;
 }
 
-// ── Fallback data ──
-
-const FALLBACK_DATA: PreciousMetalsLeaseData = {
-  leaseRates: [
-    { metal: 'Gold', rates: { '1M': 0.12, '2M': 0.15, '3M': 0.18, '6M': 0.25, '9M': 0.32, '12M': 0.38 }, gofo: { '1M': 0.08, '2M': 0.12, '3M': 0.15, '6M': 0.22, '9M': 0.28, '12M': 0.35 } },
-    { metal: 'Silver', rates: { '1M': 0.35, '2M': 0.42, '3M': 0.48, '6M': 0.62, '9M': 0.74, '12M': 0.85 } },
-    { metal: 'Platinum', rates: { '1M': 1.80, '2M': 1.95, '3M': 2.10, '6M': 2.45, '9M': 2.68, '12M': 2.90 } },
-    { metal: 'Palladium', rates: { '1M': 3.20, '2M': 3.50, '3M': 3.80, '6M': 4.50, '9M': 4.85, '12M': 5.20 } },
-  ],
-  forwards: [
-    { metal: 'Gold', spot: 2051.30, forwards: { '1M': 2053.80, '3M': 2060.20, '6M': 2072.50, '12M': 2098.40 }, basis: { '1M': 2.50, '3M': 8.90, '6M': 21.20, '12M': 47.10 }, structure: 'contango' },
-    { metal: 'Silver', spot: 23.52, forwards: { '1M': 23.58, '3M': 23.72, '6M': 23.95, '12M': 24.38 }, basis: { '1M': 0.06, '3M': 0.20, '6M': 0.43, '12M': 0.86 }, structure: 'contango' },
-    { metal: 'Platinum', spot: 952.40, forwards: { '1M': 950.80, '3M': 948.60, '6M': 945.20, '12M': 940.80 }, basis: { '1M': -1.60, '3M': -3.80, '6M': -7.20, '12M': -11.60 }, structure: 'backwardation' },
-    { metal: 'Palladium', spot: 1002.80, forwards: { '1M': 998.40, '3M': 990.20, '6M': 978.60, '12M': 955.40 }, basis: { '1M': -4.40, '3M': -12.60, '6M': -24.20, '12M': -47.40 }, structure: 'backwardation' },
-  ],
-  ratios: [
-    { name: 'Gold/Silver', current: 87.2, change1D: 1.18, avg1Y: 83.5, high1Y: 92.4, low1Y: 74.8, percentile: 72 },
-    { name: 'Platinum/Gold', current: 0.464, change1D: -0.002, avg1Y: 0.485, high1Y: 0.52, low1Y: 0.43, percentile: 35 },
-    { name: 'Palladium/Gold', current: 0.489, change1D: -0.012, avg1Y: 0.55, high1Y: 0.68, low1Y: 0.42, percentile: 28 },
-    { name: 'Palladium/Platinum', current: 1.053, change1D: -0.018, avg1Y: 1.12, high1Y: 1.35, low1Y: 0.95, percentile: 38 },
-  ],
-  etfs: [
-    { ticker: 'GLD', metal: 'Gold', holdingsTonnes: 878.3, change1D: -0.58, change1W: -2.31, change1M: 5.12, aum: 58.2 },
-    { ticker: 'SLV', metal: 'Silver', holdingsTonnes: 13205.6, change1D: -12.40, change1W: -35.80, change1M: 82.50, aum: 10.1 },
-    { ticker: 'PPLT', metal: 'Platinum', holdingsTonnes: 15.8, change1D: 0.02, change1W: -0.10, change1M: -0.35, aum: 0.95 },
-    { ticker: 'PALL', metal: 'Palladium', holdingsTonnes: 3.2, change1D: -0.05, change1W: -0.18, change1M: -0.42, aum: 0.21 },
-  ],
-  centralBanks: [
-    { rank: 1, country: 'United States', holdingsTonnes: 8133.5, pctReserves: 68.9, changeYTD: 0, changeYoY: 0 },
-    { rank: 2, country: 'Germany', holdingsTonnes: 3352.3, pctReserves: 66.5, changeYTD: 0, changeYoY: -4.8 },
-    { rank: 3, country: 'Italy', holdingsTonnes: 2451.8, pctReserves: 63.5, changeYTD: 0, changeYoY: 0 },
-    { rank: 4, country: 'France', holdingsTonnes: 2436.9, pctReserves: 59.2, changeYTD: 0, changeYoY: 0 },
-    { rank: 5, country: 'Russia', holdingsTonnes: 2332.7, pctReserves: 25.8, changeYTD: 12.5, changeYoY: 28.3 },
-    { rank: 6, country: 'China', holdingsTonnes: 2235.4, pctReserves: 4.9, changeYTD: 62.8, changeYoY: 225.0 },
-    { rank: 7, country: 'Switzerland', holdingsTonnes: 1040.0, pctReserves: 5.4, changeYTD: 0, changeYoY: 0 },
-    { rank: 8, country: 'Japan', holdingsTonnes: 846.0, pctReserves: 4.2, changeYTD: 0, changeYoY: 80.8 },
-    { rank: 9, country: 'India', holdingsTonnes: 812.3, pctReserves: 9.4, changeYTD: 18.2, changeYoY: 75.0 },
-    { rank: 10, country: 'Poland', holdingsTonnes: 358.7, pctReserves: 14.7, changeYTD: 48.5, changeYoY: 130.0 },
-  ],
-  timestamp: new Date().toISOString(),
-};
-
 // ── Formatting helpers ──
 
 function fmtNum(n: number | null | undefined, decimals = 2): string {
@@ -182,7 +140,7 @@ export function PreciousMetalsLeasePanel() {
   const { data: rawData, isLoading, refetch } = usePreciousMetalsLease();
   const [activeTab, setActiveTab] = useState<TabKey>('rates');
 
-  const data: PreciousMetalsLeaseData = rawData ?? FALLBACK_DATA;
+  const data = rawData as PreciousMetalsLeaseData | undefined;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -227,23 +185,23 @@ export function PreciousMetalsLeasePanel() {
           </div>
         )}
 
-        {!rawData && !isLoading && !FALLBACK_DATA && (
+        {!data && !isLoading && (
           <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
             No data available
           </div>
         )}
 
-        {activeTab === 'rates' && <RatesTab data={data} />}
-        {activeTab === 'forwards' && <ForwardsTab data={data} />}
-        {activeTab === 'ratios' && <RatiosTab data={data} />}
-        {activeTab === 'etfs' && <EtfsTab data={data} />}
-        {activeTab === 'centralBanks' && <CentralBanksTab data={data} />}
+        {data && activeTab === 'rates' && <RatesTab data={data} />}
+        {data && activeTab === 'forwards' && <ForwardsTab data={data} />}
+        {data && activeTab === 'ratios' && <RatiosTab data={data} />}
+        {data && activeTab === 'etfs' && <EtfsTab data={data} />}
+        {data && activeTab === 'centralBanks' && <CentralBanksTab data={data} />}
       </div>
 
       {/* Footer */}
       <div className="px-3 py-1 border-t border-border/10 bg-[#050505] shrink-0">
         <span className="text-[7px] font-mono text-neutral-700">
-          Updated: {new Date(data.timestamp).toLocaleTimeString()}
+          Updated: {data?.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '--'}
         </span>
       </div>
     </div>

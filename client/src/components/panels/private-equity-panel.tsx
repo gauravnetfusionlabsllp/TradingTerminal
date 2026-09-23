@@ -132,86 +132,11 @@ function exitTypeStyle(type: string): { color: string; bg: string } {
   }
 }
 
-// ── Fallback data ──
-
-const FALLBACK_DATA = {
-  timestamp: '2026-03-19T14:30:00Z',
-  overview: {
-    totalAum: 8420,
-    dryPowder: 2180,
-    fundraisingYtd: 312.5,
-    dealActivity: 1247,
-    exitVolume: 198.6,
-    avgEntryMultiple: 12.8,
-  },
-  topFirms: [
-    { firm: 'Blackstone', aum: 1050, latestFundSize: 30.4, netIrr: 18.2, tvpi: 1.87, dpi: 0.94, dealsYtd: 42, strategy: 'Buyout' },
-    { firm: 'Apollo Global', aum: 671, latestFundSize: 24.7, netIrr: 21.4, tvpi: 2.12, dpi: 1.28, dealsYtd: 38, strategy: 'Credit' },
-    { firm: 'KKR', aum: 578, latestFundSize: 19.0, netIrr: 16.8, tvpi: 1.74, dpi: 0.87, dealsYtd: 35, strategy: 'Buyout' },
-    { firm: 'Carlyle Group', aum: 425, latestFundSize: 22.0, netIrr: 14.5, tvpi: 1.62, dpi: 0.76, dealsYtd: 29, strategy: 'Buyout' },
-    { firm: 'TPG', aum: 222, latestFundSize: 14.8, netIrr: 19.7, tvpi: 1.95, dpi: 1.05, dealsYtd: 24, strategy: 'Growth' },
-    { firm: 'Warburg Pincus', aum: 83, latestFundSize: 17.3, netIrr: 15.9, tvpi: 1.71, dpi: 0.92, dealsYtd: 21, strategy: 'Growth' },
-    { firm: 'Thoma Bravo', aum: 131, latestFundSize: 22.8, netIrr: 24.1, tvpi: 2.34, dpi: 1.41, dealsYtd: 31, strategy: 'Buyout' },
-    { firm: 'Vista Equity', aum: 101, latestFundSize: 20.0, netIrr: 22.3, tvpi: 2.18, dpi: 1.32, dealsYtd: 27, strategy: 'Buyout' },
-    { firm: 'Silver Lake', aum: 102, latestFundSize: 18.5, netIrr: 20.6, tvpi: 2.05, dpi: 1.18, dealsYtd: 19, strategy: 'Growth' },
-    { firm: 'Advent International', aum: 91, latestFundSize: 12.5, netIrr: 17.3, tvpi: 1.82, dpi: 0.98, dealsYtd: 16, strategy: 'Buyout' },
-  ],
-  recentDeals: [
-    { acquirer: 'Blackstone', target: 'Emerson Climate Tech', value: 14.0, sector: 'Industrials', entryMultiple: 11.2, financingType: 'LBO', status: 'Closed' },
-    { acquirer: 'Thoma Bravo', target: 'Coupa Software', value: 8.0, sector: 'Software', entryMultiple: 28.4, financingType: 'Take-Private', status: 'Closed' },
-    { acquirer: 'KKR', target: 'Epicor Software', value: 9.2, sector: 'Technology', entryMultiple: 16.5, financingType: 'LBO', status: 'Pending' },
-    { acquirer: 'Apollo Global', target: 'Univision Holdings', value: 18.5, sector: 'Consumer', entryMultiple: 9.8, financingType: 'LBO', status: 'Announced' },
-    { acquirer: 'Vista Equity', target: 'Citrix Systems', value: 16.5, sector: 'Software', entryMultiple: 24.2, financingType: 'Club Deal', status: 'Closed' },
-    { acquirer: 'TPG', target: 'McAfee Corp.', value: 12.0, sector: 'Technology', entryMultiple: 18.7, financingType: 'LBO', status: 'Closed' },
-    { acquirer: 'Carlyle Group', target: 'ManTech Intl.', value: 4.2, sector: 'Business Services', entryMultiple: 14.3, financingType: 'All Equity', status: 'Closed' },
-    { acquirer: 'Silver Lake', target: 'Qualtrics', value: 12.5, sector: 'Software', entryMultiple: 21.6, financingType: 'Take-Private', status: 'Pending' },
-    { acquirer: 'Warburg Pincus', target: 'Kforce Inc.', value: 2.8, sector: 'Business Services', entryMultiple: 10.1, financingType: 'Growth Equity', status: 'LOI Signed' },
-    { acquirer: 'Advent International', target: 'Encora Digital', value: 1.5, sector: 'Technology', entryMultiple: 15.8, financingType: 'Growth Equity', status: 'Announced' },
-  ],
-  fundraising: {
-    totalRaised: 312.5,
-    breakdown: [
-      { strategy: 'Buyout', raised: 124.8, pctOfTotal: 39.9, fundCount: 47, avgFundSize: 2.66 },
-      { strategy: 'Growth', raised: 58.3, pctOfTotal: 18.7, fundCount: 62, avgFundSize: 0.94 },
-      { strategy: 'Venture', raised: 48.7, pctOfTotal: 15.6, fundCount: 187, avgFundSize: 0.26 },
-      { strategy: 'Credit', raised: 36.2, pctOfTotal: 11.6, fundCount: 28, avgFundSize: 1.29 },
-      { strategy: 'Infrastructure', raised: 22.1, pctOfTotal: 7.1, fundCount: 15, avgFundSize: 1.47 },
-      { strategy: 'Real Assets', raised: 12.8, pctOfTotal: 4.1, fundCount: 11, avgFundSize: 1.16 },
-      { strategy: 'Secondaries', raised: 6.4, pctOfTotal: 2.0, fundCount: 8, avgFundSize: 0.80 },
-      { strategy: 'Distressed', raised: 3.2, pctOfTotal: 1.0, fundCount: 5, avgFundSize: 0.64 },
-    ],
-  },
-  recentExits: [
-    { firm: 'Blackstone', company: 'Refinitiv', exitType: 'Strategic', entryYear: 2018, exitValue: 27.0, moic: 3.2, grossIrr: 38.5 },
-    { firm: 'KKR', company: 'GoDaddy', exitType: 'IPO', entryYear: 2014, exitValue: 8.5, moic: 4.1, grossIrr: 42.3 },
-    { firm: 'Carlyle Group', company: 'ZoomInfo', exitType: 'IPO', entryYear: 2019, exitValue: 6.2, moic: 5.8, grossIrr: 68.2 },
-    { firm: 'Thoma Bravo', company: 'Sailpoint', exitType: 'Strategic', entryYear: 2022, exitValue: 6.9, moic: 2.1, grossIrr: 28.4 },
-    { firm: 'Apollo Global', company: 'Athene Holding', exitType: 'Strategic', entryYear: 2009, exitValue: 11.0, moic: 6.4, grossIrr: 29.1 },
-    { firm: 'Vista Equity', company: 'Datto', exitType: 'Secondary', entryYear: 2017, exitValue: 6.2, moic: 3.8, grossIrr: 35.6 },
-    { firm: 'TPG', company: 'CAA (Creative Artists)', exitType: 'Recap', entryYear: 2014, exitValue: 7.5, moic: 2.6, grossIrr: 22.1 },
-    { firm: 'Silver Lake', company: 'Airbnb', exitType: 'IPO', entryYear: 2020, exitValue: 4.8, moic: 7.2, grossIrr: 112.0 },
-    { firm: 'Warburg Pincus', company: 'Ant Group', exitType: 'Secondary', entryYear: 2016, exitValue: 3.4, moic: 4.5, grossIrr: 33.7 },
-    { firm: 'Advent International', company: 'Olaplex', exitType: 'IPO', entryYear: 2019, exitValue: 2.8, moic: 9.1, grossIrr: 95.4 },
-  ],
-  performanceBenchmarks: [
-    { vintageYear: 2024, netIrr: 8.2, tvpi: 1.12, dpi: 0.05, irrQuartile: 2, tvpiQuartile: 2, dpiQuartile: 3 },
-    { vintageYear: 2023, netIrr: 12.4, tvpi: 1.28, dpi: 0.11, irrQuartile: 2, tvpiQuartile: 2, dpiQuartile: 2 },
-    { vintageYear: 2022, netIrr: 15.1, tvpi: 1.45, dpi: 0.32, irrQuartile: 1, tvpiQuartile: 1, dpiQuartile: 2 },
-    { vintageYear: 2021, netIrr: 11.7, tvpi: 1.38, dpi: 0.48, irrQuartile: 3, tvpiQuartile: 2, dpiQuartile: 2 },
-    { vintageYear: 2020, netIrr: 19.8, tvpi: 1.82, dpi: 0.87, irrQuartile: 1, tvpiQuartile: 1, dpiQuartile: 1 },
-    { vintageYear: 2019, netIrr: 22.1, tvpi: 2.05, dpi: 1.24, irrQuartile: 1, tvpiQuartile: 1, dpiQuartile: 1 },
-    { vintageYear: 2018, netIrr: 18.4, tvpi: 1.91, dpi: 1.52, irrQuartile: 1, tvpiQuartile: 1, dpiQuartile: 1 },
-    { vintageYear: 2017, netIrr: 16.2, tvpi: 1.78, dpi: 1.61, irrQuartile: 2, tvpiQuartile: 2, dpiQuartile: 1 },
-    { vintageYear: 2016, netIrr: 14.8, tvpi: 1.68, dpi: 1.55, irrQuartile: 2, tvpiQuartile: 2, dpiQuartile: 2 },
-    { vintageYear: 2015, netIrr: 13.5, tvpi: 1.62, dpi: 1.58, irrQuartile: 3, tvpiQuartile: 3, dpiQuartile: 2 },
-  ],
-};
-
 // ── Main Panel ──
 
 export function PrivateEquityPanel() {
   const { data: hookData, isLoading, refetch } = usePrivateEquity();
-  const data = hookData ?? FALLBACK_DATA;
+  const data = hookData;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden font-mono text-[9px]">
@@ -224,8 +149,8 @@ export function PrivateEquityPanel() {
           </span>
         </div>
         <div className="flex items-center gap-3 text-[8px] text-neutral-400">
-          <span>AUM <span className="text-lime-400 font-bold">{fmtValue(data.overview.totalAum)}</span></span>
-          <span>Dry Powder <span className="text-lime-400 font-bold">{fmtValue(data.overview.dryPowder)}</span></span>
+          <span>AUM <span className="text-lime-400 font-bold">{data?.overview?.totalAum != null ? fmtValue(data.overview.totalAum) : '--'}</span></span>
+          <span>Dry Powder <span className="text-lime-400 font-bold">{data?.overview?.dryPowder != null ? fmtValue(data.overview.dryPowder) : '--'}</span></span>
           <button
             onClick={() => refetch()}
             className="text-neutral-500 hover:text-lime-400 transition-colors"
@@ -241,15 +166,21 @@ export function PrivateEquityPanel() {
       </div>
 
       {/* Overview Stats Bar */}
-      <OverviewBar overview={data.overview} />
+      {data?.overview && <OverviewBar overview={data.overview} />}
 
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
-        <TopFirmsSection firms={data.topFirms} />
-        <RecentDealsSection deals={data.recentDeals} />
-        <FundraisingSection fundraising={data.fundraising} />
-        <RecentExitsSection exits={data.recentExits} />
-        <PerformanceBenchmarksSection benchmarks={data.performanceBenchmarks} />
+        {!data ? (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">{isLoading ? 'Loading...' : 'No data available'}</div>
+        ) : (
+          <>
+            <TopFirmsSection firms={data.topFirms} />
+            <RecentDealsSection deals={data.recentDeals} />
+            <FundraisingSection fundraising={data.fundraising} />
+            <RecentExitsSection exits={data.recentExits} />
+            <PerformanceBenchmarksSection benchmarks={data.performanceBenchmarks} />
+          </>
+        )}
       </div>
     </div>
   );

@@ -66,61 +66,6 @@ interface GeopoliticalRiskData {
   timestamp: string;
 }
 
-// ── Fallback Mock Data ──
-
-const FALLBACK_DATA: GeopoliticalRiskData = {
-  globalIndex: {
-    score: 68,
-    level: 'Elevated',
-    change1w: 3.2,
-    change1m: 7.8,
-    percentile: 82,
-  },
-  countryRisks: [
-    { country: 'Russia', code: 'RU', score: 91, change1w: 1.4, level: 'Extreme', topThreat: 'Military conflict' },
-    { country: 'China', code: 'CN', score: 72, change1w: 2.1, level: 'High', topThreat: 'Taiwan tensions' },
-    { country: 'Iran', code: 'IR', score: 84, change1w: -0.8, level: 'Extreme', topThreat: 'Nuclear program' },
-    { country: 'North Korea', code: 'KP', score: 78, change1w: 0.5, level: 'High', topThreat: 'Missile tests' },
-    { country: 'Israel', code: 'IL', score: 75, change1w: 3.6, level: 'High', topThreat: 'Regional conflict' },
-    { country: 'Turkey', code: 'TR', score: 52, change1w: -1.2, level: 'Elevated', topThreat: 'Kurdish tensions' },
-    { country: 'Pakistan', code: 'PK', score: 61, change1w: 0.9, level: 'Elevated', topThreat: 'Internal instability' },
-    { country: 'Venezuela', code: 'VE', score: 58, change1w: -0.3, level: 'Elevated', topThreat: 'Economic crisis' },
-    { country: 'Myanmar', code: 'MM', score: 70, change1w: 1.1, level: 'High', topThreat: 'Civil war' },
-    { country: 'Sudan', code: 'SD', score: 82, change1w: 2.4, level: 'Extreme', topThreat: 'Armed conflict' },
-  ],
-  sanctions: [
-    { target: 'Russia', imposedBy: 'US/EU/G7', type: 'Comprehensive', dateImposed: '2022-02-24', severity: 'critical', sectors: ['Energy', 'Finance', 'Tech'] },
-    { target: 'Iran', imposedBy: 'US/EU', type: 'Comprehensive', dateImposed: '2018-11-05', severity: 'critical', sectors: ['Oil', 'Banking', 'Metals'] },
-    { target: 'North Korea', imposedBy: 'UN/US', type: 'Comprehensive', dateImposed: '2017-09-11', severity: 'critical', sectors: ['All sectors'] },
-    { target: 'China (Tech)', imposedBy: 'US', type: 'Sectoral', dateImposed: '2022-10-07', severity: 'severe', sectors: ['Semiconductors', 'AI', 'Quantum'] },
-    { target: 'Venezuela', imposedBy: 'US', type: 'Sectoral', dateImposed: '2019-01-28', severity: 'moderate', sectors: ['Oil', 'Gold', 'Finance'] },
-    { target: 'Myanmar', imposedBy: 'US/EU', type: 'Targeted', dateImposed: '2021-02-11', severity: 'moderate', sectors: ['Military', 'Gems'] },
-  ],
-  conflictZones: [
-    { region: 'Ukraine-Russia', status: 'active', intensity: 87, casualties7d: 340, marketImpact: 'Energy & grain prices elevated', affectedAssets: ['NG', 'WEAT', 'RSX'] },
-    { region: 'Israel-Gaza', status: 'active', intensity: 82, casualties7d: 210, marketImpact: 'Oil supply risk premium +$4/bbl', affectedAssets: ['CL', 'BNO', 'XLE'] },
-    { region: 'Sudan Civil War', status: 'escalating', intensity: 71, casualties7d: 180, marketImpact: 'Humanitarian crisis, limited market impact', affectedAssets: ['WEAT', 'GLD'] },
-    { region: 'Myanmar Civil War', status: 'active', intensity: 58, casualties7d: 45, marketImpact: 'Rare earth supply disruption risk', affectedAssets: ['REMX', 'LIT'] },
-    { region: 'Taiwan Strait', status: 'frozen', intensity: 42, casualties7d: 0, marketImpact: 'Semiconductor supply chain risk', affectedAssets: ['TSM', 'SMH', 'SOXX'] },
-  ],
-  tradeTensions: [
-    { corridor: 'US-China', severity: 78, trend: 'escalating', tariffRate: 27.5, tradeVolume: '$582B', keyDispute: 'Tech export controls & chip restrictions' },
-    { corridor: 'EU-China', severity: 52, trend: 'escalating', tariffRate: 12.8, tradeVolume: '$856B', keyDispute: 'EV subsidies & market access' },
-    { corridor: 'US-EU', severity: 31, trend: 'de-escalating', tariffRate: 3.2, tradeVolume: '$1.1T', keyDispute: 'Steel & aluminum tariffs winding down' },
-    { corridor: 'Japan-Korea', severity: 28, trend: 'de-escalating', tariffRate: 4.1, tradeVolume: '$82B', keyDispute: 'Export controls normalization' },
-    { corridor: 'India-China', severity: 45, trend: 'stable', tariffRate: 15.6, tradeVolume: '$118B', keyDispute: 'Border tensions & app bans' },
-  ],
-  safeHavenFlows: [
-    { asset: 'Gold (XAU)', flow7d: 4.2, flow30d: 12.8, price: 2415.30, change1d: 0.82, signal: 'strong_inflow' },
-    { asset: 'US Treasuries', flow7d: 8.6, flow30d: 22.1, price: 110.45, change1d: 0.15, signal: 'strong_inflow' },
-    { asset: 'USD Index (DXY)', flow7d: 1.8, flow30d: 3.4, price: 104.82, change1d: 0.24, signal: 'inflow' },
-    { asset: 'Swiss Franc', flow7d: 2.1, flow30d: 5.6, price: 1.128, change1d: 0.31, signal: 'inflow' },
-    { asset: 'Japanese Yen', flow7d: -0.4, flow30d: 1.2, price: 151.42, change1d: -0.18, signal: 'neutral' },
-    { asset: 'Bitcoin', flow7d: -2.8, flow30d: -5.2, price: 62450.0, change1d: -1.42, signal: 'outflow' },
-  ],
-  timestamp: new Date().toISOString(),
-};
-
 // ── Color Helpers ──
 
 function levelColor(level: string): string {
@@ -518,7 +463,7 @@ export function GeopoliticalRiskPanel() {
   const t = useT();
   const { data: rawData, isLoading, refetch } = useGeopoliticalRisk();
 
-  const data: GeopoliticalRiskData = rawData ?? FALLBACK_DATA;
+  const data: GeopoliticalRiskData | undefined = rawData;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -531,7 +476,7 @@ export function GeopoliticalRiskPanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {data && (
+          {data?.globalIndex?.level && (
             <span className={`text-[8px] font-black font-mono uppercase px-1.5 py-0.5 ${levelColor(data.globalIndex.level)} ${levelBg(data.globalIndex.level)}`}>
               {data.globalIndex.level}
             </span>
@@ -549,7 +494,7 @@ export function GeopoliticalRiskPanel() {
           </div>
         )}
 
-        {!isLoading && !rawData && !data && (
+        {!isLoading && !data && (
           <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
             {tr(t, 'geoNoData', 'No data available')}
           </div>
@@ -557,12 +502,12 @@ export function GeopoliticalRiskPanel() {
 
         {data && (
           <>
-            <GlobalRiskIndex data={data} />
-            <CountryRiskSection countries={data.countryRisks} />
-            <SanctionsSection sanctions={data.sanctions} />
-            <ConflictZonesSection zones={data.conflictZones} />
-            <TradeTensionsSection tensions={data.tradeTensions} />
-            <SafeHavenSection flows={data.safeHavenFlows} />
+            {data.globalIndex && <GlobalRiskIndex data={data} />}
+            <CountryRiskSection countries={data.countryRisks ?? []} />
+            <SanctionsSection sanctions={data.sanctions ?? []} />
+            <ConflictZonesSection zones={data.conflictZones ?? []} />
+            <TradeTensionsSection tensions={data.tradeTensions ?? []} />
+            <SafeHavenSection flows={data.safeHavenFlows ?? []} />
           </>
         )}
       </div>

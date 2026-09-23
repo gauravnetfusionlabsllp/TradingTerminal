@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { env } from '../config/env.js';
 import { requireAuth, requireTrader } from '../middleware/auth.js';
+import { lastQuote } from '../services/market-feed.js';
 
 // ── Bridge client ──
 
@@ -112,12 +113,19 @@ let serverOffset: number | null = null;
 const nowSec = () => Math.floor(Date.now() / 1000);
 const latestServerTime = () => nowSec() + (serverOffset ?? 14 * 3600); // until learned: latest possible timezone
 
+// Only called with the newest M1 bar of a symbol ticking on the FIX feed right now. An old day's or a closed market's
+// last bar also lands on the 30-min grid ~13% of the time — that once taught -158h, hiding today and freezing live candles.
 function learnOffset(bars: Candle[]) {
   const last = bars[bars.length - 1]?.time;
   if (last === undefined) return;
   const guess = Math.round((last - nowSec()) / 1800) * 1800;
   if (Math.abs(last - (nowSec() + guess)) < 120) serverOffset = guess; // only trust a bar from the last ~2 min
 }
+
+const tickingNow = (symbol: string) => {
+  const q = lastQuote(symbol);
+  return !!q && Date.now() - q.ts < 60_000; // bridge replays old snapshots on subscribe, so check age
+};
 
 const dayCache = new Map<string, { expires: number; value: Promise<Candle[]> }>();
 
@@ -146,7 +154,6 @@ function loadDay(symbol: string, d: number): Promise<Candle[]> {
   if (dayCache.size > DAY_CACHE_MAX) dayCache.delete(dayCache.keys().next().value!);
 
   value.then((bars) => {
-    learnOffset(bars);
     const closed = d + DAY + 12 * 3600 <= nowSec(); // over in every timezone → immutable
     entry.expires = closed ? Infinity : Date.now() + (bars.length ? 15_000 : 300_000);
   }, () => dayCache.delete(key));
@@ -160,6 +167,7 @@ async function chartPage(symbol: string, tfSec: number, before: number, limit: n
   let count = 0;
   let scanned = 0;
   let emptyRun = 0;
+  let newestM1: Candle[] | undefined;
 
   while (count < limit && scanned < PAGE_DAY_BUDGET && emptyRun < EMPTY_DAYS_STOP) {
     // Only as many days as the remaining candles likely need — each extra (e.g. weekend) day can cost 2.9s
@@ -167,6 +175,7 @@ async function chartPage(symbol: string, tfSec: number, before: number, limit: n
     const days = Array.from({ length: Math.min(CHUNK_CONCURRENCY, need, PAGE_DAY_BUDGET - scanned) }, (_, i) => day - i * DAY);
     const results = await Promise.all(days.map((d) => loadDay(symbol, d)));
     for (const m1 of results) {
+      if (!newestM1 && m1.length) newestM1 = m1;
       scanned++;
       day -= DAY;
       const candles = aggregateBars(m1, tfSec).filter((c) => c.time < before);
@@ -180,6 +189,7 @@ async function chartPage(symbol: string, tfSec: number, before: number, limit: n
     }
   }
 
+  if (before === Infinity && newestM1 && tickingNow(symbol)) learnOffset(newestM1);
   const history = chunks.reverse().flat().slice(-limit);
   return { history, hasMore: emptyRun < EMPTY_DAYS_STOP };
 }
@@ -211,6 +221,7 @@ const PendingOrder = z.object({
 });
 const ClosePosition = z.object({ ticket: ticketField, volume: volumeField.optional() });
 const CancelOrder = z.object({ ticket: ticketField });
+const ReplaceOrder = z.object({ ticket: ticketField, price: z.number().positive(), stopLoss: levelField, takeProfit: levelField });
 
 // ponytail: bridge truncates (ulong)(volume*10000) — 0.57 becomes 0.5699. Remove once the bridge uses Math.Round.
 const lots = (v: number) => v + 1e-9;
@@ -303,6 +314,26 @@ router.post('/cancel-order', requireTrader, h(async (req) => {
   if (!orders?.some((o) => o.ticket === ticket)) throw new HttpError(404, `Order #${ticket} not found`);
   console.log(`[MT5] ${login} cancel #${ticket}`);
   return bridge('/api/trade/cancel-order', { login, ticket });
+}));
+
+// ponytail: bridge has no order-modify — cancel + re-place (new ticket, not atomic). Swap for a bridge modify call when one exists.
+// Cancel first: a failed re-place loses the order, the other way round could leave two live orders.
+router.post('/replace-order', requireTrader, h(async (req) => {
+  const { ticket, ...levels } = ReplaceOrder.parse(req.body);
+  const login = req.user!.mt5Login;
+  const { orders } = await bridge<{ orders?: { ticket: number; symbol: string; type: string; volume: number }[] }>(`/api/trade/orders/${login}`);
+  const o = orders?.find((x) => x.ticket === ticket);
+  if (!o) throw new HttpError(404, `Order #${ticket} not found`);
+  const orderType = PendingOrder.shape.orderType.parse(o.type);
+  await requireSymbol(login, o.symbol, orderType.startsWith('BUY'));
+  console.log(`[MT5] ${login} replace #${ticket} ${orderType} ${o.volume} ${o.symbol} @ ${levels.price}`);
+  await bridge('/api/trade/cancel-order', { login, ticket });
+  try {
+    return await bridge('/api/trade/pending-order', { login, symbol: o.symbol, orderType, volume: lots(o.volume), ...levels });
+  } catch (err) {
+    const e = err instanceof HttpError ? err : new HttpError(500, 'Internal error');
+    throw new HttpError(e.status, `Order #${ticket} was cancelled but the new order failed: ${e.message}`, e.body);
+  }
 }));
 
 export default router;

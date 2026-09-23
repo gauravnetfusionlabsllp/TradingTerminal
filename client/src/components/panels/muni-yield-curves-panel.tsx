@@ -7,59 +7,6 @@ type Tab = 'curves' | 'ratios' | 'issuance' | 'sectors';
 const ACCENT = '#4ade80';
 const ACCENT_DIM = 'rgba(74,222,128,0.08)';
 
-// ── Mock data (used when API returns no data) ──
-
-const TENORS = ['1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '15Y', '20Y', '30Y'];
-
-const MOCK_CURVES = TENORS.map((tenor, i) => ({
-  tenor,
-  aaa: 2.15 + i * 0.18 + (Math.random() - 0.5) * 0.05,
-  aaaChg: +(Math.random() * 0.06 - 0.03).toFixed(3),
-  aa: 2.35 + i * 0.19 + (Math.random() - 0.5) * 0.05,
-  aaChg: +(Math.random() * 0.06 - 0.03).toFixed(3),
-  a: 2.65 + i * 0.21 + (Math.random() - 0.5) * 0.05,
-  aChg: +(Math.random() * 0.06 - 0.03).toFixed(3),
-}));
-
-const MOCK_RATIOS = TENORS.map((tenor, i) => ({
-  tenor,
-  ratio: 62 + i * 3.2 + (Math.random() - 0.5) * 4,
-  percentile: Math.round(20 + i * 8 + Math.random() * 10),
-  signal: i < 3 ? 'Rich' : i < 6 ? 'Fair' : 'Cheap',
-}));
-
-const MOCK_ISSUANCE = [
-  { issuer: 'NY STATE DORM AUTH', coupon: 5.0, maturity: '2054', rating: 'AA', size: 850, spread: 45, type: 'Revenue', taxStatus: 'Tax-Exempt' },
-  { issuer: 'CA STATE GO', coupon: 5.25, maturity: '2049', rating: 'AA-', size: 1200, spread: 38, type: 'GO', taxStatus: 'Tax-Exempt' },
-  { issuer: 'TX WATER DEV BOARD', coupon: 4.0, maturity: '2045', rating: 'AAA', size: 620, spread: 22, type: 'Revenue', taxStatus: 'Tax-Exempt' },
-  { issuer: 'IL STATE GO', coupon: 5.5, maturity: '2043', rating: 'A-', size: 900, spread: 95, type: 'GO', taxStatus: 'Tax-Exempt' },
-  { issuer: 'MA BAY TRANSIT AUTH', coupon: 5.0, maturity: '2050', rating: 'AA', size: 450, spread: 42, type: 'Revenue', taxStatus: 'Tax-Exempt' },
-  { issuer: 'FL TURNPIKE AUTH', coupon: 4.5, maturity: '2048', rating: 'AA+', size: 780, spread: 28, type: 'Revenue', taxStatus: 'Tax-Exempt' },
-  { issuer: 'NJ TRANSIT CORP', coupon: 5.25, maturity: '2046', rating: 'A+', size: 340, spread: 68, type: 'Revenue', taxStatus: 'AMT' },
-  { issuer: 'OH STATE GO', coupon: 4.0, maturity: '2044', rating: 'AA+', size: 550, spread: 30, type: 'GO', taxStatus: 'Tax-Exempt' },
-];
-
-const MOCK_SECTORS = [
-  { sector: 'General Obligation', spread: 22, chg1w: -2, chg1m: -5 },
-  { sector: 'Water & Sewer', spread: 35, chg1w: 1, chg1m: -3 },
-  { sector: 'Transportation', spread: 48, chg1w: 3, chg1m: 6 },
-  { sector: 'Education', spread: 42, chg1w: -1, chg1m: 2 },
-  { sector: 'Healthcare', spread: 65, chg1w: 4, chg1m: 8 },
-  { sector: 'Housing', spread: 55, chg1w: 2, chg1m: 4 },
-  { sector: 'Power/Electric', spread: 38, chg1w: 0, chg1m: -2 },
-  { sector: 'Tobacco', spread: 120, chg1w: 5, chg1m: 12 },
-  { sector: 'Airport', spread: 52, chg1w: 1, chg1m: 3 },
-  { sector: 'Toll Road', spread: 44, chg1w: -1, chg1m: 1 },
-];
-
-const MOCK_SUMMARY = {
-  aaa10y: 3.72,
-  aa10y: 3.95,
-  mtRatio: 71.4,
-  totalIssuance: 8.6,
-  avgCoupon: 4.81,
-};
-
 // ── Helpers ──
 
 function fmtYield(n: number): string {
@@ -107,12 +54,11 @@ export function MuniYieldCurvesPanel() {
   const [tab, setTab] = useState<Tab>('curves');
   const { data, isLoading, refetch } = useMuniYieldCurves();
 
-  // Use API data if available, otherwise fall back to mock
-  const curves = data?.curves ?? MOCK_CURVES;
-  const ratios = data?.ratios ?? MOCK_RATIOS;
-  const issuance = data?.issuance ?? MOCK_ISSUANCE;
-  const sectors = data?.sectors ?? MOCK_SECTORS;
-  const summary = data?.summary ?? MOCK_SUMMARY;
+  const curves = data?.curves ?? [];
+  const ratios = data?.ratios ?? [];
+  const issuance = data?.issuance ?? [];
+  const sectors = data?.sectors ?? [];
+  const summary = data?.summary;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -134,11 +80,11 @@ export function MuniYieldCurvesPanel() {
 
       {/* Summary Bar */}
       <div className="grid grid-cols-5 gap-px bg-border/10 border-b border-border/20 shrink-0">
-        <SummaryCell label="AAA 10Y" value={fmtYield(summary.aaa10y)} accent />
-        <SummaryCell label="AA 10Y" value={fmtYield(summary.aa10y)} />
-        <SummaryCell label="M/T RATIO" value={summary.mtRatio.toFixed(1) + '%'} />
-        <SummaryCell label="ISSUANCE" value={'$' + summary.totalIssuance.toFixed(1) + 'B'} />
-        <SummaryCell label="AVG COUPON" value={summary.avgCoupon.toFixed(2) + '%'} />
+        <SummaryCell label="AAA 10Y" value={summary?.aaa10y != null ? fmtYield(summary.aaa10y) : '--'} accent />
+        <SummaryCell label="AA 10Y" value={summary?.aa10y != null ? fmtYield(summary.aa10y) : '--'} />
+        <SummaryCell label="M/T RATIO" value={summary?.mtRatio != null ? summary.mtRatio.toFixed(1) + '%' : '--'} />
+        <SummaryCell label="ISSUANCE" value={summary?.totalIssuance != null ? '$' + summary.totalIssuance.toFixed(1) + 'B' : '--'} />
+        <SummaryCell label="AVG COUPON" value={summary?.avgCoupon != null ? summary.avgCoupon.toFixed(2) + '%' : '--'} />
       </div>
 
       {/* Tabs */}
@@ -166,10 +112,14 @@ export function MuniYieldCurvesPanel() {
           </div>
         )}
 
-        {tab === 'curves' && <CurvesTab curves={curves} />}
-        {tab === 'ratios' && <RatiosTab ratios={ratios} />}
-        {tab === 'issuance' && <IssuanceTab issuance={issuance} />}
-        {tab === 'sectors' && <SectorsTab sectors={sectors} />}
+        {!isLoading && !data && (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+        )}
+
+        {data && tab === 'curves' && <CurvesTab curves={curves} />}
+        {data && tab === 'ratios' && <RatiosTab ratios={ratios} />}
+        {data && tab === 'issuance' && <IssuanceTab issuance={issuance} />}
+        {data && tab === 'sectors' && <SectorsTab sectors={sectors} />}
       </div>
     </div>
   );

@@ -60,72 +60,6 @@ function supplyBadge(status: string): { color: string; bg: string } {
   }
 }
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  markets: [
-    { market: 'Northern Virginia', capacityMW: 5200, vacancyPct: 2.1, rentPerKW: 142, powerCostPerKWh: 0.065, underConstructionMW: 3400, absorptionMW: 1850, inventoryMSF: 42.8 },
-    { market: 'Dallas/Ft. Worth', capacityMW: 2800, vacancyPct: 4.3, rentPerKW: 118, powerCostPerKWh: 0.058, underConstructionMW: 2100, absorptionMW: 920, inventoryMSF: 24.6 },
-    { market: 'Phoenix/Mesa', capacityMW: 1900, vacancyPct: 3.8, rentPerKW: 125, powerCostPerKWh: 0.071, underConstructionMW: 1600, absorptionMW: 680, inventoryMSF: 16.2 },
-    { market: 'Chicago', capacityMW: 1400, vacancyPct: 5.2, rentPerKW: 132, powerCostPerKWh: 0.078, underConstructionMW: 800, absorptionMW: 420, inventoryMSF: 18.4 },
-    { market: 'Silicon Valley', capacityMW: 1200, vacancyPct: 1.8, rentPerKW: 185, powerCostPerKWh: 0.142, underConstructionMW: 600, absorptionMW: 380, inventoryMSF: 12.8 },
-    { market: 'Columbus, OH', capacityMW: 950, vacancyPct: 6.4, rentPerKW: 108, powerCostPerKWh: 0.062, underConstructionMW: 1200, absorptionMW: 520, inventoryMSF: 10.2 },
-    { market: 'London', capacityMW: 1100, vacancyPct: 2.6, rentPerKW: 168, powerCostPerKWh: 0.185, underConstructionMW: 700, absorptionMW: 340, inventoryMSF: 14.6 },
-    { market: 'Frankfurt', capacityMW: 900, vacancyPct: 3.1, rentPerKW: 155, powerCostPerKWh: 0.198, underConstructionMW: 550, absorptionMW: 290, inventoryMSF: 11.8 },
-    { market: 'Singapore', capacityMW: 600, vacancyPct: 1.4, rentPerKW: 195, powerCostPerKWh: 0.152, underConstructionMW: 350, absorptionMW: 180, inventoryMSF: 6.4 },
-    { market: 'Tokyo', capacityMW: 800, vacancyPct: 2.9, rentPerKW: 178, powerCostPerKWh: 0.168, underConstructionMW: 450, absorptionMW: 240, inventoryMSF: 9.2 },
-    { market: 'Amsterdam', capacityMW: 750, vacancyPct: 3.5, rentPerKW: 148, powerCostPerKWh: 0.172, underConstructionMW: 420, absorptionMW: 210, inventoryMSF: 8.6 },
-    { market: 'Sydney', capacityMW: 520, vacancyPct: 4.1, rentPerKW: 138, powerCostPerKWh: 0.118, underConstructionMW: 380, absorptionMW: 165, inventoryMSF: 5.8 },
-  ],
-  hyperscalers: [
-    { company: 'Microsoft', ticker: 'MSFT', capexBn: 80.0, yoyGrowth: 42.1, dcCount: 300, powerUsageGW: 4.8, pue: 1.12, aiCapexShare: 65.0 },
-    { company: 'Amazon (AWS)', ticker: 'AMZN', capexBn: 100.0, yoyGrowth: 32.8, dcCount: 450, powerUsageGW: 5.5, pue: 1.10, aiCapexShare: 55.0 },
-    { company: 'Alphabet (GCP)', ticker: 'GOOG', capexBn: 75.0, yoyGrowth: 55.3, dcCount: 180, powerUsageGW: 4.2, pue: 1.10, aiCapexShare: 64.0 },
-    { company: 'Meta', ticker: 'META', capexBn: 45.0, yoyGrowth: 28.6, dcCount: 24, powerUsageGW: 2.8, pue: 1.08, aiCapexShare: 71.1 },
-    { company: 'Oracle', ticker: 'ORCL', capexBn: 16.0, yoyGrowth: 88.2, dcCount: 85, powerUsageGW: 1.2, pue: 1.15, aiCapexShare: 65.6 },
-    { company: 'Apple', ticker: 'AAPL', capexBn: 12.0, yoyGrowth: 15.2, dcCount: 14, powerUsageGW: 0.8, pue: 1.14, aiCapexShare: 41.7 },
-    { company: 'ByteDance', ticker: 'PRIVATE', capexBn: 14.0, yoyGrowth: 62.5, dcCount: 22, powerUsageGW: 0.95, pue: 1.18, aiCapexShare: 78.6 },
-  ],
-  reits: [
-    { company: 'Equinix', ticker: 'EQIX', marketCapBn: 82.4, divYieldPct: 1.9, ffoPerShare: 34.82, occupancyPct: 94.2, pipelineBn: 5.8, netDebtEbitda: 3.8 },
-    { company: 'Digital Realty', ticker: 'DLR', marketCapBn: 58.6, divYieldPct: 2.8, ffoPerShare: 6.92, occupancyPct: 87.4, pipelineBn: 4.2, netDebtEbitda: 5.1 },
-    { company: 'CyrusOne', ticker: 'CONE', marketCapBn: 14.8, divYieldPct: 0.0, ffoPerShare: 4.18, occupancyPct: 91.8, pipelineBn: 2.1, netDebtEbitda: 4.6 },
-    { company: 'CoreSite', ticker: 'COR', marketCapBn: 10.2, divYieldPct: 3.1, ffoPerShare: 6.45, occupancyPct: 92.6, pipelineBn: 1.4, netDebtEbitda: 3.2 },
-    { company: 'QTS Realty', ticker: 'QTS', marketCapBn: 8.4, divYieldPct: 0.0, ffoPerShare: 3.28, occupancyPct: 89.1, pipelineBn: 1.8, netDebtEbitda: 5.4 },
-    { company: 'Switch', ticker: 'SWCH', marketCapBn: 7.6, divYieldPct: 0.5, ffoPerShare: 0.72, occupancyPct: 96.8, pipelineBn: 2.4, netDebtEbitda: 4.2 },
-    { company: 'Vantage DC', ticker: 'PRIVATE', marketCapBn: 6.8, divYieldPct: 0.0, ffoPerShare: 0.0, occupancyPct: 93.4, pipelineBn: 3.6, netDebtEbitda: 5.8 },
-    { company: 'GDS Holdings', ticker: 'GDS', marketCapBn: 5.2, divYieldPct: 0.0, ffoPerShare: 1.84, occupancyPct: 72.6, pipelineBn: 2.8, netDebtEbitda: 7.2 },
-  ],
-  aiGpu: {
-    clusters: [
-      { operator: 'Microsoft / OpenAI', gpuCount: 125000, gpuType: 'H100/B200', location: 'Iowa / Texas', powerMW: 450, status: 'OPERATIONAL' },
-      { operator: 'xAI (Colossus)', gpuCount: 200000, gpuType: 'H100', location: 'Memphis, TN', powerMW: 600, status: 'EXPANDING' },
-      { operator: 'Meta FAIR', gpuCount: 600000, gpuType: 'H100/B200', location: 'Multiple US', powerMW: 1800, status: 'OPERATIONAL' },
-      { operator: 'Google DeepMind', gpuCount: 50000, gpuType: 'TPU v5p/v6', location: 'Oklahoma', powerMW: 180, status: 'OPERATIONAL' },
-      { operator: 'Amazon (AWS)', gpuCount: 80000, gpuType: 'Trainium2/P5', location: 'Virginia / Oregon', powerMW: 320, status: 'EXPANDING' },
-      { operator: 'Oracle (OCI)', gpuCount: 65000, gpuType: 'B200/GB200', location: 'Texas / Chicago', powerMW: 240, status: 'OPERATIONAL' },
-      { operator: 'CoreWeave', gpuCount: 45000, gpuType: 'H100/B200', location: 'NJ / IL / TX', powerMW: 165, status: 'EXPANDING' },
-      { operator: 'Lambda', gpuCount: 22000, gpuType: 'H100/A100', location: 'Texas / Utah', powerMW: 85, status: 'OPERATIONAL' },
-    ],
-    computeDemand: [
-      { segment: 'LLM Training', demandGrowthPct: 142.0, spendBn: 48.2, supplyStatus: 'Constrained' },
-      { segment: 'LLM Inference', demandGrowthPct: 218.0, spendBn: 62.4, supplyStatus: 'Tight' },
-      { segment: 'Image/Video Gen', demandGrowthPct: 95.0, spendBn: 12.8, supplyStatus: 'Moderate' },
-      { segment: 'Autonomous Vehicles', demandGrowthPct: 68.0, spendBn: 8.4, supplyStatus: 'Balanced' },
-      { segment: 'Drug Discovery', demandGrowthPct: 82.0, spendBn: 5.6, supplyStatus: 'Moderate' },
-      { segment: 'HPC / Scientific', demandGrowthPct: 34.0, spendBn: 14.2, supplyStatus: 'Available' },
-    ],
-    chipSupply: [
-      { chip: 'NVIDIA B200', priceEst: 42000, leadTimeWeeks: 22, supplyStatus: 'Constrained', qtyShippedK: 480, marketSharePct: 72.4 },
-      { chip: 'NVIDIA H100', priceEst: 28000, leadTimeWeeks: 8, supplyStatus: 'Available', qtyShippedK: 3200, marketSharePct: 0.0 },
-      { chip: 'AMD MI350X', priceEst: 18000, leadTimeWeeks: 14, supplyStatus: 'Limited', qtyShippedK: 320, marketSharePct: 15.2 },
-      { chip: 'Google TPU v6', priceEst: 0, leadTimeWeeks: 0, supplyStatus: 'Internal', qtyShippedK: 0, marketSharePct: 6.5 },
-      { chip: 'AWS Trainium2', priceEst: 0, leadTimeWeeks: 0, supplyStatus: 'Internal', qtyShippedK: 0, marketSharePct: 3.1 },
-      { chip: 'Intel Gaudi 3', priceEst: 12000, leadTimeWeeks: 6, supplyStatus: 'Available', qtyShippedK: 85, marketSharePct: 2.3 },
-    ],
-  },
-};
-
 // ── Tab type ──
 
 type Tab = 'markets' | 'hyperscalers' | 'reits' | 'aigpu';
@@ -150,7 +84,7 @@ function SectionHeader({ title }: { title: string }) {
 
 // ── Markets Tab ──
 
-function MarketsTab({ markets }: { markets: typeof FALLBACK_DATA.markets }) {
+function MarketsTab({ markets }: { markets: any[] }) {
   return (
     <>
       <SectionHeader title="Major Data Center Markets" />
@@ -187,7 +121,7 @@ function MarketsTab({ markets }: { markets: typeof FALLBACK_DATA.markets }) {
 
 // ── Hyperscalers Tab ──
 
-function HyperscalersTab({ hyperscalers }: { hyperscalers: typeof FALLBACK_DATA.hyperscalers }) {
+function HyperscalersTab({ hyperscalers }: { hyperscalers: any[] }) {
   return (
     <>
       <SectionHeader title="Hyperscaler Capex Tracker" />
@@ -225,7 +159,7 @@ function HyperscalersTab({ hyperscalers }: { hyperscalers: typeof FALLBACK_DATA.
       ))}
 
       {/* Capex summary bar */}
-      <div className="grid grid-cols-3 gap-px bg-violet-500/30 mx-0 mt-px">
+      {hyperscalers.length > 0 && <div className="grid grid-cols-3 gap-px bg-violet-500/30 mx-0 mt-px">
         {[
           { label: 'TOTAL CAPEX', value: fmtDollar(hyperscalers.reduce((s: number, h: any) => s + h.capexBn, 0)) },
           { label: 'AVG YOY GROWTH', value: fmtPct(hyperscalers.reduce((s: number, h: any) => s + h.yoyGrowth, 0) / hyperscalers.length) },
@@ -236,14 +170,14 @@ function HyperscalersTab({ hyperscalers }: { hyperscalers: typeof FALLBACK_DATA.
             <div className="text-[11px] font-bold text-violet-400 tabular-nums">{item.value}</div>
           </div>
         ))}
-      </div>
+      </div>}
     </>
   );
 }
 
 // ── REITs Tab ──
 
-function ReitsTab({ reits }: { reits: typeof FALLBACK_DATA.reits }) {
+function ReitsTab({ reits }: { reits: any[] }) {
   return (
     <>
       <SectionHeader title="Data Center REITs" />
@@ -311,7 +245,7 @@ function ReitsTab({ reits }: { reits: typeof FALLBACK_DATA.reits }) {
 
 // ── AI/GPU Tab ──
 
-function AiGpuTab({ aiGpu }: { aiGpu: typeof FALLBACK_DATA.aiGpu }) {
+function AiGpuTab({ aiGpu }: { aiGpu: any }) {
   return (
     <>
       {/* GPU Clusters */}
@@ -326,7 +260,7 @@ function AiGpuTab({ aiGpu }: { aiGpu: typeof FALLBACK_DATA.aiGpu }) {
           <span className="text-center">Status</span>
         </div>
       </div>
-      {aiGpu.clusters.map((c: any, i: number) => {
+      {(aiGpu.clusters ?? []).map((c: any, i: number) => {
         const statusColor = c.status === 'OPERATIONAL' ? GREEN : c.status === 'EXPANDING' ? AMBER : CYAN;
         return (
           <div
@@ -360,7 +294,7 @@ function AiGpuTab({ aiGpu }: { aiGpu: typeof FALLBACK_DATA.aiGpu }) {
           <span className="text-center">Supply</span>
         </div>
       </div>
-      {aiGpu.computeDemand.map((d: any, i: number) => {
+      {(aiGpu.computeDemand ?? []).map((d: any, i: number) => {
         const ss = supplyBadge(d.supplyStatus);
         return (
           <div
@@ -395,7 +329,7 @@ function AiGpuTab({ aiGpu }: { aiGpu: typeof FALLBACK_DATA.aiGpu }) {
           <span className="text-right">Shipped K</span>
         </div>
       </div>
-      {aiGpu.chipSupply.map((c: any, i: number) => {
+      {(aiGpu.chipSupply ?? []).map((c: any, i: number) => {
         const ss = supplyBadge(c.supplyStatus);
         return (
           <div
@@ -468,7 +402,7 @@ export function DataCenterInfrastructurePanel() {
     );
   }
 
-  const d = data || FALLBACK_DATA;
+  const d = data;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -504,10 +438,10 @@ export function DataCenterInfrastructurePanel() {
 
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
-        {activeTab === 'markets' && <MarketsTab markets={(d as any).markets || FALLBACK_DATA.markets} />}
-        {activeTab === 'hyperscalers' && <HyperscalersTab hyperscalers={(d as any).hyperscalers || FALLBACK_DATA.hyperscalers} />}
-        {activeTab === 'reits' && <ReitsTab reits={(d as any).reits || FALLBACK_DATA.reits} />}
-        {activeTab === 'aigpu' && <AiGpuTab aiGpu={(d as any).aiGpu || FALLBACK_DATA.aiGpu} />}
+        {activeTab === 'markets' && <MarketsTab markets={(d as any).markets || []} />}
+        {activeTab === 'hyperscalers' && <HyperscalersTab hyperscalers={(d as any).hyperscalers || []} />}
+        {activeTab === 'reits' && <ReitsTab reits={(d as any).reits || []} />}
+        {activeTab === 'aigpu' && <AiGpuTab aiGpu={(d as any).aiGpu || {}} />}
       </div>
     </div>
   );

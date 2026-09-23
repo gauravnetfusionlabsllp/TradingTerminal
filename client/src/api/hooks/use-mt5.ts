@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { api } from '../client';
 import { useAuthStore } from '../../stores/use-auth-store';
-import { sendWs } from '../../realtime/use-ws';
+import { sendWs } from '../../realtime/socket';
 
 export interface Mt5Symbol { symbol: string; tradeMode: 'TRADE_FULL' | 'TRADE_LONGONLY' | 'TRADE_SHORTONLY' | 'TRADE_CLOSEONLY' | string }
 export interface Mt5Quote { symbol: string; bid: number; ask: number; ts?: number } // ts (epoch ms) only on live FIX quotes
@@ -109,8 +109,11 @@ export function useMt5Chart(symbol: string, tf: Mt5Timeframe) {
   return {
     data,
     offset: pages?.[0]?.offset ?? null,
+    isLoading: q.isLoading,
+    error: q.error,
     hasMore: q.hasNextPage,
-    fetchOlder: q.fetchNextPage,
+    // A drag fires range events continuously; don't restart an in-flight page (the default cancels it)
+    fetchOlder: () => { q.fetchNextPage({ cancelRefetch: false }); },
     isFetchingOlder: q.isFetchingNextPage,
   };
 }
@@ -150,3 +153,5 @@ export const useMt5MarketOrder = () => useMt5Trade<OrderBase & { side: 'BUY' | '
 export const useMt5PendingOrder = () => useMt5Trade<OrderBase & { orderType: Mt5PendingType; price: number }>('pending-order');
 export const useMt5ClosePosition = () => useMt5Trade<{ ticket: number; volume?: number }>('close-position');
 export const useMt5CancelOrder = () => useMt5Trade<{ ticket: number }>('cancel-order');
+/** Cancel + re-place (bridge has no modify) — the order comes back under a new ticket. */
+export const useMt5ReplaceOrder = () => useMt5Trade<{ ticket: number; price: number; stopLoss: number; takeProfit: number }>('replace-order');

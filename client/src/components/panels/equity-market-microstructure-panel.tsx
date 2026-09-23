@@ -13,105 +13,6 @@ const YELLOW = '#eab308';
 
 type Tab = 'spreads' | 'orderbook' | 'toxicity' | 'darkpool' | 'flow' | 'impact';
 
-// ── Fallback data ──
-
-const FALLBACK_DATA = {
-  summary: {
-    avgSpread: 2.34,
-    avgDepth: 1_250_000,
-    vpin: 0.62,
-    darkPoolPct: 38.4,
-    retailPct: 31.2,
-  },
-  spreadAnalysis: [
-    { stock: 'AAPL', quotedSpread: 0.8, effectiveSpread: 0.6, realizedSpread: 0.3, depth: 2_450_000 },
-    { stock: 'MSFT', quotedSpread: 1.2, effectiveSpread: 0.9, realizedSpread: 0.5, depth: 1_980_000 },
-    { stock: 'NVDA', quotedSpread: 2.8, effectiveSpread: 2.1, realizedSpread: 1.4, depth: 890_000 },
-    { stock: 'TSLA', quotedSpread: 3.5, effectiveSpread: 2.8, realizedSpread: 1.9, depth: 1_120_000 },
-    { stock: 'AMZN', quotedSpread: 1.6, effectiveSpread: 1.2, realizedSpread: 0.7, depth: 1_560_000 },
-    { stock: 'META', quotedSpread: 1.9, effectiveSpread: 1.4, realizedSpread: 0.8, depth: 1_340_000 },
-    { stock: 'GOOG', quotedSpread: 2.2, effectiveSpread: 1.7, realizedSpread: 1.0, depth: 1_050_000 },
-    { stock: 'JPM', quotedSpread: 1.0, effectiveSpread: 0.7, realizedSpread: 0.4, depth: 2_100_000 },
-  ],
-  orderBook: {
-    symbol: 'SPY',
-    midPrice: 528.45,
-    bids: [
-      { price: 528.40, size: 12500, cumSize: 12500 },
-      { price: 528.35, size: 18200, cumSize: 30700 },
-      { price: 528.30, size: 24800, cumSize: 55500 },
-      { price: 528.25, size: 31000, cumSize: 86500 },
-      { price: 528.20, size: 28400, cumSize: 114900 },
-      { price: 528.15, size: 22100, cumSize: 137000 },
-      { price: 528.10, size: 35600, cumSize: 172600 },
-      { price: 528.05, size: 19800, cumSize: 192400 },
-    ],
-    asks: [
-      { price: 528.50, size: 11800, cumSize: 11800 },
-      { price: 528.55, size: 16400, cumSize: 28200 },
-      { price: 528.60, size: 21500, cumSize: 49700 },
-      { price: 528.65, size: 27200, cumSize: 76900 },
-      { price: 528.70, size: 33100, cumSize: 110000 },
-      { price: 528.75, size: 25600, cumSize: 135600 },
-      { price: 528.80, size: 29400, cumSize: 165000 },
-      { price: 528.85, size: 17300, cumSize: 182300 },
-    ],
-  },
-  toxicity: {
-    vpin: { value: 0.62, percentile: 78, signal: 'ELEVATED' },
-    lambda: { value: 0.045, percentile: 65, signal: 'MODERATE' },
-    amihud: { value: 0.0023, percentile: 42, signal: 'NORMAL' },
-    pinModel: { value: 0.18, percentile: 55, signal: 'MODERATE' },
-    adverseSelection: { value: 0.34, percentile: 71, signal: 'ELEVATED' },
-  },
-  darkPool: [
-    { venue: 'UBSS', pct: 12.4, volume: 8_200_000 },
-    { venue: 'CSFB', pct: 9.8, volume: 6_500_000 },
-    { venue: 'JPMX', pct: 7.2, volume: 4_800_000 },
-    { venue: 'MSPL', pct: 5.1, volume: 3_400_000 },
-    { venue: 'SGMT', pct: 3.9, volume: 2_600_000 },
-  ],
-  darkPoolTotal: 38.4,
-  litTotal: 61.6,
-  flow: {
-    retailPct: 31.2,
-    institutionalPct: 68.8,
-    retailBuyPct: 58.4,
-    retailSellPct: 41.6,
-    instBuyPct: 44.2,
-    instSellPct: 55.8,
-    retailSentiment: 'BULLISH',
-    instSentiment: 'BEARISH',
-    timeSeries: [
-      { time: '09:30', retail: 42, inst: 58 },
-      { time: '10:00', retail: 38, inst: 62 },
-      { time: '10:30', retail: 35, inst: 65 },
-      { time: '11:00', retail: 28, inst: 72 },
-      { time: '11:30', retail: 25, inst: 75 },
-      { time: '12:00', retail: 30, inst: 70 },
-      { time: '12:30', retail: 33, inst: 67 },
-      { time: '13:00', retail: 29, inst: 71 },
-      { time: '13:30', retail: 27, inst: 73 },
-      { time: '14:00', retail: 32, inst: 68 },
-      { time: '14:30', retail: 35, inst: 65 },
-      { time: '15:00', retail: 38, inst: 62 },
-      { time: '15:30', retail: 40, inst: 60 },
-      { time: '16:00', retail: 45, inst: 55 },
-    ],
-  },
-  marketImpact: [
-    { size: '100K', stock: 'AAPL', temporary: 0.8, permanent: 0.3, totalBps: 1.1, cost: 520 },
-    { size: '100K', stock: 'MSFT', temporary: 1.2, permanent: 0.5, totalBps: 1.7, cost: 680 },
-    { size: '100K', stock: 'NVDA', temporary: 2.4, permanent: 1.1, totalBps: 3.5, cost: 3150 },
-    { size: '500K', stock: 'AAPL', temporary: 2.1, permanent: 0.9, totalBps: 3.0, cost: 7100 },
-    { size: '500K', stock: 'MSFT', temporary: 3.0, permanent: 1.4, totalBps: 4.4, cost: 8800 },
-    { size: '500K', stock: 'NVDA', temporary: 5.8, permanent: 2.8, totalBps: 8.6, cost: 38700 },
-    { size: '1M', stock: 'AAPL', temporary: 4.2, permanent: 1.8, totalBps: 6.0, cost: 28500 },
-    { size: '1M', stock: 'MSFT', temporary: 5.6, permanent: 2.6, totalBps: 8.2, cost: 32800 },
-    { size: '1M', stock: 'NVDA', temporary: 11.2, permanent: 5.4, totalBps: 16.6, cost: 149400 },
-  ],
-};
-
 // ── Formatting helpers ──
 
 function fmtCompact(n: number): string {
@@ -156,7 +57,7 @@ function spreadHeatColor(bps: number): string {
 export function EquityMarketMicrostructurePanel() {
   const t = useT();
   const { data: liveData, isLoading, refetch } = useEquityMarketMicrostructure();
-  const data = liveData || FALLBACK_DATA;
+  const data = liveData;
   const [activeTab, setActiveTab] = useState<Tab>('spreads');
 
   const tabs: { key: Tab; label: string }[] = [
@@ -181,6 +82,12 @@ export function EquityMarketMicrostructurePanel() {
     );
   }
 
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col bg-black text-[9px] font-mono overflow-hidden">
       {/* Header */}
@@ -198,13 +105,13 @@ export function EquityMarketMicrostructurePanel() {
           {data.summary && (
             <div className="flex items-center gap-3 text-[8px] font-mono">
               <span className="text-neutral-500">SPREAD</span>
-              <span className="font-bold tabular-nums text-neutral-300">{data.summary.avgSpread.toFixed(1)}bps</span>
+              <span className="font-bold tabular-nums text-neutral-300">{data.summary.avgSpread != null ? `${data.summary.avgSpread.toFixed(1)}bps` : '--'}</span>
               <span className="text-neutral-500">VPIN</span>
               <span className="font-bold tabular-nums" style={{ color: data.summary.vpin > 0.6 ? RED : data.summary.vpin > 0.4 ? YELLOW : GREEN }}>
-                {data.summary.vpin.toFixed(2)}
+                {data.summary.vpin?.toFixed(2) ?? '--'}
               </span>
               <span className="text-neutral-500">DARK</span>
-              <span className="font-bold tabular-nums text-neutral-300">{data.summary.darkPoolPct.toFixed(1)}%</span>
+              <span className="font-bold tabular-nums text-neutral-300">{data.summary.darkPoolPct != null ? `${data.summary.darkPoolPct.toFixed(1)}%` : '--'}</span>
             </div>
           )}
           <button
@@ -668,8 +575,8 @@ function ToxicityGauge({ percentile, signal }: { percentile: number; signal: str
 function DarkPoolTab({ data }: { data: any }) {
   const t = useT();
   const venues = data?.darkPool ?? [];
-  const darkTotal = data?.darkPoolTotal ?? 0;
-  const litTotal = data?.litTotal ?? 100;
+  const darkTotal = data?.darkPoolTotal;
+  const litTotal = data?.litTotal;
   const maxPct = Math.max(...venues.map((v: any) => v.pct), 1);
 
   return (
@@ -681,6 +588,7 @@ function DarkPoolTab({ data }: { data: any }) {
       </div>
 
       {/* Dark vs Lit split */}
+      {darkTotal != null && litTotal != null && (
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[7px] font-black uppercase tracking-wider text-neutral-600">DARK VS LIT SPLIT</span>
@@ -691,6 +599,7 @@ function DarkPoolTab({ data }: { data: any }) {
           <span className="text-[7px] font-mono text-neutral-500">LIT {litTotal.toFixed(1)}%</span>
         </div>
       </div>
+      )}
 
       {/* Venue breakdown */}
       <div className="mb-1">
@@ -724,14 +633,6 @@ function DarkPoolTab({ data }: { data: any }) {
           </div>
         ))}
       </div>
-
-      {/* Dark pool trend SVG */}
-      <div className="mt-3 pt-2 border-t border-border/20">
-        <span className="text-[7px] font-black uppercase tracking-wider text-neutral-600">
-          DARK POOL % - INTRADAY
-        </span>
-        <DarkPoolTrendChart />
-      </div>
     </div>
   );
 }
@@ -753,56 +654,6 @@ function DarkLitBar({ dark, lit }: { dark: number; lit: number }) {
       <text x={darkW + (W - darkW) / 2} y={H / 2 + 1} textAnchor="middle" dominantBaseline="middle" fill="#a1a1aa" fontSize={7} fontFamily="monospace" fontWeight="bold">
         LIT
       </text>
-    </svg>
-  );
-}
-
-// ── Dark Pool Trend Mini Chart ──
-
-function DarkPoolTrendChart() {
-  const points = [36, 37, 38, 39, 40, 38, 37, 39, 41, 40, 38, 37, 38, 39];
-  const W = 260;
-  const H = 50;
-  const PAD = 4;
-  const minV = Math.min(...points) - 2;
-  const maxV = Math.max(...points) + 2;
-  const xStep = (W - PAD * 2) / (points.length - 1);
-
-  const pathD = points
-    .map((v, i) => {
-      const x = PAD + i * xStep;
-      const y = PAD + ((maxV - v) / (maxV - minV)) * (H - PAD * 2);
-      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(' ');
-
-  const areaD = pathD + ` L${(PAD + (points.length - 1) * xStep).toFixed(1)},${H - PAD} L${PAD},${H - PAD} Z`;
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full mt-1" style={{ maxHeight: 60 }}>
-      {/* Grid lines */}
-      {[0.25, 0.5, 0.75].map((frac) => (
-        <line
-          key={frac}
-          x1={PAD}
-          y1={PAD + frac * (H - PAD * 2)}
-          x2={W - PAD}
-          y2={PAD + frac * (H - PAD * 2)}
-          stroke="rgba(255,255,255,0.04)"
-          strokeWidth={0.5}
-        />
-      ))}
-      {/* Area fill */}
-      <path d={areaD} fill="rgba(96,165,250,0.08)" />
-      {/* Line */}
-      <path d={pathD} fill="none" stroke={ACCENT} strokeWidth={1} opacity={0.7} />
-      {/* End dot */}
-      <circle
-        cx={PAD + (points.length - 1) * xStep}
-        cy={PAD + ((maxV - points[points.length - 1]) / (maxV - minV)) * (H - PAD * 2)}
-        r={2}
-        fill={ACCENT}
-      />
     </svg>
   );
 }

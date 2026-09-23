@@ -1,85 +1,6 @@
 import { useNuclearEnergy } from '../../api/hooks/use-nuclear-energy';
 import { Atom, RefreshCw } from 'lucide-react';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  overview: {
-    totalReactors: 440,
-    operatingCapacityGW: 393.4,
-    shareOfElectricity: 9.2,
-    underConstruction: 64,
-    planned: 110,
-    uraniumSpotPrice: 91.25,
-  },
-  countryFleet: [
-    { country: 'United States', reactors: 93, capacityGW: 95.8, sharePct: 18.2, underConstruction: 2, planned: 3, fleetAge: 42.1 },
-    { country: 'France', reactors: 56, capacityGW: 61.4, sharePct: 64.8, underConstruction: 1, planned: 0, fleetAge: 37.5 },
-    { country: 'China', reactors: 55, capacityGW: 53.2, sharePct: 5.0, underConstruction: 24, planned: 44, fleetAge: 9.8 },
-    { country: 'Russia', reactors: 37, capacityGW: 28.6, sharePct: 19.6, underConstruction: 4, planned: 28, fleetAge: 28.3 },
-    { country: 'Japan', reactors: 33, capacityGW: 31.7, sharePct: 5.5, underConstruction: 2, planned: 1, fleetAge: 33.6 },
-    { country: 'South Korea', reactors: 26, capacityGW: 25.8, sharePct: 29.6, underConstruction: 3, planned: 6, fleetAge: 22.4 },
-    { country: 'India', reactors: 23, capacityGW: 7.5, sharePct: 3.1, underConstruction: 8, planned: 12, fleetAge: 24.7 },
-    { country: 'Canada', reactors: 19, capacityGW: 13.6, sharePct: 13.6, underConstruction: 0, planned: 2, fleetAge: 39.2 },
-    { country: 'Ukraine', reactors: 15, capacityGW: 13.1, sharePct: 55.0, underConstruction: 2, planned: 0, fleetAge: 33.8 },
-    { country: 'United Kingdom', reactors: 9, capacityGW: 5.9, sharePct: 14.8, underConstruction: 2, planned: 2, fleetAge: 37.1 },
-    { country: 'Sweden', reactors: 6, capacityGW: 6.9, sharePct: 29.4, underConstruction: 0, planned: 2, fleetAge: 42.5 },
-    { country: 'Belgium', reactors: 5, capacityGW: 3.9, sharePct: 41.0, underConstruction: 0, planned: 0, fleetAge: 42.8 },
-  ],
-  uraniumMarket: {
-    spotPrice: 91.25,
-    longTermPrice: 68.00,
-    conversionPrice: 22.50,
-    enrichmentPrice: 165.00,
-    topProducers: [
-      { name: 'Kazakhstan', sharePct: 43.0 },
-      { name: 'Canada', sharePct: 15.0 },
-      { name: 'Namibia', sharePct: 11.0 },
-      { name: 'Australia', sharePct: 8.0 },
-      { name: 'Uzbekistan', sharePct: 7.0 },
-      { name: 'Russia', sharePct: 5.0 },
-    ],
-    priceHistory: [62, 58, 64, 71, 68, 73, 78, 82, 75, 79, 85, 88, 91, 94, 89, 87, 91],
-  },
-  newBuildPipeline: [
-    { project: 'Hinkley Point C', country: 'UK', type: 'EPR', capacityMW: 3260, status: 'CONSTRUCTION', commissioning: '2030', costBn: 46.0 },
-    { project: 'Barakah Unit 4', country: 'UAE', type: 'APR-1400', capacityMW: 1345, status: 'CONSTRUCTION', commissioning: '2025', costBn: 6.1 },
-    { project: 'Akkuyu Unit 1', country: 'Turkey', type: 'VVER-1200', capacityMW: 1200, status: 'CONSTRUCTION', commissioning: '2026', costBn: 5.0 },
-    { project: 'El Dabaa Unit 1', country: 'Egypt', type: 'VVER-1200', capacityMW: 1200, status: 'CONSTRUCTION', commissioning: '2028', costBn: 4.5 },
-    { project: 'Sizewell C', country: 'UK', type: 'EPR', capacityMW: 3340, status: 'APPROVED', commissioning: '2035', costBn: 31.0 },
-    { project: 'Dukovany 5', country: 'Czechia', type: 'APR-1000', capacityMW: 1200, status: 'APPROVED', commissioning: '2036', costBn: 8.5 },
-    { project: 'Paks II', country: 'Hungary', type: 'VVER-1200', capacityMW: 2400, status: 'CONSTRUCTION', commissioning: '2032', costBn: 12.5 },
-    { project: 'Shin-Hanul 3-4', country: 'S. Korea', type: 'APR-1400', capacityMW: 2800, status: 'APPROVED', commissioning: '2033', costBn: 9.2 },
-    { project: 'Jaitapur', country: 'India', type: 'EPR', capacityMW: 9600, status: 'PLANNED', commissioning: '2034+', costBn: 17.0 },
-    { project: 'Wylfa Newydd', country: 'UK', type: 'ABWR', capacityMW: 2700, status: 'PLANNED', commissioning: '2035+', costBn: 20.0 },
-  ],
-  smrPipeline: [
-    { design: 'BWRX-300', developer: 'GE Hitachi', capacityMW: 300, status: 'APPROVED', firstDeployment: '2029', orders: 6 },
-    { design: 'Natrium', developer: 'TerraPower', capacityMW: 345, status: 'CONSTRUCTION', firstDeployment: '2030', orders: 1 },
-    { design: 'NuScale VOYGR', developer: 'NuScale', capacityMW: 462, status: 'APPROVED', firstDeployment: '2030', orders: 4 },
-    { design: 'SMR-160', developer: 'Holtec', capacityMW: 160, status: 'PLANNED', firstDeployment: '2032', orders: 2 },
-    { design: 'Xe-100', developer: 'X-energy', capacityMW: 80, status: 'APPROVED', firstDeployment: '2030', orders: 3 },
-    { design: 'ARC-100', developer: 'ARC Clean', capacityMW: 100, status: 'PLANNED', firstDeployment: '2031', orders: 1 },
-    { design: 'KP-FHR', developer: 'Kairos Power', capacityMW: 140, status: 'CONSTRUCTION', firstDeployment: '2027', orders: 2 },
-    { design: 'Rolls-Royce SMR', developer: 'Rolls-Royce', capacityMW: 470, status: 'APPROVED', firstDeployment: '2031', orders: 4 },
-  ],
-  policyTracker: [
-    { country: 'United States', direction: 'EXPANDING', recentAction: 'ADVANCE Act signed; $30B loan guarantees for new builds', date: '2025-09' },
-    { country: 'France', direction: 'EXPANDING', recentAction: 'Confirmed 6 new EPR2 reactors; lifetime extensions to 60y', date: '2025-06' },
-    { country: 'China', direction: 'EXPANDING', recentAction: 'Approved 10 new reactors in 2025 batch; 150 GW by 2035 target', date: '2025-07' },
-    { country: 'Japan', direction: 'EXPANDING', recentAction: 'Restarted 12 reactors; policy shift to support new builds', date: '2025-05' },
-    { country: 'South Korea', direction: 'EXPANDING', recentAction: 'Reversed phase-out; extending Shin-Hanul, new export push', date: '2025-01' },
-    { country: 'United Kingdom', direction: 'EXPANDING', recentAction: 'Great British Nuclear: SMR competition final selections', date: '2025-03' },
-    { country: 'Germany', direction: 'PHASE-OUT', recentAction: 'Final 3 reactors shut down April 2023; no reversal planned', date: '2023-04' },
-    { country: 'Belgium', direction: 'REVERSAL', recentAction: 'Extended Doel 4 & Tihange 3 by 10 years; reversed phase-out', date: '2024-01' },
-    { country: 'Sweden', direction: 'EXPANDING', recentAction: 'Lifted cap on reactors; roadmap for new builds by 2035', date: '2025-02' },
-    { country: 'Italy', direction: 'REVERSAL', recentAction: 'Government exploring SMR deployment; reversed 1987 ban', date: '2025-04' },
-    { country: 'India', direction: 'EXPANDING', recentAction: '10 indigenous PHWRs approved; fleet to triple by 2032', date: '2025-08' },
-    { country: 'Poland', direction: 'EXPANDING', recentAction: 'First nuclear plant approved; Westinghouse AP1000 selected', date: '2025-03' },
-  ],
-  timestamp: new Date().toISOString(),
-};
-
 // ── Formatting helpers ──
 
 function fmtNum(n: number, decimals = 1): string {
@@ -165,7 +86,7 @@ function SectionHeader({ title }: { title: string }) {
 
 export function NuclearEnergyPanel() {
   const { data: rawData, isLoading, refetch } = useNuclearEnergy();
-  const data = rawData || FALLBACK_DATA;
+  const data = rawData;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -179,10 +100,10 @@ export function NuclearEnergyPanel() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[7px] font-mono text-neutral-500">
-            {data.overview.totalReactors} reactors
+            {data?.overview?.totalReactors ?? '--'} reactors
           </span>
           <span className="text-[7px] font-mono text-green-400">
-            U<sub>3</sub>O<sub>8</sub> ${fmtNum(data.overview.uraniumSpotPrice, 2)}
+            U<sub>3</sub>O<sub>8</sub> {data?.overview?.uraniumSpotPrice != null ? `$${fmtNum(data.overview.uraniumSpotPrice, 2)}` : '--'}
           </span>
           <button
             onClick={() => refetch()}
@@ -202,6 +123,8 @@ export function NuclearEnergyPanel() {
               <span className="text-[10px] text-white/40 uppercase tracking-widest">Loading...</span>
             </div>
           </div>
+        ) : !data ? (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
         ) : (
           <>
             {/* ── Overview ── */}

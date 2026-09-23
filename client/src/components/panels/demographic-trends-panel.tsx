@@ -52,69 +52,6 @@ interface DemographicTrendsData {
   urbanizationTrends: UrbanizationTrend[];
 }
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA: DemographicTrendsData = {
-  timestamp: '2026-03-19T12:00:00Z',
-  summary: {
-    worldPopulation: 8.12,
-    avgGrowthRate: 0.88,
-    avgMedianAge: 30.9,
-    avgUrbanization: 57.5,
-  },
-  countries: [
-    { name: 'China', population: 1412, growthRate: -0.02, medianAge: 39.0, fertilityRate: 1.09, lifeExpectancy: 78.2, urbanization: 65.2, dependencyRatio: 44.3, workingAgePct: 69.3 },
-    { name: 'India', population: 1428, growthRate: 0.81, medianAge: 28.7, fertilityRate: 2.01, lifeExpectancy: 70.8, urbanization: 36.4, dependencyRatio: 47.5, workingAgePct: 67.8 },
-    { name: 'United States', population: 340, growthRate: 0.50, medianAge: 38.5, fertilityRate: 1.64, lifeExpectancy: 77.5, urbanization: 83.3, dependencyRatio: 53.7, workingAgePct: 65.1 },
-    { name: 'Indonesia', population: 277, growthRate: 0.82, medianAge: 30.2, fertilityRate: 2.18, lifeExpectancy: 72.3, urbanization: 58.2, dependencyRatio: 47.2, workingAgePct: 67.9 },
-    { name: 'Pakistan', population: 236, growthRate: 1.91, medianAge: 20.2, fertilityRate: 3.38, lifeExpectancy: 67.3, urbanization: 37.7, dependencyRatio: 65.2, workingAgePct: 60.6 },
-    { name: 'Brazil', population: 216, growthRate: 0.52, medianAge: 34.3, fertilityRate: 1.64, lifeExpectancy: 76.1, urbanization: 87.6, dependencyRatio: 44.7, workingAgePct: 69.1 },
-    { name: 'Nigeria', population: 224, growthRate: 2.41, medianAge: 17.2, fertilityRate: 5.13, lifeExpectancy: 55.2, urbanization: 54.3, dependencyRatio: 86.1, workingAgePct: 53.8 },
-    { name: 'Bangladesh', population: 173, growthRate: 0.94, medianAge: 27.9, fertilityRate: 1.95, lifeExpectancy: 73.2, urbanization: 40.5, dependencyRatio: 45.3, workingAgePct: 68.8 },
-    { name: 'Russia', population: 144, growthRate: -0.19, medianAge: 39.6, fertilityRate: 1.50, lifeExpectancy: 73.2, urbanization: 75.1, dependencyRatio: 51.2, workingAgePct: 66.1 },
-    { name: 'Japan', population: 124, growthRate: -0.53, medianAge: 48.6, fertilityRate: 1.20, lifeExpectancy: 84.8, urbanization: 91.9, dependencyRatio: 70.1, workingAgePct: 58.8 },
-    { name: 'Germany', population: 84, growthRate: -0.08, medianAge: 45.7, fertilityRate: 1.53, lifeExpectancy: 81.3, urbanization: 77.6, dependencyRatio: 56.2, workingAgePct: 64.1 },
-    { name: 'Ethiopia', population: 127, growthRate: 2.55, medianAge: 17.8, fertilityRate: 4.07, lifeExpectancy: 67.8, urbanization: 22.7, dependencyRatio: 76.3, workingAgePct: 56.7 },
-    { name: 'Mexico', population: 130, growthRate: 0.75, medianAge: 29.3, fertilityRate: 1.82, lifeExpectancy: 75.1, urbanization: 81.3, dependencyRatio: 49.1, workingAgePct: 67.1 },
-    { name: 'Egypt', population: 112, growthRate: 1.68, medianAge: 24.1, fertilityRate: 2.76, lifeExpectancy: 72.4, urbanization: 43.1, dependencyRatio: 60.8, workingAgePct: 62.2 },
-    { name: 'South Korea', population: 52, growthRate: -0.04, medianAge: 44.6, fertilityRate: 0.72, lifeExpectancy: 83.7, urbanization: 81.4, dependencyRatio: 41.2, workingAgePct: 70.8 },
-  ],
-  laborForce: [
-    { country: 'China', laborForce: 779, participationRate: 68.2, unemployment: 5.2 },
-    { country: 'India', laborForce: 522, participationRate: 49.8, unemployment: 7.8 },
-    { country: 'United States', laborForce: 168, participationRate: 62.4, unemployment: 4.1 },
-    { country: 'Indonesia', laborForce: 140, participationRate: 69.1, unemployment: 5.3 },
-    { country: 'Brazil', laborForce: 107, participationRate: 62.5, unemployment: 7.6 },
-    { country: 'Russia', laborForce: 75, participationRate: 62.3, unemployment: 2.4 },
-    { country: 'Japan', laborForce: 69, participationRate: 63.4, unemployment: 2.5 },
-    { country: 'Germany', laborForce: 46, participationRate: 64.3, unemployment: 6.0 },
-    { country: 'Nigeria', laborForce: 70, participationRate: 55.4, unemployment: 33.3 },
-    { country: 'Bangladesh', laborForce: 73, participationRate: 58.5, unemployment: 5.4 },
-  ],
-  projections: [
-    { country: 'India', pop2025: 1428, pop2030: 1515, pop2050: 1670 },
-    { country: 'China', pop2025: 1412, pop2030: 1394, pop2050: 1313 },
-    { country: 'Nigeria', pop2025: 224, pop2030: 263, pop2050: 377 },
-    { country: 'United States', pop2025: 340, pop2030: 350, pop2050: 375 },
-    { country: 'Pakistan', pop2025: 236, pop2030: 260, pop2050: 338 },
-    { country: 'Indonesia', pop2025: 277, pop2030: 290, pop2050: 317 },
-    { country: 'Brazil', pop2025: 216, pop2030: 220, pop2050: 229 },
-    { country: 'Ethiopia', pop2025: 127, pop2030: 148, pop2050: 213 },
-    { country: 'Bangladesh', pop2025: 173, pop2030: 183, pop2050: 204 },
-    { country: 'Japan', pop2025: 124, pop2030: 120, pop2050: 104 },
-  ],
-  urbanizationTrends: [
-    { country: 'Nigeria', urbanization: 54.3, urbanGrowthRate: 3.92 },
-    { country: 'Ethiopia', urbanization: 22.7, urbanGrowthRate: 4.63 },
-    { country: 'Bangladesh', urbanization: 40.5, urbanGrowthRate: 3.17 },
-    { country: 'India', urbanization: 36.4, urbanGrowthRate: 2.33 },
-    { country: 'Pakistan', urbanization: 37.7, urbanGrowthRate: 2.70 },
-    { country: 'Egypt', urbanization: 43.1, urbanGrowthRate: 1.87 },
-    { country: 'Indonesia', urbanization: 58.2, urbanGrowthRate: 1.72 },
-    { country: 'Mexico', urbanization: 81.3, urbanGrowthRate: 1.28 },
-  ],
-};
-
 // ── Formatting Helpers ──
 
 function fmtPop(n: number): string {
@@ -413,8 +350,7 @@ export function DemographicTrendsPanel() {
   const t = useT();
   const { data: rawData, isLoading, refetch } = useDemographicTrends();
 
-  const data: DemographicTrendsData = rawData ?? FALLBACK_DATA;
-  const hasLiveData = !!rawData;
+  const data: DemographicTrendsData | undefined = rawData;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -427,12 +363,7 @@ export function DemographicTrendsPanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {!hasLiveData && !isLoading && (
-            <span className="text-[7px] font-mono text-neutral-600 uppercase">
-              STATIC
-            </span>
-          )}
-          {data.timestamp && (
+          {data?.timestamp && (
             <span className="text-[7px] font-mono text-neutral-600">
               {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
@@ -456,14 +387,18 @@ export function DemographicTrendsPanel() {
       )}
 
       {/* Content */}
-      {(!isLoading || rawData) && (
+      {!isLoading && !data && (
+        <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
+      )}
+
+      {data && (
         <div className="flex-1 overflow-auto no-scrollbar">
-          <GlobalSummaryBar summary={data.summary} />
-          <CountryTable countries={data.countries} t={t} />
-          <AgingIndexSection countries={data.countries} t={t} />
-          <UrbanizationTrendSection trends={data.urbanizationTrends} t={t} />
-          <LaborForceSection labor={data.laborForce} t={t} />
-          <ProjectionsSection projections={data.projections} t={t} />
+          {data.summary && <GlobalSummaryBar summary={data.summary} />}
+          <CountryTable countries={data.countries ?? []} t={t} />
+          <AgingIndexSection countries={data.countries ?? []} t={t} />
+          <UrbanizationTrendSection trends={data.urbanizationTrends ?? []} t={t} />
+          <LaborForceSection labor={data.laborForce ?? []} t={t} />
+          <ProjectionsSection projections={data.projections ?? []} t={t} />
 
           {/* Footer */}
           <div className="px-3 py-2 border-t border-border/20">

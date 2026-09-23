@@ -79,15 +79,6 @@ interface StockDetail {
   quote: StockQuote | null;
   profile: StockProfile | null;
   history: HistoryPoint[];
-  recommendations: Array<{
-    id: number;
-    symbol: string;
-    action: string;
-    confidence: number;
-    reason: string | null;
-    createdAt: string;
-    article: { id: number; title: string; scrapedAt: string };
-  }>;
 }
 
 export function useStockQuotes() {

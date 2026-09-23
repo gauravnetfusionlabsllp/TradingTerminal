@@ -10,8 +10,8 @@ let flushInterval: ReturnType<typeof setInterval> | undefined;
 
 const PING_INTERVAL = 20_000; // 20s — keep connection alive through NAT/proxies
 const MAX_SYMBOLS_PER_CLIENT = 100;
-// ponytail: 250ms conflation, drop to per-tick if latency matters
-const FLUSH_INTERVAL = 250;
+// ponytail: 10ms conflation ≈ per-tick (FXCubic ticks on a ~100ms grid); the client throttles per user setting
+const FLUSH_INTERVAL = 10;
 
 interface Client {
   auth: JwtPayload | null;  // from the `token` cookie at upgrade; null = anonymous (public broadcasts only)
@@ -173,16 +173,8 @@ function broadcast(type: string, data: unknown) {
   });
 }
 
-export function broadcastNews(article: unknown) {
-  broadcast('news', article);
-}
-
 export function broadcastQuotes(quotes: unknown[]) {
   broadcast('quotes', quotes);
-}
-
-export function broadcastRecommendation(rec: unknown) {
-  broadcast('recommendation', rec);
 }
 
 export function broadcastCalendarRelease(event: unknown) {
@@ -191,10 +183,6 @@ export function broadcastCalendarRelease(event: unknown) {
 
 export function broadcastAlertTriggered(alert: unknown) {
   broadcast('alert-triggered', alert);
-}
-
-export function broadcastHyperliquidUpdate(data: unknown) {
-  broadcast('hyperliquid-update', data);
 }
 
 export function getClientCount(): number {

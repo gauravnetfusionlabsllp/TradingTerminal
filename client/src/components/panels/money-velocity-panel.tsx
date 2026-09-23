@@ -64,7 +64,7 @@ interface MoneyVelocityPayload {
   timestamp: string;
 }
 
-// ── Fallback mock data ──
+// ── Country tabs ──
 
 const COUNTRY_TABS: { code: CountryCode; label: string }[] = [
   { code: 'US', label: 'US' },
@@ -74,134 +74,6 @@ const COUNTRY_TABS: { code: CountryCode; label: string }[] = [
   { code: 'CN', label: 'CN' },
   { code: 'CA', label: 'CA' },
 ];
-
-const MOCK_DATA: MoneyVelocityPayload = {
-  globalLiquidity: '$96.4T',
-  globalLiquidityChange: 2.8,
-  timestamp: new Date().toISOString(),
-  countries: [
-    {
-      code: 'US', name: 'United States',
-      velocity: { m1Velocity: 1.26, m1Trend: 'falling', m2Velocity: 1.06, m2Trend: 'flat', historicalQuarters: [1.28, 1.27, 1.27, 1.26, 1.25, 1.26, 1.26, 1.26] },
-      moneySupply: [
-        { label: 'M0', value: '$5.47T', yoyGrowth: -1.2, momGrowth: -0.1 },
-        { label: 'M1', value: '$17.96T', yoyGrowth: -2.4, momGrowth: -0.3 },
-        { label: 'M2', value: '$21.72T', yoyGrowth: 3.8, momGrowth: 0.4 },
-        { label: 'M3', value: '$23.14T', yoyGrowth: 4.1, momGrowth: 0.5 },
-      ],
-      centralBank: { size: '$7.36T', changeYtd: '-$420B', changeYtdPct: -5.4, pctOfGdp: 25.8 },
-      creditGrowth: [
-        { label: 'Total', value: 3.6 },
-        { label: 'Household', value: 2.8 },
-        { label: 'Corporate', value: 4.3 },
-        { label: 'Government', value: 6.1 },
-      ],
-      multiplier: { multiplier: 3.97, reserveRatio: 10.2, excessReserves: '$3.21T' },
-      inflation: { cpi: 2.8, ppi: 1.9, moneyGrowthLag: '12-18 mo' },
-      regime: 'expanding',
-    },
-    {
-      code: 'EU', name: 'Eurozone',
-      velocity: { m1Velocity: 0.98, m1Trend: 'rising', m2Velocity: 0.82, m2Trend: 'rising', historicalQuarters: [0.92, 0.93, 0.94, 0.95, 0.96, 0.96, 0.97, 0.98] },
-      moneySupply: [
-        { label: 'M0', value: '€4.82T', yoyGrowth: -3.8, momGrowth: -0.4 },
-        { label: 'M1', value: '€10.12T', yoyGrowth: -1.5, momGrowth: 0.1 },
-        { label: 'M2', value: '€15.87T', yoyGrowth: 1.4, momGrowth: 0.2 },
-        { label: 'M3', value: '€16.43T', yoyGrowth: 1.9, momGrowth: 0.3 },
-      ],
-      centralBank: { size: '€6.57T', changeYtd: '-€380B', changeYtdPct: -5.5, pctOfGdp: 44.7 },
-      creditGrowth: [
-        { label: 'Total', value: 1.2 },
-        { label: 'Household', value: 0.8 },
-        { label: 'Corporate', value: 0.6 },
-        { label: 'Government', value: 3.4 },
-      ],
-      multiplier: { multiplier: 3.31, reserveRatio: 8.4, excessReserves: '€3.72T' },
-      inflation: { cpi: 2.4, ppi: -0.3, moneyGrowthLag: '12-18 mo' },
-      regime: 'neutral',
-    },
-    {
-      code: 'UK', name: 'United Kingdom',
-      velocity: { m1Velocity: 1.14, m1Trend: 'falling', m2Velocity: 0.91, m2Trend: 'flat', historicalQuarters: [1.18, 1.17, 1.16, 1.15, 1.15, 1.14, 1.14, 1.14] },
-      moneySupply: [
-        { label: 'M0', value: '£97.2B', yoyGrowth: -4.1, momGrowth: -0.5 },
-        { label: 'M1', value: '£2.18T', yoyGrowth: -3.4, momGrowth: -0.4 },
-        { label: 'M2', value: '£3.07T', yoyGrowth: -0.3, momGrowth: 0.1 },
-        { label: 'M3', value: '£3.24T', yoyGrowth: 0.4, momGrowth: 0.1 },
-      ],
-      centralBank: { size: '£843B', changeYtd: '-£62B', changeYtdPct: -6.9, pctOfGdp: 29.4 },
-      creditGrowth: [
-        { label: 'Total', value: -0.3 },
-        { label: 'Household', value: 0.9 },
-        { label: 'Corporate', value: -2.1 },
-        { label: 'Government', value: 4.7 },
-      ],
-      multiplier: { multiplier: 3.52, reserveRatio: 12.1, excessReserves: '£762B' },
-      inflation: { cpi: 3.1, ppi: 0.8, moneyGrowthLag: '12-18 mo' },
-      regime: 'contracting',
-    },
-    {
-      code: 'JP', name: 'Japan',
-      velocity: { m1Velocity: 0.54, m1Trend: 'flat', m2Velocity: 0.48, m2Trend: 'flat', historicalQuarters: [0.54, 0.54, 0.53, 0.53, 0.54, 0.54, 0.54, 0.54] },
-      moneySupply: [
-        { label: 'M0', value: '¥673T', yoyGrowth: -2.1, momGrowth: -0.2 },
-        { label: 'M1', value: '¥1,082T', yoyGrowth: 0.4, momGrowth: 0.1 },
-        { label: 'M2', value: '¥1,237T', yoyGrowth: 2.1, momGrowth: 0.2 },
-        { label: 'M3', value: '¥1,541T', yoyGrowth: 2.5, momGrowth: 0.3 },
-      ],
-      centralBank: { size: '¥741T', changeYtd: '-¥12T', changeYtdPct: -1.6, pctOfGdp: 127.4 },
-      creditGrowth: [
-        { label: 'Total', value: 2.8 },
-        { label: 'Household', value: 1.4 },
-        { label: 'Corporate', value: 3.6 },
-        { label: 'Government', value: 4.2 },
-      ],
-      multiplier: { multiplier: 1.84, reserveRatio: 4.2, excessReserves: '¥531T' },
-      inflation: { cpi: 2.6, ppi: 0.7, moneyGrowthLag: '18-24 mo' },
-      regime: 'neutral',
-    },
-    {
-      code: 'CN', name: 'China',
-      velocity: { m1Velocity: 0.42, m1Trend: 'rising', m2Velocity: 0.38, m2Trend: 'rising', historicalQuarters: [0.38, 0.39, 0.39, 0.40, 0.40, 0.41, 0.41, 0.42] },
-      moneySupply: [
-        { label: 'M0', value: '¥11.8T', yoyGrowth: 8.2, momGrowth: 0.9 },
-        { label: 'M1', value: '¥68.1T', yoyGrowth: 5.3, momGrowth: 0.6 },
-        { label: 'M2', value: '¥304.2T', yoyGrowth: 8.7, momGrowth: 0.8 },
-        { label: 'M3', value: '¥328.6T', yoyGrowth: 9.2, momGrowth: 0.9 },
-      ],
-      centralBank: { size: '¥44.7T', changeYtd: '+¥2.1T', changeYtdPct: 4.9, pctOfGdp: 34.8 },
-      creditGrowth: [
-        { label: 'Total', value: 9.8 },
-        { label: 'Household', value: 4.2 },
-        { label: 'Corporate', value: 12.4 },
-        { label: 'Government', value: 14.7 },
-      ],
-      multiplier: { multiplier: 7.14, reserveRatio: 7.0, excessReserves: '¥5.8T' },
-      inflation: { cpi: 0.4, ppi: -1.8, moneyGrowthLag: '6-12 mo' },
-      regime: 'expanding',
-    },
-    {
-      code: 'CA', name: 'Canada',
-      velocity: { m1Velocity: 1.08, m1Trend: 'falling', m2Velocity: 0.86, m2Trend: 'flat', historicalQuarters: [1.12, 1.11, 1.10, 1.10, 1.09, 1.09, 1.08, 1.08] },
-      moneySupply: [
-        { label: 'M0', value: 'C$114B', yoyGrowth: -5.3, momGrowth: -0.6 },
-        { label: 'M1', value: 'C$1.42T', yoyGrowth: -1.8, momGrowth: -0.2 },
-        { label: 'M2', value: 'C$2.38T', yoyGrowth: 1.5, momGrowth: 0.2 },
-        { label: 'M3', value: 'C$2.71T', yoyGrowth: 2.3, momGrowth: 0.3 },
-      ],
-      centralBank: { size: 'C$276B', changeYtd: '-C$42B', changeYtdPct: -13.2, pctOfGdp: 10.4 },
-      creditGrowth: [
-        { label: 'Total', value: 1.5 },
-        { label: 'Household', value: 3.1 },
-        { label: 'Corporate', value: -0.4 },
-        { label: 'Government', value: 5.2 },
-      ],
-      multiplier: { multiplier: 8.71, reserveRatio: 2.1, excessReserves: 'C$128B' },
-      inflation: { cpi: 2.9, ppi: 1.2, moneyGrowthLag: '12-18 mo' },
-      regime: 'contracting',
-    },
-  ],
-};
 
 // ── Format helpers ──
 
@@ -493,9 +365,9 @@ export function MoneyVelocityPanel() {
   const { data: hookData, isLoading, refetch } = useMoneyVelocity();
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>('US');
 
-  const payload: MoneyVelocityPayload = (hookData as MoneyVelocityPayload) ?? MOCK_DATA;
-  const country = payload.countries?.find((c) => c.code === selectedCountry)
-    ?? payload.countries?.[0];
+  const payload = hookData as MoneyVelocityPayload | undefined;
+  const country = payload?.countries?.find((c) => c.code === selectedCountry)
+    ?? payload?.countries?.[0];
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
@@ -509,10 +381,12 @@ export function MoneyVelocityPanel() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[7px] font-mono text-neutral-600">GLOBAL LIQ:</span>
-          <span className="text-[8px] font-mono font-bold text-white">{payload.globalLiquidity}</span>
-          <span className={`text-[7px] font-mono font-bold ${growthColor(payload.globalLiquidityChange)}`}>
-            {fmtPct(payload.globalLiquidityChange)}
-          </span>
+          <span className="text-[8px] font-mono font-bold text-white">{payload?.globalLiquidity ?? '--'}</span>
+          {payload?.globalLiquidityChange != null && (
+            <span className={`text-[7px] font-mono font-bold ${growthColor(payload.globalLiquidityChange)}`}>
+              {fmtPct(payload.globalLiquidityChange)}
+            </span>
+          )}
           <button
             onClick={() => refetch()}
             className="p-1 text-neutral-500 hover:text-purple-400 transition-colors"
@@ -576,7 +450,7 @@ export function MoneyVelocityPanel() {
             {/* Footer timestamp */}
             <div className="px-3 py-1.5 border-t border-border/10">
               <span className="text-[7px] font-mono text-neutral-700">
-                Last update: {new Date(payload.timestamp).toLocaleTimeString()}
+                Last update: {payload?.timestamp ? new Date(payload.timestamp).toLocaleTimeString() : '--'}
               </span>
             </div>
           </>

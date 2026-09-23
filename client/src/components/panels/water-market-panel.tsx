@@ -1,95 +1,6 @@
 import { useWaterMarket } from '../../api/hooks/use-water-market';
 import { Droplets, RefreshCw } from 'lucide-react';
 
-// ── Fallback Data ──
-
-const FALLBACK_DATA = {
-  timestamp: new Date().toISOString(),
-  overview: {
-    marketSize: 937.7e9,
-    stressedPopulation: 2.3e9,
-    desalinationCapacity: 107.8,
-    infraInvestment: 198.4e9,
-    waterLossRate: 30.2,
-  },
-  waterRights: [
-    { market: 'NQH2O (Nasdaq Veles)', price: 1124, dailyChange: 2.34, ytdChange: 18.7, volume: '4.2K', scarcity: 'HIGH' },
-    { market: 'Murray-Darling (AU)', price: 312, dailyChange: -0.85, ytdChange: 24.3, volume: '1.8K', scarcity: 'EXTREME' },
-    { market: 'Colorado River (US)', price: 874, dailyChange: 1.12, ytdChange: 32.6, volume: '2.1K', scarcity: 'EXTREME' },
-    { market: 'Texas (Edwards Aq.)', price: 548, dailyChange: 0.67, ytdChange: 14.2, volume: '980', scarcity: 'HIGH' },
-    { market: 'Chile (Atacama)', price: 1680, dailyChange: 3.41, ytdChange: 45.8, volume: '620', scarcity: 'EXTREME' },
-    { market: 'South Africa (W Cape)', price: 285, dailyChange: -1.23, ytdChange: 8.4, volume: '540', scarcity: 'HIGH' },
-    { market: 'Spain (Tagus-Segura)', price: 462, dailyChange: 1.87, ytdChange: 22.1, volume: '780', scarcity: 'HIGH' },
-    { market: 'India (Gujarat)', price: 68, dailyChange: 4.52, ytdChange: 56.3, volume: '3.4K', scarcity: 'EXTREME' },
-    { market: 'UK (Thames)', price: 195, dailyChange: 0.34, ytdChange: 5.8, volume: '1.2K', scarcity: 'MOD' },
-    { market: 'China (N. Plain)', price: 142, dailyChange: 2.18, ytdChange: 28.9, volume: '5.6K', scarcity: 'HIGH' },
-    { market: 'Brazil (Sao Paulo)', price: 98, dailyChange: -0.45, ytdChange: -3.2, volume: '890', scarcity: 'MOD' },
-    { market: 'Middle East (GCC)', price: 2240, dailyChange: 0.92, ytdChange: 12.4, volume: '1.5K', scarcity: 'EXTREME' },
-  ],
-  scarcityIndex: [
-    { region: 'Middle East & N Africa', stressScore: 4.8, trend: 'RISING', populationAffected: '380M', projection2030: 5.0 },
-    { region: 'South Asia', stressScore: 4.2, trend: 'RISING', populationAffected: '620M', projection2030: 4.7 },
-    { region: 'Central Asia', stressScore: 3.9, trend: 'RISING', populationAffected: '85M', projection2030: 4.4 },
-    { region: 'Sub-Saharan Africa', stressScore: 3.6, trend: 'RISING', populationAffected: '400M', projection2030: 4.2 },
-    { region: 'Western US', stressScore: 3.4, trend: 'STABLE', populationAffected: '65M', projection2030: 3.8 },
-    { region: 'Mediterranean Europe', stressScore: 3.1, trend: 'RISING', populationAffected: '120M', projection2030: 3.6 },
-    { region: 'Northern China', stressScore: 3.8, trend: 'STABLE', populationAffected: '450M', projection2030: 4.0 },
-    { region: 'Southeast Australia', stressScore: 3.0, trend: 'RISING', populationAffected: '18M', projection2030: 3.5 },
-    { region: 'Andes (Chile/Peru)', stressScore: 3.5, trend: 'RISING', populationAffected: '28M', projection2030: 4.1 },
-    { region: 'East Africa', stressScore: 3.3, trend: 'RISING', populationAffected: '190M', projection2030: 3.9 },
-  ],
-  desalination: {
-    globalCapacity: 107.8,
-    underConstruction: 18.4,
-    topMarkets: [
-      { country: 'Saudi Arabia', capacity: 22.4 },
-      { country: 'UAE', capacity: 14.2 },
-      { country: 'US', capacity: 8.6 },
-      { country: 'China', capacity: 7.8 },
-      { country: 'Israel', capacity: 6.2 },
-    ],
-    costPerM3: 0.52,
-    energyConsumption: 3.5,
-    techMix: [
-      { tech: 'RO', share: 69 },
-      { tech: 'MSF', share: 18 },
-      { tech: 'MED', share: 7 },
-      { tech: 'Other', share: 6 },
-    ],
-  },
-  utilities: [
-    { company: 'American Water Works', ticker: 'AWK', marketCap: '28.4B', revenueGrowth: 8.2, ebitdaMargin: 52.4, divYield: 2.1, stockYtd: 12.6, nrw: 12.8, customers: '14M' },
-    { company: 'Xylem', ticker: 'XYL', marketCap: '32.1B', revenueGrowth: 12.4, ebitdaMargin: 22.8, divYield: 1.1, stockYtd: 18.3, nrw: null, customers: null },
-    { company: 'Veolia Environnement', ticker: 'VEOEY', marketCap: '24.8B', revenueGrowth: 6.8, ebitdaMargin: 16.2, divYield: 3.4, stockYtd: 8.7, nrw: 18.4, customers: '95M' },
-    { company: 'Essential Utilities', ticker: 'WTRG', marketCap: '12.2B', revenueGrowth: 5.4, ebitdaMargin: 48.6, divYield: 2.8, stockYtd: 6.2, nrw: 14.2, customers: '5.5M' },
-    { company: 'Pentair', ticker: 'PNR', marketCap: '16.8B', revenueGrowth: 9.6, ebitdaMargin: 24.1, divYield: 1.3, stockYtd: 22.4, nrw: null, customers: null },
-    { company: 'Mueller Water', ticker: 'MWA', marketCap: '3.8B', revenueGrowth: 14.8, ebitdaMargin: 20.6, divYield: 0.6, stockYtd: 28.9, nrw: null, customers: null },
-    { company: 'Severn Trent', ticker: 'SVT.L', marketCap: '9.6B', revenueGrowth: 4.2, ebitdaMargin: 56.8, divYield: 4.2, stockYtd: -2.4, nrw: 20.1, customers: '8M' },
-    { company: 'United Utilities', ticker: 'UU.L', marketCap: '8.4B', revenueGrowth: 3.8, ebitdaMargin: 54.2, divYield: 4.6, stockYtd: -4.8, nrw: 22.6, customers: '7.3M' },
-    { company: 'Energy Recovery', ticker: 'ERII', marketCap: '4.2B', revenueGrowth: 18.6, ebitdaMargin: 42.8, divYield: 0.0, stockYtd: 34.2, nrw: null, customers: null },
-    { company: 'IDEX Corp', ticker: 'IEX', marketCap: '18.6B', revenueGrowth: 7.2, ebitdaMargin: 28.4, divYield: 1.2, stockYtd: 10.8, nrw: null, customers: null },
-  ],
-  infrastructure: {
-    globalInvestment: 198.4e9,
-    investmentGap: 260e9,
-    regionalBreakdown: [
-      { region: 'Asia-Pacific', investment: 72.4e9, share: 36.5 },
-      { region: 'North America', investment: 48.2e9, share: 24.3 },
-      { region: 'Europe', investment: 38.6e9, share: 19.5 },
-      { region: 'Middle East & Africa', investment: 22.8e9, share: 11.5 },
-      { region: 'Latin America', investment: 16.4e9, share: 8.2 },
-    ],
-    keyTrends: [
-      { trend: 'Smart water networks & IoT sensors', growth: 24.8 },
-      { trend: 'Pipe rehabilitation & trenchless tech', growth: 18.2 },
-      { trend: 'Advanced metering infrastructure (AMI)', growth: 22.4 },
-      { trend: 'Membrane bioreactor (MBR) systems', growth: 16.8 },
-      { trend: 'Water reuse & recycling facilities', growth: 28.6 },
-      { trend: 'Nature-based solutions (wetlands, aquifer recharge)', growth: 14.2 },
-    ],
-  },
-};
-
 // ── Formatting helpers ──
 
 function fmtVol(n: number): string {
@@ -451,7 +362,7 @@ function InfrastructureSection({ infra }: { infra: any }) {
 export function WaterMarketPanel() {
   const { data, isLoading, refetch } = useWaterMarket();
 
-  const d = data || FALLBACK_DATA;
+  const d = data;
 
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
@@ -464,12 +375,16 @@ export function WaterMarketPanel() {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {d?.overview && (
+          <>
           <span className="text-[7px] font-mono text-neutral-500 tabular-nums">
             {fmtVol(d.overview.marketSize)}
           </span>
           <span className="text-[7px] font-mono font-bold text-cyan-400 tabular-nums">
             {fmtNum(d.overview.stressedPopulation)} stressed
           </span>
+          </>
+          )}
           <button
             onClick={() => refetch()}
             className="p-0.5 text-neutral-500 hover:text-cyan-400 transition-colors"
@@ -490,6 +405,8 @@ export function WaterMarketPanel() {
               </span>
             </div>
           </div>
+        ) : !d ? (
+          <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest">No data available</div>
         ) : (
           <>
             <OverviewSection overview={d.overview} />
