@@ -15,7 +15,6 @@ import categoriesRouter from './routes/categories.js';
 import mapEventsRouter from './routes/map-events.js';
 import watchlistRouter from './routes/watchlist.js';
 import auditRouter from './routes/audit.js';
-import chatRouter from './routes/chat.js';
 import conflictsRouter from './routes/conflicts.js';
 import sentimentRouter from './routes/sentiment.js';
 import sectorsRouter from './routes/sectors.js';
@@ -28,6 +27,7 @@ import correlationsRouter from './routes/correlations.js';
 import authRouter from './routes/auth.js';
 import billingRouter, { billingWebhookHandler } from './routes/billing.js';
 import alpacaRouter from './routes/alpaca.js';
+import mt5Router from './routes/mt5.js';
 import streamsRouter from './routes/streams.js';
 import polymarketRouter from './routes/polymarket.js';
 import hyperliquidRouter from './routes/hyperliquid.js';
@@ -174,7 +174,7 @@ export function createApp() {
   // Cache aggressively to reduce Cloud Run compute and bandwidth.
   app.use('/api', (req: Request, res: Response, next: NextFunction) => {
     // Skip caching for auth, mutations, and streaming endpoints
-    const skip = ['/api/auth', '/api/billing', '/api/alpaca', '/api/streams', '/api/audit', '/api/chat', '/api/scrape', '/api/export'];
+    const skip = ['/api/auth', '/api/billing', '/api/alpaca', '/api/mt5', '/api/streams', '/api/audit', '/api/chat', '/api/scrape', '/api/export'];
     if (req.method !== 'GET' || skip.some(p => req.path.startsWith(p))) {
       return next();
     }
@@ -184,10 +184,12 @@ export function createApp() {
 
   // ── Routes ──
 
-  // Auth routes with stricter rate limiting
-  app.use('/api/auth', authLimiter, authRouter);
+  // Auth routes — stricter rate limit on the login attempt itself (not /me)
+  app.use('/api/auth/login', authLimiter);
+  app.use('/api/auth', authRouter);
   app.use('/api/billing', billingRouter);
   app.use('/api/alpaca', alpacaRouter);
+  app.use('/api/mt5', mt5Router);
   app.use('/api/streams', streamsRouter);
   app.use('/api/news', newsRouter);
   app.use('/api/stocks', stocksRouter);
@@ -196,7 +198,6 @@ export function createApp() {
   app.use('/api/map-events', mapEventsRouter);
   app.use('/api/watchlist', watchlistRouter);
   app.use('/api/audit', auditRouter);
-  app.use('/api/chat', chatLimiter, chatRouter);
   app.use('/api/conflicts', conflictsRouter);
   app.use('/api/sentiment', sentimentRouter);
   app.use('/api/sectors', sectorsRouter);

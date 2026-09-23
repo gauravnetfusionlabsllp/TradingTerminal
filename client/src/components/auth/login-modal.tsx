@@ -1,23 +1,18 @@
 import { useState } from 'react';
-import { GoogleLogin } from '@react-oauth/google';
 import { useAuthStore } from '../../stores/use-auth-store';
 import { useAuthActions } from '../../api/hooks/use-auth';
 import { useT } from '../../i18n';
-import { X, Mail, Shield } from 'lucide-react';
-
-type Step = 'choose' | 'email-input' | 'email-verify';
-
-const hasGoogleOAuth = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
+import { X, Shield } from 'lucide-react';
 
 export function LoginModal() {
   const t = useT();
   const open = useAuthStore((s) => s.loginModalOpen);
   const setOpen = useAuthStore((s) => s.setLoginModalOpen);
-  const { loginWithGoogle, sendEmailCode, verifyEmailCode } = useAuthActions();
+  const { login } = useAuthActions();
 
-  const [step, setStep] = useState<Step>(hasGoogleOAuth ? 'choose' : 'email-input');
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [mt5Login, setMt5Login] = useState('');
+  const [password, setPassword] = useState('');
+  const [investor, setInvestor] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -25,44 +20,30 @@ export function LoginModal() {
 
   const close = () => {
     setOpen(false);
-    setStep(hasGoogleOAuth ? 'choose' : 'email-input');
-    setEmail('');
-    setCode('');
+    setPassword('');
     setError('');
   };
 
-  const handleSendCode = async () => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError(t('enterValidEmail'));
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mt5Login || !password) {
+      setError(t('enterMt5Login'));
       return;
     }
     setLoading(true);
     setError('');
     try {
-      await sendEmailCode(email);
-      setStep('email-verify');
+      await login(Number(mt5Login), password, investor);
+      setPassword('');
     } catch (err: any) {
-      setError(err.message || t('sendCodeFailed'));
+      setError(err.message || t('loginFailed'));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerify = async () => {
-    if (code.length !== 6) {
-      setError(t('enterDigitCode'));
-      return;
-    }
-    setLoading(true);
-    setError('');
-    try {
-      await verifyEmailCode(email, code);
-    } catch (err: any) {
-      setError(err.message || t('verifyFailed'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const inputClass = 'w-full bg-black border border-border px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral/30 mb-3 focus:border-accent outline-none';
+  const labelClass = 'block text-[9px] font-bold uppercase tracking-widest text-neutral mb-1.5';
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={close}>
@@ -86,126 +67,60 @@ export function LoginModal() {
           </h2>
         </div>
 
-        {/* Google Login */}
-        {step === 'choose' && (
-          <>
-            {hasGoogleOAuth && (
-              <>
-                <div className="mb-4 flex justify-center">
-                  <GoogleLogin
-                    onSuccess={(resp) => {
-                      if (resp.credential) {
-                        loginWithGoogle(resp.credential).catch((err) =>
-                          setError(err.message || t('googleLoginFailed')),
-                        );
-                      }
-                    }}
-                    onError={() => setError(t('googleLoginFailed'))}
-                    theme="filled_black"
-                    shape="rectangular"
-                    size="large"
-                    width="320"
-                  />
-                </div>
+        <form onSubmit={handleLogin}>
+          <label htmlFor="mt5-login" className={labelClass}>{t('mt5Login')}</label>
+          <input
+            id="mt5-login"
+            type="text"
+            inputMode="numeric"
+            autoComplete="username"
+            value={mt5Login}
+            onChange={(e) => setMt5Login(e.target.value.replace(/\D/g, '').slice(0, 15))}
+            placeholder="12345678"
+            autoFocus
+            className={inputClass}
+          />
 
-                {/* Divider */}
-                <div className="flex items-center gap-3 my-4">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral">{t('or')}</span>
-                  <div className="flex-1 h-px bg-border" />
-                </div>
-              </>
-            )}
+          <label htmlFor="mt5-password" className={labelClass}>{t('mt5Password')}</label>
+          <input
+            id="mt5-password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            maxLength={64}
+            className={inputClass}
+          />
 
-            {/* Email */}
-            <button
-              onClick={() => setStep('email-input')}
-              className="w-full flex items-center justify-center gap-2 py-2.5 border border-border bg-black text-white text-[11px] font-bold uppercase tracking-widest hover:border-accent hover:text-accent"
-            >
-              <Mail className="w-4 h-4" />
-              {t('continueWithEmail')}
-            </button>
-          </>
-        )}
-
-        {/* Email input step */}
-        {step === 'email-input' && (
-          <>
-            <label className="block text-[9px] font-bold uppercase tracking-widest text-neutral mb-1.5">
-              {t('emailAddress')}
-            </label>
+          <label className="flex items-center gap-2 mb-4 text-[10px] font-mono text-neutral cursor-pointer select-none">
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}
-              placeholder={t('emailPlaceholder')}
-              autoFocus
-              className="w-full bg-black border border-border px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral/30 mb-3 focus:border-accent outline-none"
+              type="checkbox"
+              checked={investor}
+              onChange={(e) => setInvestor(e.target.checked)}
             />
-            <button
-              onClick={handleSendCode}
-              disabled={loading}
-              className="w-full py-2.5 bg-accent text-black text-[11px] font-black uppercase tracking-widest hover:bg-accent/90 disabled:opacity-50"
-            >
-              {loading ? t('sending') : t('sendCode')}
-            </button>
-            {hasGoogleOAuth && (
-              <button
-                onClick={() => { setStep('choose'); setError(''); }}
-                className="w-full mt-2 py-1.5 text-[10px] text-neutral hover:text-white uppercase tracking-widest"
-              >
-                {t('back')}
-              </button>
-            )}
-          </>
-        )}
+            {t('investorReadOnly')}
+          </label>
 
-        {/* Code verify step */}
-        {step === 'email-verify' && (
-          <>
-            <p className="text-[10px] text-neutral mb-3 font-mono">
-              {t('codeSentTo')} <span className="text-accent">{email}</span>
-            </p>
-            <input
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-              placeholder="000000"
-              autoFocus
-              maxLength={6}
-              className="w-full bg-black border border-border px-3 py-2.5 text-center text-lg font-mono text-white tracking-[0.5em] placeholder:text-neutral/30 mb-3 focus:border-accent outline-none"
-            />
-            <button
-              onClick={handleVerify}
-              disabled={loading}
-              className="w-full py-2.5 bg-accent text-black text-[11px] font-black uppercase tracking-widest hover:bg-accent/90 disabled:opacity-50"
-            >
-              {loading ? t('verifying') : t('verify')}
-            </button>
-            <button
-              onClick={() => { setStep('email-input'); setCode(''); setError(''); }}
-              className="w-full mt-2 py-1.5 text-[10px] text-neutral hover:text-white uppercase tracking-widest"
-            >
-              {t('back')}
-            </button>
-          </>
-        )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2.5 bg-accent text-black text-[11px] font-black uppercase tracking-widest hover:bg-accent/90 disabled:opacity-50"
+          >
+            {loading ? t('loggingIn') : t('login')}
+          </button>
+        </form>
 
         {/* Terms consent note */}
-        {step !== 'email-verify' && (
-          <p className="mt-4 text-[9px] font-mono text-neutral/50 text-center leading-relaxed">
-            {t('cookieConsent')}{' '}
-            <a href="https://github.com/KoNananachan/Neuberg/blob/main/TERMS_OF_SERVICE.md" target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('termsOfService')}</a>
-            {' '}{t('and')}{' '}
-            <a href="https://github.com/KoNananachan/Neuberg/blob/main/PRIVACY_POLICY.md" target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('privacyPolicy')}</a>.
-          </p>
-        )}
+        <p className="mt-4 text-[9px] font-mono text-neutral/50 text-center leading-relaxed">
+          {t('cookieConsent')}{' '}
+          <a href="https://github.com/KoNananachan/Neuberg/blob/main/TERMS_OF_SERVICE.md" target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('termsOfService')}</a>
+          {' '}{t('and')}{' '}
+          <a href="https://github.com/KoNananachan/Neuberg/blob/main/PRIVACY_POLICY.md" target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('privacyPolicy')}</a>.
+        </p>
 
         {/* Error */}
         {error && (
-          <p className="mt-3 text-[10px] font-mono text-bearish text-center">{error}</p>
+          <p role="alert" className="mt-3 text-[10px] font-mono text-bearish text-center">{error}</p>
         )}
       </div>
     </div>

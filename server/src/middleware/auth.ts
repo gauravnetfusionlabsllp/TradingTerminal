@@ -1,10 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { decrypt, isEncrypted } from '../lib/crypto.js';
+import { verifyJwt } from '../lib/jwt.js';
 
 export interface AuthUser {
   id: number;
-  email: string;
+  email: string | null;
   name: string | null;
   avatarUrl: string | null;
   plan: string;
@@ -12,6 +13,8 @@ export interface AuthUser {
   alpacaApiKey: string | null;
   alpacaSecretKey: string | null;
   alpacaPaper: boolean;
+  mt5Login: number;
+  readOnly: boolean;
 }
 
 declare global {
@@ -23,29 +26,24 @@ declare global {
 }
 
 /**
- * Global middleware: reads `session` cookie → looks up DB → attaches req.user
+ * Global middleware: reads JWT (`token` cookie or `Authorization: Bearer`) → verifies → loads user → attaches req.user
  */
 export async function attachUser(req: Request, _res: Response, next: NextFunction) {
   try {
-    const token = req.cookies?.session;
+    const auth = req.headers.authorization;
+    const token = req.cookies?.token || (auth?.startsWith('Bearer ') ? auth.slice(7) : undefined);
     if (!token) return next();
 
-    const session = await prisma.authSession.findUnique({
-      where: { token },
-      include: { user: true },
-    });
+    const claims = verifyJwt(token);
+    if (!claims) return next();
 
-    if (!session || session.expiresAt < new Date()) {
-      // Expired session — clean up
-      if (session) {
-        await prisma.authSession.delete({ where: { id: session.id } }).catch(() => {});
-      }
-      return next();
-    }
+    const user = await prisma.user.findUnique({ where: { id: claims.sub } });
+    // Token must still match the account it was issued for
+    if (!user || user.mt5Login !== String(claims.login)) return next();
 
     // Decrypt Alpaca credentials if they exist and are encrypted
-    let alpacaApiKey = session.user.alpacaApiKey;
-    let alpacaSecretKey = session.user.alpacaSecretKey;
+    let alpacaApiKey = user.alpacaApiKey;
+    let alpacaSecretKey = user.alpacaSecretKey;
     try {
       if (alpacaApiKey && isEncrypted(alpacaApiKey)) alpacaApiKey = decrypt(alpacaApiKey);
       if (alpacaSecretKey && isEncrypted(alpacaSecretKey)) alpacaSecretKey = decrypt(alpacaSecretKey);
@@ -56,15 +54,17 @@ export async function attachUser(req: Request, _res: Response, next: NextFunctio
     }
 
     req.user = {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-      avatarUrl: session.user.avatarUrl,
-      plan: session.user.plan,
-      planExpiresAt: session.user.planExpiresAt,
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+      plan: user.plan,
+      planExpiresAt: user.planExpiresAt,
       alpacaApiKey,
       alpacaSecretKey,
-      alpacaPaper: session.user.alpacaPaper,
+      alpacaPaper: user.alpacaPaper,
+      mt5Login: claims.login,
+      readOnly: claims.ro,
     };
   } catch (err) {
     console.error('[Auth] Session lookup failed:', (err as any)?.code || (err as any)?.message);
@@ -78,6 +78,21 @@ export async function attachUser(req: Request, _res: Response, next: NextFunctio
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.user) {
     res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+  next();
+}
+
+/**
+ * Route-level middleware: 401 if not logged in, 403 for investor (read-only) sessions
+ */
+export function requireTrader(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+  if (req.user.readOnly) {
+    res.status(403).json({ error: 'Read-only (investor) session' });
     return;
   }
   next();

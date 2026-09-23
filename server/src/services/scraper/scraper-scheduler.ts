@@ -1,13 +1,9 @@
 import { scrapeArticles, createNewsSource } from './neuberg-scraper.js';
-import { analyzeUnprocessedArticles } from '../ai/news-analyzer.js';
-import { clusterRecentNews } from '../ai/news-clusterer.js';
 import { getClientCount } from '../websocket/ws-server.js';
 import type { NewsSource } from './news-source.js';
 
 const POLL_INTERVAL_MS = 60_000; // 60 seconds (halved API calls vs 30s)
 const IDLE_POLL_INTERVAL_MS = 5 * 60_000; // 5 minutes when no users connected
-const CLUSTER_INTERVAL_MS = 10 * 60_000; // 10 minutes
-let lastClusterTime = 0;
 let newsSource: NewsSource | null = null;
 
 export function startScraperScheduler() {
@@ -36,19 +32,8 @@ let lastScrapeTime = 0;
 async function runScrapeAndAnalyze() {
   lastScrapeTime = Date.now();
   try {
-    const newCount = await scrapeArticles(newsSource);
-    if (newCount > 0) {
-      await analyzeUnprocessedArticles();
-    }
-
-    // Re-cluster periodically (every 10 minutes)
-    const now = Date.now();
-    if (now - lastClusterTime > CLUSTER_INTERVAL_MS) {
-      lastClusterTime = now;
-      await clusterRecentNews().catch(err =>
-        console.error('[Scheduler] Clustering error:', err)
-      );
-    }
+    // services/ai (news analysis + clustering) is not in this checkout — restore its calls here if it comes back
+    await scrapeArticles(newsSource);
   } catch (err) {
     console.error('[Scheduler] Error in scrape cycle:', err);
   }

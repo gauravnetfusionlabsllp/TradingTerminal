@@ -46,6 +46,14 @@ const envSchema = z.object({
   // Encryption key for sensitive credentials (Alpaca API keys)
   // Use a 64-char hex string or any passphrase
   ENCRYPTION_KEY: z.string().default(''),
+
+  // MT5 bridge (login verification + trading) and JWT signing
+  MT5_BRIDGE_URL: z.string().default('http://localhost:5050'),
+  MT5_BRIDGE_API_KEY: z.string().default(''),
+  JWT_SECRET: z.string().default(''),
+
+  // Realtime prices: the Python FXCubic FIX bridge's WebSocket (empty = disabled, REST polling only)
+  MARKET_FEED_URL: z.string().default('ws://localhost:8765'),
 });
 
 // Parse raw env, then resolve aliases (AI_* takes priority over GEMINI_*)

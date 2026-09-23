@@ -299,7 +299,8 @@ model SentimentArchive {
 
 model User {
   id                   Int           @id @default(autoincrement())
-  email                String        @unique
+  email                String?       @unique
+  mt5Login             String?       @unique // MT5 logins are ulong — stored as text
   name                 String?
   avatarUrl            String?
   googleId             String?       @unique

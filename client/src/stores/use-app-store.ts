@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Locale } from '../i18n/translations';
 
+interface SavedWatchlist { tabs: string[]; tabSymbols: Record<string, string[]>; active: string }
+
 export interface Notification {
   id: number;
   title: string;
@@ -54,6 +56,9 @@ interface AppState {
   activeWatchlistTab: string;
   watchlistTabs: string[];
   tabSymbols: Record<string, string[]>;
+  // The three fields above are the current MT5 login's watchlist; other logins' copies are parked here
+  watchlistOwner: string | null;
+  watchlistsByLogin: Record<string, SavedWatchlist>;
 
   // View control
   stockPanelView: StockPanelView;
@@ -125,6 +130,7 @@ interface AppState {
   removeWatchlistTab: (name: string) => void;
   addSymbolToTab: (symbol: string, tab: string) => void;
   removeSymbolFromTab: (symbol: string, tab: string) => void;
+  loadWatchlistFor: (login: string) => void;
 
   // View control actions
   setStockPanelView: (view: StockPanelView) => void;
@@ -180,6 +186,8 @@ export const useAppStore = create<AppState>()(
         'WATCHLIST': [],
         'HOLDING': []
       },
+      watchlistOwner: null,
+      watchlistsByLogin: {},
 
       // View control
       stockPanelView: 'watchlist',
@@ -293,6 +301,22 @@ export const useAppStore = create<AppState>()(
           [tab]: (state.tabSymbols[tab] || []).filter(s => s !== symbol)
         }
       })),
+      loadWatchlistFor: (login) => set((state) => {
+        if (state.watchlistOwner === login) return state;
+        // Park the outgoing account's list (an ownerless pre-MT5 list is dropped), then load this login's
+        const parked = state.watchlistOwner === null ? state.watchlistsByLogin : {
+          ...state.watchlistsByLogin,
+          [state.watchlistOwner]: { tabs: state.watchlistTabs, tabSymbols: state.tabSymbols, active: state.activeWatchlistTab },
+        };
+        const next = parked[login] ?? { tabs: ['WATCHLIST', 'HOLDING'], tabSymbols: { WATCHLIST: [], HOLDING: [] }, active: 'WATCHLIST' };
+        return {
+          watchlistOwner: login,
+          watchlistsByLogin: parked,
+          watchlistTabs: next.tabs,
+          tabSymbols: next.tabSymbols,
+          activeWatchlistTab: next.active,
+        };
+      }),
 
       // View control actions
       setStockPanelView: (view) => set((state) => ({
@@ -385,6 +409,8 @@ export const useAppStore = create<AppState>()(
         watchlistTabs: state.watchlistTabs,
         tabSymbols: state.tabSymbols,
         activeWatchlistTab: state.activeWatchlistTab,
+        watchlistOwner: state.watchlistOwner,
+        watchlistsByLogin: state.watchlistsByLogin,
         settings: state.settings,
         stockPanelView: state.stockPanelView,
         compareSymbols: state.compareSymbols,

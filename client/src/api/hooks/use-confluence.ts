@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { API_BASE } from '../client';
 
 export type SignalDirection = 'bullish' | 'bearish' | 'neutral';
 
@@ -37,7 +38,7 @@ export interface ConfluenceResponse {
 
 async function fetchConfluence(symbols?: string[]): Promise<ConfluenceResponse> {
   const query = symbols?.length ? `?symbols=${symbols.join(',')}` : '';
-  const res = await fetch(`/api/confluence${query}`);
+  const res = await fetch(`${API_BASE}/confluence${query}`);
   if (!res.ok) throw new Error('Failed to fetch confluence data');
   return res.json();
 }

@@ -34,15 +34,6 @@ export default defineConfig({
   server: {
     port: 5174,
     host: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/ws': {
-        target: 'ws://localhost:3001',
-        ws: true,
-      },
-    },
+    // No proxy: the client calls the API server directly (see API_URL in src/api/client.ts)
   },
 });

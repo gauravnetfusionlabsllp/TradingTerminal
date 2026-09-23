@@ -1,8 +1,11 @@
 import { create } from 'zustand';
+import { useAppStore } from './use-app-store';
 
 export interface AuthUser {
   id: number;
-  email: string;
+  email: string | null;
+  mt5Login: number;
+  readOnly: boolean; // investor-password session: view only, no trading
   name: string | null;
   avatarUrl: string | null;
   plan: string;
@@ -28,7 +31,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   loading: true,
   loginModalOpen: false,
   upgradeModalOpen: false,
-  setUser: (user) => set({ user }),
+  setUser: (user) => {
+    // Watchlists are kept per MT5 login in this browser
+    if (user) useAppStore.getState().loadWatchlistFor(String(user.mt5Login));
+    set({ user });
+  },
   setLoading: (loading) => set({ loading }),
   setLoginModalOpen: (open) => set({ loginModalOpen: open }),
   setUpgradeModalOpen: (open) => set({ upgradeModalOpen: open }),

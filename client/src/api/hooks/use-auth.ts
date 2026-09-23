@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useAuthStore, type AuthUser } from '../../stores/use-auth-store';
-
-const BASE = '/api';
+import { API_BASE as BASE } from '../client';
 
 function isSafeRedirectUrl(url: string): boolean {
   try {
@@ -41,26 +40,10 @@ export function useAuthActions() {
   const setUser = useAuthStore((s) => s.setUser);
   const setLoginModalOpen = useAuthStore((s) => s.setLoginModalOpen);
 
-  const loginWithGoogle = useCallback(async (credential: string) => {
-    const user = await fetchJSON<AuthUser>('/auth/google', {
+  const login = useCallback(async (mt5Login: number, password: string, investor: boolean) => {
+    const { user } = await fetchJSON<{ user: AuthUser; token: string }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ credential }),
-    });
-    setUser(user);
-    setLoginModalOpen(false);
-  }, [setUser, setLoginModalOpen]);
-
-  const sendEmailCode = useCallback(async (email: string) => {
-    await fetchJSON('/auth/email/send', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    });
-  }, []);
-
-  const verifyEmailCode = useCallback(async (email: string, code: string) => {
-    const user = await fetchJSON<AuthUser>('/auth/email/verify', {
-      method: 'POST',
-      body: JSON.stringify({ email, code }),
+      body: JSON.stringify({ login: mt5Login, password, investor }),
     });
     setUser(user);
     setLoginModalOpen(false);
@@ -81,7 +64,7 @@ export function useAuthActions() {
     if (data.url && isSafeRedirectUrl(data.url)) window.location.href = data.url;
   }, []);
 
-  return { loginWithGoogle, sendEmailCode, verifyEmailCode, logout, openCheckout, openPortal };
+  return { login, logout, openCheckout, openPortal };
 }
 
 /**

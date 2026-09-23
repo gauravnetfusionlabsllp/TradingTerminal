@@ -1,6 +1,7 @@
 import { env } from './config/env.js';
 import { createApp } from './app.js';
 import { startWebSocketServer } from './services/websocket/ws-server.js';
+import { startMarketFeed, stopMarketFeed } from './services/market-feed.js';
 import { startScraperScheduler } from './services/scraper/scraper-scheduler.js';
 import { startStockTracker, stopStockTracker } from './services/stocks/stock-tracker.js';
 import { seedDatabase } from './lib/seed.js';
@@ -22,6 +23,15 @@ if (!process.env.ENCRYPTION_KEY) {
   }
 }
 
+for (const key of ['JWT_SECRET', 'MT5_BRIDGE_API_KEY'] as const) {
+  if (env[key]) continue;
+  if (process.env.NODE_ENV === 'production') {
+    console.error(`[Server] FATAL: ${key} is required in production`);
+    process.exit(1);
+  }
+  console.warn(`[Server] WARNING: ${key} is not set${key === 'JWT_SECRET' ? ' — using a random secret, logins reset on restart' : ' — MT5 login and trading will fail'}`);
+}
+
 const app = createApp();
 const intervals: ReturnType<typeof setInterval>[] = [];
 
@@ -39,6 +49,7 @@ const server = app.listen(env.PORT, async () => {
   }
 
   startWebSocketServer(server);
+  startMarketFeed();
   startScraperScheduler();
   startStockTracker();
   startCalendarTracker();
@@ -93,6 +104,7 @@ async function shutdown(signal: string) {
   stopInsiderTracker();
   stopHyperliquidTracker();
   stopDataRetention();
+  stopMarketFeed();
   // Clear additional tracked intervals
   for (const id of intervals) clearInterval(id);
   intervals.length = 0;

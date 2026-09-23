@@ -1,8 +1,13 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '../stores/use-app-store';
+import { API_URL } from '../api/client';
+import { useAuthStore } from '../stores/use-auth-store';
+import { useMt5Live, wantedMt5Symbols, type Mt5Quote } from '../api/hooks/use-mt5';
 
 function getWsUrl() {
+  // Same server as the REST API (called directly, no dev proxy)
+  if (API_URL) return `${API_URL.replace(/^http/, 'ws')}/ws`;
   const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${proto}//${window.location.host}/ws`;
 }
@@ -10,6 +15,13 @@ function getWsUrl() {
 const RECONNECT_BASE_DELAY = 1000;
 const RECONNECT_MAX_DELAY = 30000;
 const HEARTBEAT_TIMEOUT = 60_000; // must be > server's 25s ping interval (generous buffer)
+
+// The one app-wide socket, so hooks elsewhere (MT5 quote subscriptions) can send on it
+let socket: WebSocket | null = null;
+
+export function sendWs(msg: object) {
+  if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(msg));
+}
 
 export function useWebSocket() {
   const queryClient = useQueryClient();
@@ -19,6 +31,9 @@ export function useWebSocket() {
   const heartbeatTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const setWsConnected = useAppStore((s) => s.setWsConnected);
+  const userId = useAuthStore((s) => s.user?.id ?? null);
+  const authLoading = useAuthStore((s) => s.loading);
+  const lastUserRef = useRef<number | null | undefined>(undefined);
 
   const resetHeartbeat = useCallback(() => {
     clearTimeout(heartbeatTimerRef.current);
@@ -37,12 +52,16 @@ export function useWebSocket() {
     try {
       const ws = new WebSocket(getWsUrl());
       wsRef.current = ws;
+      socket = ws;
 
       ws.onopen = () => {
         const isReconnect = reconnectAttemptRef.current > 0;
         reconnectAttemptRef.current = 0;
         setWsConnected(true);
         resetHeartbeat();
+        // Re-subscribe realtime MT5 quotes (fresh socket = fresh server-side subscriptions)
+        const symbols = wantedMt5Symbols();
+        if (symbols.length) ws.send(JSON.stringify({ type: 'mt5-subscribe', symbols }));
         useAppStore.getState().addLogEntry({
           type: 'info',
           message: isReconnect ? 'WebSocket reconnected' : 'WebSocket connected',
@@ -52,6 +71,7 @@ export function useWebSocket() {
       ws.onclose = (event) => {
         clearTimeout(heartbeatTimerRef.current);
         setWsConnected(false);
+        useMt5Live.setState({ live: false }); // quotes fall back to REST polling until we're back
         // Only log unexpected disconnects (code 1000 = normal closure)
         if (event.code !== 1000) {
           useAppStore.getState().addLogEntry({ type: 'alert', message: `WebSocket disconnected (code ${event.code})` });
@@ -130,6 +150,14 @@ export function useWebSocket() {
           }
           break;
         }
+        case 'mt5-quotes': {
+          const batch = msg.data as Mt5Quote[];
+          useMt5Live.setState((s) => ({ quotes: { ...s.quotes, ...Object.fromEntries(batch.map((q) => [q.symbol, q])) } }));
+          break;
+        }
+        case 'mt5-feed':
+          useMt5Live.setState({ live: !!msg.data?.live });
+          break;
         case 'quotes':
           queryClient.invalidateQueries({ queryKey: ['stocks'] });
           addLog({ type: 'trade', message: 'Quote data refreshed' });
@@ -165,6 +193,13 @@ export function useWebSocket() {
     },
     [queryClient],
   );
+
+  // The socket authenticates from the JWT cookie at connect time — reconnect when the user logs in or out
+  useEffect(() => {
+    if (authLoading) return;
+    if (lastUserRef.current !== undefined && lastUserRef.current !== userId) wsRef.current?.close(1000);
+    lastUserRef.current = userId;
+  }, [userId, authLoading]);
 
   useEffect(() => {
     connect();

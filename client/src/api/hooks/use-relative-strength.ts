@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { API_BASE } from '../client';
 
 export interface RSResult {
   symbol: string;
@@ -14,7 +15,7 @@ export interface RSResult {
 }
 
 async function fetchRelativeStrength(): Promise<RSResult[]> {
-  const res = await fetch('/api/relative-strength');
+  const res = await fetch(`${API_BASE}/relative-strength`);
   if (!res.ok) throw new Error('Failed to fetch relative strength');
   return res.json();
 }

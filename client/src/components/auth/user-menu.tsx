@@ -3,6 +3,7 @@ import { useAuthStore } from '../../stores/use-auth-store';
 import { useAuthActions } from '../../api/hooks/use-auth';
 import { useT } from '../../i18n';
 import { LogOut, User, Download, Trash2 } from 'lucide-react';
+import { API_BASE } from '../../api/client';
 
 export function UserMenu() {
   const t = useT();
@@ -43,22 +44,23 @@ export function UserMenu() {
       >
         <User className="w-3 h-3" />
         <span className="max-w-[100px] truncate">
-          {user.name || user.email.split('@')[0]}
+          {user.name || `#${user.mt5Login}`}
         </span>
+        {user.readOnly && <span className="text-[8px] text-amber-400 uppercase">{t('readOnly')}</span>}
       </button>
 
       {/* Dropdown */}
       {menuOpen && (
         <div className="absolute right-0 top-full mt-1 w-48 bg-black border border-border z-50">
           <div className="px-3 py-2 border-b border-border">
-            <p className="text-[10px] font-mono text-neutral truncate">{user.email}</p>
+            <p className="text-[10px] font-mono text-neutral truncate">MT5 #{user.mt5Login}{user.readOnly ? ` · ${t('readOnly')}` : ''}</p>
           </div>
 
           <button
             onClick={async () => {
               setMenuOpen(false);
               try {
-                const res = await fetch('/api/auth/me/export', { credentials: 'include' });
+                const res = await fetch(`${API_BASE}/auth/me/export`, { credentials: 'include' });
                 const data = await res.json();
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -80,7 +82,7 @@ export function UserMenu() {
               if (!confirm(t('deleteAccountConfirm'))) return;
               setMenuOpen(false);
               try {
-                await fetch('/api/auth/me', { method: 'DELETE', credentials: 'include' });
+                await fetch(`${API_BASE}/auth/me`, { method: 'DELETE', credentials: 'include' });
                 logout();
               } catch { /* ignore */ }
             }}

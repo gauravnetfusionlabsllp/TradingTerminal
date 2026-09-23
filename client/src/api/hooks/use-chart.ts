@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { API_BASE } from '../client';
 
 export interface Candle {
   timestamp: number;
@@ -20,7 +21,7 @@ export function useChart(symbol: string, range = '6mo', interval = '1d') {
   return useQuery<ChartData>({
     queryKey: ['chart', symbol, range, interval],
     queryFn: async () => {
-      const res = await fetch(`/api/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`);
+      const res = await fetch(`${API_BASE}/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`);
       if (!res.ok) throw new Error('Failed to fetch chart');
       return res.json();
     },

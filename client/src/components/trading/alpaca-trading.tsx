@@ -3,6 +3,7 @@ import { useAuthStore } from '../../stores/use-auth-store';
 import { useAppStore } from '../../stores/use-app-store';
 import { Link2, Unlink, RefreshCw, ArrowRightLeft, Wallet, History, AlertTriangle, X, DollarSign, Hash } from 'lucide-react';
 import { useT } from '../../i18n';
+import { API_BASE } from '../../api/client';
 
 interface AlpacaAccount {
   id: string;
@@ -59,7 +60,7 @@ type SizeMode = 'qty' | 'notional';
 type OrderFilter = 'all' | 'open' | 'closed';
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`/api/alpaca${path}`, {
+  const res = await fetch(`${API_BASE}/alpaca${path}`, {
     ...init,
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...init?.headers },
@@ -149,7 +150,7 @@ export function AlpacaTrading() {
         method: 'POST',
         body: JSON.stringify({ apiKey, secretKey, paper }),
       });
-      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
       const data = await res.json();
       if (data.user) useAuthStore.getState().setUser(data.user);
       setApiKey('');
@@ -164,7 +165,7 @@ export function AlpacaTrading() {
 
   const handleDisconnect = async () => {
     await apiFetch('/disconnect', { method: 'POST' });
-    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
     const data = await res.json();
     if (data.user) useAuthStore.getState().setUser(data.user);
     setAccount(null);

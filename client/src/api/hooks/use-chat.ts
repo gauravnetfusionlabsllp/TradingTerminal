@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { API_BASE } from '../client';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -40,7 +41,7 @@ export function useChat() {
       let accumulated = '';
 
       try {
-        const res = await fetch('/api/chat', {
+        const res = await fetch(`${API_BASE}/chat`, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },

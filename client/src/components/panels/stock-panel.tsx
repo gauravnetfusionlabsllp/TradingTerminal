@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useStockDetail, useStockExtended, type StockProfile, type StockQuote, type ExtendedStockData, type InsiderTransaction } from '../../api/hooks/use-stocks';
 import { StockChart as ChartWithIndicators } from '../chart/stock-chart';
-import {
-  useWatchlist,
-  useAddToWatchlist,
-  useRemoveFromWatchlist,
-  useTickerSearch,
-  type WatchlistItem,
-} from '../../api/hooks/use-watchlist';
+import { useMt5Symbols, useMt5Quotes, type Mt5Timeframe } from '../../api/hooks/use-mt5';
+import { fmtPrice } from '../trading/mt5-trading';
+import { SymbolPicker, tradeModeLabel } from '../trading/symbol-picker';
+import { useAuthStore } from '../../stores/use-auth-store';
 import { useAppStore } from '../../stores/use-app-store';
 import { useT, type TranslationKey } from '../../i18n';
 import { getLocalizedTitle } from '../../api/hooks/use-news';
@@ -23,9 +20,26 @@ const MarketHeatmap = lazy(() => import('./market-heatmap').then(m => ({ default
 const MultiChart = lazy(() => import('./multi-chart').then(m => ({ default: m.MultiChart })));
 
 export function StockPanel() {
+  const t = useT();
+  const user = useAuthStore((s) => s.user);
+  const setLoginModalOpen = useAuthStore((s) => s.setLoginModalOpen);
   const stockPanelView = useAppStore((s) => s.stockPanelView);
   const selectedSymbol = useAppStore((s) => s.selectedSymbol);
   const setSelectedSymbol = useAppStore((s) => s.setSelectedSymbol);
+
+  // Watchlist + chart are MT5 data scoped to the logged-in account
+  if (!user) {
+    return (
+      <GlassCard className="h-full flex flex-col items-center justify-center">
+        <button
+          onClick={() => setLoginModalOpen(true)}
+          className="px-4 py-2 border border-accent text-accent text-[11px] font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-colors"
+        >
+          {t('loginWithMt5')}
+        </button>
+      </GlassCard>
+    );
+  }
 
   return (
     <AnimatePresence mode="wait">
@@ -102,20 +116,13 @@ function WatchlistView({
   onSelect: (symbol: string) => void;
 }) {
   const t = useT();
-  const { data: allWatchlistItems } = useWatchlist();
-  const [input, setInput] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [highlightIdx, setHighlightIdx] = useState(-1);
+  const { data: allowed } = useMt5Symbols();
   const [isAddingTab, setIsAddingTab] = useState(false);
   const [newTabName, setNewTabName] = useState('');
   const [flashMap, setFlashMap] = useState<Record<string, 'up' | 'down'>>({});
   const [deleteTabTarget, setDeleteTabTarget] = useState<string | null>(null);
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const prevPricesRef = useRef<Record<string, number>>({});
-  const addMutation = useAddToWatchlist();
-  const removeMutation = useRemoveFromWatchlist();
-  const { data: suggestions } = useTickerSearch(input);
 
   const activeTab = useAppStore(s => s.activeWatchlistTab);
   const tabs = useAppStore(s => s.watchlistTabs);
@@ -125,59 +132,39 @@ function WatchlistView({
   const removeTab = useAppStore(s => s.removeWatchlistTab);
   const addSymbolToTab = useAppStore(s => s.addSymbolToTab);
   const removeSymbolFromTab = useAppStore(s => s.removeSymbolFromTab);
-  const addToCompare = useAppStore(s => s.addToCompare);
-  const compareSymbols = useAppStore(s => s.compareSymbols);
   const setStockPanelView = useAppStore(s => s.setStockPanelView);
-  const addLogEntry = useAppStore(s => s.addLogEntry);
 
   const TAB_KEYS: Record<string, TranslationKey> = { WATCHLIST: 'watchlist', HOLDING: 'holding' };
   const tabLabel = (tab: string) => TAB_KEYS[tab] ? t(TAB_KEYS[tab]) : tab;
 
-  // Price Flash detection
+  // Rows = only what the user added to this tab (in added order), limited to symbols this account may trade.
+  // Only these rows get a live subscription — never the whole allowed list.
+  const allItems = allowed ?? [];
+  const modeBySymbol = new Map(allItems.map(s => [s.symbol, s.tradeMode]));
+  const filteredItems = (tabSymbols[activeTab] || [])
+    .filter(symbol => modeBySymbol.has(symbol))
+    .map(symbol => ({ symbol, tradeMode: modeBySymbol.get(symbol)! }));
+
+  const { data: quotes } = useMt5Quotes(filteredItems.map(i => i.symbol));
+
+  // Price Flash detection (on bid). No terminal-log entry per change — at live FIX tick rates it would flood the log.
   useEffect(() => {
-    if (!allWatchlistItems) return;
+    if (!quotes) return;
     const newFlashes: Record<string, 'up' | 'down'> = {};
-    for (const item of allWatchlistItems) {
-      if (!item.quote) continue;
-      const prev = prevPricesRef.current[item.symbol];
-      const curr = item.quote.price;
-      if (prev !== undefined && prev !== curr) {
-        const dir = curr > prev ? 'up' : 'down';
-        newFlashes[item.symbol] = dir;
-        addLogEntry({
-          type: 'trade',
-          message: `${item.symbol} ${dir === 'up' ? '▲' : '▼'} $${prev.toFixed(2)} → $${curr.toFixed(2)}`,
-        });
+    for (const q of Object.values(quotes)) {
+      const prev = prevPricesRef.current[q.symbol];
+      if (prev !== undefined && prev !== q.bid) {
+        newFlashes[q.symbol] = q.bid > prev ? 'up' : 'down';
       }
-      prevPricesRef.current[item.symbol] = curr;
+      prevPricesRef.current[q.symbol] = q.bid;
     }
     if (Object.keys(newFlashes).length > 0) {
       setFlashMap(newFlashes);
       const timer = setTimeout(() => setFlashMap({}), 800);
       return () => clearTimeout(timer);
     }
-  }, [allWatchlistItems]);
+  }, [quotes]);
 
-  // Filter items based on active tab
-  const filteredItems = (allWatchlistItems || []).filter(item => {
-    const symbolsInTab = tabSymbols[activeTab] || [];
-    // If it's the first tab (WATCHLIST), and it's empty, show everything that isn't in other tabs
-    if (activeTab === 'WATCHLIST' && symbolsInTab.length === 0) {
-      const otherSymbols = Object.entries(tabSymbols)
-        .filter(([name]) => name !== 'WATCHLIST')
-        .flatMap(([, syms]) => syms);
-      return !otherSymbols.includes(item.symbol);
-    }
-    return symbolsInTab.includes(item.symbol);
-  });
-
-  const handleSelect = (sym: string) => {
-    addMutation.mutate(sym);
-    addSymbolToTab(sym, activeTab);
-    setInput('');
-    setShowDropdown(false);
-    setHighlightIdx(-1);
-  };
 
   const handleAddTab = () => {
     if (newTabName.trim()) {
@@ -200,15 +187,7 @@ function WatchlistView({
     }
   };
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  const gridCols = 'grid-cols-[1.4fr_0.9fr_0.9fr_0.7fr_0.8fr_36px]';
 
   return (
     <GlassCard
@@ -229,8 +208,8 @@ function WatchlistView({
               >
                 {tabLabel(tab)}
                 {tab !== 'WATCHLIST' && tab !== 'HOLDING' && (
-                  <X 
-                    className="w-2.5 h-2.5 opacity-0 group-hover/tab:opacity-100 hover:text-bearish transition-all" 
+                  <X
+                    className="w-2.5 h-2.5 opacity-0 group-hover/tab:opacity-100 hover:text-bearish transition-all"
                     onClick={(e) => handleDeleteTab(e, tab)}
                   />
                 )}
@@ -253,30 +232,18 @@ function WatchlistView({
           >
             <Grid3X3 className="w-3.5 h-3.5" />
           </button>
-          <button
-            onClick={() => setStockPanelView('compare')}
-            className="p-1.5 text-neutral hover:text-accent transition-colors relative"
-            title={t('compare')}
-          >
-            <Columns className="w-3.5 h-3.5" />
-            {compareSymbols.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-accent text-[7px] font-bold text-black flex items-center justify-center">
-                {compareSymbols.length}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 
       <AnimatePresence>
         {isAddingTab && (
-          <motion.div 
+          <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="px-4 py-2 bg-accent/10 border-b border-accent/20 flex gap-2 overflow-hidden"
           >
-            <input 
+            <input
               autoFocus
               value={newTabName}
               onChange={e => setNewTabName(e.target.value)}
@@ -294,131 +261,68 @@ function WatchlistView({
         )}
       </AnimatePresence>
 
-      <div className="relative px-4 py-3 border-b border-border/30 bg-black/20" ref={wrapperRef}>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-neutral/40" />
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value.toUpperCase());
-              setShowDropdown(true);
-              setHighlightIdx(-1);
-            }}
-            onFocus={() => input && setShowDropdown(true)}
-            placeholder={t('addToTab').replace('{tab}', tabLabel(activeTab))}
-            className="w-full bg-black/40 border border-border/50 pr-3 py-1.5 text-xs font-mono text-gray-200 placeholder:text-neutral/50 outline-none focus:border-accent/50 transition-all"
-            style={{ paddingLeft: 32 }}
-            maxLength={20}
-          />
-        </div>
-
-        {showDropdown && suggestions && suggestions.length > 0 && (
-          <div className="absolute left-4 right-4 top-full mt-1 bg-zinc-900 border border-border/80 shadow-2xl z-50 max-h-[250px] overflow-auto backdrop-blur-xl">
-            {suggestions.map((s, i) => (
-              <button
-                key={s.symbol}
-                onMouseDown={() => handleSelect(s.symbol)}
-                className="w-full text-left px-4 py-2.5 flex items-center gap-3 text-sm hover:bg-white/5 transition-colors border-b border-border/10 last:border-0"
-              >
-                <span className="font-mono font-black text-accent w-16">{s.symbol}</span>
-                <span className="text-gray-300 truncate flex-1 font-medium">{s.name}</span>
-                <span className="text-[10px] text-neutral shrink-0 font-mono">{s.exchange}</span>
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="px-4 py-3 border-b border-border/30 bg-black/20">
+        <SymbolPicker
+          symbols={allItems}
+          clearOnSelect
+          onSelect={(sym) => addSymbolToTab(sym, activeTab)}
+          placeholder={t('addToTab').replace('{tab}', tabLabel(activeTab))}
+        />
       </div>
 
       <div className="overflow-auto flex-1 no-scrollbar">
         <div>
           {/* Header */}
-          <div className="grid grid-cols-[1.2fr_0.7fr_0.7fr_0.7fr_0.7fr_1fr_0.8fr_36px] px-3 py-1.5 border-b border-border/20 text-[8px] font-black text-neutral/50 uppercase tracking-[0.15em]">
+          <div className={`grid ${gridCols} px-3 py-1.5 border-b border-border/20 text-[8px] font-black text-neutral/50 uppercase tracking-[0.15em]`}>
             <span>{t('asset')}</span>
-            <span className="text-right">{t('price')}</span>
-            <span className="text-right">{t('change')}</span>
-            <span className="text-right">VOL</span>
-            <span className="text-right">MKT CAP</span>
-            <span className="text-right">DAY H/L</span>
-            <span className="text-right">{t('trend')}</span>
+            <span className="text-right">BID</span>
+            <span className="text-right">ASK</span>
+            <span className="text-right">SPREAD</span>
+            <span className="text-right">MODE</span>
             <span />
           </div>
           {/* Rows */}
-              {filteredItems.map((item) => {
-                const q = item.quote;
-                const isUp = q && q.changePercent !== null && q.changePercent >= 0;
-
-                return (
-                  <div
-                    key={item.symbol}
-                    className="grid grid-cols-[1.2fr_0.7fr_0.7fr_0.7fr_0.7fr_1fr_0.8fr_36px] px-3 py-2 border-b border-border/5 hover:bg-accent/[0.03] cursor-pointer transition-all group items-center"
-                    onClick={() => onSelect(item.symbol)}
+          {filteredItems.map((item) => {
+            const q = quotes?.[item.symbol];
+            return (
+              <div
+                key={item.symbol}
+                className={`grid ${gridCols} px-3 py-2 border-b border-border/5 hover:bg-accent/[0.03] cursor-pointer transition-all group items-center`}
+                onClick={() => onSelect(item.symbol)}
+              >
+                <div className="font-mono font-black text-white text-[12px] group-hover:text-cyan-300 transition-colors truncate">{item.symbol}</div>
+                <span className={`text-right font-mono text-[12px] text-bearish font-bold ${flashMap[item.symbol] === 'up' ? 'flash-up' : flashMap[item.symbol] === 'down' ? 'flash-down' : ''}`}>
+                  {q ? fmtPrice(q.bid) : '--'}
+                </span>
+                <span className="text-right font-mono text-[12px] text-bullish font-bold">
+                  {q ? fmtPrice(q.ask) : '--'}
+                </span>
+                <span className="text-right font-mono text-[10px] text-neutral/60">
+                  {q ? fmtPrice(q.ask - q.bid) : '--'}
+                </span>
+                <span className="text-right font-mono text-[9px] text-neutral/60 uppercase">
+                  {tradeModeLabel(item.tradeMode)}
+                </span>
+                <div className="flex items-center justify-end">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeSymbolFromTab(item.symbol, activeTab);
+                    }}
+                    aria-label={`Remove ${item.symbol}`}
+                    className="text-neutral hover:text-bearish opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all p-1.5"
                   >
-                    <div className="min-w-0">
-                      <div className="font-mono font-black text-white text-[12px] group-hover:text-cyan-300 transition-colors">{item.symbol}</div>
-                      <div className="text-[9px] text-neutral truncate mt-0.5 font-medium uppercase tracking-tighter">
-                        {item.name || item.symbol}
-                      </div>
-                    </div>
-                    <span className={`text-right font-mono text-[12px] text-gray-200 font-bold ${flashMap[item.symbol] === 'up' ? 'flash-up' : flashMap[item.symbol] === 'down' ? 'flash-down' : ''}`}>
-                      {q ? q.price.toFixed(2) : '--'}
-                    </span>
-                    <span className={`text-right font-mono text-[11px] font-black ${isUp ? 'text-bullish' : 'text-bearish'}`}>
-                      {q && q.changePercent !== null ? `${isUp ? '+' : ''}${q.changePercent.toFixed(2)}%` : '--'}
-                    </span>
-                    <span className="text-right font-mono text-[10px] text-neutral/60">
-                      {q?.volume ? fmtCompact(q.volume) : '--'}
-                    </span>
-                    <span className="text-right font-mono text-[10px] text-neutral/60">
-                      {q?.marketCap ? fmtCompact(q.marketCap) : '--'}
-                    </span>
-                    <div className="text-right font-mono text-[10px]">
-                      {q && q.dayHigh != null && q.dayLow != null ? (
-                        <span><span className="text-bullish/70">{q.dayHigh.toFixed(1)}</span><span className="text-neutral/30"> / </span><span className="text-bearish/70">{q.dayLow.toFixed(1)}</span></span>
-                      ) : '--'}
-                    </div>
-                    <div className="flex justify-end">
-                      {q && (
-                        <Sparkline
-                          data={miniTrend(q.price, q.changePercent, q.dayHigh, q.dayLow, q.previousClose)}
-                          width={50}
-                          height={18}
-                          color={isUp ? '#22c55e' : '#ef4444'}
-                        />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-end">
-                      <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addToCompare(item.symbol);
-                          }}
-                          className={`p-1.5 transition-all ${compareSymbols.includes(item.symbol) ? 'text-accent' : 'text-neutral hover:text-accent'}`}
-                          title={t('pinToCompare')}
-                        >
-                          <Pin className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeMutation.mutate(item.symbol);
-                            removeSymbolFromTab(item.symbol, activeTab);
-                          }}
-                          className="text-neutral hover:text-bearish transition-all p-1.5"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            {filteredItems.length === 0 && (
-              <div className="px-4 py-12 text-center text-neutral/40 text-[10px] font-mono uppercase tracking-[0.2em]">
-                {t('noDataInTab').replace('{tab}', tabLabel(activeTab))}
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-            )}
+            );
+          })}
+          {filteredItems.length === 0 && (
+            <div className="px-4 py-12 text-center text-neutral/40 text-[10px] font-mono uppercase tracking-[0.2em]">
+              {t('noDataInTab').replace('{tab}', tabLabel(activeTab))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -436,188 +340,49 @@ function WatchlistView({
   );
 }
 
-const RANGE_OPTIONS = ['1D', '5D', '1M', '3M', '6M', '1Y', 'ALL'] as const;
-type RangeOption = typeof RANGE_OPTIONS[number];
-
-const RANGE_API_MAP: Record<RangeOption, string> = {
-  '1D': '1d', '5D': '5d', '1M': '1mo', '3M': '3mo', '6M': '6mo', '1Y': '1y', 'ALL': 'max',
-};
-
-type DetailTab = 'chart' | 'fundamentals' | 'financials' | 'analysts' | 'ownership';
-
 function StockChart({ symbol, onBack }: { symbol: string; onBack: () => void }) {
   const t = useT();
-  const [range, setRange] = useState<RangeOption>('1Y');
-  const [detailTab, setDetailTab] = useState<DetailTab>('chart');
-  const { data } = useStockDetail(symbol, { range: RANGE_API_MAP[range] });
-  const { data: extData } = useStockExtended(
-    (detailTab === 'analysts' || detailTab === 'ownership') ? symbol : null,
-  );
-  const setSelectedArticleId = useAppStore((s) => s.setSelectedArticleId);
+  const [tf, setTf] = useState<Mt5Timeframe>('M5');
+  const { data: quotes } = useMt5Quotes([symbol]);
+  const q = quotes?.[symbol];
   const addChatContext = useAppStore((s) => s.addChatContext);
   const handleAskAi = () => {
     addChatContext({ type: 'chart', symbol, label: `${symbol} Chart` });
   };
 
-  const recs = data?.recommendations || [];
-
-  const q = data?.quote;
-  const p = data?.profile;
-
   return (
     <GlassCard
       title={
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-1 -ml-1 text-neutral hover:text-white transition-colors">
+          <button onClick={onBack} className="p-1 -ml-1 text-neutral hover:text-white transition-colors" aria-label={t('back')}>
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono font-black text-white">{symbol}</span>
-              {q && <span className="text-gray-400 font-mono text-[11px]">${q.price.toFixed(2)}</span>}
-            </div>
-            {(q?.name || p?.sector) && (
-              <div className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">
-                {q?.name}{p?.sector ? ` · ${p.sector}` : ''}
-              </div>
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-black text-white">{symbol}</span>
+            {q && (
+              <span className="font-mono text-[11px]">
+                <span className="text-bearish">{fmtPrice(q.bid)}</span>
+                <span className="text-neutral/40"> / </span>
+                <span className="text-bullish">{fmtPrice(q.ask)}</span>
+              </span>
             )}
           </div>
         </div>
       }
       headerRight={
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleAskAi}
-            className="text-[9px] font-mono font-bold text-ai/70 hover:text-ai uppercase tracking-tighter px-1.5 py-0.5 border border-ai/20 hover:border-ai/50 transition-colors"
-            title={t('askAiChartTitle')}
-          >
-            {t('askAiChart')}
-          </button>
-          {(() => {
-            const cp = q?.changePercent;
-            if (cp === null || cp === undefined) return null;
-            const isUp = cp >= 0;
-            return (
-              <div className={`flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-mono font-black ${
-                isUp ? 'bg-bullish/10 text-bullish border border-bullish/20' : 'bg-bearish/10 text-bearish border border-bearish/20'
-              }`}>
-                {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {isUp ? '+' : ''}{cp.toFixed(2)}%
-              </div>
-            );
-          })()}
-        </div>
+        <button
+          onClick={handleAskAi}
+          className="text-[9px] font-mono font-bold text-ai/70 hover:text-ai uppercase tracking-tighter px-1.5 py-0.5 border border-ai/20 hover:border-ai/50 transition-colors"
+          title={t('askAiChartTitle')}
+        >
+          {t('askAiChart')}
+        </button>
       }
       className="h-full"
     >
-      {/* Detail Tabs */}
-      <div className="shrink-0 flex items-center border-b border-border/30 bg-black/20">
-        {(['chart', 'fundamentals', 'financials', 'analysts', 'ownership'] as DetailTab[]).map((tab) => {
-          const labelMap: Record<DetailTab, string> = {
-            chart: t('chartTab'),
-            fundamentals: t('profileTab'),
-            financials: t('financialsTab'),
-            analysts: t('analystsTab'),
-            ownership: t('ownershipTab'),
-          };
-          return (
-            <button
-              key={tab}
-              onClick={() => setDetailTab(tab)}
-              className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest border-b-2 transition-all ${
-                detailTab === tab
-                  ? 'border-accent text-accent'
-                  : 'border-transparent text-neutral hover:text-gray-300'
-              }`}
-            >
-              {labelMap[tab]}
-            </button>
-          );
-        })}
+      <div className="flex-1 min-h-0">
+        <ChartWithIndicators symbol={symbol} timeframe={tf} onTimeframeChange={setTf} />
       </div>
-
-      {detailTab === 'chart' && (
-        <div className="flex-1 min-h-0">
-          <ChartWithIndicators symbol={symbol} range={range} onRangeChange={(r) => setRange(r as RangeOption)} />
-        </div>
-      )}
-
-      {detailTab === 'fundamentals' && (
-        <div className="flex-1 overflow-auto no-scrollbar">
-          <FundamentalsView quote={q} profile={p} />
-        </div>
-      )}
-
-      {detailTab === 'financials' && (
-        <div className="flex-1 overflow-auto no-scrollbar">
-          <FinancialsView quote={q} profile={p} />
-        </div>
-      )}
-
-      {detailTab === 'analysts' && (
-        <div className="flex-1 overflow-auto no-scrollbar">
-          <AnalystsView extended={extData?.extended ?? null} quote={q} profile={p} />
-        </div>
-      )}
-
-      {detailTab === 'ownership' && (
-        <div className="flex-1 overflow-auto no-scrollbar">
-          <OwnershipView extended={extData?.extended ?? null} insiders={extData?.insiders ?? []} />
-        </div>
-      )}
-
-      {/* Key Stats Bar (chart tab only) — single compact row */}
-      {detailTab === 'chart' && q && (
-        <div className="shrink-0 border-t border-border/30 bg-black/20 grid grid-cols-8">
-          <StatCell label={t('mktCap')} value={formatCompact(q.marketCap)} />
-          <StatCell label={t('peLabel')} value={q.pe != null ? q.pe.toFixed(2) : '--'} />
-          <StatCell label={t('epsLabel')} value={q.eps != null ? `$${q.eps.toFixed(2)}` : '--'} />
-          <StatCell label={t('betaLabel')} value={q.beta != null ? q.beta.toFixed(2) : '--'} />
-          <StatCell label={t('volume')} value={formatCompact(q.volume)} />
-          <StatCell label={t('avgVol')} value={formatCompact(q.avgVolume)} />
-          <StatCell label="52W" value={q.fiftyTwoWeekLow != null && q.fiftyTwoWeekHigh != null ? `${q.fiftyTwoWeekLow.toFixed(0)}–${q.fiftyTwoWeekHigh.toFixed(0)}` : '--'} />
-          <StatCell label="DAY" value={q.dayLow != null && q.dayHigh != null ? `${q.dayLow.toFixed(1)}–${q.dayHigh.toFixed(1)}` : '--'} />
-        </div>
-      )}
-
-      {/* Related News (chart tab only) */}
-      {detailTab === 'chart' && recs.length > 0 && (
-        <div className="shrink-0 border-t border-border/30 flex flex-col max-h-[35%]">
-          <div className="flex items-center gap-2 px-4 py-1.5 bg-black/30 border-b border-border/20 shrink-0">
-            <Newspaper className="w-3 h-3 text-accent" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-neutral">{t('signals')}</span>
-            <span className="text-[8px] font-mono text-neutral/50 ml-auto">{recs.length}</span>
-          </div>
-          <div className="overflow-y-auto no-scrollbar flex-1">
-            {recs.map((rec) => (
-              <button
-                key={rec.id}
-                onClick={() => setSelectedArticleId(rec.article.id)}
-                className="w-full text-left px-4 py-2 flex items-start gap-2.5 hover:bg-accent/[0.04] transition-colors border-b border-border/10 last:border-0 group"
-              >
-                <span
-                  className="shrink-0 mt-0.5 inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider border"
-                  style={{
-                    backgroundColor: getActionColor(rec.action) + '15',
-                    color: getActionColor(rec.action),
-                    borderColor: getActionColor(rec.action) + '30',
-                  }}
-                >
-                  {rec.action}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-gray-300 leading-snug line-clamp-2 group-hover:text-white">
-                    {cleanTitle(getLocalizedTitle(rec.article))}
-                  </p>
-                  <span className="text-[8px] font-mono text-neutral/40">
-                    {new Date(rec.article.scrapedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </GlassCard>
   );
 }

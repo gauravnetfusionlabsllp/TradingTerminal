@@ -6,7 +6,7 @@ import {
   ColorType,
   type MouseEventParams,
 } from 'lightweight-charts';
-import { useStockDetail } from '../../api/hooks/use-stocks';
+import { useMt5Chart, useMt5Quotes, TF_SECONDS, type Mt5Timeframe } from '../../api/hooks/use-mt5';
 import { useAppStore } from '../../stores/use-app-store';
 import { sma } from '../../lib/indicators';
 import { rsi } from '../../lib/indicators/rsi';
@@ -14,20 +14,10 @@ import { macd } from '../../lib/indicators/macd';
 import { IndicatorToolbar } from './indicator-toolbar';
 import { useT } from '../../i18n';
 
-const RANGE_OPTIONS = ['1D', '5D', '1M', '3M', '6M', '1Y', 'ALL'] as const;
-type RangeOption = (typeof RANGE_OPTIONS)[number];
-
-const RANGE_API_MAP: Record<RangeOption, string> = {
-  '1D': '1d',
-  '5D': '5d',
-  '1M': '1mo',
-  '3M': '3mo',
-  '6M': '6mo',
-  '1Y': '1y',
-  ALL: 'max',
-};
-
-const INTRADAY_RANGES = new Set(['1D', '5D', '1M']);
+// MT5 candles: the server folds the bridge's M1 bars into these and pages history in day-chunks.
+// D1 waits on a bridge-side timeframe param (building it from M1 is ~55 MB per symbol).
+const TIMEFRAMES = Object.keys(TF_SECONDS) as Mt5Timeframe[];
+const INITIAL_BARS = 120; // visible on open; scrolling to the left edge loads older pages
 
 const CHART_OPTIONS_BASE = {
   layout: {
@@ -45,7 +35,7 @@ const CHART_OPTIONS_BASE = {
     vertLine: { color: '#22c55e', labelBackgroundColor: '#22c55e' },
   },
   rightPriceScale: { borderColor: 'rgba(63,63,70,0.3)' },
-  timeScale: { borderColor: 'rgba(63,63,70,0.3)' },
+  timeScale: { borderColor: 'rgba(63,63,70,0.3)', timeVisible: true },
 };
 
 // Bollinger Bands calculation
@@ -114,11 +104,11 @@ function calcATR(
 
 interface StockChartProps {
   symbol: string;
-  range: string;
-  onRangeChange: (r: string) => void;
+  timeframe: Mt5Timeframe;
+  onTimeframeChange: (tf: Mt5Timeframe) => void;
 }
 
-export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
+export function StockChart({ symbol, timeframe, onTimeframeChange }: StockChartProps) {
   const t = useT();
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const rsiContainerRef = useRef<HTMLDivElement>(null);
@@ -129,6 +119,11 @@ export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
   const macdChartRef = useRef<IChartApi | null>(null);
 
   const drawingPointsRef = useRef<Array<{ time: number; price: number }>>([]);
+  const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  const lastCandleRef = useRef<{ time: any; open: number; high: number; low: number; close: number } | null>(null);
+  const barCountRef = useRef(0); // bars on the series incl. ones opened live
+  // Visible range measured from the right edge, so prepending older pages or appending bars doesn't jump the view
+  const viewRef = useRef<{ key: string; fromRight: number; toRight: number } | null>(null);
 
   const indicatorConfig = useAppStore((s) => s.indicatorConfig);
   const activeDrawingTool = useAppStore((s) => s.activeDrawingTool);
@@ -136,10 +131,11 @@ export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
   const setActiveDrawingTool = useAppStore((s) => s.setActiveDrawingTool);
   const chartDrawings = useAppStore((s) => s.chartDrawings);
 
-  const rangeKey = range as RangeOption;
-  const apiRange = RANGE_API_MAP[rangeKey] ?? range;
-  const { data } = useStockDetail(symbol, { range: apiRange });
-  const isIntraday = INTRADAY_RANGES.has(rangeKey);
+  const { data, offset, hasMore, fetchOlder, isFetchingOlder } = useMt5Chart(symbol, timeframe);
+  const tfSec = TF_SECONDS[timeframe];
+  const viewKey = `${symbol}:${timeframe}`;
+  const olderRef = useRef({ hasMore: false, loading: false, fetch: () => {} });
+  olderRef.current = { hasMore: !!hasMore, loading: isFetchingOlder, fetch: () => { fetchOlder(); } };
 
   const showRSI = !!indicatorConfig['rsi'];
   const showMACD = !!indicatorConfig['macd'];
@@ -183,15 +179,17 @@ export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
       wickDownColor: '#ef444488',
     });
 
-    candleSeries.setData(
-      validHistory.map((h) => ({
-        time: h.time as any,
-        open: h.open,
-        high: h.high,
-        low: h.low,
-        close: h.close,
-      })),
-    );
+    const candles = validHistory.map((h) => ({
+      time: h.time as any,
+      open: h.open,
+      high: h.high,
+      low: h.low,
+      close: h.close,
+    }));
+    candleSeries.setData(candles);
+    candleSeriesRef.current = candleSeries;
+    lastCandleRef.current = { ...candles[candles.length - 1] };
+    barCountRef.current = candles.length;
 
     // Volume histogram
     const volumeSeries = chart.addHistogramSeries({
@@ -219,7 +217,7 @@ export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
     const lows = validHistory.map((h) => h.low);
 
     // SMA overlays (always on for daily+)
-    if (!isIntraday && validHistory.length >= 20 && indicatorConfig['sma20'] !== false) {
+    if (validHistory.length >= 20 && indicatorConfig['sma20'] !== false) {
       const sma20Data = sma(closes, 20);
       const sma20Series = chart.addLineSeries({
         color: '#3b82f6',
@@ -236,7 +234,7 @@ export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
       );
     }
 
-    if (!isIntraday && validHistory.length >= 50 && indicatorConfig['sma50'] !== false) {
+    if (validHistory.length >= 50 && indicatorConfig['sma50'] !== false) {
       const sma50Data = sma(closes, 50);
       const sma50Series = chart.addLineSeries({
         color: '#f97316',
@@ -363,7 +361,16 @@ export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
     };
 
     chart.subscribeClick(clickHandler);
-    chart.timeScale().fitContent();
+    const lastIdx = candles.length - 1;
+    const view = viewRef.current;
+    chart.timeScale().setVisibleLogicalRange(view?.key === viewKey
+      ? { from: lastIdx - view.fromRight, to: lastIdx - view.toRight }
+      : { from: lastIdx - INITIAL_BARS, to: lastIdx + 3 });
+    // Near the left edge → fetch the next older page (the rebuild keeps the view where it is)
+    chart.timeScale().subscribeVisibleLogicalRangeChange((r) => {
+      const older = olderRef.current;
+      if (r && r.from < 10 && older.hasMore && !older.loading) older.fetch();
+    });
     mainChartRef.current = chart;
 
     const ro = new ResizeObserver(() => {
@@ -377,12 +384,43 @@ export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
     ro.observe(container);
 
     return () => {
+      const lr = chart.timeScale().getVisibleLogicalRange();
+      const last = barCountRef.current - 1;
+      if (lr) viewRef.current = { key: viewKey, fromRight: last - lr.from, toRight: last - lr.to };
       ro.disconnect();
       chart.unsubscribeClick(clickHandler);
       chart.remove();
       mainChartRef.current = null;
+      candleSeriesRef.current = null;
+      lastCandleRef.current = null;
     };
-  }, [data, rangeKey, showBB, showVWAP, indicatorConfig, chartDrawings]);
+  }, [data, viewKey, showBB, showVWAP, indicatorConfig, chartDrawings]);
+
+  // Live FIX ticks drive the right edge. Ticks are UTC, bars are MT5 server time: with the server-learned
+  // offset a tick is bucketed into its server-time candle and opens the next one when a period rolls over.
+  const { data: quotes } = useMt5Quotes([symbol]);
+  const liveQuote = quotes?.[symbol];
+  useEffect(() => {
+    const series = candleSeriesRef.current;
+    let c = lastCandleRef.current;
+    // Skip REST fallback quotes and the bridge's replayed (possibly weeks-old) cached snapshot
+    if (!series || !c || !liveQuote?.ts || Date.now() - liveQuote.ts > 60_000) return;
+    const bid = liveQuote.bid;
+    if (offset != null) {
+      const bucket = Math.floor((liveQuote.ts / 1000 + offset) / tfSec) * tfSec;
+      if (bucket < c.time) return;
+      if (bucket > c.time) {
+        c = lastCandleRef.current = { time: bucket, open: bid, high: bid, low: bid, close: bid };
+        barCountRef.current++;
+        series.update({ ...c });
+        return;
+      }
+    }
+    c.high = Math.max(c.high, bid);
+    c.low = Math.min(c.low, bid);
+    c.close = bid;
+    series.update({ ...c });
+  }, [liveQuote, offset, tfSec]);
 
   // Build RSI sub-chart
   useEffect(() => {
@@ -611,47 +649,47 @@ export function StockChart({ symbol, range, onRangeChange }: StockChartProps) {
       {/* Indicator toolbar */}
       <IndicatorToolbar />
 
-      {/* Range selector */}
+      {/* Timeframe selector */}
       <div className="shrink-0 flex items-center gap-0.5 px-3 py-1 bg-black/10 border-b border-border/20">
-        {RANGE_OPTIONS.map((r) => (
+        {TIMEFRAMES.map((tf) => (
           <button
-            key={r}
-            onClick={() => onRangeChange(r)}
+            key={tf}
+            onClick={() => onTimeframeChange(tf)}
+            aria-pressed={timeframe === tf}
             className={`px-2 py-0.5 text-[9px] font-mono font-black transition-all ${
-              rangeKey === r
+              timeframe === tf
                 ? 'bg-accent/20 text-accent'
                 : 'text-neutral/50 hover:text-white'
             }`}
           >
-            {r}
+            {tf}
           </button>
         ))}
+        {isFetchingOlder && <span className="ml-2 text-[8px] font-mono text-neutral/50">{t('loading')}</span>}
 
         {/* SMA legend */}
-        {!isIntraday && (
-          <div className="ml-auto flex items-center gap-3 text-[8px] font-mono text-neutral/50">
+        <div className="ml-auto flex items-center gap-3 text-[8px] font-mono text-neutral/50">
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-0.5 bg-blue-500 inline-block" />
+            SMA20
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-0.5 bg-orange-500 inline-block" />
+            SMA50
+          </span>
+          {showBB && (
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-0.5 bg-blue-500 inline-block" />
-              SMA20
+              <span className="w-2.5 h-0.5 bg-purple-500 inline-block" />
+              BB
             </span>
+          )}
+          {showVWAP && (
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-0.5 bg-orange-500 inline-block" />
-              SMA50
+              <span className="w-2.5 h-0.5 bg-cyan-500 inline-block" />
+              VWAP
             </span>
-            {showBB && (
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-0.5 bg-purple-500 inline-block" />
-                BB
-              </span>
-            )}
-            {showVWAP && (
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-0.5 bg-cyan-500 inline-block" />
-                VWAP
-              </span>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Active drawing tool indicator */}
