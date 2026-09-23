@@ -197,10 +197,11 @@ function AtrStop() {
       {selectedSymbol && atrResult && (
         <div className="border border-border/20 bg-black/20 p-2">
           <div className="text-[9px] font-mono text-accent uppercase tracking-wider mb-2">{selectedSymbol}</div>
-          <ResultRow label={t('rcAtr14')} value={atrResult.atr.toFixed(2)} accent />
-          <ResultRow label={t('rcLastClose')} value={`$${atrResult.lastClose.toFixed(2)}`} />
-          <ResultRow label={t('rcLongStop')} value={`$${atrResult.stopLong.toFixed(2)}`} />
-          <ResultRow label={t('rcShortStop')} value={`$${atrResult.stopShort.toFixed(2)}`} />
+          {/* Quote-currency prices at 7 significant digits — FX/JPY stops need more than 2 decimals, and no "$" */}
+          <ResultRow label={t('rcAtr14')} value={String(+atrResult.atr.toPrecision(7))} accent />
+          <ResultRow label={t('rcLastClose')} value={String(+atrResult.lastClose.toPrecision(7))} />
+          <ResultRow label={t('rcLongStop')} value={String(+atrResult.stopLong.toPrecision(7))} />
+          <ResultRow label={t('rcShortStop')} value={String(+atrResult.stopShort.toPrecision(7))} />
           <div className="mt-2 text-[8px] font-mono text-neutral/40">
             {t('rcAtrSuggestion')}
           </div>

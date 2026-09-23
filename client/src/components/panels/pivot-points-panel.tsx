@@ -14,11 +14,9 @@ interface LevelRow {
   tier: number; // 1-4 for color intensity
 }
 
+/** 7 significant digits — FX keeps its pips (1.139602), indices and crypto their cents. */
 function formatPrice(n: number): string {
-  if (n >= 1000) return n.toFixed(2);
-  if (n >= 100) return n.toFixed(2);
-  if (n >= 1) return n.toFixed(2);
-  return n.toFixed(4);
+  return String(+n.toPrecision(7));
 }
 
 function getLevelsForMethod(methods: PivotPointsData['methods'], method: MethodKey): LevelRow[] {

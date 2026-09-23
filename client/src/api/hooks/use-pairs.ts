@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface PairsRatioPoint {
   timestamp: number;
@@ -38,7 +39,7 @@ export interface PairsData {
 export function usePairs(symbolA: string, symbolB: string, range: string) {
   return useQuery<PairsData>({
     queryKey: ['pairs', symbolA, symbolB, range],
-    queryFn: () => api.get<PairsData>(`/pairs?symbolA=${encodeURIComponent(symbolA)}&symbolB=${encodeURIComponent(symbolB)}&range=${range}`),
+    queryFn: () => api.get<PairsData>(`/pairs?symbolA=${encodeURIComponent(toYahoo(symbolA))}&symbolB=${encodeURIComponent(toYahoo(symbolB))}&range=${range}`),
     enabled: !!symbolA && !!symbolB && symbolA !== symbolB,
     staleTime: 300_000,
     refetchInterval: 300_000,

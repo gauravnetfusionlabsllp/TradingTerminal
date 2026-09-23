@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 import { useAppStore } from '../../stores/use-app-store';
 
 export interface PivotPointsData {
@@ -22,7 +23,7 @@ export function usePivotPoints() {
   const symbol = useAppStore((s) => s.selectedSymbol);
   return useQuery({
     queryKey: ['pivot-points', symbol],
-    queryFn: () => api.get<PivotPointsData>(`/pivot-points/${symbol}`),
+    queryFn: () => api.get<PivotPointsData>(`/pivot-points/${encodeURIComponent(toYahoo(symbol!))}`),
     enabled: !!symbol,
     staleTime: 300_000,
   });

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface DrawdownPoint {
   date: string;
@@ -39,7 +40,7 @@ export interface DrawdownData {
 export function useDrawdown(symbol: string, period: string) {
   return useQuery({
     queryKey: ['drawdown', symbol, period],
-    queryFn: () => api.get<DrawdownData>(`/drawdown/${encodeURIComponent(symbol)}?period=${period}`),
+    queryFn: () => api.get<DrawdownData>(`/drawdown/${encodeURIComponent(toYahoo(symbol))}?period=${period}`),
     enabled: !!symbol,
     refetchInterval: 15 * 60_000,
     staleTime: 60 * 60_000,

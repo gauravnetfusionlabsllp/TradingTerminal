@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface ComparisonDataPoint {
   timestamp: number;
@@ -23,7 +24,7 @@ export interface ComparisonData {
 export function useComparison(symbols: string[], range: string) {
   return useQuery<ComparisonData>({
     queryKey: ['comparison', symbols.join(','), range],
-    queryFn: () => api.get<ComparisonData>(`/comparison?symbols=${symbols.join(',')}&range=${range}`),
+    queryFn: () => api.get<ComparisonData>(`/comparison?symbols=${encodeURIComponent(symbols.map(toYahoo).join(','))}&range=${range}`),
     enabled: symbols.length >= 2,
     staleTime: 300_000,
     refetchInterval: 300_000,

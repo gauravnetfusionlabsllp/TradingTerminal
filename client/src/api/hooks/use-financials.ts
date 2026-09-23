@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 import { useAppStore } from '../../stores/use-app-store';
 
 export interface FinancialStatement {
@@ -40,7 +41,7 @@ export function useFinancials() {
   const symbol = useAppStore((s) => s.selectedSymbol);
   return useQuery({
     queryKey: ['financials', symbol],
-    queryFn: () => api.get<FinancialsResponse>(`/financials/${symbol}`),
+    queryFn: () => api.get<FinancialsResponse>(`/financials/${encodeURIComponent(toYahoo(symbol!))}`),
     enabled: !!symbol,
     staleTime: 300_000,
     refetchInterval: false,

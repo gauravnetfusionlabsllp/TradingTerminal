@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 import { useAppStore } from '../../stores/use-app-store';
 
 export interface VolatilityData {
@@ -42,7 +43,7 @@ export function useStockVolatility() {
   const symbol = useAppStore((s) => s.selectedSymbol);
   return useQuery({
     queryKey: ['volatility', symbol],
-    queryFn: () => api.get<StockVolData>(`/volatility/${symbol}`),
+    queryFn: () => api.get<StockVolData>(`/volatility/${encodeURIComponent(toYahoo(symbol!))}`),
     enabled: !!symbol,
     staleTime: 300_000,
   });

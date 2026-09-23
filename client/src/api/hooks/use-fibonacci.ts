@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 import { useAppStore } from '../../stores/use-app-store';
 
 export interface FibLevel {
@@ -37,7 +38,7 @@ export function useFibonacci(range?: string) {
   const symbol = useAppStore((s) => s.selectedSymbol);
   return useQuery({
     queryKey: ['fibonacci', symbol, range || '6mo'],
-    queryFn: () => api.get<FibonacciData>(`/fibonacci/${symbol}?range=${range || '6mo'}`),
+    queryFn: () => api.get<FibonacciData>(`/fibonacci/${encodeURIComponent(toYahoo(symbol!))}?range=${range || '6mo'}`),
     enabled: !!symbol,
     staleTime: 300_000,
   });

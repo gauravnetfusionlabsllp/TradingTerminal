@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface MonthlyEntry {
   month: number;
@@ -41,7 +42,7 @@ export interface SeasonalityData {
 export function useSeasonality(symbol: string, years = 10) {
   return useQuery({
     queryKey: ['seasonality', symbol, years],
-    queryFn: () => api.get<SeasonalityData>(`/seasonality/${encodeURIComponent(symbol)}?years=${years}`),
+    queryFn: () => api.get<SeasonalityData>(`/seasonality/${encodeURIComponent(toYahoo(symbol))}?years=${years}`),
     enabled: !!symbol,
     staleTime: 30 * 60_000,
     refetchInterval: 60 * 60_000,

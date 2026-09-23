@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface StockQuote {
   id: number;
@@ -196,7 +197,7 @@ export function useStockDetail(
 
   return useQuery({
     queryKey: ['stocks', symbol, range, interval],
-    queryFn: () => api.get<StockDetail>(`/stocks/${symbol}${qs ? `?${qs}` : ''}`),
+    queryFn: () => api.get<StockDetail>(`/stocks/${encodeURIComponent(toYahoo(symbol!))}${qs ? `?${qs}` : ''}`),
     enabled: symbol !== null,
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,

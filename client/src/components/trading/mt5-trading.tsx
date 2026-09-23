@@ -8,6 +8,7 @@ import { useAuthStore } from '../../stores/use-auth-store';
 import { useAppStore } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
 import { SymbolPicker } from './symbol-picker';
+import { toMt5 } from '../../lib/symbols';
 import { AlertTriangle, Lock, LogIn } from 'lucide-react';
 
 type Kind = 'MARKET' | 'LIMIT' | 'STOP';
@@ -137,11 +138,12 @@ export function Mt5Ticket() {
     if (first) setSymbol(first);
   }, [symbols, symbol, watchlist]);
 
-  // Follow the Market Watch / Positions selection — only to symbols this account can trade (other panels set
-  // Yahoo tickers). Disarm a pending confirm so the next click can't send the armed order on a different symbol.
+  // Follow the selection from any panel — mapped to this account's MT5 name (GC=F → XAUUSD), ignored if it can't
+  // be traded. Disarm a pending confirm so the next click can't send the armed order on a different symbol.
   useEffect(() => {
-    if (!selectedSymbol || !symbols.some((s) => s.symbol === selectedSymbol)) return;
-    setSymbol(selectedSymbol);
+    const mt5 = selectedSymbol && toMt5(selectedSymbol, symbols);
+    if (!mt5) return;
+    setSymbol(mt5);
     setConfirm(false);
   }, [selectedSymbol, symbols]);
 
@@ -221,7 +223,7 @@ export function Mt5Ticket() {
               onSelect={disarm(setSymbol)}
               placeholder={t('symbolPlaceholder')}
             />
-            <span className="shrink-0 flex items-center gap-1 text-[10px] text-neutral/50" title={user.name}>
+            <span className="shrink-0 flex items-center gap-1 text-[10px] text-neutral/50" title={user.name ?? undefined}>
               {readOnly && <span title={t('investorReadOnly')}><Lock className="w-3 h-3 text-amber-400" /></span>}
               #{user.mt5Login}
             </span>

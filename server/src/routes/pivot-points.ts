@@ -26,10 +26,11 @@ interface PivotPointsData {
 }
 
 const cache = new Map<string, PivotPointsCache>();
-const CACHE_TTL = 12 * 60 * 60_000; // 5 minutes
+const CACHE_TTL = 5 * 60_000; // 5 minutes
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
+/** 7 significant digits: FX keeps its pips (1.139602), indices and crypto their cents (84250.60). */
+function roundPrice(n: number): number {
+  return +n.toPrecision(7);
 }
 
 function calculatePivotPoints(O: number, H: number, L: number, C: number): PivotPointsData['methods'] {
@@ -38,47 +39,47 @@ function calculatePivotPoints(O: number, H: number, L: number, C: number): Pivot
   // Classic
   const classicP = (H + L + C) / 3;
   const classic = {
-    pivot: round2(classicP),
-    r1: round2(2 * classicP - L),
-    r2: round2(classicP + range),
-    r3: round2(H + 2 * (classicP - L)),
-    s1: round2(2 * classicP - H),
-    s2: round2(classicP - range),
-    s3: round2(L - 2 * (H - classicP)),
+    pivot: roundPrice(classicP),
+    r1: roundPrice(2 * classicP - L),
+    r2: roundPrice(classicP + range),
+    r3: roundPrice(H + 2 * (classicP - L)),
+    s1: roundPrice(2 * classicP - H),
+    s2: roundPrice(classicP - range),
+    s3: roundPrice(L - 2 * (H - classicP)),
   };
 
   // Fibonacci
   const fibP = (H + L + C) / 3;
   const fibonacci = {
-    pivot: round2(fibP),
-    r1: round2(fibP + 0.382 * range),
-    r2: round2(fibP + 0.618 * range),
-    r3: round2(fibP + 1.000 * range),
-    s1: round2(fibP - 0.382 * range),
-    s2: round2(fibP - 0.618 * range),
-    s3: round2(fibP - 1.000 * range),
+    pivot: roundPrice(fibP),
+    r1: roundPrice(fibP + 0.382 * range),
+    r2: roundPrice(fibP + 0.618 * range),
+    r3: roundPrice(fibP + 1.000 * range),
+    s1: roundPrice(fibP - 0.382 * range),
+    s2: roundPrice(fibP - 0.618 * range),
+    s3: roundPrice(fibP - 1.000 * range),
   };
 
   // Camarilla
   const camarilla = {
-    r1: round2(C + 1.1 * range / 12),
-    r2: round2(C + 1.1 * range / 6),
-    r3: round2(C + 1.1 * range / 4),
-    r4: round2(C + 1.1 * range / 2),
-    s1: round2(C - 1.1 * range / 12),
-    s2: round2(C - 1.1 * range / 6),
-    s3: round2(C - 1.1 * range / 4),
-    s4: round2(C - 1.1 * range / 2),
+    r1: roundPrice(C + 1.1 * range / 12),
+    r2: roundPrice(C + 1.1 * range / 6),
+    r3: roundPrice(C + 1.1 * range / 4),
+    r4: roundPrice(C + 1.1 * range / 2),
+    s1: roundPrice(C - 1.1 * range / 12),
+    s2: roundPrice(C - 1.1 * range / 6),
+    s3: roundPrice(C - 1.1 * range / 4),
+    s4: roundPrice(C - 1.1 * range / 2),
   };
 
   // Woodie
   const woodieP = (H + L + 2 * C) / 4;
   const woodie = {
-    pivot: round2(woodieP),
-    r1: round2(2 * woodieP - L),
-    r2: round2(woodieP + range),
-    s1: round2(2 * woodieP - H),
-    s2: round2(woodieP - range),
+    pivot: roundPrice(woodieP),
+    r1: roundPrice(2 * woodieP - L),
+    r2: roundPrice(woodieP + range),
+    s1: roundPrice(2 * woodieP - H),
+    s2: roundPrice(woodieP - range),
   };
 
   // DeMark
@@ -91,8 +92,8 @@ function calculatePivotPoints(O: number, H: number, L: number, C: number): Pivot
     X = H + L + 2 * C;
   }
   const demark = {
-    r1: round2(X / 2 - L),
-    s1: round2(X / 2 - H),
+    r1: roundPrice(X / 2 - L),
+    s1: roundPrice(X / 2 - H),
   };
 
   return { classic, fibonacci, camarilla, woodie, demark };
@@ -138,9 +139,15 @@ router.get('/:symbol', async (req, res) => {
       return res.status(404).json({ error: 'Insufficient trading data for pivot calculation' });
     }
 
-    // Find the previous completed trading day (second-to-last data point)
-    // The last data point may be today's incomplete data
-    const prevIdx = timestamps.length - 2;
+    // Previous completed trading day = second-to-last bar with full OHLC. Yahoo's daily series has null bars
+    // (holidays, and FX's open "today" row before the live one), so the raw second-to-last is often empty.
+    // ponytail: on a weekend this still skips Friday's finished session — use meta.currentTradingPeriod if that matters
+    const full = timestamps.map((_, i) => i)
+      .filter((i) => [quotes.open, quotes.high, quotes.low, quotes.close].every((a) => a?.[i] != null));
+    if (full.length < 2) {
+      return res.status(404).json({ error: 'Insufficient trading data for pivot calculation' });
+    }
+    const prevIdx = full[full.length - 2];
     const prevOpen = quotes.open?.[prevIdx] ?? null;
     const prevHigh = quotes.high?.[prevIdx] ?? null;
     const prevLow = quotes.low?.[prevIdx] ?? null;
@@ -175,11 +182,11 @@ router.get('/:symbol', async (req, res) => {
 
     const data: PivotPointsData = {
       symbol,
-      currentPrice: round2(currentPrice),
-      previousHigh: round2(prevHigh),
-      previousLow: round2(prevLow),
-      previousClose: round2(prevClose),
-      previousOpen: round2(prevOpen),
+      currentPrice: roundPrice(currentPrice),
+      previousHigh: roundPrice(prevHigh),
+      previousLow: roundPrice(prevLow),
+      previousClose: roundPrice(prevClose),
+      previousOpen: roundPrice(prevOpen),
       methods,
     };
 

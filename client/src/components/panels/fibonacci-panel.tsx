@@ -28,10 +28,9 @@ const LEVEL_COLORS: Record<string, { line: string; text: string; fill: string }>
 
 const EXTENSION_COLOR = '#6366f1'; // indigo for extensions
 
+/** 7 significant digits — FX keeps its pips (1.139602), indices and crypto their cents. */
 function formatPrice(n: number): string {
-  if (n >= 100) return n.toFixed(2);
-  if (n >= 1) return n.toFixed(2);
-  return n.toFixed(4);
+  return String(+n.toPrecision(7));
 }
 
 function formatDate(dateStr: string): string {

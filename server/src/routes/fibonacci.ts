@@ -43,10 +43,11 @@ interface FibonacciCache {
 }
 
 const cache = new Map<string, FibonacciCache>();
-const CACHE_TTL = 12 * 60 * 60_000; // 5 minutes
+const CACHE_TTL = 5 * 60_000; // 5 minutes
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
+/** 7 significant digits: FX keeps its pips (1.139602), indices and crypto their cents (84250.60). */
+function roundPrice(n: number): number {
+  return +n.toPrecision(7);
 }
 
 const RETRACEMENT_RATIOS = [
@@ -80,14 +81,14 @@ function calculateFibonacciLevels(
     // Price = low + ratio * diff
     const price =
       trend === 'uptrend' ? high - ratio * diff : low + ratio * diff;
-    return { level, price: round2(price), isExtension: false };
+    return { level, price: roundPrice(price), isExtension: false };
   });
 
   const extensions: FibExtension[] = EXTENSION_RATIOS.map(
     ({ level, ratio }) => {
       const price =
         trend === 'uptrend' ? high - ratio * diff : low + ratio * diff;
-      return { level, price: round2(price) };
+      return { level, price: roundPrice(price) };
     },
   );
 
@@ -222,10 +223,10 @@ router.get('/:symbol', async (req, res) => {
 
     const data: FibonacciData = {
       symbol,
-      currentPrice: round2(currentPrice),
-      swingHigh: round2(swingHigh),
+      currentPrice: roundPrice(currentPrice),
+      swingHigh: roundPrice(swingHigh),
       swingHighDate,
-      swingLow: round2(swingLow),
+      swingLow: roundPrice(swingLow),
       swingLowDate,
       trend,
       levels,

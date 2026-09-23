@@ -8,6 +8,7 @@ import { useAuthStore } from '../../stores/use-auth-store';
 import { useAppStore } from '../../stores/use-app-store';
 import { tickBucket, foldTick, mergeLive, type Bar } from '../../lib/live-candles';
 import { keepView } from '../../lib/chart-view';
+import { toMt5 } from '../../lib/symbols';
 import { fmtPrice } from '../trading/mt5-trading';
 import { SymbolPicker } from '../trading/symbol-picker';
 import { ChartTrading } from './chart-trading';
@@ -225,9 +226,12 @@ export function TechnicalChartPanel() {
   const { data: symbols = [] } = useMt5Symbols();
   const [picked, setPicked] = useState('');
 
+  // Follow the selection through the MT5 mapping — Yahoo tickers from other panels (GC=F) open XAUUSD,
+  // untradable ones leave the chart where it is
   useEffect(() => {
-    if (selectedSymbol) setPicked(selectedSymbol);
-  }, [selectedSymbol]);
+    const mt5 = selectedSymbol && toMt5(selectedSymbol, symbols);
+    if (mt5) setPicked(mt5);
+  }, [selectedSymbol, symbols]);
 
   if (!user) {
     return (
