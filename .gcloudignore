@@ -1,0 +1,13 @@
+.git
+.git/
+node_modules/
+**/node_modules/
+server/dist/
+client/dist/
+server/prisma/dev.db
+.env
+*.log
+D:*
+.claude/
+TEST_REPORT.md
+*.tsbuildinfo

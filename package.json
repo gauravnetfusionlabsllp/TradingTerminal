@@ -1,0 +1,32 @@
+{
+  "name": "trading-news-terminal",
+  "version": "1.0.0",
+  "description": "AI-powered trading news terminal with real-time sentiment analysis, market data, and prediction markets",
+  "private": true,
+  "license": "BUSL-1.1",
+  "author": "Bauhinia AI Limited",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KoNananachan/Neuberg.git"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"cd server && npx tsx watch src/index.ts\" \"npm run dev -w client\"",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "build": "npm run build -w client && npm run build -w server",
+    "start": "npm run start -w server",
+    "db:migrate": "npm run db:migrate -w server",
+    "db:seed": "npm run db:seed -w server",
+    "db:setup": "npm run db:migrate && npm run db:seed"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

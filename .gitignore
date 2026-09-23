@@ -1,0 +1,45 @@
+node_modules/
+dist/
+
+# Database files
+*.db
+*.db-journal
+
+# Environment / secrets — NEVER commit these
+.env
+.env.*
+!.env.example
+
+# Deployment configs with project-specific secrets
+cloudbuild.yaml
+DEPLOY.md
+DEPLOYMENT_GUIDE.md
+
+# OS / editor files
+.DS_Store
+*.png
+*.jpg
+*.jpeg
+Thumbs.db
+
+# Test / debug artifacts
+TEST_REPORT.md
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
+
+# npm cache artifacts (Windows path leaks)
+D:\\*
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Proprietary AI/LLM services (not open source)
+server/src/services/ai/
+server/src/routes/chat.ts
+CLAUDE.md
+.github
