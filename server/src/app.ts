@@ -13,6 +13,7 @@ import watchlistRouter from './routes/watchlist.js';
 import sectorsRouter from './routes/sectors.js';
 import calendarRouter from './routes/calendar.js';
 import alertsRouter from './routes/alerts.js';
+import workspacesRouter from './routes/workspaces.js';
 import optionsRouter from './routes/options.js';
 import insidersRouter from './routes/insiders.js';
 import correlationsRouter from './routes/correlations.js';
@@ -128,7 +129,7 @@ export function createApp() {
   // or panels that refetch every 60s would keep showing hour-old quotes and calendar actuals.
   app.use('/api', (req: Request, res: Response, next: NextFunction) => {
     // Skip caching for per-user, mutation and streaming endpoints (req.path is relative to /api)
-    const skip = ['/auth', '/mt5', '/streams', '/watchlist', '/alerts'];
+    const skip = ['/auth', '/mt5', '/streams', '/watchlist', '/alerts', '/workspaces'];
     if (req.method !== 'GET' || skip.some(p => req.path.startsWith(p))) {
       res.setHeader('Cache-Control', 'no-store'); // per-user / live data: never reuse a stored copy
       return next();
@@ -149,6 +150,7 @@ export function createApp() {
   app.use('/api/sectors', sectorsRouter);
   app.use('/api/calendar', calendarRouter);
   app.use('/api/alerts', alertsRouter);
+  app.use('/api/workspaces', workspacesRouter);
   app.use('/api/options', optionsRouter);
   app.use('/api/insiders', insidersRouter);
   app.use('/api/correlations', correlationsRouter);

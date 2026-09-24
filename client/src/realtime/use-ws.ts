@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '../stores/use-app-store';
 import { API_URL } from '../api/client';
 import { useAuthStore } from '../stores/use-auth-store';
-import { useMt5Live, wantedMt5Symbols, type Mt5Quote } from '../api/hooks/use-mt5';
+import { useMt5Live, wantedMt5Symbols, applyTradeEvent, resyncTrades, type Mt5Quote } from '../api/hooks/use-mt5';
 import { createQuoteThrottle } from '../lib/quote-throttle';
 import { setSocket } from './socket';
 
@@ -72,7 +72,9 @@ export function useWebSocket() {
       ws.onclose = (event) => {
         clearTimeout(heartbeatTimerRef.current);
         setWsConnected(false);
-        useMt5Live.setState({ live: false }); // quotes fall back to REST polling until we're back
+        // Quotes and positions / orders / deals fall back to REST polling until we're back; the next
+        // mt5-trade-feed { live: true } then counts as a gap and resyncs
+        useMt5Live.setState({ live: false, trades: false });
         // Only log unexpected disconnects (code 1000 = normal closure)
         if (event.code !== 1000) {
           useAppStore.getState().addLogEntry({ type: 'alert', message: `WebSocket disconnected (code ${event.code})` });
@@ -126,6 +128,22 @@ export function useWebSocket() {
         case 'mt5-feed':
           useMt5Live.setState({ live: !!msg.data?.live });
           break;
+        case 'mt5-trade':
+          applyTradeEvent(queryClient, msg.data);
+          break;
+        case 'mt5-trade-feed': {
+          const was = useMt5Live.getState().trades;
+          const live = !!msg.data?.live;
+          if (live === was) break;
+          useMt5Live.setState({ trades: live });
+          if (live) {
+            resyncTrades(queryClient); // nothing is replayed: anything that happened while down is only in REST
+            addLog({ type: 'info', message: 'Live trade updates on' });
+          } else {
+            addLog({ type: 'alert', message: 'Live trade updates off — refreshing positions every 5s' });
+          }
+          break;
+        }
         case 'quotes':
           queryClient.invalidateQueries({ queryKey: ['stocks'] });
           addLog({ type: 'trade', message: 'Quote data refreshed' });

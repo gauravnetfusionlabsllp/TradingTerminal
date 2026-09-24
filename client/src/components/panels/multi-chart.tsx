@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { createChart, type IChartApi, ColorType } from 'lightweight-charts';
+import { createChart, CandlestickSeries, type IChartApi, ColorType } from 'lightweight-charts';
 import { useStockDetail } from '../../api/hooks/use-stocks';
 import { useAppStore } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
@@ -38,7 +38,7 @@ function MiniChart({ symbol, onRemove }: { symbol: string; onRemove: () => void 
       handleScale: false,
     });
 
-    const series = chart.addCandlestickSeries({
+    const series = chart.addSeries(CandlestickSeries, {
       upColor: '#00ff00',
       downColor: '#ff0000',
       borderUpColor: '#00ff00',

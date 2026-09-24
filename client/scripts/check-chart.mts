@@ -73,6 +73,14 @@ assert.match(levelsError('BUY', 1.1, 0, 1.09)!, /TP must be above/);
 assert.equal(levelsError('SELL', 1.1, 1.11, 1.09), null);
 assert.match(levelsError('SELL', 1.1, 1.09, 0)!, /SL must be above/);
 
+// Position modify: the reference is the closing price (BUY closes at bid), not the open price. A BUY opened at 1.08
+// and now at bid 1.10 may trail its SL into profit (1.09) but not past the market (1.101).
+assert.equal(levelsError('BUY', 1.1, 1.09, 1.11), null);
+assert.match(levelsError('BUY', 1.1, 1.101, 0)!, /SL must be below/);
+// Dragging that position's entry line (1.08) out: anywhere under the bid becomes the SL, even above the open
+assert.equal(levelSide('BUY', 1.1, 1.085), 'sl');
+assert.equal(levelSide('SELL', 1.1, 1.095), 'tp');
+
 assert.equal(snap(1.0850049, 5), 1.085);
 assert.equal(snap(151.2346, 3), 151.235);
 

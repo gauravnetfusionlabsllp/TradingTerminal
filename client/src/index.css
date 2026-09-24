@@ -300,6 +300,21 @@ tr:hover td {
   background-color: var(--color-hover);
 }
 
+/* lightweight-charts lays its panes out in a <table>: keep the data-table look off it (hover grey, row borders) */
+.tv-lightweight-charts td { border-bottom: 0; }
+.tv-lightweight-charts tr:hover td { background-color: transparent; }
+
+/* Order history: terminal-dense rows, sticky header (a box-shadow rule, since collapsed borders don't stick) */
+.deals th, .deals td { padding: 3px 8px; font-size: 10px; white-space: nowrap; }
+.deals :is(th, td):first-child { padding-left: 12px; }
+.deals th {
+  position: sticky; top: 0; z-index: 1; background: #000; border-bottom: 0;
+  font-size: 9px; font-weight: 400; color: color-mix(in srgb, var(--color-neutral) 45%, transparent);
+  box-shadow: inset 0 -1px 0 var(--color-border);
+}
+.deals td { border-bottom-color: #141414; }
+.deals .r { text-align: right; }
+
 /* ── Premium Polish ── */
 
 /* Smooth scrolling for panels */
@@ -394,6 +409,22 @@ button:disabled, input:disabled {
 .animate-slide-in {
   animation: slide-in 0.2s ease-out;
 }
+
+/* Chart popovers, flyouts and bars: answer the click that opened them, nothing more */
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-pop {
+  animation: pop-in 120ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop { animation: none; }
+}
+
+/* Drawing tools: crosshair while placing, move over the selected drawing (beats the chart canvas's own cursor) */
+[data-draw-cursor="crosshair"] * { cursor: crosshair !important; }
+[data-draw-cursor="move"] * { cursor: move !important; }
 
 /* Panel transition smoothness */
 .panel-transition {

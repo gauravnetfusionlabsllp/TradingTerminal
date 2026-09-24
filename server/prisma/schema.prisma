@@ -114,5 +114,22 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  alerts    Alert[]  @relation("userAlerts")
+  alerts     Alert[]     @relation("userAlerts")
+  workspaces Workspace[] @relation("userWorkspaces")
+}
+
+// ── Dock layouts ("workspaces") ──
+// A row with `preset` overrides that built-in layout; preset = null is a user-created workspace.
+model Workspace {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation("userWorkspaces", fields: [userId], references: [id], onDelete: Cascade)
+  preset    String?  // 'trade', 'chart'… — SQLite treats NULLs as distinct, so customs don't collide
+  name      String
+  layout    String   // JSON: flexlayout IJsonModel
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, preset])
+  @@index([userId])
 }

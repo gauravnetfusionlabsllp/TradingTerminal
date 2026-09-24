@@ -41,6 +41,8 @@ export type StockPanelView = 'watchlist' | 'heatmap' | 'compare';
 
 interface AppState {
   selectedSymbol: string | null;
+  // Position / order hovered in a panel or on the chart ('p<ticket>' / 'o<ticket>'): its lines stay lit, the rest fade
+  tradeFocus: string | null;
   wsConnected: boolean;
   commandPaletteOpen: boolean;
   activeWatchlistTab: string;
@@ -67,7 +69,7 @@ interface AppState {
   unreadCount: number;
   notifPanelOpen: boolean;
 
-  // Panel visibility
+  // Panels not in the active workspace (derived from the dock model — not persisted)
   hiddenPanels: string[];
 
   // Settings
@@ -79,6 +81,7 @@ interface AppState {
   setLocale: (locale: Locale) => void;
 
   setSelectedSymbol: (symbol: string | null) => void;
+  setTradeFocus: (owner: string | null) => void;
   setWsConnected: (connected: boolean) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setActiveWatchlistTab: (tab: string) => void;
@@ -110,8 +113,6 @@ interface AppState {
   markAllRead: () => void;
 
   // Panel visibility actions
-  hidePanel: (panelId: string) => void;
-  showPanel: (panelId: string) => void;
 
   // Settings actions
   setSettingsPanelOpen: (open: boolean) => void;
@@ -122,6 +123,7 @@ export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
       selectedSymbol: null,
+      tradeFocus: null,
       wsConnected: false,
       commandPaletteOpen: false,
       activeWatchlistTab: 'WATCHLIST',
@@ -162,6 +164,7 @@ export const useAppStore = create<AppState>()(
       setLocale: (locale) => set({ locale }),
 
       setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
+      setTradeFocus: (owner) => set({ tradeFocus: owner }),
       setWsConnected: (connected) => set({ wsConnected: connected }),
       setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
       setActiveWatchlistTab: (tab) => set({ activeWatchlistTab: tab }),
@@ -264,14 +267,6 @@ export const useAppStore = create<AppState>()(
       })),
 
       // Panel visibility actions
-      hidePanel: (panelId) => set((state) => ({
-        hiddenPanels: state.hiddenPanels.includes(panelId)
-          ? state.hiddenPanels
-          : [...state.hiddenPanels, panelId],
-      })),
-      showPanel: (panelId) => set((state) => ({
-        hiddenPanels: state.hiddenPanels.filter((id) => id !== panelId),
-      })),
 
       // Settings actions
       setSettingsPanelOpen: (open) => set((state) => ({
@@ -295,7 +290,6 @@ export const useAppStore = create<AppState>()(
         settings: state.settings,
         stockPanelView: state.stockPanelView,
         compareSymbols: state.compareSymbols,
-        hiddenPanels: state.hiddenPanels,
         locale: state.locale,
       }),
       // Default merge is shallow: a saved `settings` would drop fields added since — keep their defaults

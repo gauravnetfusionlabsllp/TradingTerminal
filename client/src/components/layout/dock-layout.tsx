@@ -1,5 +1,5 @@
-import { useCallback, useRef, useEffect } from 'react';
-import { Layout, Model, type IJsonModel, type TabNode, type Action, Actions, DockLocation } from 'flexlayout-react';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Layout, Model, TabNode, type TabSetNode, type BorderNode, type Action, Actions, DockLocation } from 'flexlayout-react';
 // CSS imported via index.css to avoid duplication
 
 import { lazy, Suspense } from 'react';
@@ -8,12 +8,16 @@ import { TechnicalChartPanel } from '../panels/technical-chart-panel';
 import { TerminalLog } from '../layout/terminal-log';
 import { PanelErrorBoundary } from '../common/error-boundary';
 import { useAppStore } from '../../stores/use-app-store';
-import { translations, type TranslationKey } from '../../i18n/translations';
+import { translations } from '../../i18n/translations';
+import { useWorkspaceStore, layoutOf } from '../../stores/use-workspace-store';
+import { PANEL_IDS, PANEL_NAME_KEYS, ALL_PANEL_IDS, UNDER_DEVELOPMENT, getLocalizedPanelName } from './panels';
+import { sanitizeLayout, presetLayout } from './presets';
 
 // Lazy load heavy panels
 const Mt5Ticket = lazy(() => import('../trading/mt5-trading').then(m => ({ default: m.Mt5Ticket })));
 const Mt5Positions = lazy(() => import('../trading/mt5-trading').then(m => ({ default: m.Mt5Positions })));
 const Mt5Orders = lazy(() => import('../trading/mt5-trading').then(m => ({ default: m.Mt5Orders })));
+const Mt5History = lazy(() => import('../trading/mt5-trading').then(m => ({ default: m.Mt5History })));
 const EconomicCalendarPanel = lazy(() => import('../panels/economic-calendar-panel').then(m => ({ default: m.EconomicCalendarPanel })));
 const AlertsPanel = lazy(() => import('../panels/alerts-panel').then(m => ({ default: m.AlertsPanel })));
 const RiskCalculator = lazy(() => import('../panels/risk-calculator').then(m => ({ default: m.RiskCalculator })));
@@ -121,597 +125,87 @@ function UnderDevelopment() {
   );
 }
 
-const STORAGE_KEY = 'terminal-layout';
-const LAYOUT_VERSION_KEY = 'terminal-layout-version';
-const LAYOUT_VERSION = 36; // bump this when default layout changes to force reset
-
-export const PANEL_IDS = {
-  STOCKS: 'market-watch',
-  LOG: 'terminal-log',
-  TRADING: 'trading',
-  POSITIONS: 'mt5-positions',
-  ORDERS: 'mt5-orders',
-  ECON_CALENDAR: 'econ-calendar',
-  ALERTS: 'alerts',
-  RISK: 'risk-calculator',
-  SECTORS: 'sector-rotation',
-  OPTIONS: 'options-flow',
-  INSIDERS: 'insider-trades',
-  CORRELATIONS: 'correlation-matrix',
-  LIVE_STREAMS: 'live-streams',
-  MARKET_MOVERS: 'market-movers',
-  FOREX: 'forex',
-  BONDS: 'bonds-rates',
-  COMMODITIES: 'commodities',
-  GLOBAL_DASHBOARD: 'global-dashboard',
-  SCANNER: 'tech-scanner',
-  SCREENER: 'stock-screener',
-  HEAT_MAP: 'heat-map',
-  ETF: 'etf-explorer',
-  DIVIDENDS: 'dividends',
-  ANALYST: 'analyst-ratings',
-  BREADTH: 'market-breadth',
-  FINANCIALS: 'financials',
-  FUTURES: 'futures',
-  PERFORMANCE: 'performance',
-  SHORT_INTEREST: 'short-interest',
-  OPTIONS_CALC: 'options-calc',
-  FX_CONVERTER: 'fx-converter',
-  BOND_CALC: 'bond-calc',
-  COMPANY_PROFILE: 'company-profile',
-  PIVOT_POINTS: 'pivot-points',
-  MARKET_HOURS: 'market-hours',
-  MARKET_CALENDAR: 'market-calendar',
-  PAIRS_TRADING: 'pairs-trading',
-  VOLATILITY: 'volatility',
-  FIBONACCI: 'fibonacci',
-  MORTGAGE_CALC: 'mortgage-calc',
-  INVESTMENT_CALC: 'investment-calc',
-  RELATIVE_STRENGTH: 'relative-strength',
-  WATCHLIST: 'watchlist',
-  FX_CROSS: 'fx-cross-rates',
-  PORTFOLIO: 'portfolio-analytics',
-  YIELD_CURVE: 'yield-curve',
-  CURRENCY_STRENGTH: 'currency-strength',
-  MONEY_FLOW: 'money-flow',
-  TECHNICAL_CHART: 'technical-chart',
-  EARNINGS_ESTIMATES: 'earnings-estimates',
-  CROSS_ASSET: 'cross-asset',
-  HOLDINGS: 'holdings',
-  SECTOR_PERFORMANCE: 'sector-performance',
-  ETF_HOLDINGS: 'etf-holdings',
-  DRAWDOWN: 'drawdown',
-  MARKET_REGIME: 'market-regime',
-  RELATIVE_VALUATION: 'relative-valuation',
-  CONFLUENCE: 'technical-confluence',
-  IV_SURFACE: 'iv-surface',
-  SEASONALITY: 'seasonality',
-  ORDER_FLOW: 'order-flow',
-  PORTFOLIO_OPTIMIZER: 'portfolio-optimizer',
-  BACKTEST: 'backtest',
-  MACRO_DASHBOARD: 'macro-dashboard',
-  EARNINGS_SURPRISE: 'earnings-surprise',
-  FUTURES_CURVE: 'futures-curve',
-  CREDIT_SPREADS: 'credit-spreads',
-  INTERMARKET: 'intermarket',
-  SECTOR_HEATMAP: 'sector-heatmap',
-  ECONOMIC_SURPRISES: 'economic-surprises',
-  DISPERSION: 'dispersion',
-  FUND_FLOWS: 'fund-flows',
-  VOL_TERM_STRUCTURE: 'vol-term-structure',
-  MACRO_HEATMAP: 'macro-heatmap',
-  FACTOR_EXPOSURE: 'factor-exposure',
-  CAPITAL_FLOWS: 'capital-flows',
-  TAIL_RISK: 'tail-risk',
-  LIQUIDITY: 'liquidity',
-  SENTIMENT_DASHBOARD: 'sentiment-dashboard',
-  MARKET_ANOMALIES: 'market-anomalies',
-  CARRY_TRADE: 'carry-trade',
-  IV_RANK: 'iv-rank',
-  POSITIONING: 'positioning',
-  STYLE_BOX: 'style-box',
-  VOLATILITY_CONE: 'volatility-cone',
-  VALUATION_MULTIPLES: 'valuation-multiples',
-  INSIDER_SENTIMENT: 'insider-sentiment',
-  EXECUTION_ANALYTICS: 'execution-analytics',
-  EARNINGS_WHISPER: 'earnings-whisper',
-  MARKET_DEPTH: 'market-depth',
-  GLOBAL_SUPPLY_CHAIN: 'global-supply-chain',
-  FX_FORWARD: 'fx-forward',
-  PRECIOUS_METALS: 'precious-metals',
-} as const;
-
-export const PANEL_NAMES: Record<string, string> = {
-  [PANEL_IDS.STOCKS]: 'MARKET WATCH',
-  [PANEL_IDS.LOG]: 'TERMINAL LOG',
-  [PANEL_IDS.TRADING]: 'TRADE',
-  [PANEL_IDS.POSITIONS]: 'POSITIONS',
-  [PANEL_IDS.ORDERS]: 'ORDERS',
-  [PANEL_IDS.ECON_CALENDAR]: 'ECONOMIC CALENDAR',
-  [PANEL_IDS.ALERTS]: 'ALERTS',
-  [PANEL_IDS.RISK]: 'RISK CALCULATOR',
-  [PANEL_IDS.SECTORS]: 'SECTOR ROTATION',
-  [PANEL_IDS.OPTIONS]: 'OPTIONS FLOW',
-  [PANEL_IDS.INSIDERS]: 'INSIDER TRADES',
-  [PANEL_IDS.CORRELATIONS]: 'CORRELATIONS',
-  [PANEL_IDS.LIVE_STREAMS]: 'LIVE STREAMS',
-  [PANEL_IDS.MARKET_MOVERS]: 'MARKET MOVERS',
-  [PANEL_IDS.FOREX]: 'FOREX',
-  [PANEL_IDS.BONDS]: 'BONDS & RATES',
-  [PANEL_IDS.COMMODITIES]: 'COMMODITIES',
-  [PANEL_IDS.GLOBAL_DASHBOARD]: 'GLOBAL DASHBOARD',
-  [PANEL_IDS.SCANNER]: 'TECHNICAL SCANNER',
-  [PANEL_IDS.SCREENER]: 'STOCK SCREENER',
-  [PANEL_IDS.HEAT_MAP]: 'HEAT MAP',
-  [PANEL_IDS.ETF]: 'ETF EXPLORER',
-  [PANEL_IDS.DIVIDENDS]: 'DIVIDENDS',
-  [PANEL_IDS.ANALYST]: 'ANALYST RATINGS',
-  [PANEL_IDS.BREADTH]: 'MARKET BREADTH',
-  [PANEL_IDS.FINANCIALS]: 'FINANCIALS',
-  [PANEL_IDS.FUTURES]: 'FUTURES',
-  [PANEL_IDS.PERFORMANCE]: 'PERFORMANCE',
-  [PANEL_IDS.SHORT_INTEREST]: 'SHORT INTEREST',
-  [PANEL_IDS.OPTIONS_CALC]: 'OPTIONS CALC',
-  [PANEL_IDS.FX_CONVERTER]: 'FX CONVERTER',
-  [PANEL_IDS.BOND_CALC]: 'BOND CALC',
-  [PANEL_IDS.COMPANY_PROFILE]: 'COMPANY PROFILE',
-  [PANEL_IDS.PIVOT_POINTS]: 'PIVOT POINTS',
-  [PANEL_IDS.MARKET_HOURS]: 'MARKET HOURS',
-  [PANEL_IDS.MARKET_CALENDAR]: 'MARKET CALENDAR',
-  [PANEL_IDS.PAIRS_TRADING]: 'PAIRS TRADING',
-  [PANEL_IDS.VOLATILITY]: 'VOLATILITY',
-  [PANEL_IDS.FIBONACCI]: 'FIBONACCI',
-  [PANEL_IDS.MORTGAGE_CALC]: 'MORTGAGE CALC',
-  [PANEL_IDS.INVESTMENT_CALC]: 'INVESTMENT CALC',
-  [PANEL_IDS.RELATIVE_STRENGTH]: 'RELATIVE STRENGTH',
-  [PANEL_IDS.WATCHLIST]: 'WATCHLIST',
-  [PANEL_IDS.FX_CROSS]: 'FX CROSS RATES',
-  [PANEL_IDS.PORTFOLIO]: 'PORTFOLIO ANALYTICS',
-  [PANEL_IDS.YIELD_CURVE]: 'YIELD CURVE',
-  [PANEL_IDS.CURRENCY_STRENGTH]: 'CURRENCY STRENGTH',
-  [PANEL_IDS.MONEY_FLOW]: 'MONEY FLOW',
-  [PANEL_IDS.TECHNICAL_CHART]: 'TECHNICAL CHART',
-  [PANEL_IDS.EARNINGS_ESTIMATES]: 'EARNINGS ESTIMATES',
-  [PANEL_IDS.CROSS_ASSET]: 'CROSS-ASSET',
-  [PANEL_IDS.HOLDINGS]: 'INSTITUTIONAL HOLDINGS',
-  [PANEL_IDS.SECTOR_PERFORMANCE]: 'SECTOR PERFORMANCE',
-  [PANEL_IDS.ETF_HOLDINGS]: 'ETF HOLDINGS',
-  [PANEL_IDS.DRAWDOWN]: 'DRAWDOWN ANALYSIS',
-  [PANEL_IDS.MARKET_REGIME]: 'MARKET REGIME',
-  [PANEL_IDS.RELATIVE_VALUATION]: 'RELATIVE VALUATION',
-  [PANEL_IDS.CONFLUENCE]: 'TECHNICAL CONFLUENCE',
-  [PANEL_IDS.IV_SURFACE]: 'IV SURFACE',
-  [PANEL_IDS.SEASONALITY]: 'SEASONALITY',
-  [PANEL_IDS.ORDER_FLOW]: 'ORDER FLOW',
-  [PANEL_IDS.PORTFOLIO_OPTIMIZER]: 'PORTFOLIO OPTIMIZER',
-  [PANEL_IDS.BACKTEST]: 'STRATEGY BACKTEST',
-  [PANEL_IDS.MACRO_DASHBOARD]: 'MACRO DASHBOARD',
-  [PANEL_IDS.EARNINGS_SURPRISE]: 'EARNINGS SURPRISE',
-  [PANEL_IDS.FUTURES_CURVE]: 'FUTURES CURVE',
-  [PANEL_IDS.CREDIT_SPREADS]: 'CREDIT SPREADS',
-  [PANEL_IDS.INTERMARKET]: 'INTERMARKET DIVERGENCE',
-  [PANEL_IDS.SECTOR_HEATMAP]: 'SECTOR HEATMAP',
-  [PANEL_IDS.ECONOMIC_SURPRISES]: 'ECONOMIC SURPRISES',
-  [PANEL_IDS.DISPERSION]: 'DISPERSION MONITOR',
-  [PANEL_IDS.FUND_FLOWS]: 'FUND FLOWS',
-  [PANEL_IDS.VOL_TERM_STRUCTURE]: 'VOL TERM STRUCTURE',
-  [PANEL_IDS.MACRO_HEATMAP]: 'GLOBAL MACRO HEATMAP',
-  [PANEL_IDS.FACTOR_EXPOSURE]: 'FACTOR EXPOSURE',
-  [PANEL_IDS.CAPITAL_FLOWS]: 'GLOBAL CAPITAL FLOWS',
-  [PANEL_IDS.TAIL_RISK]: 'TAIL RISK MONITOR',
-  [PANEL_IDS.LIQUIDITY]: 'LIQUIDITY MONITOR',
-  [PANEL_IDS.SENTIMENT_DASHBOARD]: 'SENTIMENT DASHBOARD',
-  [PANEL_IDS.MARKET_ANOMALIES]: 'MARKET ANOMALIES',
-  [PANEL_IDS.CARRY_TRADE]: 'CARRY TRADE',
-  [PANEL_IDS.IV_RANK]: 'IV RANK',
-  [PANEL_IDS.POSITIONING]: 'POSITIONING & FLOWS',
-  [PANEL_IDS.STYLE_BOX]: 'EQUITY STYLE BOX',
-  [PANEL_IDS.VOLATILITY_CONE]: 'VOLATILITY CONE',
-  [PANEL_IDS.VALUATION_MULTIPLES]: 'VALUATION MULTIPLES',
-  [PANEL_IDS.INSIDER_SENTIMENT]: 'INSIDER SENTIMENT',
-  [PANEL_IDS.EXECUTION_ANALYTICS]: 'EXECUTION ANALYTICS',
-  [PANEL_IDS.EARNINGS_WHISPER]: 'EARNINGS WHISPER',
-  [PANEL_IDS.MARKET_DEPTH]: 'MARKET DEPTH',
-  [PANEL_IDS.GLOBAL_SUPPLY_CHAIN]: 'SUPPLY CHAIN',
-  [PANEL_IDS.FX_FORWARD]: 'FX FORWARD',
-  [PANEL_IDS.PRECIOUS_METALS]: 'PRECIOUS METALS',
-};
-
-/** Maps panel IDs to i18n translation keys */
-export const PANEL_NAME_KEYS: Record<string, TranslationKey> = {
-  [PANEL_IDS.STOCKS]: 'panelMarketWatch',
-  [PANEL_IDS.LOG]: 'panelTerminalLog',
-  [PANEL_IDS.TRADING]: 'trade',
-  [PANEL_IDS.POSITIONS]: 'positions',
-  [PANEL_IDS.ORDERS]: 'orders',
-  [PANEL_IDS.ECON_CALENDAR]: 'panelEconCalendar',
-  [PANEL_IDS.ALERTS]: 'panelAlerts',
-  [PANEL_IDS.RISK]: 'panelRiskCalc',
-  [PANEL_IDS.SECTORS]: 'panelSectorRotation',
-  [PANEL_IDS.OPTIONS]: 'panelOptionsFlow',
-  [PANEL_IDS.INSIDERS]: 'panelInsiderTrades',
-  [PANEL_IDS.CORRELATIONS]: 'panelCorrelations',
-  [PANEL_IDS.LIVE_STREAMS]: 'panelLiveStreams',
-  [PANEL_IDS.MARKET_MOVERS]: 'panelMarketMovers',
-  [PANEL_IDS.FOREX]: 'panelForex',
-  [PANEL_IDS.BONDS]: 'panelBonds',
-  [PANEL_IDS.COMMODITIES]: 'panelCommodities',
-  [PANEL_IDS.GLOBAL_DASHBOARD]: 'panelGlobalDashboard',
-  [PANEL_IDS.SCANNER]: 'panelScanner',
-  [PANEL_IDS.SCREENER]: 'panelScreener',
-  [PANEL_IDS.HEAT_MAP]: 'panelHeatMap',
-  [PANEL_IDS.ETF]: 'panelETF',
-  [PANEL_IDS.DIVIDENDS]: 'panelDividends',
-  [PANEL_IDS.ANALYST]: 'panelAnalyst',
-  [PANEL_IDS.BREADTH]: 'panelBreadth',
-  [PANEL_IDS.FINANCIALS]: 'panelFinancials',
-  [PANEL_IDS.FUTURES]: 'panelFutures',
-  [PANEL_IDS.PERFORMANCE]: 'panelPerformance',
-  [PANEL_IDS.SHORT_INTEREST]: 'panelShortInterest',
-  [PANEL_IDS.OPTIONS_CALC]: 'panelOptionsCalc',
-  [PANEL_IDS.FX_CONVERTER]: 'panelFXConverter',
-  [PANEL_IDS.BOND_CALC]: 'panelBondCalc',
-  [PANEL_IDS.COMPANY_PROFILE]: 'panelCompanyProfile',
-  [PANEL_IDS.PIVOT_POINTS]: 'panelPivotPoints',
-  [PANEL_IDS.MARKET_HOURS]: 'panelMarketHours',
-  [PANEL_IDS.MARKET_CALENDAR]: 'panelMarketCalendar',
-  [PANEL_IDS.PAIRS_TRADING]: 'panelPairs',
-  [PANEL_IDS.VOLATILITY]: 'panelVolatility',
-  [PANEL_IDS.FIBONACCI]: 'panelFibonacci',
-  [PANEL_IDS.MORTGAGE_CALC]: 'panelMortgage',
-  [PANEL_IDS.INVESTMENT_CALC]: 'panelInvestCalc',
-  [PANEL_IDS.RELATIVE_STRENGTH]: 'panelRelStrength',
-  [PANEL_IDS.WATCHLIST]: 'panelWatchlist',
-  [PANEL_IDS.FX_CROSS]: 'panelFXCross',
-  [PANEL_IDS.PORTFOLIO]: 'panelPortfolio',
-  [PANEL_IDS.YIELD_CURVE]: 'panelYieldCurve',
-  [PANEL_IDS.CURRENCY_STRENGTH]: 'panelCurrencyStrength',
-  [PANEL_IDS.MONEY_FLOW]: 'panelMoneyFlow',
-  [PANEL_IDS.TECHNICAL_CHART]: 'panelTechnicalChart',
-  [PANEL_IDS.EARNINGS_ESTIMATES]: 'panelEarningsEstimates',
-  [PANEL_IDS.CROSS_ASSET]: 'panelCrossAsset',
-  [PANEL_IDS.HOLDINGS]: 'panelHoldings',
-  [PANEL_IDS.SECTOR_PERFORMANCE]: 'panelSectorPerformance',
-  [PANEL_IDS.ETF_HOLDINGS]: 'panelETFHoldings',
-  [PANEL_IDS.DRAWDOWN]: 'panelDrawdown',
-  [PANEL_IDS.MARKET_REGIME]: 'panelMarketRegime',
-  [PANEL_IDS.RELATIVE_VALUATION]: 'panelRelativeValuation',
-  [PANEL_IDS.CONFLUENCE]: 'panelConfluence',
-  [PANEL_IDS.IV_SURFACE]: 'panelIVSurface',
-  [PANEL_IDS.SEASONALITY]: 'panelSeasonality',
-  [PANEL_IDS.ORDER_FLOW]: 'panelOrderFlow',
-  [PANEL_IDS.PORTFOLIO_OPTIMIZER]: 'panelPortfolioOptimizer',
-  [PANEL_IDS.BACKTEST]: 'panelBacktest',
-  [PANEL_IDS.MACRO_DASHBOARD]: 'panelMacroDashboard',
-  [PANEL_IDS.EARNINGS_SURPRISE]: 'panelEarningsSurprise',
-  [PANEL_IDS.FUTURES_CURVE]: 'panelFuturesCurve',
-  [PANEL_IDS.CREDIT_SPREADS]: 'panelCreditSpreads',
-  [PANEL_IDS.INTERMARKET]: 'panelIntermarket',
-  [PANEL_IDS.SECTOR_HEATMAP]: 'panelSectorHeatmap',
-  [PANEL_IDS.ECONOMIC_SURPRISES]: 'panelEconomicSurprises',
-  [PANEL_IDS.DISPERSION]: 'panelDispersion',
-  [PANEL_IDS.FUND_FLOWS]: 'panelFundFlows',
-  [PANEL_IDS.VOL_TERM_STRUCTURE]: 'panelVolTermStructure',
-  [PANEL_IDS.MACRO_HEATMAP]: 'panelMacroHeatmap',
-  [PANEL_IDS.FACTOR_EXPOSURE]: 'panelFactorExposure',
-  [PANEL_IDS.CAPITAL_FLOWS]: 'panelCapitalFlows',
-  [PANEL_IDS.TAIL_RISK]: 'panelTailRisk',
-  [PANEL_IDS.LIQUIDITY]: 'panelLiquidity',
-  [PANEL_IDS.SENTIMENT_DASHBOARD]: 'panelSentimentDashboard',
-  [PANEL_IDS.MARKET_ANOMALIES]: 'panelMarketAnomalies',
-  [PANEL_IDS.CARRY_TRADE]: 'panelCarryTrade',
-  [PANEL_IDS.IV_RANK]: 'panelIvRank',
-  [PANEL_IDS.POSITIONING]: 'panelPositioning',
-  [PANEL_IDS.STYLE_BOX]: 'panelStyleBox',
-  [PANEL_IDS.VOLATILITY_CONE]: 'panelVolatilityCone',
-  [PANEL_IDS.VALUATION_MULTIPLES]: 'panelValuationMultiples',
-  [PANEL_IDS.INSIDER_SENTIMENT]: 'panelInsiderSentiment',
-  [PANEL_IDS.EXECUTION_ANALYTICS]: 'panelExecutionAnalytics',
-  [PANEL_IDS.EARNINGS_WHISPER]: 'panelEarningsWhisper',
-  [PANEL_IDS.MARKET_DEPTH]: 'panelMarketDepth',
-  [PANEL_IDS.GLOBAL_SUPPLY_CHAIN]: 'panelGlobalSupplyChain',
-  [PANEL_IDS.FX_FORWARD]: 'panelFxForward',
-  [PANEL_IDS.PRECIOUS_METALS]: 'panelPreciousMetals',
-};
-
-/** Get localized panel name (non-hook, reads locale from store directly) */
-export function getLocalizedPanelName(panelId: string): string {
-  const locale = useAppStore.getState().locale;
-  const key = PANEL_NAME_KEYS[panelId];
-  if (key) {
-    return translations[locale]?.[key] ?? translations.en[key];
-  }
-  return PANEL_NAMES[panelId] || panelId;
-}
-
-export const ALL_PANEL_IDS = Object.values(PANEL_IDS);
-
-/** Panel IDs that exist in the DEFAULT_LAYOUT (core panels shown on first load) */
-const DEFAULT_PANEL_IDS: Set<string> = new Set([
-  PANEL_IDS.LIVE_STREAMS, PANEL_IDS.TECHNICAL_CHART,
-  PANEL_IDS.STOCKS,
-  PANEL_IDS.HEAT_MAP, PANEL_IDS.MACRO_HEATMAP,
-  PANEL_IDS.TRADING, PANEL_IDS.POSITIONS, PANEL_IDS.ORDERS,
-  PANEL_IDS.ECON_CALENDAR, PANEL_IDS.FOREX,
-  PANEL_IDS.CURRENCY_STRENGTH, PANEL_IDS.GLOBAL_DASHBOARD, PANEL_IDS.FUTURES, PANEL_IDS.CORRELATIONS,
-]);
-
-/*
- * Trading layout — v35
- *
- * +-- 16% ------+------------ 52% --------------------+--------- 32% ------------+
- * | MARKET      | TECHNICAL CHART                      | TRADE (max 360px)        |
- * | WATCH       | (tabs: HEAT MAP, MACRO HEATMAP)      +--------------------------+
- * |             |                                      | ECONOMIC CALENDAR        |
- * | (60%)       | (70%)                                | (tab: FOREX)             |
- * +-------------+                                      +--------------------------+
- * | LIVE        +--------------------------------------+ CURRENCY STRENGTH        |
- * | STREAMS     | ORDERS (tab: POSITIONS)              | (tabs: GLOBAL DASHBOARD, |
- * | (40%)       | (30%)                                |  FUTURES, CORRELATIONS)  |
- * +-------------+--------------------------------------+--------------------------+
- */
-const DEFAULT_LAYOUT: IJsonModel = {
-  global: {
-    tabEnableClose: true,
-    tabEnableRename: false,
-    tabSetEnableMaximize: true,
-    tabSetEnableClose: false,
-    splitterSize: 2,
-    splitterExtra: 6,
-    tabSetMinHeight: 80,
-    tabSetMinWidth: 80,
-  },
-  borders: [],
-  layout: {
-    type: 'row',
-    weight: 100,
-    children: [
-      // Left column (16%): Heat Map + Live Streams
-      {
-        type: 'row',
-        weight: 16,
-        children: [
-          {
-            type: 'tabset',
-            weight: 60,
-            children: [
-              { type: 'tab', name: 'MARKET WATCH', component: PANEL_IDS.STOCKS, id: PANEL_IDS.STOCKS },
-            ],
-          },
-          {
-            type: 'tabset',
-            weight: 40,
-            children: [
-              { type: 'tab', name: 'LIVE STREAMS', component: PANEL_IDS.LIVE_STREAMS, id: PANEL_IDS.LIVE_STREAMS },
-            ],
-          },
-        ],
-      },
-      // Center column (52%): Market Watch on top, Movers + AI on bottom
-      {
-        type: 'row',
-        weight: 52,
-        children: [
-          // Top: Market Watch (hero), Technical Chart as secondary tab
-          {
-            type: 'tabset',
-            weight: 70,
-            children: [
-              { type: 'tab', name: 'TECHNICAL CHART', component: PANEL_IDS.TECHNICAL_CHART, id: PANEL_IDS.TECHNICAL_CHART },
-              { type: 'tab', name: 'HEAT MAP', component: PANEL_IDS.HEAT_MAP, id: PANEL_IDS.HEAT_MAP },
-              { type: 'tab', name: 'GLOBAL MACRO HEATMAP', component: PANEL_IDS.MACRO_HEATMAP, id: PANEL_IDS.MACRO_HEATMAP },
-            ],
-          },
-          // Bottom: Market Movers | Currency Strength
-          {
-            type: 'row',
-            weight: 30,
-            children: [
-              {
-                type: 'tabset',
-                weight: 100,
-                children: [
-                  { type: 'tab', name: 'ORDERS', component: PANEL_IDS.ORDERS, id: PANEL_IDS.ORDERS },
-                  { type: 'tab', name: 'POSITIONS', component: PANEL_IDS.POSITIONS, id: PANEL_IDS.POSITIONS },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      // Right column (32%): Trade ticket, then live FX/CFD context (ForexFactory calendar + Yahoo)
-      {
-        type: 'row',
-        weight: 32,
-        children: [
-          {
-            type: 'tabset',
-            weight: 32,
-            maxHeight: 360, // stacked ticket needs ~354px; spare height goes to the panels below
-            children: [
-              { type: 'tab', name: 'TRADE', component: PANEL_IDS.TRADING, id: PANEL_IDS.TRADING },
-            ],
-          },
-          {
-            type: 'tabset',
-            weight: 38,
-            children: [
-              { type: 'tab', name: 'ECONOMIC CALENDAR', component: PANEL_IDS.ECON_CALENDAR, id: PANEL_IDS.ECON_CALENDAR },
-              { type: 'tab', name: 'FOREX', component: PANEL_IDS.FOREX, id: PANEL_IDS.FOREX },
-            ],
-          },
-          {
-            type: 'tabset',
-            weight: 30,
-            children: [
-              { type: 'tab', name: 'CURRENCY STRENGTH', component: PANEL_IDS.CURRENCY_STRENGTH, id: PANEL_IDS.CURRENCY_STRENGTH },
-              { type: 'tab', name: 'GLOBAL DASHBOARD', component: PANEL_IDS.GLOBAL_DASHBOARD, id: PANEL_IDS.GLOBAL_DASHBOARD },
-              { type: 'tab', name: 'FUTURES', component: PANEL_IDS.FUTURES, id: PANEL_IDS.FUTURES },
-              { type: 'tab', name: 'CORRELATIONS', component: PANEL_IDS.CORRELATIONS, id: PANEL_IDS.CORRELATIONS },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-};
-
-/** Build a layout from default, excluding hidden panels */
-function buildLayout(hiddenPanels: string[]): IJsonModel {
-  if (hiddenPanels.length === 0) return DEFAULT_LAYOUT;
-
-  const layout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT)) as IJsonModel;
-
-  function prune(node: any): boolean {
-    if (!node.children) return true;
-    node.children = node.children.filter((child: any) => {
-      // Remove hidden tabs
-      if (child.type === 'tab' && hiddenPanels.includes(child.id)) return false;
-      // Recurse
-      return prune(child);
-    });
-    // Remove empty tabsets or rows
-    if ((node.type === 'tabset' || node.type === 'row') && node.children.length === 0) return false;
-    return true;
-  }
-
-  prune(layout.layout);
-  return layout;
-}
-
-function loadModel(): Model {
-  // Check if a reset was requested
-  if (localStorage.getItem(RESET_FLAG)) {
-    localStorage.removeItem(RESET_FLAG);
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.setItem(LAYOUT_VERSION_KEY, String(LAYOUT_VERSION));
-    const hiddenPanels = useAppStore.getState().hiddenPanels;
-    return Model.fromJson(buildLayout(hiddenPanels));
-  }
-
-  // Force reset when layout version changes (e.g. new panels added)
-  const savedVersion = parseInt(localStorage.getItem(LAYOUT_VERSION_KEY) || '0', 10);
-  if (savedVersion < LAYOUT_VERSION) {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.setItem(LAYOUT_VERSION_KEY, String(LAYOUT_VERSION));
-    // New panels not in DEFAULT_LAYOUT start hidden
-    const nonDefaultPanels = ALL_PANEL_IDS.filter(id => !DEFAULT_PANEL_IDS.has(id));
-    useAppStore.setState({ hiddenPanels: nonDefaultPanels });
-    return Model.fromJson(buildLayout(nonDefaultPanels));
-  }
-
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const json = JSON.parse(saved) as IJsonModel;
-      if (json.global) json.global.tabEnableClose = true;
-      return Model.fromJson(json);
-    }
-  } catch {
-    // corrupt data, fall through
-  }
-  const hiddenPanels = useAppStore.getState().hiddenPanels;
-  return Model.fromJson(buildLayout(hiddenPanels));
-}
-
-// Module-level model ref
+// The live model of the active workspace, for the Panels menu and "new workspace from current layout"
 let _modelRef: Model | null = null;
 
 export function getModel(): Model | null {
   return _modelRef;
 }
 
-/**
- * Show a panel: if it exists in the model, select it; otherwise add it dynamically.
- * For panels in DEFAULT_LAYOUT, falls back to rebuild + reload.
- */
+/** Hidden panels are whatever the active layout doesn't contain */
+function syncHiddenPanels(model: Model) {
+  useAppStore.setState({ hiddenPanels: ALL_PANEL_IDS.filter((id) => !model.getNodeById(id)) });
+}
+
+/** Show a panel: select its tab if it's in the layout, otherwise add it to the active (or first) tabset */
 export function showPanelInLayout(panelId: string) {
   const model = _modelRef;
-  if (!model) {
-    localStorage.setItem(RESET_FLAG, '1');
-    window.location.reload();
-    return;
-  }
-
-  // If panel already exists in model, just select it
-  const existingNode = model.getNodeById(panelId);
-  if (existingNode) {
+  if (!model) return;
+  if (model.getNodeById(panelId)) {
     model.doAction(Actions.selectTab(panelId));
     return;
   }
-
-  // For default panels that were pruned, rebuild from DEFAULT_LAYOUT
-  if (DEFAULT_PANEL_IDS.has(panelId)) {
-    localStorage.setItem(RESET_FLAG, '1');
-    window.location.reload();
-    return;
-  }
-
-  // Dynamically add the panel as a new tab in the active tabset
-  const activeTabset = model.getActiveTabset();
-  if (activeTabset) {
-    model.doAction(Actions.addNode(
-      { type: 'tab', name: getLocalizedPanelName(panelId), component: panelId, id: panelId },
-      activeTabset.getId(),
-      DockLocation.CENTER,
-      -1,
-    ));
-  }
+  const tabset = model.getActiveTabset() ?? model.getFirstTabSet();
+  model.doAction(Actions.addNode(
+    { type: 'tab', name: getLocalizedPanelName(panelId), component: panelId, id: panelId },
+    tabset.getId(),
+    DockLocation.CENTER,
+    -1,
+  ));
 }
 
-/**
- * Hide a panel: remove its tab from the model.
- */
+/** Hide a panel: remove its tab from the model */
 export function hidePanelInLayout(panelId: string) {
   const model = _modelRef;
-  if (!model) return;
-  const node = model.getNodeById(panelId);
-  if (node) {
-    model.doAction(Actions.deleteTab(panelId));
-  }
+  if (model?.getNodeById(panelId)) model.doAction(Actions.deleteTab(panelId));
 }
 
-// Component registry
-type PanelFactory = (node: TabNode) => React.ReactNode;
-const extraFactories: Map<string, PanelFactory> = new Map();
-
-export function addPanelFactory(id: string, factory: PanelFactory) {
-  extraFactories.set(id, factory);
-}
+const SELECTION_ACTIONS = new Set([Actions.SELECT_TAB, Actions.SET_ACTIVE_TABSET]);
 
 export function DockLayout() {
-  const modelRef = useRef<Model>(loadModel());
-  const hidePanel = useAppStore((s) => s.hidePanel);
+  const owner = useWorkspaceStore((s) => s.owner);
+  const active = useWorkspaceStore((s) => s.byOwner[s.owner]?.active ?? 'trade');
+  const rev = useWorkspaceStore((s) => s.rev);
   const locale = useAppStore((s) => s.locale);
 
-  useEffect(() => {
-    _modelRef = modelRef.current;
-    return () => { _modelRef = null; };
-  }, []);
-
-  const saveLayout = useCallback(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(modelRef.current.toJson()));
-    } catch { /* ignore */ }
-  }, []);
+  // Rebuilt only on switch / external replace — reading the layout via getState keeps our own saves from rebuilding it
+  const model = useMemo(() => {
+    const s = useWorkspaceStore.getState();
+    const ws = s.byOwner[s.owner]?.list.find((w) => w.key === active);
+    return Model.fromJson(sanitizeLayout(ws ? layoutOf(ws) : presetLayout('trade')));
+  }, [owner, active, rev]);
 
   useEffect(() => {
-    window.addEventListener('beforeunload', saveLayout);
-    return () => window.removeEventListener('beforeunload', saveLayout);
-  }, [saveLayout]);
+    _modelRef = model;
+    syncHiddenPanels(model);
+    return () => { if (_modelRef === model) _modelRef = null; };
+  }, [model]);
 
-  const handleAction = useCallback((action: Action): Action | undefined => {
-    if (action.type === Actions.DELETE_TAB) {
-      const tabId = (action as any).data?.node;
-      if (tabId && ALL_PANEL_IDS.includes(tabId)) {
-        hidePanel(tabId);
-      }
-    }
-    return action;
-  }, [hidePanel]);
+  const onModelChange = useCallback((m: Model, action: Action) => {
+    syncHiddenPanels(m);
+    useWorkspaceStore.getState().saveLayout(m.toJson(), SELECTION_ACTIONS.has(action.type));
+  }, []);
+
+  // Middle-click closes a tab, as in browsers and editors; the × stays for mouse, touch and keyboard users alike
+  const onAuxMouseClick = useCallback((node: TabNode | TabSetNode | BorderNode, e: React.MouseEvent) => {
+    if (e.button !== 1 || e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+    if (!(node instanceof TabNode) || !node.isEnableClose()) return;
+    e.preventDefault();
+    model.doAction(Actions.deleteTab(node.getId()));
+  }, [model]);
+
+  // Windows starts auto-scroll on a middle press; on a tab that press means close
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (e.button === 1 && (e.target as Element).closest?.('.flexlayout__tab_button, .flexlayout__border_button')) e.preventDefault();
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
 
   const factory = useCallback((node: TabNode) => {
-    const component = node.getComponent();
+    const component = node.getComponent() ?? '';
+    if (UNDER_DEVELOPMENT.has(component)) return <PanelErrorBoundary><UnderDevelopment /></PanelErrorBoundary>;
     let content: React.ReactNode;
     switch (component) {
       case PANEL_IDS.STOCKS: content = <StockPanel />; break;
@@ -719,6 +213,7 @@ export function DockLayout() {
       case PANEL_IDS.TRADING: content = <LazyWrap><Mt5Ticket /></LazyWrap>; break;
       case PANEL_IDS.POSITIONS: content = <LazyWrap><Mt5Positions /></LazyWrap>; break;
       case PANEL_IDS.ORDERS: content = <LazyWrap><Mt5Orders /></LazyWrap>; break;
+      case PANEL_IDS.HISTORY: content = <LazyWrap><Mt5History /></LazyWrap>; break;
       case PANEL_IDS.ECON_CALENDAR: content = <LazyWrap><EconomicCalendarPanel /></LazyWrap>; break;
       case PANEL_IDS.ALERTS: content = <LazyWrap><AlertsPanel /></LazyWrap>; break;
       case PANEL_IDS.RISK: content = <LazyWrap><RiskCalculator /></LazyWrap>; break;
@@ -758,7 +253,6 @@ export function DockLayout() {
       case PANEL_IDS.RELATIVE_STRENGTH: content = <LazyWrap><RelativeStrengthPanel /></LazyWrap>; break;
       case PANEL_IDS.WATCHLIST: content = <LazyWrap><WatchlistPanel /></LazyWrap>; break;
       case PANEL_IDS.FX_CROSS: content = <LazyWrap><FXCrossPanel /></LazyWrap>; break;
-      case PANEL_IDS.PORTFOLIO: content = <UnderDevelopment />; break;
       case PANEL_IDS.YIELD_CURVE: content = <LazyWrap><YieldCurvePanel /></LazyWrap>; break;
       case PANEL_IDS.CURRENCY_STRENGTH: content = <LazyWrap><CurrencyStrengthPanel /></LazyWrap>; break;
       case PANEL_IDS.MONEY_FLOW: content = <LazyWrap><MoneyFlowPanel /></LazyWrap>; break;
@@ -798,50 +292,29 @@ export function DockLayout() {
       case PANEL_IDS.IV_RANK: content = <LazyWrap><IvRankPanel /></LazyWrap>; break;
       case PANEL_IDS.POSITIONING: content = <LazyWrap><PositioningPanel /></LazyWrap>; break;
       case PANEL_IDS.STYLE_BOX: content = <LazyWrap><StyleBoxPanel /></LazyWrap>; break;
-      case PANEL_IDS.VOLATILITY_CONE: content = <UnderDevelopment />; break;
       case PANEL_IDS.VALUATION_MULTIPLES: content = <LazyWrap><ValuationMultiplesPanel /></LazyWrap>; break;
       case PANEL_IDS.INSIDER_SENTIMENT: content = <LazyWrap><InsiderSentimentPanel /></LazyWrap>; break;
-      case PANEL_IDS.EXECUTION_ANALYTICS: content = <UnderDevelopment />; break;
       case PANEL_IDS.EARNINGS_WHISPER: content = <LazyWrap><EarningsWhisperPanel /></LazyWrap>; break;
-      case PANEL_IDS.MARKET_DEPTH: content = <UnderDevelopment />; break;
       case PANEL_IDS.GLOBAL_SUPPLY_CHAIN: content = <LazyWrap><GlobalSupplyChainPanel /></LazyWrap>; break;
-      case PANEL_IDS.FX_FORWARD: content = <UnderDevelopment />; break;
-      case PANEL_IDS.PRECIOUS_METALS: content = <UnderDevelopment />; break;
-      default: {
-        const extra = extraFactories.get(component ?? '');
-        if (extra) return <PanelErrorBoundary>{extra(node)}</PanelErrorBoundary>;
+      default:
         return <div className="flex items-center justify-center h-full text-neutral text-xs font-mono uppercase">Unknown panel: {component}</div>;
-      }
     }
     return <PanelErrorBoundary>{content}</PanelErrorBoundary>;
   }, []);
 
   const onRenderTab = useCallback((node: TabNode, renderValues: { leading: React.ReactNode; content: React.ReactNode; buttons: React.ReactNode[] }) => {
-    const panelId = node.getComponent();
-    if (panelId) {
-      const key = PANEL_NAME_KEYS[panelId];
-      if (key) {
-        renderValues.content = translations[locale]?.[key] ?? translations.en[key];
-      }
-    }
+    const key = PANEL_NAME_KEYS[node.getComponent() ?? ''];
+    if (key) renderValues.content = translations[locale]?.[key] ?? translations.en[key];
   }, [locale]);
 
   return (
     <Layout
-      model={modelRef.current}
+      key={`${owner}|${active}|${rev}`}
+      model={model}
       factory={factory}
       onRenderTab={onRenderTab}
-      onAction={handleAction}
-      onModelChange={saveLayout}
+      onModelChange={onModelChange}
+      onAuxMouseClick={onAuxMouseClick}
     />
   );
-}
-
-const RESET_FLAG = 'terminal-layout-reset';
-
-export function resetLayout() {
-  localStorage.setItem(RESET_FLAG, '1');
-  const nonDefaultPanels = ALL_PANEL_IDS.filter(id => !DEFAULT_PANEL_IDS.has(id));
-  useAppStore.setState({ hiddenPanels: nonDefaultPanels });
-  window.location.reload();
 }

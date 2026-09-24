@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../stores/use-app-store';
-import { Terminal, TrendingUp, Command } from 'lucide-react';
+import { Terminal, TrendingUp, Command, LayoutDashboard } from 'lucide-react';
 import { useT } from '../../i18n';
+import { useWorkspaceStore, wsLabel } from '../../stores/use-workspace-store';
 
 export function CommandPalette() {
   const isOpen = useAppStore((s) => s.commandPaletteOpen);
@@ -55,6 +56,21 @@ export function CommandPalette() {
         label: `GO ${symbol} - View Market Data`,
         icon: <TrendingUp className="w-4 h-4 text-bullish" />,
         action: () => setSelectedSymbol(symbol)
+      });
+    }
+
+    // Workspaces by name
+    const q = input.toLowerCase();
+    const ws = useWorkspaceStore.getState();
+    for (const w of ws.byOwner[ws.owner]?.list ?? []) {
+      const label = wsLabel(w, t);
+      if (!label.toLowerCase().includes(q)) continue;
+      searchResults.push({
+        type: 'workspace',
+        id: `ws-${w.key}`,
+        label: `${t('wsSwitch')}: ${label}`,
+        icon: <LayoutDashboard className="w-4 h-4 text-accent" />,
+        action: () => ws.switchTo(w.key),
       });
     }
 

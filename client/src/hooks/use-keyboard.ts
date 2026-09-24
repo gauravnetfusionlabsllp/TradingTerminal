@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAppStore } from '../stores/use-app-store';
+import { useWorkspaceStore } from '../stores/use-workspace-store';
 
 export function useKeyboard() {
   const setShortcutsModalOpen = useAppStore((s) => s.setShortcutsModalOpen);
@@ -14,6 +15,17 @@ export function useKeyboard() {
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
       if (isInput || commandPaletteOpen) return;
+
+      // Alt+1…9: switch workspace (e.code, so macOS Option — which types symbols — still works)
+      if (e.altKey && /^Digit[1-9]$/.test(e.code)) {
+        const ws = useWorkspaceStore.getState();
+        const target = ws.byOwner[ws.owner]?.list[Number(e.code.slice(5)) - 1];
+        if (target) {
+          e.preventDefault();
+          ws.switchTo(target.key);
+        }
+        return;
+      }
 
       const key = e.key;
 

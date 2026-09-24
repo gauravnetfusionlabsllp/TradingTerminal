@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { LineStyle, type IChartApi, type ISeriesApi, type SeriesType } from 'lightweight-charts';
 import {
   useMt5Positions, useMt5Orders, useMt5Quotes,
-  useMt5MarketOrder, useMt5PendingOrder, useMt5ClosePosition, useMt5CancelOrder, useMt5ReplaceOrder,
-  type Mt5Order, type Mt5Position, type Mt5PendingType,
+  useMt5MarketOrder, useMt5PendingOrder, useMt5ClosePosition, useMt5CancelOrder, useMt5ReplaceOrder, useMt5ModifyPosition,
+  type Mt5Order, type Mt5Position, type Mt5PendingType, type Mt5Quote,
 } from '../../api/hooks/use-mt5';
 import { useAppStore } from '../../stores/use-app-store';
 import { fmtPrice, liveProfit } from '../trading/mt5-trading';
@@ -34,6 +34,52 @@ interface Props {
   readOnly: boolean;
   lots: string;
   setLots: (v: string) => void;
+  /** Show the one-click BUY / SELL strip (the header toggle) */
+  oneClick?: boolean;
+  /** A drawing tool is active: chart clicks place the drawing, so trading stands down */
+  drawing?: boolean;
+  /** "Reset chart" at the bottom of the right-click menu */
+  onReset?: () => void;
+}
+
+export interface MenuItem { label: string; onClick: () => void; danger?: boolean; divider?: boolean }
+
+/** The chart's right-click menu, placed inside `bounds`; closes on pick, outside click or Escape */
+export function ChartMenu({ at, items, bounds, onClose }: {
+  at: { x: number; y: number };
+  items: MenuItem[];
+  bounds: HTMLElement;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) close.current(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close.current(); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+  }, []);
+  return (
+    <div
+      ref={ref}
+      role="menu"
+      className="absolute z-30 min-w-[180px] bg-black/95 border border-white/10 py-1 text-[10px] font-mono shadow-xl"
+      style={{ left: Math.max(0, Math.min(at.x, bounds.clientWidth - 200)), top: Math.max(0, Math.min(at.y, bounds.clientHeight - items.length * 24 - 16)) }}
+    >
+      {items.map((it) => (
+        <button
+          key={it.label}
+          role="menuitem"
+          onClick={() => { close.current(); it.onClick(); }}
+          className={`block w-full text-left px-3 py-1 hover:bg-white/10 ${it.danger ? 'text-red-400' : 'text-white/80'} ${it.divider ? 'mt-1 border-t border-white/10 pt-1.5' : ''}`}
+        >
+          {it.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 const WHITE = '#e4e4e7', AMBER = '#f59e0b', RED = '#ef4444', GREEN = '#22c55e';
@@ -41,13 +87,26 @@ const HIT_PX = 5;
 const LEVEL_KEY = { entry: 'price', sl: 'stopLoss', tp: 'takeProfit' } as const;
 const sideOf = (o: Mt5Order): Side => (o.type.startsWith('BUY') ? 'BUY' : 'SELL');
 const errMsg = (err: unknown) => (err instanceof Error ? err.message : 'Failed');
+const signed = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
+/** The price a position closes at: SL / TP must sit either side of it (BUY closes at bid, SELL at ask) */
+const closeRef = (p: Mt5Position, q?: Mt5Quote) => (q ? (p.side === 'BUY' ? q.bid : q.ask) : p.currentPrice);
+const stopLine = (owner: string, field: 'sl' | 'tp', price: number, drag: boolean, ref: Pick<Level, 'pos' | 'ord'>, tag: string): Level => ({
+  id: `${owner}:${field}`, price, field, title: `${field.toUpperCase()} ${tag}`,
+  color: field === 'sl' ? RED : GREEN, style: LineStyle.Dashed, drag, ...ref,
+});
+/** Replace the level with the same id (or add it) */
+const put = (list: Level[], l: Level) => [...list.filter((x) => x.id !== l.id), l];
+/** The position / order a level belongs to: 'p<ticket>', 'o<ticket>' ('d' for drafts) — matches the store's tradeFocus */
+const ownerOf = (l: Level) => l.id.split(':')[0];
 
 /**
- * One-click trading on the price pane: trade bar, right-click menus, draggable pending-order / SL / TP lines.
- * Open positions can't be modified (bridge has no modify call) — their lines are view-only, closable from the menu.
+ * One-click trading on the price pane: trade bar, right-click menus, draggable lines.
+ * Pending orders are moved by cancel + re-place (bridge has no order modify). Position SL / TP use the bridge's
+ * modify call: drag the SL / TP line, or drag the entry line out to add one (MT5 style); the position never moves.
  */
-export function ChartTrading({ chart, series, el, symbol, precision, readOnly, lots, setLots }: Props) {
+export function ChartTrading({ chart, series, el, symbol, precision, readOnly, lots, setLots, oneClick = true, drawing = false, onReset }: Props) {
   const addLogEntry = useAppStore((s) => s.addLogEntry);
+  const focus = useAppStore((s) => s.tradeFocus);
   const { data: positions } = useMt5Positions();
   const { data: orders } = useMt5Orders();
   const { data: quotes } = useMt5Quotes([symbol]);
@@ -57,34 +116,38 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
   const closePosition = useMt5ClosePosition();
   const cancelOrder = useMt5CancelOrder();
   const replaceOrder = useMt5ReplaceOrder();
-  const busy = [marketOrder, pendingOrder, closePosition, cancelOrder, replaceOrder].some((m) => m.isPending);
+  const modifyPosition = useMt5ModifyPosition();
+  const busy = [marketOrder, pendingOrder, closePosition, cancelOrder, replaceOrder, modifyPosition].some((m) => m.isPending);
 
   const [drafts, setDrafts] = useState<{ sl?: number; tp?: number }>({});
   const [drag, setDrag] = useState<{ id: string; price: number } | null>(null);
-  // A committed drag keeps showing until the orders refetch brings the replacement in (no flash back to the old price)
-  const [held, setHeld] = useState<{ id: string; price: number } | null>(null);
-  const [menu, setMenu] = useState<{ x: number; y: number; price: number; line?: Level } | null>(null);
+  // A committed drag keeps showing until a refetch brings the change in (no flash back to the old price)
+  const [held, setHeld] = useState<Level | null>(null);
+  // price is null off the price pane (axes, indicator panes): the menu then only offers Reset chart
+  const [menu, setMenu] = useState<{ x: number; y: number; price: number | null; line?: Level } | null>(null);
   const [error, setError] = useState('');
-  const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setHeld(null), [orders]);
+  // A 5s poll landing while the request is still out carries the old level — only data after it settles counts
+  const busyRef = useRef(busy);
+  busyRef.current = busy;
+  useEffect(() => { if (!busyRef.current) setHeld(null); }, [orders, positions]);
 
   const myPositions = useMemo(() => (positions ?? []).filter((p) => p.symbol === symbol), [positions, symbol]);
   const myOrders = useMemo(() => (orders ?? []).filter((o) => o.symbol === symbol), [orders, symbol]);
 
   const shown = useMemo(() => {
-    const out: Level[] = [];
+    let out: Level[] = [];
     const stops = (id: string, sl: number, tp: number, drag: boolean, owner: Pick<Level, 'pos' | 'ord'>, tag: string) => {
-      if (sl) out.push({ id: `${id}:sl`, price: sl, field: 'sl', title: `SL ${tag}`, color: RED, style: LineStyle.Dashed, drag, ...owner });
-      if (tp) out.push({ id: `${id}:tp`, price: tp, field: 'tp', title: `TP ${tag}`, color: GREEN, style: LineStyle.Dashed, drag, ...owner });
+      if (sl) out.push(stopLine(id, 'sl', sl, drag, owner, tag));
+      if (tp) out.push(stopLine(id, 'tp', tp, drag, owner, tag));
     };
     for (const p of myPositions) {
-      const pnl = quote ? liveProfit(p, p.side === 'BUY' ? quote.bid : quote.ask) : p.profit;
+      const pnl = quote ? liveProfit(p, closeRef(p, quote)) : p.profit;
       out.push({
-        id: `p${p.ticket}`, price: p.openPrice, field: 'entry', color: WHITE, style: LineStyle.Solid, drag: false, pos: p,
-        title: `${p.side} ${p.volume} ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}`,
+        id: `p${p.ticket}`, price: p.openPrice, field: 'entry', color: WHITE, style: LineStyle.Solid, drag: !readOnly, pos: p,
+        title: `#${p.ticket} ${p.side} ${p.volume} ${signed(pnl)}`,
       });
-      stops(`p${p.ticket}`, p.stopLoss, p.takeProfit, false, { pos: p }, `#${p.ticket}`);
+      stops(`p${p.ticket}`, p.stopLoss, p.takeProfit, !readOnly, { pos: p }, `#${p.ticket}`);
     }
     for (const o of myOrders) {
       out.push({
@@ -95,17 +158,36 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
     }
     if (drafts.sl) out.push({ id: 'd:sl', price: drafts.sl, field: 'sl', title: 'SL next order', color: RED, style: LineStyle.Dotted, drag: true });
     if (drafts.tp) out.push({ id: 'd:tp', price: drafts.tp, field: 'tp', title: 'TP next order', color: GREEN, style: LineStyle.Dotted, drag: true });
-    return out.map((l) => (l.id === drag?.id ? { ...l, price: drag.price } : l.id === held?.id ? { ...l, price: held.price } : l));
+    if (held) out = put(out, held);
+    const moving = drag && out.find((l) => l.id === drag.id);
+    if (moving) {
+      const p = moving.pos;
+      // Dragging a position's entry pulls out its SL (losing side) or TP (winning side), replacing any existing one
+      out = put(out, p && moving.field === 'entry'
+        ? stopLine(moving.id, levelSide(p.side, closeRef(p, quote), drag.price), drag.price, true, { pos: p }, `#${p.ticket}`)
+        : { ...moving, price: drag.price });
+    }
+    return out;
   }, [myPositions, myOrders, quote, drafts, drag, held, readOnly]);
 
   // Price lines sit on the visible main series (a hidden series draws none)
+  // One position / order focused (hovered here or in a panel): only its lines are drawn — and hit-tested, so a
+  // hidden line can't be grabbed. A focus with no line here (another symbol, a row closed while hovered) hides nothing.
+  const visible = useMemo(() => {
+    const mine = shown.filter((l) => ownerOf(l) === focus);
+    return mine.length ? mine : shown;
+  }, [shown, focus]);
+  const lit = visible !== shown;
+
   useEffect(() => {
-    const lines = shown.map((l) => series.createPriceLine({
-      price: l.price, color: l.color, lineWidth: 1, lineStyle: l.style, axisLabelVisible: true, title: l.title,
+    const lines = visible.map((l) => series.createPriceLine({
+      price: l.price, color: l.color, lineWidth: lit ? 2 : 1, lineStyle: l.style, axisLabelVisible: true,
+      // A position's SL / TP shows the P&L it would lock in — live while dragging
+      title: l.pos && l.field !== 'entry' ? `${l.title} ${signed(liveProfit(l.pos, l.price))}` : l.title,
     }));
     // On unmount the parent may already have removed the chart
     return () => lines.forEach((pl) => { try { series.removePriceLine(pl); } catch { /* chart gone */ } });
-  }, [series, shown]);
+  }, [series, visible, lit]);
 
   const run = async (desc: string, fn: () => Promise<unknown>) => {
     setError('');
@@ -147,7 +229,7 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
   };
 
   /** Bridge has no modify: the server cancels and re-places, so the order comes back under a new ticket. */
-  const replace = (o: Mt5Order, change: Partial<Record<'price' | 'stopLoss' | 'takeProfit', number>>, hold?: { id: string; price: number }) => {
+  const replace = (o: Mt5Order, change: Partial<Record<'price' | 'stopLoss' | 'takeProfit', number>>, hold?: Level) => {
     const next = { price: o.price, stopLoss: o.stopLoss, takeProfit: o.takeProfit, ...change };
     if (quote && !pendingTypesAt(next.price, quote.bid, quote.ask).includes(o.type as Mt5PendingType)) {
       return setError(`${o.type.replace('_', ' ')} can't sit at ${fmtPrice(next.price)} with the market at ${fmtPrice(quote.bid)} / ${fmtPrice(quote.ask)}`);
@@ -159,24 +241,41 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
     run(desc, () => replaceOrder.mutateAsync({ ticket: o.ticket, ...next }));
   };
 
+  /** Position SL / TP through the bridge's modify call. Only the changed level is sent; 0 removes it. */
+  const modify = (p: Mt5Position, change: Partial<Record<'stopLoss' | 'takeProfit', number>>, hold?: Level) => {
+    const next = { stopLoss: p.stopLoss, takeProfit: p.takeProfit, ...change };
+    const bad = levelsError(p.side, closeRef(p, quote), next.stopLoss, next.takeProfit);
+    if (bad) return setError(bad);
+    if (hold) setHeld(hold);
+    run(`MODIFY #${p.ticket} ${symbol} SL ${fmtPrice(next.stopLoss)} TP ${fmtPrice(next.takeProfit)}`, () =>
+      modifyPosition.mutateAsync({ ticket: p.ticket, ...change }));
+  };
+
   const drop = (l: Level, price: number) => {
-    if (l.ord) replace(l.ord, { [LEVEL_KEY[l.field]]: price }, { id: l.id, price });
+    if (l.pos) {
+      const f = l.field === 'entry' ? levelSide(l.pos.side, closeRef(l.pos, quote), price) : l.field;
+      modify(l.pos, { [LEVEL_KEY[f]]: price }, stopLine(`p${l.pos.ticket}`, f, price, true, { pos: l.pos }, `#${l.pos.ticket}`));
+    } else if (l.ord) replace(l.ord, { [LEVEL_KEY[l.field]]: price }, { ...l, price });
     else if (l.field !== 'entry') setDrafts((d) => ({ ...d, [l.field]: price }));
   };
 
   // Mouse handlers live for the chart's lifetime; they read current state through this ref
-  const live = useRef({ shown, blocked: busy || readOnly, precision, drop });
-  live.current = { shown, blocked: busy || readOnly, precision, drop };
+  const live = useRef({ shown: visible, blocked: busy || readOnly || drawing, precision, drop });
+  live.current = { shown: visible, blocked: busy || readOnly || drawing, precision, drop };
 
   useEffect(() => {
     let grab = false;
     let start: { l: Level; y: number } | null = null;
     const yOf = (e: MouseEvent) => e.clientY - el.getBoundingClientRect().top;
+    // Indicator panes sit below the price pane in the same element: a y down there is no price and no line
+    const onPricePane = (y: number) => y <= (chart.panes()[0]?.getHeight() ?? Infinity);
     const priceAt = (y: number) => {
+      if (!onPricePane(y)) return null;
       const p = series.coordinateToPrice(y);
       return p == null ? null : snap(p, live.current.precision);
     };
     const hit = (y: number) => {
+      if (!onPricePane(y)) return undefined;
       let best: Level | undefined;
       let bestD = HIT_PX + 1;
       for (const l of live.current.shown) {
@@ -194,8 +293,21 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
       chart.applyOptions({ handleScroll: !on, handleScale: !on });
     };
 
-    const onHover = (e: MouseEvent) => { if (!start) setGrab(draggable(hit(yOf(e)))); };
-    const onLeave = () => { if (!start) setGrab(false); };
+    // Focus this chart set (null if none): mousemove fires constantly, so the store is only written on change
+    let mine: string | null = null;
+    const setFocus = (owner: string | null) => {
+      if (owner === mine) return;
+      mine = owner;
+      useAppStore.getState().setTradeFocus(owner);
+    };
+
+    const onHover = (e: MouseEvent) => {
+      if (start) return;
+      const l = hit(yOf(e));
+      setGrab(draggable(l));
+      setFocus(l?.pos || l?.ord ? ownerOf(l) : null);
+    };
+    const onLeave = () => { if (!start) { setGrab(false); setFocus(null); } };
     const onDrag = (e: MouseEvent) => {
       const p = priceAt(yOf(e));
       if (start && p != null) setDrag({ id: start.l.id, price: p });
@@ -206,6 +318,8 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
       start = null;
       setDrag(null);
       setGrab(false);
+      // Released off the chart: the leave during the drag was skipped
+      if (!el.contains(e.target as Node)) setFocus(null);
       const p = priceAt(yOf(e));
       if (s && p != null && Math.abs(yOf(e) - s.y) >= 3) live.current.drop(s.l, p);
     };
@@ -219,11 +333,9 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
     };
     const onMenu = (e: MouseEvent) => {
       e.preventDefault();
-      if (live.current.blocked) return;
       const y = yOf(e);
-      const price = priceAt(y);
-      if (price == null) return;
-      setMenu({ x: e.clientX - el.getBoundingClientRect().left, y, price, line: hit(y) });
+      const price = live.current.blocked ? null : priceAt(y);
+      setMenu({ x: e.clientX - el.getBoundingClientRect().left, y, price, line: price == null ? undefined : hit(y) });
     };
 
     el.addEventListener('mousemove', onHover);
@@ -238,27 +350,21 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
       window.removeEventListener('mousemove', onDrag);
       window.removeEventListener('mouseup', onUp);
       el.style.cursor = '';
+      setFocus(null);
     };
   }, [chart, series, el]);
 
-  // Close the menu on outside click / Escape
-  useEffect(() => {
-    if (!menu) return;
-    const onDown = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node)) setMenu(null); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(null); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  }, [menu]);
-
-  const items: { label: string; onClick: () => void; danger?: boolean }[] = [];
-  if (menu) {
-    const { price, line: l } = menu;
+  const items: MenuItem[] = [];
+  if (menu && menu.price != null) {
+    const { line: l } = menu;
+    const price = menu.price;
     const at = fmtPrice(price);
     if (l?.pos) {
       const p = l.pos;
       items.push({ label: `Close #${p.ticket} ${p.side} ${p.volume}`, danger: true,
         onClick: () => run(`CLOSE #${p.ticket} ${symbol}`, () => closePosition.mutateAsync({ ticket: p.ticket })) });
+      if (p.stopLoss) items.push({ label: `Remove SL #${p.ticket}`, onClick: () => modify(p, { stopLoss: 0 }) });
+      if (p.takeProfit) items.push({ label: `Remove TP #${p.ticket}`, onClick: () => modify(p, { takeProfit: 0 }) });
     } else if (l?.ord) {
       const o = l.ord;
       items.push({ label: `Cancel #${o.ticket} ${o.type.replace('_', ' ')}`, danger: true,
@@ -276,19 +382,27 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
       }
       items.push({ label: `Set SL @ ${at} (next order)`, onClick: () => setDrafts((d) => ({ ...d, sl: price })) });
       items.push({ label: `Set TP @ ${at} (next order)`, onClick: () => setDrafts((d) => ({ ...d, tp: price })) });
+      for (const p of myPositions) {
+        const f = levelSide(p.side, closeRef(p, quote), price);
+        items.push({ label: `#${p.ticket} ${p.side}: ${f.toUpperCase()} → ${at}`, onClick: () => modify(p, { [LEVEL_KEY[f]]: price }) });
+      }
       for (const o of myOrders) {
         const f = levelSide(sideOf(o), o.price, price);
         items.push({ label: `#${o.ticket} ${o.type.replace('_', ' ')}: ${f.toUpperCase()} → ${at}`, onClick: () => replace(o, { [LEVEL_KEY[f]]: price }) });
       }
     }
   }
+  if (menu && onReset) items.push({ label: 'Reset chart', onClick: onReset, divider: items.length > 0 });
 
   const btn = 'px-2 py-0.5 font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed';
   return (
     <>
-      {!readOnly && (
+      {!readOnly && oneClick && (
         <div
-          className="absolute top-1 z-20 flex items-stretch text-[10px] font-mono select-none shadow-lg"
+          className={`absolute top-1 z-20 flex items-stretch text-[10px] font-mono select-none shadow-lg transition-opacity duration-100 motion-reduce:transition-none ${
+            drawing ? 'opacity-40 pointer-events-none' : ''
+          }`}
+          aria-disabled={drawing || undefined}
           style={{ right: chart.priceScale('right').width() + 8 }}
         >
           <button onClick={() => market('SELL')} disabled={busy || !quote} className={`${btn} bg-red-600/80 hover:bg-red-600`}>
@@ -310,25 +424,7 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
         </div>
       )}
 
-      {menu && items.length > 0 && (
-        <div
-          ref={menuRef}
-          role="menu"
-          className="absolute z-30 min-w-[180px] bg-black/95 border border-white/10 py-1 text-[10px] font-mono shadow-xl"
-          style={{ left: Math.max(0, Math.min(menu.x, el.clientWidth - 200)), top: Math.max(0, Math.min(menu.y, el.clientHeight - items.length * 24 - 8)) }}
-        >
-          {items.map((it) => (
-            <button
-              key={it.label}
-              role="menuitem"
-              onClick={() => { setMenu(null); it.onClick(); }}
-              className={`block w-full text-left px-3 py-1 hover:bg-white/10 ${it.danger ? 'text-red-400' : 'text-white/80'}`}
-            >
-              {it.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {menu && items.length > 0 && <ChartMenu at={menu} items={items} bounds={el} onClose={() => setMenu(null)} />}
 
       {error && (
         <div role="alert" className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 max-w-[90%] flex items-center gap-2 px-3 py-1 bg-red-950/90 border border-red-500/40 text-[10px] font-mono text-red-300">

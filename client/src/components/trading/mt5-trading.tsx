@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  useMt5Symbols, useMt5Quotes, useMt5Positions, useMt5Orders,
-  useMt5MarketOrder, useMt5PendingOrder, useMt5ClosePosition, useMt5CancelOrder,
-  type Mt5PendingType, type Mt5Position,
+  useMt5Symbols, useMt5Quotes, useMt5Positions, useMt5Orders, useMt5Deals,
+  useMt5MarketOrder, useMt5PendingOrder, useMt5ClosePosition, useMt5CancelOrder, useMt5ModifyPosition,
+  type Mt5PendingType, type Mt5Position, type Mt5Quote,
 } from '../../api/hooks/use-mt5';
 import { useAuthStore } from '../../stores/use-auth-store';
 import { useAppStore } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
 import { SymbolPicker } from './symbol-picker';
 import { toMt5 } from '../../lib/symbols';
+import { levelsError } from '../../lib/chart-trading';
+import { pnlRate } from '../../lib/trade-events';
 import { AlertTriangle, Lock, LogIn } from 'lucide-react';
 
 type Kind = 'MARKET' | 'LIMIT' | 'STOP';
@@ -26,23 +28,25 @@ const STEP = 'w-7 shrink-0 border border-border text-neutral/70 hover:text-white
 /** Bridge gives no symbol digits — trim float noise (1.3308200000000001 → 1.33082). */
 export const fmtPrice = (n: number) => String(+n.toFixed(6));
 const fmtMoney = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtSigned = (n: number) => `${n >= 0 ? '+' : ''}${fmtMoney(n)}`;
 const errMsg = (err: unknown) => (err instanceof Error ? err.message : 'Failed');
 const fmtTime = (iso: string) => new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 
 /**
- * Floating P&L at a live price. The bridge gives no contract size or conversion rate, so money-per-price-unit
- * is inferred from the last 5s poll (profit / move) and applied to the live FIX price.
- * ponytail: exact while the conversion rate is steady (account-currency quoted symbols); crosses drift until the next poll
+ * Floating P&L at a live price: money-per-price-unit inferred from the last REST snapshot (`pnlRate`), applied to
+ * the live FIX price. Positions are re-fetched every 5s until a new one can be priced, then every 60s.
+ * ponytail: exact while the conversion rate is steady (account-currency quoted symbols); crosses drift up to 60s
  */
 export function liveProfit(p: Mt5Position, price: number): number {
-  const dir = p.side === 'BUY' ? 1 : -1;
-  const polledMove = (p.currentPrice - p.openPrice) * dir;
-  // At (or cents from) the open price the rate can't be inferred reliably — keep the polled figure
-  if (Math.abs(polledMove) < 1e-9 || Math.abs(p.profit) < 0.1) return p.profit;
-  return (p.profit / polledMove) * (price - p.openPrice) * dir;
+  const rate = pnlRate(p);
+  // At (or cents from) the open price the rate can't be inferred reliably — keep the snapshot figure
+  return rate === null ? p.profit : rate * (price - p.openPrice) * (p.side === 'BUY' ? 1 : -1);
 }
 
 const decimals = (n: number) => (fmtPrice(n).split('.')[1] ?? '').length;
+/** Bridge sends no symbol digits: the most decimals any known price of the position shows */
+const digitsOf = (p: Mt5Position, q?: Mt5Quote) =>
+  Math.max(decimals(p.openPrice), decimals(p.currentPrice), q ? Math.max(decimals(q.bid), decimals(q.ask)) : 0);
 
 /** FX-style quote: the pip pair large, a fractional pip (5- and 3-digit quotes) raised small. */
 function PipPrice({ value, digits }: { value?: number; digits: number }) {
@@ -288,6 +292,88 @@ export function Mt5Ticket() {
   );
 }
 
+/**
+ * Inline SL / TP editor under a position row. Each level shows the P&L it would lock in and its distance from the
+ * closing price. Empty = no level; only changed levels are sent (0 removes one).
+ */
+function StopsEditor({ p, price, digits, onDone, onError }: {
+  p: Mt5Position; price: number; digits: number; onDone: () => void; onError: (msg: string) => void;
+}) {
+  const t = useT();
+  const addLogEntry = useAppStore((s) => s.addLogEntry);
+  const modify = useMt5ModifyPosition();
+  // fmtPrice, not toFixed(digits): digits is inferred and may be short — never round an existing level
+  const [sl, setSl] = useState(p.stopLoss ? fmtPrice(p.stopLoss) : '');
+  const [tp, setTp] = useState(p.takeProfit ? fmtPrice(p.takeProfit) : '');
+  const slN = Number(sl) || 0;
+  const tpN = Number(tp) || 0;
+  const bad = levelsError(p.side, price, slN, tpN);
+  const badField = bad?.startsWith('SL') ? 'sl' : bad ? 'tp' : null;
+  const change = {
+    ...(Math.abs(slN - p.stopLoss) > 1e-9 ? { stopLoss: slN } : {}),
+    ...(Math.abs(tpN - p.takeProfit) > 1e-9 ? { takeProfit: tpN } : {}),
+  };
+  const dirty = Object.keys(change).length > 0;
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (bad || !dirty || modify.isPending) return;
+    try {
+      await modify.mutateAsync({ ticket: p.ticket, ...change });
+      addLogEntry({ type: 'trade', message: `[MT5] MODIFY #${p.ticket} ${p.symbol} SL ${fmtPrice(slN)} TP ${fmtPrice(tpN)}` });
+      onDone();
+    } catch (err) {
+      onError(errMsg(err)); // stay open so the levels can be fixed and sent again
+    }
+  };
+
+  const field = (key: 'sl' | 'tp', label: string, value: string, set: (v: string) => void, level: number, autoFocus?: boolean) => {
+    const pnl = level ? liveProfit(p, level) : 0;
+    const invalid = badField === key;
+    return (
+      <div className="grid grid-cols-[4.5rem_minmax(0,10rem)_1fr] items-center gap-2">
+        <label htmlFor={`${p.ticket}-${key}`} className={LABEL}>{label}</label>
+        <div className="flex h-7">
+          <input id={`${p.ticket}-${key}`} type="number" min="0" step={10 ** -digits} value={value} placeholder="Not set"
+            autoFocus={autoFocus} onChange={(e) => set(e.target.value)} aria-invalid={invalid || undefined}
+            aria-describedby={invalid ? `${p.ticket}-stops-error` : undefined}
+            className="flex-1 min-w-0 h-7 text-[12px] text-right" />
+          <button type="button" onClick={() => set('')} disabled={!value} aria-label={`Remove ${label.toLowerCase()}`}
+            className={`${STEP} border-l-0 text-[10px]`}>✕</button>
+        </div>
+        {/* An invalid level can't be hit — its readout dims instead of promising a P&L */}
+        <span className={`text-[10px] font-mono tabular-nums whitespace-nowrap ${invalid ? 'opacity-30' : ''}`}
+          title="If hit: P&L at this level, distance from the closing price">
+          {level ? (
+            <>
+              <span className={pnl >= 0 ? 'text-bullish' : 'text-bearish'}>{fmtSigned(pnl)}</span>
+              <span className="text-neutral/40 ml-2">{Math.round(Math.abs(level - price) * 10 ** digits)} pts</span>
+            </>
+          ) : <span className="text-neutral/30">—</span>}
+        </span>
+      </div>
+    );
+  };
+
+  return (
+    <form onSubmit={save} noValidate onKeyDown={(e) => { if (e.key === 'Escape') onDone(); }}
+      className="mt-2 pt-2 border-t border-border/30 flex flex-col gap-1.5">
+      {field('sl', t('stopLoss'), sl, setSl, slN, true)}
+      {field('tp', 'Take profit', tp, setTp, tpN)}
+      {bad && <p id={`${p.ticket}-stops-error`} role="alert" className="text-[10px] text-bearish">{bad}</p>}
+      <div className="flex justify-end gap-1 mt-0.5">
+        <button type="button" onClick={onDone} className="h-7 px-3 border border-border text-[10px] text-neutral hover:text-white">
+          {t('cancel')}
+        </button>
+        <button type="submit" disabled={!!bad || !dirty || modify.isPending}
+          className="h-7 px-3 border border-accent text-accent text-[10px] font-bold hover:bg-accent/15">
+          {modify.isPending ? t('submitting') : 'Save SL/TP'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 /** Open positions panel. */
 export function Mt5Positions() {
   const t = useT();
@@ -295,10 +381,13 @@ export function Mt5Positions() {
   const readOnly = user?.readOnly ?? false;
   const addLogEntry = useAppStore((s) => s.addLogEntry);
   const setSelectedSymbol = useAppStore((s) => s.setSelectedSymbol);
+  const tradeFocus = useAppStore((s) => s.tradeFocus);
+  const setTradeFocus = useAppStore((s) => s.setTradeFocus);
 
   const { data: positions = [], error: loadError } = useMt5Positions();
   const closePosition = useMt5ClosePosition();
   const [closeVolume, setCloseVolume] = useState<Record<number, string>>({});
+  const [editing, setEditing] = useState<number | null>(null); // ticket whose SL / TP editor is open
   const [error, setError] = useState('');
 
   const { data: quotes } = useMt5Quotes([...new Set(positions.map((p) => p.symbol))]);
@@ -339,7 +428,8 @@ export function Mt5Positions() {
         <ErrorBar msg={error || (loadError ? errMsg(loadError) : '')} onDismiss={error ? () => setError('') : undefined} />
 
         {positions.length === 0 ? <Empty label={t('noOpenPositions')} /> : livePositions.map((p) => (
-          <div key={p.ticket} className="px-3 py-2 border-b border-border/30 hover:bg-white/[0.02] group">
+          <div key={p.ticket} onMouseEnter={() => setTradeFocus(`p${p.ticket}`)} onMouseLeave={() => setTradeFocus(null)}
+            className={`px-3 py-2 border-b border-l-2 border-b-border/30 group ${tradeFocus === `p${p.ticket}` ? 'bg-white/[0.05] border-l-accent' : 'border-l-transparent'}`}>
             <div className="flex items-center justify-between gap-2">
               <button onClick={() => setSelectedSymbol(p.symbol)} className="text-left min-w-0">
                 <span className={`text-[9px] font-black mr-1.5 ${p.side === 'BUY' ? 'text-bullish' : 'text-bearish'}`}>{p.side}</span>
@@ -352,7 +442,14 @@ export function Mt5Positions() {
                   {p.pnl >= 0 ? '+' : ''}{fmtMoney(p.pnl)}
                 </span>
                 {!readOnly && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all">
+                  <div className={`flex items-center gap-1 transition-all ${editing === p.ticket ? '' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
+                    <button onClick={() => { setError(''); setEditing(editing === p.ticket ? null : p.ticket); }}
+                      aria-expanded={editing === p.ticket} aria-label={`Edit SL/TP #${p.ticket}`}
+                      className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 border ${
+                        editing === p.ticket ? 'border-accent text-accent' : 'border-border text-neutral hover:text-white hover:border-neutral/60'
+                      }`}>
+                      SL/TP
+                    </button>
                     <input type="number" step="0.01" min="0.01" max={p.volume} aria-label="Lots to close"
                       value={closeVolume[p.ticket] ?? ''} placeholder={String(p.volume)}
                       onChange={(e) => setCloseVolume((cv) => ({ ...cv, [p.ticket]: e.target.value }))}
@@ -371,6 +468,10 @@ export function Mt5Positions() {
               {p.takeProfit > 0 && <span>TP {fmtPrice(p.takeProfit)}</span>}
               <span className="ml-auto">{fmtTime(p.openTime)}</span>
             </div>
+            {editing === p.ticket && !readOnly && (
+              <StopsEditor key={p.ticket} p={p} price={p.price} digits={digitsOf(p, quotes?.[p.symbol])}
+                onDone={() => setEditing(null)} onError={setError} />
+            )}
           </div>
         ))}
       </div>
@@ -384,6 +485,8 @@ export function Mt5Orders() {
   const user = useAuthStore((s) => s.user);
   const readOnly = user?.readOnly ?? false;
   const addLogEntry = useAppStore((s) => s.addLogEntry);
+  const tradeFocus = useAppStore((s) => s.tradeFocus);
+  const setTradeFocus = useAppStore((s) => s.setTradeFocus);
 
   const { data: orders = [], error: loadError } = useMt5Orders();
   const cancelOrder = useMt5CancelOrder();
@@ -406,7 +509,8 @@ export function Mt5Orders() {
         <ErrorBar msg={error || (loadError ? errMsg(loadError) : '')} onDismiss={error ? () => setError('') : undefined} />
 
         {orders.length === 0 ? <Empty label={t('noRecentOrders')} /> : orders.map((o) => (
-          <div key={o.ticket} className="px-3 py-2 border-b border-border/30 hover:bg-white/[0.02] group">
+          <div key={o.ticket} onMouseEnter={() => setTradeFocus(`o${o.ticket}`)} onMouseLeave={() => setTradeFocus(null)}
+            className={`px-3 py-2 border-b border-l-2 border-b-border/30 group ${tradeFocus === `o${o.ticket}` ? 'bg-white/[0.05] border-l-accent' : 'border-l-transparent'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 border ${
@@ -431,6 +535,85 @@ export function Mt5Orders() {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+const PERIODS = [[1, '24h', 'the last 24 hours'], [7, '7d', 'the last 7 days'], [30, '30d', 'the last 30 days'], [90, '90d', 'the last 90 days']] as const;
+
+/** Order history: executed deals (entries and exits), newest first. */
+export function Mt5History() {
+  const t = useT();
+  const user = useAuthStore((s) => s.user);
+  const setSelectedSymbol = useAppStore((s) => s.setSelectedSymbol);
+  const [days, setDays] = useState<number>(7);
+  const { data: deals = [], error, isLoading } = useMt5Deals(days);
+
+  if (!user) return <LoginPrompt />;
+
+  const rows = [...deals].reverse(); // bridge sends oldest first
+  const sum = (k: 'profit' | 'commission' | 'swap' | 'fee') => deals.reduce((s, d) => s + d[k], 0);
+  const net = sum('profit') + sum('commission') + sum('swap') + sum('fee');
+  const period = PERIODS.find(([d]) => d === days)![2];
+
+  return (
+    <div className="@container h-full flex flex-col overflow-hidden bg-black">
+      <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border/30 shrink-0">
+        <div role="group" aria-label="Period" className="flex h-6 border border-border">
+          {PERIODS.map(([d, label]) => (
+            <button key={d} type="button" onClick={() => setDays(d)} aria-pressed={days === d}
+              className={`px-2 text-[10px] font-mono ${days === d ? 'bg-white/10 text-white' : 'text-neutral/50 hover:text-neutral'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <span className="text-[10px] font-mono text-neutral tabular-nums whitespace-nowrap"
+          title={`Profit ${fmtMoney(sum('profit'))}\nCommission ${fmtMoney(sum('commission'))}\nSwap ${fmtMoney(sum('swap'))}\nFees ${fmtMoney(sum('fee'))}`}>
+          {deals.length} {deals.length === 1 ? 'deal' : 'deals'}
+          <span className="ml-3">Net </span>
+          <span className={`font-bold ${net >= 0 ? 'text-bullish' : 'text-bearish'}`}>{fmtSigned(net)}</span>
+        </span>
+      </div>
+
+      <div className="flex-1 overflow-auto no-scrollbar">
+        <ErrorBar msg={error ? errMsg(error) : ''} />
+
+        {isLoading ? <Empty label={t('loading')} /> : rows.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-32 gap-1 text-[10px] font-mono">
+            <span className="text-neutral">No deals in {period}</span>
+            <span className="text-neutral/40">Trades you open or close show up here.</span>
+          </div>
+        ) : (
+          <table className="deals tabular-nums">
+            <thead>
+              <tr>
+                <th>Time</th><th>Symbol</th><th>Type</th><th>In/Out</th>
+                <th className="r">Lots</th><th className="r">Price</th><th className="r">Commission</th><th className="r">Swap</th><th className="r">Profit</th>
+                <th className="hidden @2xl:table-cell">Comment</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((d) => (
+                <tr key={d.ticket} onClick={() => setSelectedSymbol(d.symbol)} className="cursor-pointer"
+                  title={`Deal #${d.ticket}\nOrder #${d.orderTicket}\nPosition #${d.positionId}`}>
+                  <td className="text-neutral/60">{fmtTime(d.time)}</td>
+                  <td className="text-white font-bold">{d.symbol}</td>
+                  <td className={`font-bold ${d.action === 'BUY' ? 'text-bullish' : 'text-bearish'}`}>{d.action}</td>
+                  <td className="text-neutral/70">{d.entry.replace('_', ' ').toLowerCase()}</td>
+                  <td className="r text-white/80">{d.volume}</td>
+                  <td className="r text-white/80">{fmtPrice(d.price)}</td>
+                  <td className="r text-neutral/60">{d.commission ? fmtMoney(d.commission) : '—'}</td>
+                  <td className="r text-neutral/60">{d.swap ? fmtMoney(d.swap) : '—'}</td>
+                  <td className={`r font-bold ${d.entry === 'IN' ? 'text-neutral/30' : d.profit >= 0 ? 'text-bullish' : 'text-bearish'}`}>
+                    {d.entry === 'IN' ? '—' : fmtSigned(d.profit)}
+                  </td>
+                  <td className="hidden @2xl:table-cell text-neutral/50">{d.comment}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

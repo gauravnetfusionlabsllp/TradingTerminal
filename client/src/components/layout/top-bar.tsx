@@ -6,6 +6,7 @@ import { NotificationPanel } from '../common/notification-panel';
 import { SettingsPanel } from '../common/settings-panel';
 import { PanelToggleMenu } from '../common/panel-toggle-menu';
 import { UserMenu } from '../auth/user-menu';
+import { WorkspaceTabs } from './workspace-tabs';
 import logoSvg from '../../assets/logo.svg?raw';
 
 export function TopBar() {
@@ -52,21 +53,23 @@ export function TopBar() {
 
   return (
     <header className="bg-panel border-b border-border flex items-center justify-between px-2 h-10 shrink-0 z-20 sticky top-0">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-2 py-1 text-white font-bold uppercase tracking-widest text-xs" aria-label="SGFX Terminal">
+      <div className="flex items-center gap-3 min-w-0 flex-1 self-stretch">
+        <div className="flex shrink-0 items-center gap-2 px-2 py-1 text-white font-bold uppercase tracking-widest text-xs" aria-label="SGFX Terminal">
           <span className="block h-4 w-[62px] [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: logoSvg }} />
           <span className="text-neutral/60 text-[9px]">TERMINAL</span>
         </div>
         <div className="h-5 w-px bg-border mx-1" />
-        <span className="text-xs font-mono text-neutral px-2 py-0.5 border border-border bg-black">
+        <span className="shrink-0 text-xs font-mono text-neutral px-2 py-0.5 border border-border bg-black">
           {localTime}
         </span>
+        <div className="h-5 w-px bg-border shrink-0" />
+        <WorkspaceTabs />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-3 pl-3">
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex items-center gap-2 bg-black border border-border px-2 py-1 text-[11px] font-mono text-neutral hover:border-accent hover:text-accent transition-colors w-72"
+          className="flex items-center gap-2 bg-black border border-border px-2 py-1 text-[11px] font-mono text-neutral hover:border-accent hover:text-accent transition-colors w-56 xl:w-72"
         >
           <Search className="w-3.5 h-3.5 shrink-0" />
           <span className="flex-1 text-left uppercase tracking-wider truncate">{t('search')}</span>

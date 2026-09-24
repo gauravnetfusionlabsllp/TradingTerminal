@@ -2,7 +2,9 @@ import { useState, useMemo, useEffect, type RefObject } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
-import { ALL_PANEL_IDS, PANEL_IDS, getLocalizedPanelName, showPanelInLayout, hidePanelInLayout, resetLayout } from '../layout/dock-layout';
+import { showPanelInLayout, hidePanelInLayout } from '../layout/dock-layout';
+import { ALL_PANEL_IDS, PANEL_IDS, getLocalizedPanelName } from '../layout/panels';
+import { useWorkspaceStore, isModified } from '../../stores/use-workspace-store';
 import { Eye, EyeOff, RotateCcw, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import type { TranslationKey } from '../../i18n/translations';
 
@@ -70,7 +72,7 @@ const PANEL_CATEGORIES: PanelCategory[] = [
   {
     key: 'catTrading',
     panels: [
-      PANEL_IDS.TRADING, PANEL_IDS.POSITIONS, PANEL_IDS.ORDERS,
+      PANEL_IDS.TRADING, PANEL_IDS.POSITIONS, PANEL_IDS.ORDERS, PANEL_IDS.HISTORY,
       PANEL_IDS.RISK, PANEL_IDS.ALERTS, PANEL_IDS.SECTORS, PANEL_IDS.PORTFOLIO, PANEL_IDS.PORTFOLIO_OPTIMIZER, PANEL_IDS.BACKTEST,
     ],
   },
@@ -96,8 +98,11 @@ interface PanelToggleMenuProps {
 export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenuProps) {
   const t = useT();
   const hiddenPanels = useAppStore((s) => s.hiddenPanels);
-  const hidePanel = useAppStore((s) => s.hidePanel);
-  const showPanel = useAppStore((s) => s.showPanel);
+  const activeWs = useWorkspaceStore((s) => {
+    const sp = s.byOwner[s.owner];
+    return sp?.list.find((w) => w.key === sp.active);
+  });
+  const resetWorkspace = useWorkspaceStore((s) => s.reset);
   useAppStore((s) => s.locale);
   const [search, setSearch] = useState('');
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -114,14 +119,8 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
   }, [open, onClose, containerRef]);
 
   const togglePanel = (panelId: string) => {
-    const isHidden = hiddenPanels.includes(panelId);
-    if (isHidden) {
-      showPanel(panelId);
-      showPanelInLayout(panelId);
-    } else {
-      hidePanel(panelId);
-      hidePanelInLayout(panelId);
-    }
+    if (hiddenPanels.includes(panelId)) showPanelInLayout(panelId);
+    else hidePanelInLayout(panelId);
   };
 
   const toggleCategory = (key: string) => {
@@ -226,18 +225,20 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
             })}
           </div>
 
-          {/* Reset button */}
-          <div className="border-t border-border/30 px-3 py-2 shrink-0">
-            <button
-              onClick={resetLayout}
-              className="w-full flex items-center gap-2.5 px-0 py-1 text-left text-neutral/60 hover:text-bearish transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-              <span className="text-[9px] font-mono font-bold uppercase tracking-wider">
-                {t('catReset')}
-              </span>
-            </button>
-          </div>
+          {/* Reset: only an edited built-in workspace has an original to go back to */}
+          {activeWs && isModified(activeWs) && (
+            <div className="border-t border-border/30 px-3 py-2 shrink-0">
+              <button
+                onClick={() => resetWorkspace(activeWs.key)}
+                className="w-full flex items-center gap-2.5 px-0 py-1 text-left text-neutral/60 hover:text-bearish transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                <span className="text-[9px] font-mono font-bold uppercase tracking-wider">
+                  {t('wsReset')}
+                </span>
+              </button>
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

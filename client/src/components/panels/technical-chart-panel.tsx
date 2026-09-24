@@ -1,148 +1,25 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
-  createChart, ColorType, LineStyle, TickMarkType,
+  createChart, CandlestickSeries, HistogramSeries, LineSeries, ColorType, TickMarkType,
   type IChartApi, type ISeriesApi, type Time, type TickMarkFormatter, type UTCTimestamp,
 } from 'lightweight-charts';
 import { useMt5Chart, useMt5Quotes, useMt5Symbols, TF_SECONDS, type Mt5Timeframe } from '../../api/hooks/use-mt5';
 import { useAuthStore } from '../../stores/use-auth-store';
 import { useAppStore } from '../../stores/use-app-store';
+import { usePersisted } from '../../hooks/use-persisted';
 import { tickBucket, foldTick, mergeLive, type Bar } from '../../lib/live-candles';
 import { keepView } from '../../lib/chart-view';
 import { toMt5 } from '../../lib/symbols';
 import { fmtPrice } from '../trading/mt5-trading';
 import { SymbolPicker } from '../trading/symbol-picker';
-import { ChartTrading } from './chart-trading';
+import { ChartTrading, ChartMenu } from './chart-trading';
+import {
+  useIndicatorRegistry, useStudyOutputs, useStudySeries, usePaneTops, newStudy, isStudyList, DEFAULT_STUDIES,
+  IndicatorPicker, LegendList, StudyChip, StudySettings, type Study, type StudyOut,
+} from './chart-studies';
+import { useDrawings, DrawRail, DrawingBar, DrawHint, DrawTextEditor } from './chart-drawings';
 import { GlassCard } from '../common/glass-card';
 import { useT } from '../../i18n';
-
-// ─── Technical indicator calculation functions (pure TypeScript) ───
-
-function calcSMA(data: number[], period: number): (number | null)[] {
-  const result: (number | null)[] = [];
-  for (let i = 0; i < data.length; i++) {
-    if (i < period - 1) {
-      result.push(null);
-    } else {
-      let sum = 0;
-      for (let j = i - period + 1; j <= i; j++) sum += data[j];
-      result.push(sum / period);
-    }
-  }
-  return result;
-}
-
-function calcEMA(data: number[], period: number): (number | null)[] {
-  const result: (number | null)[] = [];
-  const multiplier = 2 / (period + 1);
-  for (let i = 0; i < data.length; i++) {
-    if (i < period - 1) {
-      result.push(null);
-    } else if (i === period - 1) {
-      let sum = 0;
-      for (let j = 0; j < period; j++) sum += data[j];
-      result.push(sum / period);
-    } else {
-      const prev = result[i - 1];
-      if (prev == null) {
-        result.push(null);
-      } else {
-        result.push((data[i] - prev) * multiplier + prev);
-      }
-    }
-  }
-  return result;
-}
-
-function calcRSI(data: number[], period: number): (number | null)[] {
-  const result: (number | null)[] = [];
-  if (data.length < period + 1) return data.map(() => null);
-
-  let avgGain = 0;
-  let avgLoss = 0;
-  for (let i = 1; i <= period; i++) {
-    const change = data[i] - data[i - 1];
-    if (change >= 0) avgGain += change;
-    else avgLoss += Math.abs(change);
-  }
-  avgGain /= period;
-  avgLoss /= period;
-
-  for (let i = 0; i < data.length; i++) {
-    if (i < period) {
-      result.push(null);
-    } else if (i === period) {
-      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-      result.push(100 - 100 / (1 + rs));
-    } else {
-      const change = data[i] - data[i - 1];
-      const gain = change >= 0 ? change : 0;
-      const loss = change < 0 ? Math.abs(change) : 0;
-      avgGain = (avgGain * (period - 1) + gain) / period;
-      avgLoss = (avgLoss * (period - 1) + loss) / period;
-      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-      result.push(100 - 100 / (1 + rs));
-    }
-  }
-  return result;
-}
-
-function calcMACD(
-  data: number[],
-  fast: number,
-  slow: number,
-  signal: number,
-): { macd: (number | null)[]; signal: (number | null)[]; histogram: (number | null)[] } {
-  const emaFast = calcEMA(data, fast);
-  const emaSlow = calcEMA(data, slow);
-  const macdLine: (number | null)[] = emaFast.map((f, i) => {
-    const s = emaSlow[i];
-    return f != null && s != null ? f - s : null;
-  });
-  const macdNonNull = macdLine.filter((v): v is number => v != null);
-  const signalLine = calcEMA(macdNonNull, signal);
-  // Align signal line with macd line
-  const signalAligned: (number | null)[] = [];
-  let idx = 0;
-  for (let i = 0; i < macdLine.length; i++) {
-    if (macdLine[i] != null) {
-      signalAligned.push(signalLine[idx] ?? null);
-      idx++;
-    } else {
-      signalAligned.push(null);
-    }
-  }
-  const histogram: (number | null)[] = macdLine.map((m, i) => {
-    const s = signalAligned[i];
-    return m != null && s != null ? m - s : null;
-  });
-  return { macd: macdLine, signal: signalAligned, histogram };
-}
-
-function calcBollinger(
-  data: number[],
-  period: number,
-  stdDev: number,
-): { upper: (number | null)[]; middle: (number | null)[]; lower: (number | null)[] } {
-  const middle = calcSMA(data, period);
-  const upper: (number | null)[] = [];
-  const lower: (number | null)[] = [];
-  for (let i = 0; i < data.length; i++) {
-    const m = middle[i];
-    if (m == null || i < period - 1) {
-      upper.push(null);
-      lower.push(null);
-    } else {
-      let variance = 0;
-      for (let j = i - period + 1; j <= i; j++) {
-        variance += (data[j] - m) ** 2;
-      }
-      const sd = Math.sqrt(variance / period);
-      upper.push(m + stdDev * sd);
-      lower.push(m - stdDev * sd);
-    }
-  }
-  return { upper, middle, lower };
-}
 
 // ─── Formatting helpers ───
 
@@ -165,55 +42,22 @@ function formatDate(ts: number): string {
 
 type Candle = Bar;
 type ChartType = 'candle' | 'line';
-type IndicatorKey = 'sma20' | 'sma50' | 'sma200' | 'ema20' | 'ema50' | 'ema200' | 'rsi' | 'macd' | 'bollinger' | 'volume';
-
-interface Indicators {
-  sma20: boolean;
-  sma50: boolean;
-  sma200: boolean;
-  ema20: boolean;
-  ema50: boolean;
-  ema200: boolean;
-  rsi: boolean;
-  macd: boolean;
-  bollinger: boolean;
-  volume: boolean;
-}
-
-const DEFAULT_INDICATORS: Indicators = {
-  sma20: true,
-  sma50: true,
-  sma200: false,
-  ema20: false,
-  ema50: false,
-  ema200: false,
-  rsi: false,
-  macd: false,
-  bollinger: false,
-  volume: true,
-};
-
-const INDICATOR_LABELS: Record<IndicatorKey, string> = {
-  sma20: 'SMA 20',
-  sma50: 'SMA 50',
-  sma200: 'SMA 200',
-  ema20: 'EMA 20',
-  ema50: 'EMA 50',
-  ema200: 'EMA 200',
-  rsi: 'RSI (14)',
-  macd: 'MACD',
-  bollinger: 'Bollinger',
-  volume: 'Volume',
-};
 
 const TIMEFRAMES = Object.keys(TF_SECONDS) as Mt5Timeframe[];
 
-// Overlay legend: [indicator, label, color, dashed]
-const LEGEND: [IndicatorKey, string, string, boolean?][] = [
-  ['sma20', 'SMA20', '#facc15'], ['sma50', 'SMA50', '#3b82f6'], ['sma200', 'SMA200', '#ef4444'],
-  ['ema20', 'EMA20', '#facc15', true], ['ema50', 'EMA50', '#3b82f6', true], ['ema200', 'EMA200', '#ef4444', true],
-  ['bollinger', 'BB(20,2)', '#fbbf24'],
-];
+function ToolButton({ active = false, className = '', ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) {
+  return (
+    <button
+      type="button"
+      {...rest}
+      className={`h-6 px-2 text-[10px] font-bold tracking-wider border transition-colors duration-100 motion-reduce:transition-none ${
+        active ? 'bg-amber-400/15 text-amber-400 border-amber-400/40' : 'text-white/45 border-transparent hover:text-white/85 hover:bg-white/[0.05]'
+      } ${className}`}
+    />
+  );
+}
+
+const HeaderDivider = () => <span className="w-px h-4 mx-1 bg-white/10" aria-hidden />;
 
 // ─── Standalone panel: MT5 symbol picker, follows the Market Watch selection ───
 
@@ -265,16 +109,22 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
 
   const [tf, setTf] = useState<Mt5Timeframe>('M5');
   const [chartType, setChartType] = useState<ChartType>('candle');
-  const [indicators, setIndicators] = useState<Indicators>(DEFAULT_INDICATORS);
-  const [showIndicatorMenu, setShowIndicatorMenu] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const indicatorMenuRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Indicators apply to every symbol (like a template); drawings are saved per symbol by the chart
+  const reg = useIndicatorRegistry();
+  const [studies, setStudies] = usePersisted<Study[]>('sgfx.chart.indicators', DEFAULT_STUDIES, isStudyList);
+  const [volume, setVolume] = usePersisted('sgfx.chart.volume', true, (v) => typeof v === 'boolean');
+  const [pickerAt, setPickerAt] = useState<{ left: number; top: number } | null>(null);
 
   // On-chart trading only for symbols this MT5 account can trade; lots live here so a timeframe switch keeps them
   const user = useAuthStore((s) => s.user);
   const { data: symbols = [] } = useMt5Symbols();
   const [lots, setLots] = useState('0.01');
-  const trade = user && symbols.some((s) => s.symbol === symbol) ? { readOnly: !!user.readOnly, lots, setLots } : undefined;
+  // The one-click BUY / SELL strip can be hidden; lines and the right-click menu stay
+  const [oneClick, setOneClick] = usePersisted('sgfx.chart.oneClick', true, (v) => typeof v === 'boolean');
+  const trade = user && symbols.some((s) => s.symbol === symbol) ? { readOnly: !!user.readOnly, lots, setLots, oneClick } : undefined;
 
   const { data, offset, error, isLoading, hasMore, fetchOlder, isFetchingOlder } = useMt5Chart(symbol, tf);
   const tfSec = TF_SECONDS[tf];
@@ -297,59 +147,16 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
   }, [quote, base, offset, tfSec]);
   const candles = useMemo(() => mergeLive(base, tail), [base, tail]);
 
-  // Close indicator menu on outside click
-  useEffect(() => {
-    if (!showIndicatorMenu) return;
-    const handler = (e: MouseEvent) => {
-      if (indicatorMenuRef.current && !indicatorMenuRef.current.contains(e.target as Node)) {
-        setShowIndicatorMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showIndicatorMenu]);
+  const outputs = useStudyOutputs(reg, studies, candles);
+  const setStudy = useCallback((s: Study) => setStudies((prev) => prev.map((x) => (x.uid === s.uid ? s : x))), [setStudies]);
+  const removeStudy = useCallback((uid: string) => setStudies((prev) => prev.filter((s) => s.uid !== uid)), [setStudies]);
 
-  const toggleIndicator = useCallback((key: IndicatorKey) => {
-    setIndicators((prev) => ({ ...prev, [key]: !prev[key] }));
-  }, []);
-
-  // Pre-compute indicator data
-  const closes = useMemo(() => candles.map((c) => c.close), [candles]);
-
-  const indicatorData = useMemo(() => {
-    const d: {
-      sma20: (number | null)[];
-      sma50: (number | null)[];
-      sma200: (number | null)[];
-      ema20: (number | null)[];
-      ema50: (number | null)[];
-      ema200: (number | null)[];
-      rsi: (number | null)[];
-      macd: { macd: (number | null)[]; signal: (number | null)[]; histogram: (number | null)[] };
-      bollinger: { upper: (number | null)[]; middle: (number | null)[]; lower: (number | null)[] };
-    } = {
-      sma20: [],
-      sma50: [],
-      sma200: [],
-      ema20: [],
-      ema50: [],
-      ema200: [],
-      rsi: [],
-      macd: { macd: [], signal: [], histogram: [] },
-      bollinger: { upper: [], middle: [], lower: [] },
-    };
-    if (closes.length === 0) return d;
-    if (indicators.sma20) d.sma20 = calcSMA(closes, 20);
-    if (indicators.sma50) d.sma50 = calcSMA(closes, 50);
-    if (indicators.sma200) d.sma200 = calcSMA(closes, 200);
-    if (indicators.ema20) d.ema20 = calcEMA(closes, 20);
-    if (indicators.ema50) d.ema50 = calcEMA(closes, 50);
-    if (indicators.ema200) d.ema200 = calcEMA(closes, 200);
-    if (indicators.rsi) d.rsi = calcRSI(closes, 14);
-    if (indicators.macd) d.macd = calcMACD(closes, 12, 26, 9);
-    if (indicators.bollinger) d.bollinger = calcBollinger(closes, 20, 2);
-    return d;
-  }, [closes, indicators]);
+  const togglePicker = (btn: HTMLElement) => {
+    if (pickerAt) return setPickerAt(null);
+    const root = rootRef.current!.getBoundingClientRect();
+    const r = btn.getBoundingClientRect();
+    setPickerAt({ left: Math.max(8, Math.min(r.left - root.left, root.width - 448)), top: r.bottom - root.top + 4 });
+  };
 
   // Last candle stats
   const lastCandle = candles.length > 0 ? candles[candles.length - 1] : null;
@@ -357,91 +164,55 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
   const change = lastCandle && prevCandle ? lastCandle.close - prevCandle.close : 0;
   const changePct = prevCandle && prevCandle.close !== 0 ? (change / prevCandle.close) * 100 : 0;
 
-  // Hover candle
-  const hoverCandle = hoverIndex != null && hoverIndex >= 0 && hoverIndex < candles.length ? candles[hoverIndex] : null;
-
   return (
-    <div className="relative flex flex-col h-full bg-black text-white overflow-hidden select-none" style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' }}>
+    <div ref={rootRef} className="@container relative flex flex-col h-full bg-black text-white overflow-hidden select-none" style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' }}>
       {/* Top control bar */}
-      <div className="flex items-center gap-1 px-2 py-1 border-b border-white/5 shrink-0 flex-wrap">
+      <div className="flex items-center gap-0.5 px-2 py-1 border-b border-white/[0.06] shrink-0 flex-wrap">
         {picker}
-
-        {/* Timeframe buttons */}
-        <div className="flex items-center gap-0.5">
+        <HeaderDivider />
+        <div role="group" aria-label="Timeframe" className="flex items-center gap-0.5">
           {TIMEFRAMES.map((label) => (
-            <button
-              key={label}
-              onClick={() => setTf(label)}
-              className={`px-1.5 py-0.5 text-[8px] font-bold tracking-wider transition-colors ${
-                tf === label
-                  ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40'
-                  : 'text-white/40 hover:text-white/70 border border-transparent'
-              }`}
-            >
-              {label}
-            </button>
+            <ToolButton key={label} active={tf === label} aria-pressed={tf === label} onClick={() => setTf(label)}>{label}</ToolButton>
           ))}
         </div>
-
-        {/* Chart type toggle */}
-        <div className="flex items-center gap-0.5 ml-1">
-          <button
-            onClick={() => setChartType('candle')}
-            className={`px-1.5 py-0.5 text-[8px] font-bold tracking-wider transition-colors ${
-              chartType === 'candle'
-                ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40'
-                : 'text-white/40 hover:text-white/70 border border-transparent'
-            }`}
-          >
+        <HeaderDivider />
+        <div role="group" aria-label="Chart type" className="flex items-center gap-0.5">
+          <ToolButton active={chartType === 'candle'} aria-pressed={chartType === 'candle'} onClick={() => setChartType('candle')}>
             {tr('chartCandle', 'CANDLE')}
-          </button>
-          <button
-            onClick={() => setChartType('line')}
-            className={`px-1.5 py-0.5 text-[8px] font-bold tracking-wider transition-colors ${
-              chartType === 'line'
-                ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40'
-                : 'text-white/40 hover:text-white/70 border border-transparent'
-            }`}
-          >
+          </ToolButton>
+          <ToolButton active={chartType === 'line'} aria-pressed={chartType === 'line'} onClick={() => setChartType('line')}>
             {tr('chartLine', 'LINE')}
-          </button>
+          </ToolButton>
         </div>
-
-        {/* Indicators dropdown */}
-        <div className="relative ml-1" ref={indicatorMenuRef}>
-          <button
-            onClick={() => setShowIndicatorMenu((v) => !v)}
-            className={`px-1.5 py-0.5 text-[8px] font-bold tracking-wider transition-colors border ${
-              showIndicatorMenu
-                ? 'bg-amber-400/20 text-amber-400 border-amber-400/40'
-                : 'text-white/40 hover:text-white/70 border-white/10'
-            }`}
-          >
-            {tr('chartIndicators', 'INDICATORS')}
-          </button>
-          {showIndicatorMenu && (
-            <div className="absolute top-full left-0 mt-1 bg-zinc-900 border border-white/10 shadow-2xl z-50 min-w-[140px]">
-              {(Object.keys(INDICATOR_LABELS) as IndicatorKey[]).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => toggleIndicator(key)}
-                  className="w-full flex items-center gap-2 px-2 py-1 text-left hover:bg-white/5 transition-colors"
-                >
-                  <span
-                    className={`w-2.5 h-2.5 border flex items-center justify-center text-[7px] ${
-                      indicators[key] ? 'bg-amber-400/30 border-amber-400 text-amber-400' : 'border-white/20'
-                    }`}
-                  >
-                    {indicators[key] ? '\u2713' : ''}
-                  </span>
-                  <span className={`text-[9px] font-mono ${indicators[key] ? 'text-white' : 'text-white/40'}`}>
-                    {INDICATOR_LABELS[key]}
-                  </span>
-                </button>
-              ))}
-            </div>
+        <HeaderDivider />
+        <ToolButton
+          data-popover-trigger
+          active={!!pickerAt}
+          aria-haspopup="dialog"
+          aria-expanded={!!pickerAt}
+          onClick={(e) => togglePicker(e.currentTarget)}
+          className="flex items-center gap-1.5"
+        >
+          {tr('chartIndicators', 'INDICATORS')}
+          {studies.length > 0 && (
+            <span className={`min-w-4 h-4 px-1 flex items-center justify-center text-[9px] ${pickerAt ? 'bg-amber-400/25' : 'bg-white/10 text-white/70'}`}>
+              {studies.length}
+            </span>
           )}
-        </div>
+        </ToolButton>
+        {trade && !trade.readOnly && (
+          <>
+            <HeaderDivider />
+            <ToolButton
+              active={oneClick}
+              aria-pressed={oneClick}
+              onClick={() => setOneClick(!oneClick)}
+              title={oneClick ? 'Hide the one-click BUY / SELL buttons' : 'Show the one-click BUY / SELL buttons on the chart'}
+            >
+              {tr('chartOneClick', '1-CLICK')}
+            </ToolButton>
+          </>
+        )}
 
         {/* Stats bar (right side) */}
         <div className="ml-auto flex items-center gap-3 text-[9px] font-mono">
@@ -470,8 +241,11 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
             trade={trade}
             candles={candles}
             chartType={chartType}
-            indicators={indicators}
-            indicatorData={indicatorData}
+            volume={volume}
+            outputs={outputs}
+            onStudy={setStudy}
+            onRemoveStudy={removeStudy}
+            hoverIndex={hoverIndex}
             setHoverIndex={setHoverIndex}
             hasMore={!!hasMore}
             loadingOlder={isFetchingOlder}
@@ -479,33 +253,6 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
           />
         )}
 
-        {/* Hover OHLCV + indicator legend */}
-        <div className="absolute top-1 left-2 z-10 pointer-events-none flex flex-col gap-0.5 text-[9px] font-mono">
-          {hoverCandle && (
-            <div className="flex items-center gap-3 bg-black/80 px-2 py-0.5 border border-white/5">
-              <span className="text-white/50">{formatDate(hoverCandle.timestamp)}</span>
-              <span className="text-white/70">O:<span className="text-white">{formatPrice(hoverCandle.open)}</span></span>
-              <span className="text-white/70">H:<span className="text-white">{formatPrice(hoverCandle.high)}</span></span>
-              <span className="text-white/70">L:<span className="text-white">{formatPrice(hoverCandle.low)}</span></span>
-              <span className="text-white/70">C:<span className={hoverCandle.close >= hoverCandle.open ? 'text-emerald-400' : 'text-red-400'}>{formatPrice(hoverCandle.close)}</span></span>
-              <span className="text-white/70">V:<span className="text-white">{formatVol(hoverCandle.volume)}</span></span>
-            </div>
-          )}
-          <div className="flex items-center gap-2">
-            {LEGEND.filter(([key]) => indicators[key]).map(([key, label, color, dashed]) => (
-              <span key={key} className="flex items-center gap-1" style={{ color }}>
-                <span className="inline-block w-3 border-t" style={{ borderColor: color, borderTopStyle: dashed ? 'dashed' : 'solid' }} />
-                {label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {isFetchingOlder && (
-          <div className="absolute bottom-7 left-2 z-10 pointer-events-none text-[8px] font-mono text-amber-400/70 tracking-widest">
-            LOADING HISTORY…
-          </div>
-        )}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
             <div className="w-5 h-5 border-2 border-amber-400/30 border-t-amber-400 animate-spin" />
@@ -523,24 +270,26 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
           </div>
         )}
       </div>
+
+      {pickerAt && (
+        <IndicatorPicker
+          reg={reg}
+          studies={studies}
+          volume={volume}
+          at={pickerAt}
+          onAdd={(e) => setStudies((prev) => [...prev, newStudy(e, prev)])}
+          onStudy={setStudy}
+          onRemoveStudy={removeStudy}
+          onVolume={setVolume}
+          onRemoveAll={() => { setStudies([]); setVolume(false); }}
+          onClose={() => setPickerAt(null)}
+        />
+      )}
     </div>
   );
 }
 
 // ─── Chart renderer: lightweight-charts (drag-pan, wheel/pinch zoom, crosshair built in) ───
-
-type Series = (number | null)[];
-interface IndicatorData {
-  sma20: Series;
-  sma50: Series;
-  sma200: Series;
-  ema20: Series;
-  ema50: Series;
-  ema200: Series;
-  rsi: Series;
-  macd: { macd: Series; signal: Series; histogram: Series };
-  bollinger: { upper: Series; middle: Series; lower: Series };
-}
 
 const INITIAL_BARS = 120; // on open; dragging toward the left edge loads older pages
 const OLDER_AT = 20; // fetch the next older page when the view is this close to the oldest loaded bar
@@ -555,12 +304,15 @@ const tickMark: TickMarkFormatter = (time, type) => {
 };
 
 const CHART_OPTIONS = {
+  autoSize: true,
   layout: {
     background: { type: ColorType.Solid as const, color: 'transparent' },
     textColor: '#a1a1aa',
     fontSize: 10,
     fontFamily: 'ui-monospace, monospace',
     attributionLogo: false,
+    // Indicator panes: hairline separators, amber when grabbed to resize
+    panes: { separatorColor: 'rgba(255,255,255,0.08)', separatorHoverColor: 'rgba(251,191,36,0.3)', enableResize: true },
   },
   grid: {
     vertLines: { color: 'rgba(63,63,70,0.1)' },
@@ -570,37 +322,10 @@ const CHART_OPTIONS = {
     horzLine: { color: '#f59e0b', labelBackgroundColor: '#f59e0b' },
     vertLine: { color: '#f59e0b', labelBackgroundColor: '#f59e0b' },
   },
-  // Same price-axis width on every pane, so bars line up vertically across main / RSI / MACD
   rightPriceScale: { borderColor: 'rgba(63,63,70,0.3)', minimumWidth: 72 },
   timeScale: { borderColor: 'rgba(63,63,70,0.3)', timeVisible: true, tickMarkFormatter: tickMark },
   localization: { timeFormatter: (t: Time) => formatDate(t as number) },
 };
-
-// RSI / MACD panes follow the main chart's time scale instead of scrolling on their own
-const SUB_OPTIONS = {
-  ...CHART_OPTIONS,
-  handleScroll: false,
-  handleScale: false,
-  timeScale: { ...CHART_OPTIONS.timeScale, visible: false },
-};
-
-interface Pane { chart: IChartApi; dispose: () => void }
-
-function makePane(el: HTMLDivElement, options: typeof CHART_OPTIONS | typeof SUB_OPTIONS): Pane {
-  const chart = createChart(el, { ...options, width: el.clientWidth, height: el.clientHeight });
-  const ro = new ResizeObserver(() => chart.applyOptions({ width: el.clientWidth, height: el.clientHeight }));
-  ro.observe(el);
-  return { chart, dispose: () => { ro.disconnect(); chart.remove(); } };
-}
-
-const lineOpts = (color: string, dashed = false) => ({
-  color,
-  lineWidth: 1 as const,
-  lineStyle: dashed ? LineStyle.Dashed : LineStyle.Solid,
-  priceLineVisible: false,
-  lastValueVisible: false,
-  crosshairMarkerVisible: false,
-});
 
 /** Decimals the symbol quotes in (EURUSD 5, USDJPY 3, indices 2), from recent closes */
 function pricePrecision(candles: Candle[]): number {
@@ -613,23 +338,22 @@ function pricePrecision(candles: Candle[]): number {
   return Math.min(p, 6);
 }
 
-type Line = ISeriesApi<'Line'>;
 interface MainSeries {
   volume: ISeriesApi<'Histogram'>;
   candle: ISeriesApi<'Candlestick'>;
-  line: Line;
-  bbU: Line; bbM: Line; bbL: Line;
-  sma20: Line; sma50: Line; sma200: Line;
-  ema20: Line; ema50: Line; ema200: Line;
+  line: ISeriesApi<'Line'>;
 }
 
 interface LwChartProps {
   symbol: string;
-  trade?: { readOnly: boolean; lots: string; setLots: (v: string) => void };
+  trade?: { readOnly: boolean; lots: string; setLots: (v: string) => void; oneClick: boolean };
   candles: Candle[];
   chartType: ChartType;
-  indicators: Indicators;
-  indicatorData: IndicatorData;
+  volume: boolean;
+  outputs: StudyOut[];
+  onStudy: (s: Study) => void;
+  onRemoveStudy: (uid: string) => void;
+  hoverIndex: number | null;
   setHoverIndex: (i: number | null) => void;
   hasMore: boolean;
   loadingOlder: boolean;
@@ -637,77 +361,71 @@ interface LwChartProps {
 }
 
 /** Mounted per symbol + timeframe (keyed by the caller); data is pushed in with setData on every change. */
-function LwChart({ symbol, trade, candles, chartType, indicators, indicatorData, setHoverIndex, hasMore, loadingOlder, onNeedOlder }: LwChartProps) {
+function LwChart({
+  symbol, trade, candles, chartType, volume, outputs, onStudy, onRemoveStudy, hoverIndex, setHoverIndex, hasMore, loadingOlder, onNeedOlder,
+}: LwChartProps) {
   const mainEl = useRef<HTMLDivElement>(null);
-  const rsiEl = useRef<HTMLDivElement>(null);
-  const macdEl = useRef<HTMLDivElement>(null);
-  const main = useRef<(Pane & { s: MainSeries }) | null>(null);
-  const rsi = useRef<(Pane & { line: Line }) | null>(null);
-  const macd = useRef<(Pane & { hist: ISeriesApi<'Histogram'>; line: Line; signal: Line }) | null>(null);
+  const main = useRef<{ chart: IChartApi; s: MainSeries } | null>(null);
   const timeIndex = useRef(new Map<number, number>());
   const prev = useRef<{ n: number; lastT: number } | null>(null);
   // The range subscription lives as long as the chart; read the paging state through a ref
   const older = useRef({ hasMore, loadingOlder, onNeedOlder });
   older.current = { hasMore, loadingOlder, onNeedOlder };
-  // Children's effects run before ours, so the trading layer mounts from state once the pane exists (a ref would still be null)
-  const [ready, setReady] = useState<(Pane & { s: MainSeries }) | null>(null);
+  // Children's effects run before ours, so the trading layer mounts from state once the chart exists (a ref would still be null)
+  const [ready, setReady] = useState<{ chart: IChartApi; s: MainSeries } | null>(null);
+  const [settings, setSettings] = useState<{ uid: string; top: number } | null>(null);
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+  const barCount = useRef(0);
+  barCount.current = candles.length;
 
-  // Main pane (series created once; toggles only change visibility / data)
+  // Right-click → Reset chart: the opening view (last INITIAL_BARS bars), price axes back on auto-scale, pane heights back to 3 : 1
+  const resetView = useCallback(() => {
+    const m = main.current;
+    if (!m) return;
+    m.chart.panes().forEach((p, i) => {
+      p.setStretchFactor(i === 0 ? 3 : 1);
+      try { p.priceScale('right').applyOptions({ autoScale: true }); } catch { /* pane without a right scale */ }
+    });
+    const n = barCount.current;
+    m.chart.timeScale().setVisibleLogicalRange({ from: n - INITIAL_BARS, to: n + 3 });
+  }, []);
+
+  // Without trading the chart still gets its right-click menu (the trading layer brings its own, Reset included)
+  const canTrade = !!trade;
   useEffect(() => {
-    const pane = makePane(mainEl.current!, CHART_OPTIONS);
-    const { chart } = pane;
+    const el = mainEl.current;
+    if (!ready || canTrade || !el) return;
+    const onMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      const r = el.getBoundingClientRect();
+      setMenuAt({ x: e.clientX - r.left, y: e.clientY - r.top });
+    };
+    el.addEventListener('contextmenu', onMenu);
+    return () => el.removeEventListener('contextmenu', onMenu);
+  }, [ready, canTrade]);
+
+  // One chart; indicators that need their own scale go in v5 panes below the price pane
+  useEffect(() => {
+    const chart = createChart(mainEl.current!, CHART_OPTIONS);
     const s: MainSeries = {
-      volume: chart.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: 'volume', priceLineVisible: false, lastValueVisible: false }),
-      candle: chart.addCandlestickSeries({
+      volume: chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'volume', priceLineVisible: false, lastValueVisible: false }),
+      candle: chart.addSeries(CandlestickSeries, {
         upColor: '#22c55e', downColor: '#ef4444', borderUpColor: '#22c55e', borderDownColor: '#ef4444',
         wickUpColor: '#22c55e88', wickDownColor: '#ef444488',
       }),
-      line: chart.addLineSeries({ color: '#f59e0b', lineWidth: 2, visible: false }),
-      bbU: chart.addLineSeries(lineOpts('rgba(251,191,36,0.4)')),
-      bbM: chart.addLineSeries(lineOpts('rgba(251,191,36,0.25)', true)),
-      bbL: chart.addLineSeries(lineOpts('rgba(251,191,36,0.4)')),
-      sma20: chart.addLineSeries(lineOpts('#facc15')),
-      sma50: chart.addLineSeries(lineOpts('#3b82f6')),
-      sma200: chart.addLineSeries(lineOpts('#ef4444')),
-      ema20: chart.addLineSeries(lineOpts('#facc15', true)),
-      ema50: chart.addLineSeries(lineOpts('#3b82f6', true)),
-      ema200: chart.addLineSeries(lineOpts('#ef4444', true)),
+      line: chart.addSeries(LineSeries, { color: '#f59e0b', lineWidth: 2, visible: false }),
     };
     chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+    chart.panes()[0]?.setStretchFactor(3); // price pane 3 : 1 against each indicator pane
     chart.timeScale().subscribeVisibleLogicalRangeChange((r) => {
-      if (!r) return;
-      rsi.current?.chart.timeScale().setVisibleLogicalRange(r);
-      macd.current?.chart.timeScale().setVisibleLogicalRange(r);
       const o = older.current;
-      if (r.from < OLDER_AT && o.hasMore && !o.loadingOlder) o.onNeedOlder();
+      if (r && r.from < OLDER_AT && o.hasMore && !o.loadingOlder) o.onNeedOlder();
     });
     chart.subscribeCrosshairMove((p) => setHoverIndex(p.time == null ? null : timeIndex.current.get(p.time as number) ?? null));
-    main.current = { ...pane, s };
+    main.current = { chart, s };
     setReady(main.current);
-    return () => { pane.dispose(); main.current = null; prev.current = null; setReady(null); };
+    return () => { chart.remove(); main.current = null; prev.current = null; setReady(null); };
   }, [setHoverIndex]);
-
-  // RSI pane with 70/30 guides
-  useEffect(() => {
-    if (!indicators.rsi || !rsiEl.current) return;
-    const pane = makePane(rsiEl.current, SUB_OPTIONS);
-    const line = pane.chart.addLineSeries({ color: '#a855f7', lineWidth: 1, priceLineVisible: false, title: 'RSI' });
-    line.createPriceLine({ price: 70, color: 'rgba(239,68,68,0.5)', lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: '' });
-    line.createPriceLine({ price: 30, color: 'rgba(34,197,94,0.5)', lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: '' });
-    rsi.current = { ...pane, line };
-    return () => { pane.dispose(); rsi.current = null; };
-  }, [indicators.rsi]);
-
-  // MACD pane
-  useEffect(() => {
-    if (!indicators.macd || !macdEl.current) return;
-    const pane = makePane(macdEl.current, SUB_OPTIONS);
-    const hist = pane.chart.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
-    const line = pane.chart.addLineSeries({ color: '#3b82f6', lineWidth: 1, priceLineVisible: false, title: 'MACD' });
-    const signal = pane.chart.addLineSeries({ color: '#f97316', lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
-    macd.current = { ...pane, hist, line, signal };
-    return () => { pane.dispose(); macd.current = null; };
-  }, [indicators.macd]);
 
   const precision = useMemo(() => pricePrecision(candles), [candles]);
 
@@ -720,14 +438,11 @@ function LwChart({ symbol, trade, candles, chartType, indicators, indicatorData,
     const ts = chart.timeScale();
     const before = ts.getVisibleLogicalRange();
     const time = (c: Candle) => c.timestamp as UTCTimestamp;
-    // Gaps become whitespace points so every pane has the same time points (keeps logical ranges aligned)
-    const pts = (on: boolean, arr: Series) =>
-      on ? candles.map((c, i) => (arr[i] == null ? { time: time(c) } : { time: time(c), value: arr[i]! })) : [];
 
     const priceFormat = { type: 'price' as const, precision, minMove: 10 ** -precision };
     s.candle.applyOptions({ visible: chartType === 'candle', priceFormat });
     s.line.applyOptions({ visible: chartType === 'line', priceFormat });
-    s.volume.applyOptions({ visible: indicators.volume });
+    s.volume.applyOptions({ visible: volume });
     s.candle.setData(candles.map((c) => ({ time: time(c), open: c.open, high: c.high, low: c.low, close: c.close })));
     s.line.setData(candles.map((c) => ({ time: time(c), value: c.close })));
     s.volume.setData(candles.map((c) => ({
@@ -735,24 +450,6 @@ function LwChart({ symbol, trade, candles, chartType, indicators, indicatorData,
       value: c.volume,
       color: c.close >= c.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
     })));
-    s.sma20.setData(pts(indicators.sma20, indicatorData.sma20));
-    s.sma50.setData(pts(indicators.sma50, indicatorData.sma50));
-    s.sma200.setData(pts(indicators.sma200, indicatorData.sma200));
-    s.ema20.setData(pts(indicators.ema20, indicatorData.ema20));
-    s.ema50.setData(pts(indicators.ema50, indicatorData.ema50));
-    s.ema200.setData(pts(indicators.ema200, indicatorData.ema200));
-    s.bbU.setData(pts(indicators.bollinger, indicatorData.bollinger.upper));
-    s.bbM.setData(pts(indicators.bollinger, indicatorData.bollinger.middle));
-    s.bbL.setData(pts(indicators.bollinger, indicatorData.bollinger.lower));
-    rsi.current?.line.setData(pts(true, indicatorData.rsi));
-    if (macd.current) {
-      macd.current.hist.setData(candles.map((c, i) => {
-        const v = indicatorData.macd.histogram[i];
-        return v == null ? { time: time(c) } : { time: time(c), value: v, color: v >= 0 ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)' };
-      }));
-      macd.current.line.setData(pts(true, indicatorData.macd.macd));
-      macd.current.signal.setData(pts(true, indicatorData.macd.signal));
-    }
     timeIndex.current = new Map(candles.map((c, i) => [c.timestamp, i]));
 
     const p = prev.current;
@@ -764,30 +461,103 @@ function LwChart({ symbol, trade, candles, chartType, indicators, indicatorData,
       ts.setVisibleLogicalRange(keepView(before, p.n, n, appended));
     }
     prev.current = { n, lastT: candles[n - 1].timestamp };
-    const r = ts.getVisibleLogicalRange();
-    if (r) {
-      rsi.current?.chart.timeScale().setVisibleLogicalRange(r);
-      macd.current?.chart.timeScale().setVisibleLogicalRange(r);
-    }
-  }, [candles, indicatorData, indicators, chartType, precision]);
+  }, [candles, chartType, precision, volume]);
+
+  const series = ready ? (chartType === 'candle' ? ready.s.candle : ready.s.line) : null;
+  useStudySeries(ready?.chart ?? null, series, outputs);
+
+  const times = useMemo(() => candles.map((c) => c.timestamp), [candles]);
+  const draw = useDrawings({ chart: ready?.chart ?? null, series, el: ready ? mainEl.current : null, symbol, times, precision });
+
+  const paneCount = outputs.reduce((n, o) => Math.max(n, o.pane + 1), 1);
+  const tops = usePaneTops(ready?.chart ?? null, ready ? mainEl.current : null, paneCount);
+  // Pane k runs from tops[k] to the next pane (the last one to the time axis): legends fit inside it
+  const chartH = (mainEl.current?.clientHeight ?? 0) - (ready?.chart.timeScale().height() ?? 0);
+  const paneH = (k: number) => (tops[k + 1] ?? chartH) - (tops[k] ?? 0);
+
+  const shown = hoverIndex != null && hoverIndex >= 0 && hoverIndex < candles.length ? hoverIndex : candles.length - 1;
+  const bar = candles[shown];
+  const fmtOverlay = (v: number) => v.toFixed(precision);
+  const settingsOut = settings && outputs.find((o) => o.study.uid === settings.uid);
+  const chip = (o: StudyOut, row: number) => (
+    <StudyChip
+      key={o.study.uid}
+      o={o}
+      index={shown}
+      fmt={fmtOverlay}
+      onToggle={() => onStudy({ ...o.study, hidden: !o.study.hidden })}
+      onRemove={() => { onRemoveStudy(o.study.uid); setSettings((s) => (s?.uid === o.study.uid ? null : s)); }}
+      onEdit={() => {
+        const h = mainEl.current?.clientHeight ?? 0;
+        const want = (tops[o.pane] ?? 0) + (o.pane ? 24 : 44) + row * 20;
+        setSettings({ uid: o.study.uid, top: Math.max(4, Math.min(want, h - 340)) });
+      }}
+    />
+  );
 
   return (
-    <div className="absolute inset-0 flex flex-col">
-      <div className="flex-1 min-h-0 relative">
+    <div className="absolute inset-0 flex">
+      <DrawRail api={draw} />
+      <div className="relative flex-1 min-w-0">
         <div ref={mainEl} className="absolute inset-0" />
         {ready && trade && mainEl.current && (
           <ChartTrading
             chart={ready.chart}
-            series={chartType === 'candle' ? ready.s.candle : ready.s.line}
+            series={series!}
             el={mainEl.current}
             symbol={symbol}
             precision={precision}
+            drawing={!!draw.tool}
+            onReset={resetView}
             {...trade}
           />
         )}
+
+        {/* OHLCV of the bar under the crosshair (the last bar otherwise), then the price-pane indicators */}
+        <div className="absolute top-1 left-2 z-10 pointer-events-none flex flex-col items-start gap-0.5 max-w-[calc(100%-16px)] text-[9px] font-mono">
+          {bar && (
+            <div className="flex items-center gap-3 bg-black/80 px-2 py-0.5 border border-white/5">
+              <span className="text-white/50">{formatDate(bar.timestamp)}</span>
+              <span className="text-white/70">O:<span className="text-white">{formatPrice(bar.open)}</span></span>
+              <span className="text-white/70">H:<span className="text-white">{formatPrice(bar.high)}</span></span>
+              <span className="text-white/70">L:<span className="text-white">{formatPrice(bar.low)}</span></span>
+              <span className="text-white/70">C:<span className={bar.close >= bar.open ? 'text-emerald-400' : 'text-red-400'}>{formatPrice(bar.close)}</span></span>
+              <span className="text-white/70">V:<span className="text-white">{formatVol(bar.volume)}</span></span>
+            </div>
+          )}
+          <LegendList
+            items={outputs.filter((o) => o.pane === 0)}
+            limit={Math.max(1, Math.min(5, Math.floor((paneH(0) - 44) / 20)))}
+            maxHeight={paneH(0) - 56}
+            render={chip}
+          />
+        </div>
+        {/* Each indicator pane carries its own legend at its top edge */}
+        {tops.slice(1).map((top, i) => (
+          <div key={i} className="absolute left-2 z-10 pointer-events-none flex flex-col items-start gap-0.5 font-mono" style={{ top: top + 3 }}>
+            <LegendList
+              items={outputs.filter((o) => o.pane === i + 1)}
+              limit={Math.max(1, Math.min(3, Math.floor((paneH(i + 1) - 26) / 20)))}
+              maxHeight={paneH(i + 1) - 30}
+              render={chip}
+            />
+          </div>
+        ))}
+
+        {menuAt && !canTrade && mainEl.current && (
+          <ChartMenu at={menuAt} items={[{ label: 'Reset chart', onClick: resetView }]} bounds={mainEl.current} onClose={() => setMenuAt(null)} />
+        )}
+        <DrawingBar api={draw} />
+        <DrawTextEditor api={draw} width={mainEl.current?.clientWidth ?? 0} />
+        {settingsOut && (
+          <StudySettings o={settingsOut} top={settings.top} onChange={onStudy} onClose={() => setSettings(null)} />
+        )}
+
+        <div className="absolute bottom-7 left-2 z-10 pointer-events-none flex flex-col items-start gap-1 font-mono">
+          {loadingOlder && <div className="text-[8px] text-amber-400/70 tracking-widest">LOADING HISTORY…</div>}
+          <DrawHint api={draw} />
+        </div>
       </div>
-      {indicators.rsi && <div ref={rsiEl} className="h-[22%] min-h-[60px] border-t border-white/5" />}
-      {indicators.macd && <div ref={macdEl} className="h-[22%] min-h-[60px] border-t border-white/5" />}
     </div>
   );
 }

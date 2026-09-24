@@ -8,6 +8,7 @@ const ALL_SHORTCUTS = [
   { keys: '?', desc: 'Shortcuts Help' },
   { keys: 'Esc', desc: 'Close Dialog' },
   { keys: 'Alt+K', desc: 'Command Palette' },
+  { keys: 'Alt+1…9', desc: 'Switch Workspace' },
 ];
 
 export function KeyboardHUD() {

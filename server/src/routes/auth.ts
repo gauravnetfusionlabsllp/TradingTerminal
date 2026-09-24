@@ -145,7 +145,7 @@ router.get('/me/export', exportLimiter, requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
 
-    const [user, alerts] = await Promise.all([
+    const [user, alerts, workspaces] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
         select: { id: true, mt5Login: true, name: true, createdAt: true, updatedAt: true },
@@ -154,12 +154,14 @@ router.get('/me/export', exportLimiter, requireAuth, async (req, res) => {
         where: { userId },
         orderBy: { createdAt: 'desc' },
       }),
+      prisma.workspace.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
     ]);
 
     res.json({
       exportedAt: new Date().toISOString(),
       user,
       alerts,
+      workspaces,
     });
   } catch (err: any) {
     console.error('[Auth] Data export error:', err?.message);
@@ -178,6 +180,7 @@ router.delete('/me', requireAuth, async (req, res) => {
         where: { alert: { userId } },
       }),
       prisma.alert.deleteMany({ where: { userId } }),
+      prisma.workspace.deleteMany({ where: { userId } }),
       prisma.user.delete({ where: { id: userId } }),
     ]);
 

@@ -222,6 +222,10 @@ const PendingOrder = z.object({
 const ClosePosition = z.object({ ticket: ticketField, volume: volumeField.optional() });
 const CancelOrder = z.object({ ticket: ticketField });
 const ReplaceOrder = z.object({ ticket: ticketField, price: z.number().positive(), stopLoss: levelField, takeProfit: levelField });
+// Omitted = leave unchanged, 0 = remove the level
+const ModifyPosition = z.object({ ticket: ticketField, stopLoss: z.number().nonnegative().optional(), takeProfit: z.number().nonnegative().optional() })
+  .refine((o) => o.stopLoss !== undefined || o.takeProfit !== undefined, 'Provide stopLoss and/or takeProfit');
+const HistoryDays = z.coerce.number().int().min(1).max(90);
 
 // ponytail: bridge truncates (ulong)(volume*10000) — 0.57 becomes 0.5699. Remove once the bridge uses Math.Round.
 const lots = (v: number) => v + 1e-9;
@@ -281,6 +285,15 @@ router.get('/chart/:symbol', h(async (req) => {
 router.get('/positions', h((req) => bridge(`/api/trade/positions/${req.user!.mt5Login}`)));
 router.get('/orders', h((req) => bridge(`/api/trade/orders/${req.user!.mt5Login}`)));
 
+// Executed deals over the last `days`. Deal times and from/to are MT5 server time, like chart bars.
+// ponytail: until serverOffset is learned (first live chart load) the fallback shifts the window up to 11h late
+router.get('/history/deals', h((req) => {
+  const login = req.user!.mt5Login;
+  const days = HistoryDays.parse(req.query.days ?? 7);
+  const to = latestServerTime() + 60;
+  return cached(`deals:${login}:${days}`, 5_000, () => bridge(`/api/trade/history/deals/${login}?from=${to - days * DAY}&to=${to}`));
+}));
+
 // Trade calls are never retried: a 422 "not created in 8s" can still mean the order filled.
 router.post('/market-order', requireTrader, h(async (req) => {
   const o = MarketOrder.parse(req.body);
@@ -304,6 +317,14 @@ router.post('/close-position', requireTrader, h(async (req) => {
   console.log(`[MT5] ${login} close #${ticket}${volume ? ` ${volume}` : ''}`);
   // Bridge verifies the position belongs to this login
   return bridge('/api/trade/close-position', { login, ticket, volume: volume === undefined ? null : lots(volume) });
+}));
+
+router.post('/modify-position', requireTrader, h(async (req) => {
+  const o = ModifyPosition.parse(req.body);
+  const login = req.user!.mt5Login;
+  console.log(`[MT5] ${login} modify #${o.ticket} SL ${o.stopLoss ?? '='} TP ${o.takeProfit ?? '='}`);
+  // Bridge verifies the position belongs to this login; an omitted level is left unchanged
+  return bridge('/api/trade/modify-position', { login, ...o });
 }));
 
 router.post('/cancel-order', requireTrader, h(async (req) => {

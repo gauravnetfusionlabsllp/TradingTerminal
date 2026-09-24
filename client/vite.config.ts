@@ -14,7 +14,7 @@ export default defineConfig({
         manualChunks: {
           'vendor': ['react', 'react-dom'],
           'query': ['@tanstack/react-query'],
-          'charts': ['lightweight-charts'],
+          'charts': ['lightweight-charts', 'lightweight-charts-drawing'],
           'flexlayout': ['flexlayout-react'],
           'icons': ['lucide-react'],
           'state': ['zustand'],

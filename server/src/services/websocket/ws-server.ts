@@ -3,6 +3,7 @@ import type { Server, IncomingMessage } from 'http';
 import { verifyJwt, type JwtPayload } from '../../lib/jwt.js';
 import { allowedSymbols } from '../../routes/mt5.js';
 import * as feed from '../market-feed.js';
+import * as tradeFeed from '../trade-feed.js';
 
 let wss: WebSocketServer;
 let pingInterval: ReturnType<typeof setInterval> | undefined;
@@ -19,6 +20,23 @@ interface Client {
 }
 const clients = new Map<WebSocket, Client>();
 const pending = new Map<string, feed.Quote>(); // latest quote per symbol since the last flush
+// Trade events route by the JWT's MT5 login — a socket only ever receives its own account's events
+const byLogin = new Map<number, Set<WebSocket>>();
+
+function relayTradeEvent(event: string, login: number, data: unknown) {
+  const sockets = byLogin.get(login);
+  if (!sockets) return;
+  const message = JSON.stringify({ type: 'mt5-trade', data: { event, data } }); // once, not per socket
+  const now = Date.now() / 1000;
+  for (const ws of sockets) {
+    if (ws.readyState !== WebSocket.OPEN || clients.get(ws)!.auth!.exp < now) continue; // expired session: stop
+    try {
+      ws.send(message);
+    } catch {
+      // Connection may have closed between readyState check and send
+    }
+  }
+}
 
 function authFromCookie(req: IncomingMessage): JwtPayload | null {
   const token = req.headers.cookie?.match(/(?:^|;\s*)token=([^;]+)/)?.[1];
@@ -106,11 +124,21 @@ export function startWebSocketServer(server: Server) {
       onQuote: (q) => pending.set(q.symbol, q),
       onStatus: (live) => broadcast('mt5-feed', { live }),
     });
+    tradeFeed.setHandlers({
+      onEvent: relayTradeEvent,
+      onStatus: (live) => broadcast('mt5-trade-feed', { live }),
+    });
 
     wss.on('connection', (ws, req) => {
       const client: Client = { auth: authFromCookie(req), symbols: new Set() };
       clients.set(ws, client);
       console.log(`[WS] Client connected${client.auth ? ` (MT5 #${client.auth.login})` : ''}`);
+      const login = client.auth?.login;
+      if (login) {
+        const sockets = byLogin.get(login) ?? new Set();
+        byLogin.set(login, sockets.add(ws));
+        tradeFeed.acquire(login); // first socket for this login joins its hub group
+      }
       (ws as any).isAlive = true;
 
       ws.on('pong', () => {
@@ -123,11 +151,18 @@ export function startWebSocketServer(server: Server) {
 
       ws.on('close', () => {
         for (const s of client.symbols) feed.release(s);
+        if (login) {
+          const sockets = byLogin.get(login);
+          sockets?.delete(ws);
+          if (!sockets?.size) byLogin.delete(login);
+          tradeFeed.release(login); // last socket leaves the hub group
+        }
         clients.delete(ws);
         console.log('[WS] Client disconnected');
       });
 
       sendTo(ws, 'mt5-feed', { live: feed.isLive() });
+      if (login) sendTo(ws, 'mt5-trade-feed', { live: tradeFeed.isLive() });
     });
 
     wss.on('error', (err: Error) => {

@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSeasonality, type SeasonalityData, type MonthlyEntry, type WeekdayEntry, type YearMonthEntry } from '../../api/hooks/use-seasonality';
+import { useAppStore } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
 import { RefreshCw, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -31,8 +32,16 @@ export function SeasonalityPanel() {
   const t = useT();
   const tr = makeTr(t);
 
-  const [symbol, setSymbol] = useState('SPY');
-  const [inputValue, setInputValue] = useState('SPY');
+  // Follows the app selection (Market Watch, other panels); a typed symbol holds until the next selection.
+  // MT5 names are fine here: useSeasonality maps them to Yahoo (EURUSD → EURUSD=X).
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
+  const [symbol, setSymbol] = useState(selectedSymbol || 'SPY');
+  const [inputValue, setInputValue] = useState(symbol);
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    setSymbol(selectedSymbol);
+    setInputValue(selectedSymbol);
+  }, [selectedSymbol]);
   const [years, setYears] = useState<number>(10);
   const [activeTab, setActiveTab] = useState<TabId>('monthly');
 
