@@ -77,6 +77,9 @@ export function TechnicalChartPanel() {
     const mt5 = selectedSymbol && toMt5(selectedSymbol, symbols);
     if (mt5) setPicked(mt5);
   }, [selectedSymbol, symbols]);
+  // Arming an order in the ticket brings its symbol up, so the preview shows
+  const armed = useAppStore((s) => (s.orderDraft.side ? s.orderDraft.symbol : ''));
+  useEffect(() => { if (armed) setPicked(armed); }, [armed]);
 
   if (!user) {
     return (
@@ -119,13 +122,12 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
   const [volume, setVolume] = usePersisted('sgfx.chart.volume', true, (v) => typeof v === 'boolean');
   const [pickerAt, setPickerAt] = useState<{ left: number; top: number } | null>(null);
 
-  // On-chart trading only for symbols this MT5 account can trade; lots live here so a timeframe switch keeps them
+  // On-chart trading only for symbols this MT5 account can trade (lots live in the shared order draft)
   const user = useAuthStore((s) => s.user);
   const { data: symbols = [] } = useMt5Symbols();
-  const [lots, setLots] = useState('0.01');
   // The one-click BUY / SELL strip can be hidden; lines and the right-click menu stay
   const [oneClick, setOneClick] = usePersisted('sgfx.chart.oneClick', true, (v) => typeof v === 'boolean');
-  const trade = user && symbols.some((s) => s.symbol === symbol) ? { readOnly: !!user.readOnly, lots, setLots, oneClick } : undefined;
+  const trade = user && symbols.some((s) => s.symbol === symbol) ? { readOnly: !!user.readOnly, oneClick } : undefined;
 
   const { data, offset, error, isLoading, hasMore, fetchOlder, isFetchingOlder } = useMt5Chart(symbol, tf);
   const tfSec = TF_SECONDS[tf];
@@ -352,7 +354,7 @@ interface MainSeries {
 
 interface LwChartProps {
   symbol: string;
-  trade?: { readOnly: boolean; lots: string; setLots: (v: string) => void; oneClick: boolean };
+  trade?: { readOnly: boolean; oneClick: boolean };
   candles: Candle[];
   chartType: ChartType;
   volume: boolean;

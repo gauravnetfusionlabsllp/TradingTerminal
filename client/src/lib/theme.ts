@@ -33,7 +33,7 @@ export function useResolvedTheme(): Theme {
   return setting === 'system' ? (osDark ? 'dark' : 'light') : setting;
 }
 
-const TOKENS = ['bg', 'panel', 'raised', 'border', 'fg', 'neutral', 'accent', 'accent-ink', 'on-accent', 'bullish', 'bearish', 'orange'] as const;
+const TOKENS = ['bg', 'panel', 'raised', 'border', 'fg', 'neutral', 'accent', 'accent-ink', 'on-accent', 'bullish', 'bearish', 'orange', 'buy', 'sell'] as const;
 export type ChartColors = Record<(typeof TOKENS)[number], string>;
 
 /** Token hexes for canvas code (lightweight-charts can't resolve var()); re-read whenever the theme flips */

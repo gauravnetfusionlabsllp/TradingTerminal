@@ -41,10 +41,25 @@ const DEFAULT_SETTINGS: UserSettings = {
 
 export type StockPanelView = 'watchlist' | 'heatmap' | 'compare';
 
+/** The order being prepared, shared by the ticket and the chart. Levels and price: 0 = not set. */
+export interface OrderDraft {
+  symbol: string;
+  /** null: nothing armed. A side shows the order's preview on the chart until it's sent or cancelled. */
+  side: 'BUY' | 'SELL' | null;
+  kind: 'MARKET' | 'PENDING';
+  volume: string;
+  price: number;
+  sl: number;
+  tp: number;
+}
+
 interface AppState {
   selectedSymbol: string | null;
   // Position / order hovered in a panel or on the chart ('p<ticket>' / 'o<ticket>'): its lines stay lit, the rest fade
   tradeFocus: string | null;
+  orderDraft: OrderDraft;
+  /** A new symbol drops the side and levels: they belong to the old symbol's prices */
+  patchDraft: (patch: Partial<OrderDraft>) => void;
   wsConnected: boolean;
   commandPaletteOpen: boolean;
   activeWatchlistTab: string;
@@ -126,6 +141,12 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       selectedSymbol: null,
       tradeFocus: null,
+      orderDraft: { symbol: '', side: null, kind: 'MARKET', volume: '0.01', price: 0, sl: 0, tp: 0 },
+      patchDraft: (patch) => set(({ orderDraft: d }) => ({
+        orderDraft: patch.symbol !== undefined && patch.symbol !== d.symbol
+          ? { ...d, side: null, price: 0, sl: 0, tp: 0, ...patch }
+          : { ...d, ...patch },
+      })),
       wsConnected: false,
       commandPaletteOpen: false,
       activeWatchlistTab: 'WATCHLIST',

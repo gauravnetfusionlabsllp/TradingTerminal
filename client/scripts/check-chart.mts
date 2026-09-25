@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { tickBucket, foldTick, mergeLive, type Bar } from '../src/lib/live-candles.ts';
 import { keepView } from '../src/lib/chart-view.ts';
-import { snap, pendingTypesAt, levelSide, levelsError, shortTags } from '../src/lib/chart-trading.ts';
+import { snap, pendingTypesAt, levelSide, levelsError, pipSize, pips, levelAtPips, pendingTypeFor, draftEntry, draftRef, stackChips } from '../src/lib/chart-trading.ts';
 
 const bar = (timestamp: number, close: number): Bar => ({ timestamp, open: close, high: close, low: close, close, volume: 5 });
 const M5 = 300;
@@ -77,15 +77,38 @@ assert.match(levelsError('SELL', 1.1, 1.09, 0)!, /SL must be above/);
 // and now at bid 1.10 may trail its SL into profit (1.09) but not past the market (1.101).
 assert.equal(levelsError('BUY', 1.1, 1.09, 1.11), null);
 assert.match(levelsError('BUY', 1.1, 1.101, 0)!, /SL must be below/);
-// Dragging that position's entry line (1.08) out: anywhere under the bid becomes the SL, even above the open
+// Right-click → '#t: SL/TP → price' on that position (open 1.08): anywhere under the bid is its SL, even above the open
 assert.equal(levelSide('BUY', 1.1, 1.085), 'sl');
 assert.equal(levelSide('SELL', 1.1, 1.095), 'tp');
 
-// Chart-label tags: none for one trade, 3 digits when they differ, longer only when the endings collide
-assert.equal(shortTags([234352597]).size, 0);
-assert.deepEqual([...shortTags([234352597, 234352478])], [[234352597, '597'], [234352478, '478']]);
-assert.deepEqual([...shortTags([234352597, 234353597])].map(([, t]) => t), ['2597', '3597']);
-assert.deepEqual([...shortTags([12, 912])].map(([, t]) => t), ['12', '912']); // a short ticket ends the search
+// Pips: 10 points on 3- and 5-digit quotes. Gold 4294.161 → SL 4289.327 is −483.4 pips (the Exness readout)
+assert.equal(pipSize(5), 0.0001);
+assert.equal(pipSize(3), 0.01);
+assert.equal(pipSize(2), 0.01);
+assert.equal(pips('BUY', 4294.161, 4289.327, 3), -483.4);
+assert.equal(pips('SELL', 1.10000, 1.09950, 5), 5);
+assert.equal(levelAtPips('BUY', 'sl', 4294.161, 483.4, 3), 4289.327);
+assert.equal(levelAtPips('BUY', 'tp', 1.1, -10, 5), 1.101); // a distance: the sign is ignored
+assert.equal(levelAtPips('SELL', 'sl', 1.1, 10, 5), 1.101);
+assert.equal(levelAtPips('SELL', 'tp', 1.1, 10, 5), 1.099);
+
+// A pending draft's type follows its price; at the market there is none (it would fill)
+assert.equal(pendingTypeFor('BUY', 1.0990, 1.1000, 1.1002), 'BUY_LIMIT');
+assert.equal(pendingTypeFor('BUY', 1.1010, 1.1000, 1.1002), 'BUY_STOP');
+assert.equal(pendingTypeFor('SELL', 1.0990, 1.1000, 1.1002), 'SELL_STOP');
+assert.equal(pendingTypeFor('BUY', 1.1002, 1.1000, 1.1002), null);
+// A market BUY opens at the ask and closes at the bid (its SL / TP bracket the bid); a pending one uses its price
+const q = { bid: 1.1, ask: 1.1002 };
+assert.equal(draftEntry({ side: 'BUY', kind: 'MARKET', price: 0 }, q), 1.1002);
+assert.equal(draftRef({ side: 'BUY', kind: 'MARKET', price: 0 }, q), 1.1);
+assert.equal(draftEntry({ side: 'SELL', kind: 'MARKET', price: 0 }, q), 1.1);
+assert.equal(draftRef({ side: 'SELL', kind: 'PENDING', price: 1.2 }, q), 1.2);
+assert.equal(draftEntry({ side: 'BUY', kind: 'MARKET', price: 0 }), 0);
+
+// Chips: apart → all at the edge; overlapping → the lower one moves left past the upper; a third overlapping both → past both
+assert.deepEqual(stackChips([{ y: 10, h: 20, w: 100 }, { y: 50, h: 20, w: 80 }], 4), [0, 0]);
+assert.deepEqual(stackChips([{ y: 18, h: 20, w: 80 }, { y: 10, h: 20, w: 100 }], 4), [104, 0]);
+assert.deepEqual(stackChips([{ y: 10, h: 20, w: 100 }, { y: 15, h: 20, w: 50 }, { y: 20, h: 20, w: 30 }], 4), [0, 104, 158]);
 
 assert.equal(snap(1.0850049, 5), 1.085);
 assert.equal(snap(151.2346, 3), 151.235);

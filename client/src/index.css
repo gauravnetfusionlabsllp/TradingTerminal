@@ -167,6 +167,10 @@ input {
 }
 input::placeholder { color: color-mix(in srgb, var(--color-neutral) 70%, transparent); }
 
+/* Order ticket: the group (input + unit / mode / steppers) carries the border, not the input */
+.ticket-field:focus-within { border-color: var(--color-accent); }
+.ticket-field input { border: 0; background: transparent; padding: 0 8px; width: 0; min-width: 0; } /* width 0: flex-1 sizes it, not its intrinsic width */
+
 /* No native spinner arrows on number inputs */
 input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 input[type="number"]::-webkit-inner-spin-button,

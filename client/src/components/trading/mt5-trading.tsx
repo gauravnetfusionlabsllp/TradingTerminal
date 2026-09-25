@@ -5,25 +5,29 @@ import {
   type Mt5PendingType, type Mt5Position, type Mt5Quote,
 } from '../../api/hooks/use-mt5';
 import { useAuthStore } from '../../stores/use-auth-store';
-import { useAppStore } from '../../stores/use-app-store';
+import { useAppStore, type OrderDraft } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
 import { SymbolPicker } from './symbol-picker';
 import { toMt5 } from '../../lib/symbols';
-import { levelsError } from '../../lib/chart-trading';
+import {
+  levelsError, pipSize, pips, pipText, levelAtPips, pendingTypeFor, draftEntry, draftRef, snap, typeName,
+} from '../../lib/chart-trading';
 import { pnlRate } from '../../lib/trade-events';
 import { AlertTriangle, Lock, LogIn } from 'lucide-react';
 
-type Kind = 'MARKET' | 'LIMIT' | 'STOP';
+type Side = 'BUY' | 'SELL';
 
 // Literal class strings — Tailwind can't see interpolated ones
 const SIDE_STYLE = {
-  BUY: { on: 'bg-buy border-buy text-on-accent', off: 'border-border hover:border-buy text-accent-ink', submit: 'bg-buy border-buy text-on-accent hover:bg-buy/90' },
-  SELL: { on: 'bg-sell border-sell text-on-accent', off: 'border-border hover:border-sell text-bearish', submit: 'bg-sell border-sell text-on-accent hover:bg-sell/90' },
+  BUY: { on: 'bg-buy border-buy text-on-accent', off: 'border-buy/60 text-accent-ink hover:bg-buy/10', submit: 'bg-buy border-buy text-on-accent hover:bg-buy/90' },
+  SELL: { on: 'bg-sell border-sell text-on-accent', off: 'border-sell/60 text-bearish hover:bg-sell/10', submit: 'bg-sell border-sell text-on-accent hover:bg-sell/90' },
 };
-const KINDS = [['MARKET', 'Market'], ['LIMIT', 'Limit'], ['STOP', 'Stop']] as const;
-const ROW = 'grid grid-cols-[4.5rem_1fr] items-center gap-2';
+const KINDS = [['MARKET', 'Market'], ['PENDING', 'Pending']] as const;
 const LABEL = 'text-mini text-neutral/60';
 const STEP = 'w-7 shrink-0 border border-border text-neutral/70 hover:text-white hover:bg-white/5';
+/** One bordered box per ticket field: the input plus its unit / mode / steppers (.ticket-field unborders the input) */
+const FIELD = 'ticket-field flex h-8 border border-border rounded-sm bg-raised text-[13px]';
+const FIELD_BTN = 'w-8 shrink-0 border-l border-border text-neutral/70 hover:text-white hover:bg-white/5';
 
 /** Bridge gives no symbol digits — trim float noise (1.3308200000000001 → 1.33082). */
 export const fmtPrice = (n: number) => String(+n.toFixed(6));
@@ -63,18 +67,6 @@ function PipPrice({ value, digits }: { value?: number; digits: number }) {
   );
 }
 
-function NumField({ label, value, onChange, placeholder }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string;
-}) {
-  return (
-    <label className={ROW}>
-      <span className={LABEL}>{label}</span>
-      <input type="number" step="any" min="0" value={value} placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)} className="w-full h-7 text-[12px] text-right" />
-    </label>
-  );
-}
-
 function LoginPrompt() {
   const t = useT();
   const setLoginModalOpen = useAuthStore((s) => s.setLoginModalOpen);
@@ -108,7 +100,8 @@ const Empty = ({ label }: { label: string }) => (
   </div>
 );
 
-/** Order ticket panel. */
+/** Order ticket panel. Picking Sell or Buy arms the order: its preview appears on the chart, where dragging its lines
+ *  edits these fields (the draft is shared). Confirm sends it; ✕ / Esc / Cancel disarms. */
 export function Mt5Ticket() {
   const t = useT();
   const user = useAuthStore((s) => s.user);
@@ -116,45 +109,35 @@ export function Mt5Ticket() {
   const watchlist = useAppStore((s) => s.tabSymbols[s.activeWatchlistTab]);
   const selectedSymbol = useAppStore((s) => s.selectedSymbol);
   const addLogEntry = useAppStore((s) => s.addLogEntry);
+  const draft = useAppStore((s) => s.orderDraft);
+  const patchDraft = useAppStore((s) => s.patchDraft);
+  const { symbol, side, kind, volume, price, sl, tp } = draft;
 
   const { data: symbols = [] } = useMt5Symbols();
   const marketOrder = useMt5MarketOrder();
   const pendingOrder = useMt5PendingOrder();
-
-  const [symbol, setSymbol] = useState('');
-  const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
-  const [kind, setKind] = useState<Kind>('MARKET');
-  const [volume, setVolume] = useState('0.01');
-  const [price, setPrice] = useState('');
-  const [stopLoss, setStopLoss] = useState('');
-  const [takeProfit, setTakeProfit] = useState('');
-  const [confirm, setConfirm] = useState(false);
   const [result, setResult] = useState('');
   const digitsRef = useRef({ symbol: '', digits: 0 });
-  // Any ticket edit disarms a pending confirm so the armed order can't go out with different params
-  const disarm = <T,>(set: (v: T) => void) => (v: T) => { set(v); setConfirm(false); };
 
   // Default to the first watchlist symbol (never an arbitrary allowed one — whatever is picked gets a live
   // subscription)
   useEffect(() => {
     if (symbol || !symbols.length) return;
     const first = watchlist?.find((w) => symbols.some((s) => s.symbol === w));
-    if (first) setSymbol(first);
-  }, [symbols, symbol, watchlist]);
+    if (first) patchDraft({ symbol: first });
+  }, [symbols, symbol, watchlist, patchDraft]);
 
   // Follow the selection from any panel — mapped to this account's MT5 name (GC=F → XAUUSD), ignored if it can't
-  // be traded. Disarm a pending confirm so the next click can't send the armed order on a different symbol.
+  // be traded. A new symbol disarms the order (patchDraft drops side and levels), so it can't go out elsewhere.
   useEffect(() => {
     const mt5 = selectedSymbol && toMt5(selectedSymbol, symbols);
-    if (!mt5) return;
-    setSymbol(mt5);
-    setConfirm(false);
-  }, [selectedSymbol, symbols]);
+    if (mt5) patchDraft({ symbol: mt5 });
+  }, [selectedSymbol, symbols, patchDraft]);
 
   const { data: quotes } = useMt5Quotes(symbol ? [symbol] : []);
   const quote = quotes?.[symbol];
   // Bridge sends no symbol digits and fmtPrice trims trailing zeros — keep the most decimals seen for this
-  // symbol so prices don't jitter in width and the spread reads in points
+  // symbol so prices don't jitter in width and pips read right
   if (quote) {
     const d = Math.max(decimals(quote.bid), decimals(quote.ask));
     const prev = digitsRef.current;
@@ -165,47 +148,59 @@ export function Mt5Ticket() {
   if (!user) return <LoginPrompt />;
 
   const busy = marketOrder.isPending || pendingOrder.isPending;
-  const orderType = `${side}_${kind}` as Mt5PendingType;
-  const desc = kind === 'MARKET' ? `${side} ${volume} ${symbol} @ MKT` : `${orderType} ${volume} ${symbol} @ ${price}`;
+  const pip = pipSize(digits);
+  const entry = side ? draftEntry(draft, quote) : 0;
+  const bad = side ? levelsError(side, draftRef(draft, quote), sl, tp) : null;
+  const pendingType = kind === 'PENDING' && side && quote && price ? pendingTypeFor(side, price, quote.bid, quote.ask) : null;
+  const valid = !!symbol && Number(volume) > 0 && !bad && (kind === 'MARKET' || !!pendingType);
+  const action = side && `${typeName(pendingType ?? side)} ${volume} lots${kind === 'PENDING' && price ? ` @ ${fmtPrice(price)}` : ''}`;
+  const spread = quote && digits ? ((quote.ask - quote.bid) / pip).toFixed(1) : null;
 
-  const handleOrder = async (e: React.FormEvent) => {
+  const send = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!confirm) {
-      setConfirm(true);
-      return;
-    }
-    setConfirm(false);
+    if (!side || !valid || busy || readOnly) return;
     setResult('');
-    const common = { symbol, volume: Number(volume), stopLoss: Number(stopLoss) || 0, takeProfit: Number(takeProfit) || 0 };
+    const common = { symbol, volume: Number(volume), stopLoss: sl, takeProfit: tp };
+    const desc = pendingType ? `${pendingType} ${volume} ${symbol} @ ${fmtPrice(price)}` : `${side} ${volume} ${symbol} @ MKT`;
     try {
-      const r = kind === 'MARKET'
-        ? await marketOrder.mutateAsync({ ...common, side })
-        : await pendingOrder.mutateAsync({ ...common, orderType, price: Number(price) });
+      const r = pendingType
+        ? await pendingOrder.mutateAsync({ ...common, orderType: pendingType, price })
+        : await marketOrder.mutateAsync({ ...common, side });
       setResult(`#${r.orderTicket} ${desc}${r.price ? ` → ${fmtPrice(r.price)}` : ''}`);
       addLogEntry({ type: 'trade', message: `[MT5] ${desc}` });
+      patchDraft({ side: null, sl: 0, tp: 0 });
     } catch (err) {
       // Never auto-retry: the bridge can report a timeout for an order that did fill — positions refresh on settle
       setResult(`Error: ${errMsg(err)}`);
     }
   };
 
-  const spread = quote ? Math.round((quote.ask - quote.bid) * 10 ** digits) : null;
-  const valid = !!symbol && Number(volume) > 0 && (kind === 'MARKET' || Number(price) > 0);
-  const action = `${t(side === 'BUY' ? 'buy' : 'sell')} ${volume} ${symbol}${kind === 'MARKET' ? '' : ` ${kind} @ ${price}`}`;
+  // A pending order starts 10 pips out on its limit side — valid as it stands, then nudged or dragged into place
+  const startPrice = (s: Side | null) => (quote ? snap(s === 'SELL' ? quote.bid + 10 * pip : quote.ask - 10 * pip, digits) : 0);
 
-  const pickKind = (k: Kind) => {
-    disarm(setKind)(k);
-    // Pending orders start from the live price — nudge it rather than type it out
-    if (k !== 'MARKET' && !price && quote) setPrice((side === 'BUY' ? quote.ask : quote.bid).toFixed(digits));
+  const pickSide = (s: Side) => {
+    if (readOnly) return;
+    setResult('');
+    const patch: Partial<OrderDraft> = { side: s };
+    // Flipping sides mirrors the levels around the entry: the SL stays a stop, the TP a target, same distance
+    const e = side && side !== s ? draftEntry(draft, quote) : 0;
+    if (e && sl) patch.sl = snap(2 * e - sl, digits);
+    if (e && tp) patch.tp = snap(2 * e - tp, digits);
+    if (kind === 'PENDING' && !price) patch.price = startPrice(s);
+    patchDraft(patch);
   };
+  const pickKind = (k: OrderDraft['kind']) =>
+    patchDraft({ kind: k, ...(k === 'PENDING' && !price ? { price: startPrice(side) } : {}) });
   const stepVolume = (dir: number) =>
-    disarm(setVolume)(String(Math.max(0.01, +((Number(volume) || 0) + dir * 0.01).toFixed(2))));
+    patchDraft({ volume: String(Math.max(0.01, +((Number(volume) || 0) + dir * 0.01).toFixed(2))) });
+  const stepPrice = (dir: number) => patchDraft({ price: snap((price || startPrice(side)) + dir * pip, digits) });
 
-  const sideButton = (s: 'BUY' | 'SELL') => {
-    const st = SIDE_STYLE[s];
+  const tile = (s: Side) => {
+    const on = side === s;
     return (
-      <button type="button" onClick={() => disarm(setSide)(s)} aria-pressed={side === s}
-        className={`px-2.5 py-1.5 border rounded-sm transition-colors ${s === 'BUY' ? 'text-right' : 'text-left'} ${side === s ? st.on : st.off}`}>
+      <button type="button" onClick={() => pickSide(s)} aria-pressed={on} aria-disabled={readOnly || undefined}
+        className={`flex-1 min-w-0 px-3 pt-1.5 pb-3 border rounded-sm transition-colors duration-100 motion-reduce:transition-none ${
+          s === 'BUY' ? 'text-right' : 'text-left'} ${on ? SIDE_STYLE[s].on : SIDE_STYLE[s].off}`}>
         <div className="text-mini opacity-80">{t(s === 'BUY' ? 'buy' : 'sell')}</div>
         <div className="text-[15px] font-bold leading-tight tabular-nums">
           <PipPrice value={quote && (s === 'BUY' ? quote.ask : quote.bid)} digits={digits} />
@@ -214,17 +209,21 @@ export function Mt5Ticket() {
     );
   };
 
+  const pendingNote = !side ? '' : !price ? 'Enter a price' : !quote ? '' : pendingType ? typeName(pendingType)
+    : 'At the market: set it above or below';
+
   return (
-    <form onSubmit={handleOrder} className="@container h-full overflow-auto no-scrollbar bg-black p-2">
-      <div className="grid gap-x-4 gap-y-2 @lg:grid-cols-2">
-        {/* Instrument and live price — clicking a price picks the side */}
-        <div className="flex flex-col gap-2">
+    <form onSubmit={send} noValidate
+      onKeyDown={(e) => { if (e.key === 'Escape' && side) { e.preventDefault(); patchDraft({ side: null }); } }}
+      className="@container h-full overflow-auto no-scrollbar bg-black p-2">
+      <div className="grid gap-x-4 gap-y-3 @lg:grid-cols-2">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <SymbolPicker
               className="flex-1 min-w-0"
               symbols={symbols}
               value={symbol}
-              onSelect={disarm(setSymbol)}
+              onSelect={(s) => patchDraft({ symbol: s })}
               placeholder={t('symbolPlaceholder')}
             />
             <span className="shrink-0 flex items-center gap-1 text-mini text-neutral/50" title={user.name ?? undefined}>
@@ -232,51 +231,71 @@ export function Mt5Ticket() {
               #{user.mt5Login}
             </span>
           </div>
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5">
-            {sideButton('SELL')}
-            <span className="text-mini text-neutral/50 tabular-nums" title="Spread in points">{spread ?? ''}</span>
-            {sideButton('BUY')}
+
+          {/* Picking a side arms the order: its preview appears on the chart */}
+          <div className="relative flex gap-1.5">
+            {tile('SELL')}
+            {tile('BUY')}
+            {spread && (
+              <span title="Spread" className="absolute left-1/2 -translate-x-1/2 -bottom-2 px-1.5 py-px rounded-sm bg-raised border border-border text-micro text-neutral tabular-nums whitespace-nowrap">
+                {spread} pips
+              </span>
+            )}
           </div>
+
+          <div role="group" aria-label="Order type" className="flex h-8 p-0.5 gap-0.5 border border-border rounded-sm">
+            {KINDS.map(([k, label]) => (
+              <button key={k} type="button" onClick={() => pickKind(k)} aria-pressed={kind === k}
+                className={`flex-1 rounded-sm text-xs ${kind === k ? 'bg-white/10 text-white' : 'text-neutral/60 hover:text-neutral'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {kind === 'PENDING' && (
+            <div className="flex flex-col gap-1">
+              <label htmlFor="ticket-price" className={LABEL}>{t('price')}</label>
+              <div className={FIELD}>
+                <input id="ticket-price" type="number" step="any" min="0" value={price || ''} placeholder="Price"
+                  onChange={(e) => patchDraft({ price: Number(e.target.value) || 0 })}
+                  aria-invalid={(!!side && !!quote && !!price && !pendingType) || undefined} aria-describedby="ticket-price-note"
+                  className="flex-1 h-full" />
+                <button type="button" onClick={() => stepPrice(-1)} disabled={!quote} aria-label="Price down a pip" className={FIELD_BTN}>−</button>
+                <button type="button" onClick={() => stepPrice(1)} disabled={!quote} aria-label="Price up a pip" className={FIELD_BTN}>+</button>
+              </div>
+              {pendingNote && (
+                <p id="ticket-price-note" className={`text-mini ${pendingType ? 'text-neutral' : 'text-bearish'}`}>{pendingNote}</p>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Order parameters */}
-        <div className="flex flex-col gap-1.5">
-          <div className={ROW}>
-            <span className={LABEL}>Type</span>
-            <div role="group" aria-label="Order type" className="flex h-7 border border-border">
-              {KINDS.map(([k, label]) => (
-                <button key={k} type="button" onClick={() => pickKind(k)} aria-pressed={kind === k}
-                  className={`flex-1 text-xs ${kind === k ? 'bg-white/10 text-white' : 'text-neutral/50 hover:text-neutral'}`}>
-                  {label}
-                </button>
-              ))}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="ticket-volume" className={LABEL}>Volume</label>
+            <div className={FIELD}>
+              <input id="ticket-volume" type="number" step="0.01" min="0.01" value={volume}
+                onChange={(e) => patchDraft({ volume: e.target.value })} className="flex-1 h-full" />
+              <span className="flex items-center pr-2 text-mini text-neutral/60">Lots</span>
+              <button type="button" onClick={() => stepVolume(-1)} aria-label="Fewer lots" className={FIELD_BTN}>−</button>
+              <button type="button" onClick={() => stepVolume(1)} aria-label="More lots" className={FIELD_BTN}>+</button>
             </div>
           </div>
 
-          <div className={ROW}>
-            <span className={LABEL}>Lots</span>
-            <div className="flex h-7">
-              <button type="button" onClick={() => stepVolume(-1)} aria-label="Fewer lots" className={`${STEP} border-r-0`}>−</button>
-              <input type="number" step="0.01" min="0.01" value={volume} aria-label="Lots"
-                onChange={(e) => disarm(setVolume)(e.target.value)}
-                className="flex-1 min-w-0 h-7 text-[12px] text-center" />
-              <button type="button" onClick={() => stepVolume(1)} aria-label="More lots" className={`${STEP} border-l-0`}>+</button>
-            </div>
-          </div>
+          <LevelField field="tp" label="Take profit" level={tp} side={side} entry={entry} digits={digits}
+            error={bad?.startsWith('TP') ? bad : null} onSet={(v) => patchDraft({ tp: v })} />
+          <LevelField field="sl" label={t('stopLoss')} level={sl} side={side} entry={entry} digits={digits}
+            error={bad?.startsWith('SL') ? bad : null} onSet={(v) => patchDraft({ sl: v })} />
 
-          {kind !== 'MARKET' && <NumField label={t('price')} value={price} onChange={disarm(setPrice)} />}
-          <NumField label={t('stopLoss')} value={stopLoss} onChange={disarm(setStopLoss)} placeholder="Not set" />
-          <NumField label="Take profit" value={takeProfit} onChange={disarm(setTakeProfit)} placeholder="Not set" />
-
-          <div className="flex gap-1 mt-1">
-            <button type="submit" disabled={readOnly || busy || !valid}
-              className={`flex-1 h-9 border rounded-sm text-xs font-semibold uppercase tracking-wide ${SIDE_STYLE[side].submit} ${confirm ? 'animate-pulse' : ''}`}>
-              {readOnly ? t('investorReadOnly') : busy ? t('submitting') : confirm ? `Confirm ${action}` : action}
+          <div className="flex flex-col gap-1.5 mt-1">
+            <button type="submit" disabled={readOnly || busy || !side || !valid}
+              className={`h-10 border rounded-sm text-xs font-semibold ${side ? SIDE_STYLE[side].submit : 'border-border text-neutral'}`}>
+              {readOnly ? t('investorReadOnly') : busy ? t('submitting') : action ? `Confirm ${action}` : 'Pick Sell or Buy'}
             </button>
-            {confirm && (
-              <button type="button" onClick={() => setConfirm(false)} aria-label={t('cancel')}
-                className="w-9 border border-border text-neutral hover:text-white">
-                ✕
+            {side && !readOnly && (
+              <button type="button" onClick={() => patchDraft({ side: null })} disabled={busy}
+                className="h-8 border border-border rounded-sm text-xs text-neutral hover:text-white">
+                {t('cancel')}
               </button>
             )}
           </div>
@@ -289,6 +308,66 @@ export function Mt5Ticket() {
         <p className="text-mini leading-snug text-neutral/40 @lg:col-span-2">{t('earlyAccessTrading')}</p>
       </div>
     </form>
+  );
+}
+
+/**
+ * Take profit / stop loss as a price or a distance in pips, ✕ to clear, ± a pip at a time. With no level set, ± puts
+ * one 10 pips out on its own side of the entry (needs a side). The readout gives the other unit.
+ */
+function LevelField({ field, label, level, side, entry, digits, error, onSet }: {
+  field: 'sl' | 'tp'; label: string; level: number; side: Side | null; entry: number; digits: number;
+  error: string | null; onSet: (level: number) => void;
+}) {
+  const [mode, setMode] = useState<'price' | 'pips'>('price');
+  // While typing, the field keeps what was typed: a pips distance would otherwise re-derive on every tick
+  const [typed, setTyped] = useState<string | null>(null);
+  const id = `ticket-${field}`;
+  const dir = side && entry > 0 ? side : null;
+  const dist = dir && level ? pips(dir, entry, level, digits) : null;
+  const value = typed ?? (!level ? '' : mode === 'price' ? fmtPrice(level) : dist == null ? '' : String(Math.abs(dist)));
+
+  const type = (v: string) => {
+    setTyped(v);
+    const n = Number(v);
+    if (!(n > 0)) onSet(0);
+    else if (mode === 'price') onSet(n);
+    else if (dir) onSet(levelAtPips(dir, field, entry, n, digits));
+  };
+  const step = (by: 1 | -1) => {
+    setTyped(null);
+    if (!level) { if (dir) onSet(levelAtPips(dir, field, entry, 10, digits)); }
+    else if (mode === 'pips' && dir && dist != null) onSet(levelAtPips(dir, field, entry, Math.max(1, Math.abs(dist) + by), digits));
+    else onSet(snap(level + by * pipSize(digits), digits));
+  };
+
+  const note = error ?? (!level ? null : mode === 'price' ? (dist == null ? null : pipText(dist)) : `@ ${fmtPrice(level)}`);
+  const noSide = mode === 'pips' && !dir;
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className={LABEL}>{label}</label>
+      <div className={FIELD}>
+        <input id={id} type="number" step="any" min="0" value={value} disabled={noSide}
+          placeholder={noSide ? 'Pick a side' : 'Not set'}
+          onChange={(e) => type(e.target.value)} onBlur={() => setTyped(null)}
+          aria-invalid={!!error || undefined} aria-describedby={note ? `${id}-note` : undefined}
+          className="flex-1 h-full" />
+        {level > 0 && (
+          <button type="button" onClick={() => { setTyped(null); onSet(0); }} aria-label={`Clear ${label.toLowerCase()}`}
+            className="px-2 text-neutral/60 hover:text-white">✕</button>
+        )}
+        <select value={mode} onChange={(e) => { setTyped(null); setMode(e.target.value as 'price' | 'pips'); }}
+          aria-label={`${label} as`} className="bg-transparent border-l border-border px-1.5 text-mini text-neutral cursor-pointer outline-none">
+          <option value="price">Price</option>
+          <option value="pips">Pips</option>
+        </select>
+        <button type="button" onClick={() => step(-1)} disabled={!level && !dir} aria-label={`${label} down`} className={FIELD_BTN}>−</button>
+        <button type="button" onClick={() => step(1)} disabled={!level && !dir} aria-label={`${label} up`} className={FIELD_BTN}>+</button>
+      </div>
+      {note && (
+        <p id={`${id}-note`} className={`text-mini tabular-nums ${error || (dist != null && dist < 0) ? 'text-bearish' : 'text-neutral'}`}>{note}</p>
+      )}
+    </div>
   );
 }
 
