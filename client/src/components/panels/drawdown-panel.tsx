@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useDrawdown, type DrawdownEvent, type DrawdownPoint, type DrawdownStats } from '../../api/hooks/use-drawdown';
+import { useAppStore } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
 import { TrendingDown, RefreshCw, Search } from 'lucide-react';
 
@@ -8,8 +9,15 @@ const PERIOD_LABELS: Record<string, string> = { '1y': '1Y', '2y': '2Y', '5y': '5
 
 export function DrawdownPanel() {
   const t = useT();
-  const [symbol, setSymbol] = useState('SPY');
-  const [inputValue, setInputValue] = useState('SPY');
+  // Follows the app selection (Market Watch, chart…); a typed symbol holds until the next selection.
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
+  const [symbol, setSymbol] = useState(selectedSymbol || 'SPY');
+  const [inputValue, setInputValue] = useState(symbol);
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    setSymbol(selectedSymbol);
+    setInputValue(selectedSymbol);
+  }, [selectedSymbol]);
   const [period, setPeriod] = useState<string>('5y');
   const { data, isLoading, refetch } = useDrawdown(symbol, period);
 

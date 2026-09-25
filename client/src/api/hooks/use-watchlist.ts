@@ -18,6 +18,16 @@ export function useWatchlist() {
   });
 }
 
+/** Today's 5-minute closes per symbol (null = no bars); under ['watchlist'] so add/remove invalidation refreshes it */
+export function useWatchlistSparks() {
+  return useQuery({
+    queryKey: ['watchlist', 'spark'],
+    queryFn: () => api.get<Record<string, number[] | null>>('/watchlist/spark'),
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+}
+
 export function useAddToWatchlist() {
   const qc = useQueryClient();
   return useMutation({
@@ -49,7 +59,7 @@ export function useTickerSearch(query: string) {
 export function useRemoveFromWatchlist() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (symbol: string) => api.delete(`/watchlist/${symbol}`),
+    mutationFn: (symbol: string) => api.delete(`/watchlist/${encodeURIComponent(symbol)}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['watchlist'] });
       qc.invalidateQueries({ queryKey: ['stocks'] });

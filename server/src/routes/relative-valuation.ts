@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ensureCrumb, getQuotes } from '../services/stocks/yahoo-finance.js';
+import { ensureCrumb } from '../services/stocks/yahoo-finance.js';
 
 const router = Router();
 
@@ -77,7 +77,7 @@ function extractMetricsFromQuoteSummary(result: Record<string, unknown>): Valuat
   return {
     pe: sd.trailingPE?.raw ?? null,
     forwardPE: sd.forwardPE?.raw ?? null,
-    pb: sd.priceToBook?.raw ?? null,
+    pb: ks.priceToBook?.raw ?? null,
     ps: sd.priceToSalesTrailing12Months?.raw ?? null,
     peg: ks.pegRatio?.raw ?? null,
     evEbitda: ks.enterpriseToEbitda?.raw ?? null,
@@ -88,18 +88,29 @@ function extractMetricsFromQuoteSummary(result: Record<string, unknown>): Valuat
   };
 }
 
-function extractMetricsFromQuote(q: Record<string, unknown>): ValuationMetrics {
+// v7 /quote lacks PEG, EV/EBITDA, D/E, ROE, P/S — every row (target + peers) needs quoteSummary.
+async function fetchSummary(
+  symbol: string,
+  auth: { crumb: string; cookie: string },
+): Promise<{ name: string; sector: string | null; metrics: ValuationMetrics } | null> {
+  const modules = 'summaryDetail,defaultKeyStatistics,financialData,assetProfile,price';
+  const url = `${YAHOO_API}/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&crumb=${encodeURIComponent(auth.crumb)}`;
+  const resp = await fetch(url, { headers: { 'User-Agent': YAHOO_UA, Cookie: auth.cookie } });
+  if (!resp.ok) {
+    console.error(`[RelativeValuation] quoteSummary returned ${resp.status} for ${symbol}`);
+    return null;
+  }
+  const data = (await resp.json()) as { quoteSummary?: { result?: Array<Record<string, unknown>> } };
+  const result = data?.quoteSummary?.result?.[0];
+  if (!result) return null;
+  const price = (result.price || {}) as Record<string, unknown>;
+  const profile = (result.assetProfile || {}) as Record<string, unknown>;
+  const metrics = extractMetricsFromQuoteSummary(result);
+  metrics.marketCap ??= (price.marketCap as { raw?: number } | undefined)?.raw ?? null;
   return {
-    pe: (q.trailingPE as number) ?? null,
-    forwardPE: (q.forwardPE as number) ?? null,
-    pb: (q.priceToBook as number) ?? null,
-    ps: (q.priceToSalesTrailing12Months as number) ?? null,
-    peg: (q.pegRatio as number) ?? null,
-    evEbitda: (q.enterpriseToEbitda as number) ?? null,
-    debtEquity: (q.debtToEquity as number) ?? null,
-    roe: (q.returnOnEquity as number) ?? null,
-    dividendYield: (q.trailingAnnualDividendYield as number) ?? null,
-    marketCap: (q.marketCap as number) ?? null,
+    name: (price.shortName as string) || (price.longName as string) || symbol,
+    sector: (profile.sector as string) || null,
+    metrics,
   };
 }
 
@@ -136,56 +147,25 @@ router.get('/:symbol', async (req, res) => {
       return res.status(503).json({ error: 'Relative valuation temporarily unavailable' });
     }
 
-    const modules = 'summaryDetail,defaultKeyStatistics,financialData,assetProfile';
-    const summaryUrl = `${YAHOO_API}/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&crumb=${encodeURIComponent(auth.crumb)}`;
-    const summaryResp = await fetch(summaryUrl, {
-      headers: { 'User-Agent': YAHOO_UA, Cookie: auth.cookie },
-    });
-
-    if (!summaryResp.ok) {
-      console.error(`[RelativeValuation] quoteSummary returned ${summaryResp.status} for ${symbol}`);
-      if (cached) return res.json(cached.data);
-      return res.status(502).json({ error: 'Failed to fetch valuation data' });
-    }
-
-    const summaryData = (await summaryResp.json()) as {
-      quoteSummary?: { result?: Array<Record<string, unknown>> };
-    };
-    const summaryResult = summaryData?.quoteSummary?.result?.[0];
-    if (!summaryResult) {
+    const target = await fetchSummary(symbol, auth);
+    if (!target) {
       if (cached) return res.json(cached.data);
       return res.status(404).json({ error: 'Symbol not found' });
     }
 
-    const assetProfile = (summaryResult.assetProfile || {}) as Record<string, unknown>;
-    const sector = (assetProfile.sector as string) || 'Technology';
-    const companyName = (assetProfile.longName as string) || (assetProfile.shortName as string) || symbol;
-    const targetMetrics = extractMetricsFromQuoteSummary(summaryResult);
+    const sector = target.sector || 'Technology';
+    const companyName = target.name;
+    const targetMetrics = target.metrics;
 
-    // Step 2: Identify peers from sector map
-    const sectorPeers = SECTOR_PEERS[sector] || SECTOR_PEERS['Technology'];
-    // Make sure the target is included, deduplicate
-    const allSymbols = Array.from(new Set([symbol, ...sectorPeers]));
-
-    // Step 3: Fetch quotes for all symbols (batch)
-    const quotes = await getQuotes(allSymbols);
-    const quoteMap = new Map<string, Record<string, unknown>>();
-    for (const q of quotes) {
-      quoteMap.set((q as Record<string, unknown>).symbol as string, q as Record<string, unknown>);
-    }
-
-    // Step 4: Build peer list
+    // Step 2: Peers from sector map (excluding target), fetched in parallel
+    const peerSymbols = (SECTOR_PEERS[sector] || SECTOR_PEERS['Technology']).filter((s) => s !== symbol);
+    const peerResults = await Promise.all(
+      peerSymbols.map((s) => fetchSummary(s, auth).catch(() => null)),
+    );
     const peers: PeerEntry[] = [];
-    for (const sym of allSymbols) {
-      if (sym === symbol) continue;
-      const q = quoteMap.get(sym);
-      if (!q) continue;
-      peers.push({
-        symbol: sym,
-        name: (q.name as string) || sym,
-        metrics: extractMetricsFromQuote(q),
-      });
-    }
+    peerResults.forEach((p, i) => {
+      if (p) peers.push({ symbol: peerSymbols[i], name: p.name, metrics: p.metrics });
+    });
 
     // Step 5: Compute sector medians (include target in the median computation)
     const targetEntry: PeerEntry = { symbol, name: companyName, metrics: targetMetrics };

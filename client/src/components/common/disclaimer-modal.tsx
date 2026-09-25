@@ -25,7 +25,7 @@ export function DisclaimerModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-bg/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-bg/80">
       <div className="relative w-full max-w-md bg-panel border border-border shadow-[0_24px_64px_rgb(0_0_0/0.35)] p-8 mx-4">
         <div className="flex items-center gap-2 mb-4">
           <AlertTriangle className="w-5 h-5 text-orange" />

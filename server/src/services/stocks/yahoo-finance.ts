@@ -256,6 +256,7 @@ export async function getHistory(
 
     const resp = await fetch(url, {
       headers: { 'User-Agent': YAHOO_UA },
+      signal: AbortSignal.timeout(10_000),
     });
     if (!resp.ok) return [];
 

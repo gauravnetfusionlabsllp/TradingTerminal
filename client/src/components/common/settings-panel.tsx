@@ -7,6 +7,8 @@ import { useT } from '../../i18n';
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
+      role="switch"
+      aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={`relative w-9 h-5 rounded-full transition-colors ${
         checked ? 'bg-accent' : 'bg-border'
@@ -115,15 +117,24 @@ export function SettingsPanel() {
               </div>
               <div className="space-y-3 pl-5">
                 <div>
-                  <span className="text-xs text-fg block mb-1.5">{t('tickerSpeed')}</span>
-                  <Slider
-                    value={settings.tickerSpeed}
-                    min={20}
-                    max={200}
-                    step={10}
-                    label={`${settings.tickerSpeed}s`}
-                    onChange={(v) => set('tickerSpeed', v)}
-                  />
+                  <label className="flex items-center justify-between cursor-pointer">
+                    <span className="text-xs text-fg">{t('showTicker')}</span>
+                    <Toggle checked={settings.showTicker} onChange={(v) => set('showTicker', v)} />
+                  </label>
+                  {settings.showTicker && (
+                    <div className="mt-2.5">
+                      <span className="text-mini text-neutral block mb-1">{t('tickerSpeed')}</span>
+                      {/* Stored as seconds per loop; flipped so dragging right speeds it up, shown as a multiple of the 80s default */}
+                      <Slider
+                        value={220 - settings.tickerSpeed}
+                        min={20}
+                        max={200}
+                        step={10}
+                        label={`${(80 / settings.tickerSpeed).toFixed(1)}×`}
+                        onChange={(v) => set('tickerSpeed', 220 - v)}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 mb-1.5">

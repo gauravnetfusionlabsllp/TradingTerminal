@@ -45,13 +45,6 @@ export function useKeyboard() {
         return;
       }
 
-      // h: heatmap view
-      if (key === 'h') {
-        e.preventDefault();
-        setStockPanelView('heatmap');
-        return;
-      }
-
       // c: compare view
       if (key === 'c' && compareSymbols.length > 0) {
         e.preventDefault();

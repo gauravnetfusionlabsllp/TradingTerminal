@@ -24,7 +24,8 @@ export interface LogEntry {
 export interface UserSettings {
   soundEnabled: boolean;
   autoRefreshInterval: number;
-  tickerSpeed: number;
+  showTicker: boolean;
+  tickerSpeed: number;      // seconds per loop: lower = faster
   theme: ThemeSetting;
   quoteThrottle: boolean;   // off = every live tick batch renders on arrival
   quoteThrottleMs: number;  // on = at most one live price render per this many ms
@@ -33,13 +34,14 @@ export interface UserSettings {
 const DEFAULT_SETTINGS: UserSettings = {
   soundEnabled: false,
   autoRefreshInterval: 30,
+  showTicker: true,
   tickerSpeed: 80,
   theme: 'dark',
   quoteThrottle: true,
   quoteThrottleMs: 100,
 };
 
-export type StockPanelView = 'watchlist' | 'heatmap' | 'compare';
+export type StockPanelView = 'watchlist' | 'compare';
 
 /** The order being prepared, shared by the ticket and the chart. Levels and price: 0 = not set. */
 export interface OrderDraft {

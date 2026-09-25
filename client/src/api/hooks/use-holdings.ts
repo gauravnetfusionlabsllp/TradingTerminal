@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface InstitutionHolder {
   name: string;
@@ -49,7 +50,7 @@ export interface HoldingsData {
 export function useHoldings(symbol: string) {
   return useQuery<HoldingsData>({
     queryKey: ['holdings', symbol],
-    queryFn: () => api.get<HoldingsData>(`/holdings/${encodeURIComponent(symbol)}`),
+    queryFn: () => api.get<HoldingsData>(`/holdings/${encodeURIComponent(toYahoo(symbol))}`),
     enabled: !!symbol,
     staleTime: 30 * 60_000, // 30 min
   });

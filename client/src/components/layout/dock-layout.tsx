@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
+import { create } from 'zustand';
 import { Layout, Model, TabNode, type TabSetNode, type BorderNode, type Action, Actions, DockLocation } from 'flexlayout-react';
 // CSS imported via index.css to avoid duplication
 
@@ -137,10 +138,14 @@ function syncHiddenPanels(model: Model) {
   useAppStore.setState({ hiddenPanels: ALL_PANEL_IDS.filter((id) => !model.getNodeById(id)) });
 }
 
+// The panel last shown on request, so it can flash where it landed
+const useFlash = create<{ id: string; at: number }>(() => ({ id: '', at: 0 }));
+
 /** Show a panel: select its tab if it's in the layout, otherwise add it to the active (or first) tabset */
 export function showPanelInLayout(panelId: string) {
   const model = _modelRef;
   if (!model) return;
+  useFlash.setState({ id: panelId, at: Date.now() });
   if (model.getNodeById(panelId)) {
     model.doAction(Actions.selectTab(panelId));
     return;
@@ -152,6 +157,14 @@ export function showPanelInLayout(panelId: string) {
     DockLocation.CENTER,
     -1,
   ));
+}
+
+/** Ring over a panel for a moment after it's shown; keyed so a repeat request replays it */
+function PanelFlash({ id }: { id: string }) {
+  const at = useFlash((s) => (s.id === id ? s.at : 0));
+  // Only a fresh request: a panel remounting later (workspace switch back) stays quiet
+  if (!at || Date.now() - at > 1000) return null;
+  return <div key={at} className="panel-flash" aria-hidden />;
 }
 
 /** Hide a panel: remove its tab from the model */
@@ -205,7 +218,8 @@ export function DockLayout() {
 
   const factory = useCallback((node: TabNode) => {
     const component = node.getComponent() ?? '';
-    if (UNDER_DEVELOPMENT.has(component)) return <PanelErrorBoundary><UnderDevelopment /></PanelErrorBoundary>;
+    const flash = <PanelFlash id={node.getId()} />;
+    if (UNDER_DEVELOPMENT.has(component)) return <><PanelErrorBoundary><UnderDevelopment /></PanelErrorBoundary>{flash}</>;
     let content: React.ReactNode;
     switch (component) {
       case PANEL_IDS.STOCKS: content = <StockPanel />; break;
@@ -299,7 +313,7 @@ export function DockLayout() {
       default:
         return <div className="flex items-center justify-center h-full text-neutral text-xs font-mono uppercase">Unknown panel: {component}</div>;
     }
-    return <PanelErrorBoundary>{content}</PanelErrorBoundary>;
+    return <><PanelErrorBoundary>{content}</PanelErrorBoundary>{flash}</>;
   }, []);
 
   const onRenderTab = useCallback((node: TabNode, renderValues: { leading: React.ReactNode; content: React.ReactNode; buttons: React.ReactNode[] }) => {

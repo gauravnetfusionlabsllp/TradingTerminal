@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface SkewPoint {
   strike: number;
@@ -33,7 +34,7 @@ export interface IVSurfaceData {
 export function useIVSurface(symbol: string) {
   return useQuery<IVSurfaceData>({
     queryKey: ['iv-surface', symbol],
-    queryFn: () => api.get<IVSurfaceData>(`/iv-surface/${encodeURIComponent(symbol)}`),
+    queryFn: () => api.get<IVSurfaceData>(`/iv-surface/${encodeURIComponent(toYahoo(symbol))}`),
     enabled: !!symbol,
     staleTime: 60 * 60_000,
   });

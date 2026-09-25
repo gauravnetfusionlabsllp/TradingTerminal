@@ -7,11 +7,10 @@ import { useAppStore } from '../../stores/use-app-store';
 import { useT, type TranslationKey } from '../../i18n';
 import { GlassCard } from '../common/glass-card';
 import { ConfirmDialog } from '../common/confirm-dialog';
-import { Search, X, TrendingUp, TrendingDown, Plus, FolderPlus, Grid3X3, List, Columns } from 'lucide-react';
+import { Search, X, TrendingUp, TrendingDown, Plus, FolderPlus, List, Columns } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { lazy, Suspense } from 'react';
 
-const MarketHeatmap = lazy(() => import('./market-heatmap').then(m => ({ default: m.MarketHeatmap })));
 const MultiChart = lazy(() => import('./multi-chart').then(m => ({ default: m.MultiChart })));
 
 export function StockPanel() {
@@ -37,11 +36,7 @@ export function StockPanel() {
 
   return (
     <AnimatePresence mode="wait">
-      {stockPanelView === 'heatmap' ? (
-        <motion.div key="heatmap" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="h-full">
-          <HeatmapWrapper />
-        </motion.div>
-      ) : stockPanelView === 'compare' ? (
+      {stockPanelView === 'compare' ? (
         <motion.div key="compare" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="h-full">
           <CompareWrapper />
         </motion.div>
@@ -51,22 +46,6 @@ export function StockPanel() {
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-function HeatmapWrapper() {
-  const setStockPanelView = useAppStore((s) => s.setStockPanelView);
-  return (
-    <GlassCard
-      headerRight={
-        <button onClick={() => setStockPanelView('watchlist')} className="text-neutral hover:text-white transition-colors p-1">
-          <List className="w-3.5 h-3.5" />
-        </button>
-      }
-      className="h-full flex flex-col"
-    >
-      <MarketHeatmap />
-    </GlassCard>
   );
 }
 
@@ -110,7 +89,6 @@ function WatchlistView({
   const removeTab = useAppStore(s => s.removeWatchlistTab);
   const addSymbolToTab = useAppStore(s => s.addSymbolToTab);
   const removeSymbolFromTab = useAppStore(s => s.removeSymbolFromTab);
-  const setStockPanelView = useAppStore(s => s.setStockPanelView);
   const selectedSymbol = useAppStore(s => s.selectedSymbol);
 
   const TAB_KEYS: Record<string, TranslationKey> = { WATCHLIST: 'watchlist', HOLDING: 'holding' };
@@ -185,15 +163,6 @@ function WatchlistView({
         >
           <FolderPlus className="w-3.5 h-3.5" />
         </button>
-        <div className="flex items-center gap-0.5 ml-auto pl-2 border-l border-border/20">
-          <button
-            onClick={() => setStockPanelView('heatmap')}
-            className="p-1.5 text-neutral hover:text-accent-ink transition-colors"
-            title={t('heatmap')}
-          >
-            <Grid3X3 className="w-3.5 h-3.5" />
-          </button>
-        </div>
       </div>
 
       <AnimatePresence>
@@ -300,12 +269,12 @@ function WatchlistView({
  * Live price cell: coloured by last tick direction, soft wash (index.css .tick-price) restarts on every tick.
  * Imperative on purpose — at FIX tick rates per-symbol React state/timers would churn and drop flashes.
  */
-function TickPrice({ value }: { value?: number }) {
+export function TickPrice({ value, dp }: { value?: number; dp?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const prev = useRef(value);
-  // Pad to the most decimals seen so trailing-zero ticks don't make the number jump width
+  // Pad to the most decimals seen so trailing-zero ticks don't make the number jump width (or a fixed dp when given)
   const digits = useRef(0);
-  if (value !== undefined) digits.current = Math.max(digits.current, fmtPrice(value).split('.')[1]?.length ?? 0);
+  if (value !== undefined) digits.current = dp ?? Math.max(digits.current, fmtPrice(value).split('.')[1]?.length ?? 0);
 
   useEffect(() => {
     const el = ref.current, p = prev.current;

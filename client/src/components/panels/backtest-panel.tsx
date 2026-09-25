@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   useBacktest,
   type BacktestParams,
@@ -10,6 +10,7 @@ import {
   type BacktestMonthlyReturn,
 } from '../../api/hooks/use-backtest';
 import { useT } from '../../i18n';
+import { useAppStore } from '../../stores/use-app-store';
 import { FlaskConical, Play, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
 
 // ── Constants ──
@@ -82,7 +83,12 @@ export function BacktestPanel() {
 
   const dates = useMemo(() => defaultDates(), []);
 
-  const [symbol, setSymbol] = useState('SPY');
+  // Symbol field follows the app selection; the backtest itself still only runs on Run.
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
+  const [symbol, setSymbol] = useState(selectedSymbol || 'SPY');
+  useEffect(() => {
+    if (selectedSymbol) setSymbol(selectedSymbol);
+  }, [selectedSymbol]);
   const [strategy, setStrategy] = useState('sma-cross');
   const [params, setParams] = useState<Record<string, number>>(() => getDefaultParams('sma-cross'));
   const [startDate, setStartDate] = useState(dates.start);

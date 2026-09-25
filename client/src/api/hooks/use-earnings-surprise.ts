@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface EarningsSurpriseHistoryEntry {
   date: string;
@@ -42,7 +43,7 @@ export interface EarningsSurpriseData {
 export function useEarningsSurprise(symbol: string) {
   return useQuery<EarningsSurpriseData>({
     queryKey: ['earnings-surprise', symbol],
-    queryFn: () => api.get(`/earnings-surprise/${encodeURIComponent(symbol)}`),
+    queryFn: () => api.get(`/earnings-surprise/${encodeURIComponent(toYahoo(symbol))}`),
     enabled: !!symbol && symbol.length > 0,
     staleTime: 15 * 60_000,
   });

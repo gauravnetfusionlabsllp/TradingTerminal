@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useIVSurface, type IVSurfaceData, type ExpirationData, type SkewPoint } from '../../api/hooks/use-iv-surface';
+import { useAppStore } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
 import { RefreshCw, Activity } from 'lucide-react';
 
@@ -57,8 +58,15 @@ function pctBarColor(pct: number): string {
 
 export function IVSurfacePanel() {
   const tr = useTr();
-  const [symbol, setSymbol] = useState('SPY');
-  const [inputVal, setInputVal] = useState('SPY');
+  // Follows the app selection (Market Watch, chart…); a typed symbol holds until the next selection.
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
+  const [symbol, setSymbol] = useState(selectedSymbol || 'SPY');
+  const [inputVal, setInputVal] = useState(symbol);
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    setSymbol(selectedSymbol);
+    setInputVal(selectedSymbol);
+  }, [selectedSymbol]);
   const [activeTab, setActiveTab] = useState<'surface' | 'skew' | 'term'>(
     'surface',
   );

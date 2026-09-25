@@ -3,7 +3,6 @@ import { useAppStore } from '../../stores/use-app-store';
 import { X, Keyboard } from 'lucide-react';
 
 const ALL_SHORTCUTS = [
-  { keys: 'H', desc: 'Heatmap view' },
   { keys: 'C', desc: 'Compare view' },
   { keys: '?', desc: 'Keyboard shortcuts' },
   { keys: 'Esc', desc: 'Close dialog' },
@@ -39,7 +38,7 @@ export function ShortcutsModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-bg/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-bg/70"
             onClick={() => setOpen(false)}
           />
           <motion.div

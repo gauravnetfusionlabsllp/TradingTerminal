@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface BacktestTrade {
   entryDate: string;
@@ -60,7 +61,7 @@ export interface BacktestResult {
 export function useBacktest(config: BacktestParams | null) {
   return useQuery({
     queryKey: ['backtest', config],
-    queryFn: () => api.post<BacktestResult>('/backtest', config),
+    queryFn: () => api.post<BacktestResult>('/backtest', { ...config!, symbol: toYahoo(config!.symbol) }),
     enabled: !!config,
     staleTime: 60 * 60_000,
   });

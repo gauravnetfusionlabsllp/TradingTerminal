@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useOrderFlow, type ProfileBin, type DeltaPoint } from '../../api/hooks/use-order-flow';
+import { useAppStore } from '../../stores/use-app-store';
 import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw } from 'lucide-react';
 
@@ -528,8 +529,15 @@ function SummaryFooter({
 
 export function OrderFlowPanel() {
   const t = useT();
-  const [symbol, setSymbol] = useState('AAPL');
-  const [inputValue, setInputValue] = useState('AAPL');
+  // Follows the app selection (Market Watch, chart…); a typed symbol holds until the next selection.
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
+  const [symbol, setSymbol] = useState(selectedSymbol || 'AAPL');
+  const [inputValue, setInputValue] = useState(symbol);
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    setSymbol(selectedSymbol);
+    setInputValue(selectedSymbol);
+  }, [selectedSymbol]);
   const [range, setRange] = useState<RangeOption>('1d');
 
   const currentInterval = RANGE_OPTIONS.find(r => r.key === range)?.interval ?? '5m';

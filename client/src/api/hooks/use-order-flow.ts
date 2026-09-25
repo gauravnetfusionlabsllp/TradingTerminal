@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface ProfileBin {
   priceLevel: number;
@@ -37,7 +38,7 @@ export function useOrderFlow(symbol: string, range = '1d', interval = '5m') {
     queryKey: ['order-flow', symbol, range, interval],
     queryFn: () =>
       api.get<OrderFlowData>(
-        `/order-flow/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`,
+        `/order-flow/${encodeURIComponent(toYahoo(symbol))}?range=${range}&interval=${interval}`,
       ),
     enabled: !!symbol,
     staleTime: 60_000,

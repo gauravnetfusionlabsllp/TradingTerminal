@@ -1,576 +1,364 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback, useId } from 'react';
 import {
   useWatchlist,
+  useWatchlistSparks,
   useAddToWatchlist,
   useRemoveFromWatchlist,
   useTickerSearch,
   type WatchlistItem,
-  type TickerSuggestion,
 } from '../../api/hooks/use-watchlist';
 import { useAppStore } from '../../stores/use-app-store';
 import { useAuthStore } from '../../stores/use-auth-store';
 import { useT } from '../../i18n';
 import { Sparkline } from '../common/sparkline';
-import {
-  ListFilter,
-  RefreshCw,
-  ArrowUpDown,
-  Plus,
-  X,
-  Search,
-  Star,
-} from 'lucide-react';
+import { TickPrice } from './stock-panel';
+import { ChevronDown, ChevronUp, RefreshCw, Search, X } from 'lucide-react';
 
-/* ────────────────────────── Types ────────────────────────── */
+type SortKey = 'symbol' | 'price' | 'changePercent' | 'volume' | 'marketCap';
 
-type SortKey =
-  | 'symbol'
-  | 'price'
-  | 'changePercent'
-  | 'volume'
-  | 'marketCap'
-  | 'dayRange'
-  | 'w52Range';
-
-/* ────────────────────────── Helpers ────────────────────────── */
-
-function fmtNum(n: number | null | undefined, decimals = 2): string {
-  if (n == null) return '--';
-  return n.toFixed(decimals);
-}
+// Columns join as the panel widens: Today ≥340px, Day range ≥480px, Volume + Mkt cap ≥600px
+const COLS =
+  'grid-cols-[minmax(0,1fr)_5rem_4.25rem] ' +
+  '@min-[340px]:grid-cols-[minmax(0,1fr)_5rem_4.25rem_4.5rem] ' +
+  '@min-[480px]:grid-cols-[minmax(0,1fr)_5rem_4.25rem_4.5rem_4.75rem] ' +
+  '@min-[600px]:grid-cols-[minmax(0,1fr)_5rem_4.25rem_4.5rem_4.75rem_3.75rem_4.25rem]';
+const AT_340 = 'hidden @min-[340px]:flex';
+const AT_480 = 'hidden @min-[480px]:flex';
+const AT_600 = 'hidden @min-[600px]:flex';
+const STALE_MIN = 5;
 
 function fmtVol(n: number | null | undefined): string {
-  if (n == null) return '--';
+  if (!n) return '—';
+  if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
   if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
   if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
   if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
   return n.toFixed(0);
 }
 
-function miniTrend(
-  price: number,
-  changePercent: number | null,
-  dayHigh: number | null,
-  dayLow: number | null,
-  previousClose: number | null,
-): number[] {
-  const prev = previousClose ?? price;
-  const low = dayLow ?? Math.min(prev, price);
-  const high = dayHigh ?? Math.max(prev, price);
-  const mid = (prev + price) / 2;
-  const cp = changePercent ?? 0;
-  if (cp >= 0) {
-    return [prev, prev * 0.998, low, mid, high * 0.999, price];
-  }
-  return [prev, prev * 1.002, high, mid, low * 1.001, price];
-}
+/** Yahoo prices are raw floats (NVDA 223.9645): stocks/indices 2 dp, FX-sized 4, sub-1 6 so changes don't round to 0.00 */
+const decimals = (price: number) => (price >= 10 ? 2 : price >= 1 ? 4 : 6);
+const signed = (n: number, dp: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n).toFixed(dp)}`;
 
-function pctInRange(
-  price: number,
-  low: number | null | undefined,
-  high: number | null | undefined,
-): number | null {
-  if (low == null || high == null || high === low) return null;
-  return ((price - low) / (high - low)) * 100;
-}
-
-/* ────────────────────────── Column Header ────────────────────────── */
-
-function ColHeader({
-  label,
-  sortKey,
-  current,
-  asc,
-  onClick,
-  className = '',
-}: {
+function SortHeader({ k, label, sort, onSort, className = '' }: {
+  k: SortKey;
   label: string;
-  sortKey: SortKey;
-  current: SortKey;
-  asc: boolean;
-  onClick: (k: SortKey) => void;
+  sort: { key: SortKey; asc: boolean };
+  onSort: (k: SortKey) => void;
   className?: string;
 }) {
-  const active = current === sortKey;
+  const active = sort.key === k;
+  const Arrow = sort.asc ? ChevronUp : ChevronDown;
   return (
     <button
-      onClick={() => onClick(sortKey)}
-      className={`flex items-center gap-0.5 ${className} ${active ? 'text-cyan-400' : ''}`}
+      type="button"
+      onClick={() => onSort(k)}
+      className={`flex items-center gap-0.5 min-w-0 hover:text-fg transition-colors ${active ? 'text-fg' : ''} ${className}`}
     >
-      <span>{label}</span>
-      {active && (
-        <ArrowUpDown
-          className="w-2 h-2"
-          style={{ transform: asc ? 'none' : 'scaleY(-1)' }}
-        />
-      )}
+      <span className="truncate">{label}</span>
+      {active && <Arrow className="w-3 h-3 shrink-0" />}
     </button>
   );
 }
 
-/* ────────────────────────── Range Bar (52W) ────────────────────────── */
-
-function RangeBar({ pct }: { pct: number | null }) {
-  if (pct == null) return <span className="text-neutral/30">--</span>;
-  const clamped = Math.max(0, Math.min(100, pct));
-  return (
-    <div className="flex items-center gap-1 w-full">
-      <div className="flex-1 h-[3px] bg-white/5 relative rounded-full overflow-hidden">
-        <div
-          className="absolute left-0 top-0 h-full bg-cyan-400/60 rounded-full"
-          style={{ width: `${clamped}%` }}
-        />
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-[5px] h-[5px] rounded-full bg-cyan-400 border border-black"
-          style={{ left: `calc(${clamped}% - 2.5px)` }}
-        />
-      </div>
-      <span className="text-micro font-mono text-neutral/40 w-7 text-right shrink-0">
-        {clamped.toFixed(0)}%
-      </span>
-    </div>
-  );
-}
-
-/* ────────────────────────── Main Panel ────────────────────────── */
-
 export function WatchlistPanel() {
   const t = useT();
-  const { data: items, isLoading, refetch } = useWatchlist();
+  const { data: items, isLoading, isFetching, refetch, dataUpdatedAt } = useWatchlist();
+  const { data: sparks, refetch: refetchSparks } = useWatchlistSparks();
   const addMutation = useAddToWatchlist();
   const removeMutation = useRemoveFromWatchlist();
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
   const setSelectedSymbol = useAppStore((s) => s.setSelectedSymbol);
   const user = useAuthStore((s) => s.user);
 
-  const [sortKey, setSortKey] = useState<SortKey>('symbol');
-  const [sortAsc, setSortAsc] = useState(true);
-  const [searchInput, setSearchInput] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [highlightIdx, setHighlightIdx] = useState(-1);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [sort, setSort] = useState<{ key: SortKey; asc: boolean }>({ key: 'symbol', asc: true });
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const [highlight, setHighlight] = useState(-1);
+  const listId = useId();
 
-  const { data: suggestions } = useTickerSearch(searchInput);
+  const q = query.trim();
+  const { data: suggestions, isError: searchDown, isFetching: searching } = useTickerSearch(q);
+  const matches = q ? suggestions ?? [] : [];
+  const inList = useMemo(() => new Set(items?.map((i) => i.symbol)), [items]);
 
-  /* ── Sort handler ── */
-  const handleSort = useCallback(
-    (key: SortKey) => {
-      if (sortKey === key) setSortAsc(!sortAsc);
-      else {
-        setSortKey(key);
-        setSortAsc(key === 'symbol');
-      }
-    },
-    [sortKey, sortAsc],
+  const onSort = useCallback(
+    (key: SortKey) => setSort((s) => (s.key === key ? { key, asc: !s.asc } : { key, asc: key === 'symbol' })),
+    [],
   );
 
-  /* ── Sorted data ── */
   const sorted = useMemo(() => {
-    if (!items) return [];
-    const list = [...items];
+    const list = [...(items ?? [])];
+    const val = (i: WatchlistItem) => i.quote?.[sort.key as Exclude<SortKey, 'symbol'>] ?? 0;
     list.sort((a, b) => {
-      const qa = a.quote;
-      const qb = b.quote;
-      let cmp = 0;
-      switch (sortKey) {
-        case 'symbol':
-          cmp = a.symbol.localeCompare(b.symbol);
-          break;
-        case 'price':
-          cmp = (qa?.price ?? 0) - (qb?.price ?? 0);
-          break;
-        case 'changePercent':
-          cmp = (qa?.changePercent ?? 0) - (qb?.changePercent ?? 0);
-          break;
-        case 'volume':
-          cmp = (qa?.volume ?? 0) - (qb?.volume ?? 0);
-          break;
-        case 'marketCap':
-          cmp = (qa?.marketCap ?? 0) - (qb?.marketCap ?? 0);
-          break;
-        case 'dayRange': {
-          const ra =
-            qa && qa.dayHigh != null && qa.dayLow != null
-              ? qa.dayHigh - qa.dayLow
-              : 0;
-          const rb =
-            qb && qb.dayHigh != null && qb.dayLow != null
-              ? qb.dayHigh - qb.dayLow
-              : 0;
-          cmp = ra - rb;
-          break;
-        }
-        case 'w52Range': {
-          const pa = pctInRange(
-            qa?.price ?? 0,
-            qa?.fiftyTwoWeekLow,
-            qa?.fiftyTwoWeekHigh,
-          );
-          const pb = pctInRange(
-            qb?.price ?? 0,
-            qb?.fiftyTwoWeekLow,
-            qb?.fiftyTwoWeekHigh,
-          );
-          cmp = (pa ?? -1) - (pb ?? -1);
-          break;
-        }
-      }
-      return sortAsc ? cmp : -cmp;
+      const cmp = sort.key === 'symbol' ? a.symbol.localeCompare(b.symbol) : val(a) - val(b);
+      return sort.asc ? cmp : -cmp;
     });
     return list;
-  }, [items, sortKey, sortAsc]);
+  }, [items, sort]);
 
-  /* ── Add symbol ── */
-  const handleAdd = useCallback(
-    (sym: string) => {
-      addMutation.mutate(sym);
-      setSearchInput('');
-      setShowDropdown(false);
-      setHighlightIdx(-1);
-    },
-    [addMutation],
+  const add = (symbol: string) => {
+    if (!inList.has(symbol)) addMutation.mutate(symbol);
+    setQuery('');
+    setOpen(false);
+    setHighlight(-1);
+  };
+
+  const onSearchKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setOpen(true);
+      setHighlight((h) => Math.min(Math.max(h + (e.key === 'ArrowDown' ? 1 : -1), 0), matches.length - 1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const pick = matches[highlight];
+      if (pick) {
+        if (!inList.has(pick.symbol)) add(pick.symbol);
+      } else if (q) add(q);
+    } else if (e.key === 'Escape') {
+      setOpen(false);
+    }
+  };
+
+  // ArrowUp/ArrowDown walk the rows and select as they go, so the chart follows
+  const onRowKey = (e: React.KeyboardEvent<HTMLUListElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const rows = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('button[data-row]')];
+    const cur = (e.target as HTMLElement).closest('li')?.querySelector<HTMLButtonElement>('button[data-row]');
+    const next = rows[(cur ? rows.indexOf(cur) : -1) + (e.key === 'ArrowDown' ? 1 : -1)];
+    if (!next) return;
+    e.preventDefault();
+    next.focus();
+    next.click();
+  };
+
+  // Freshness from the quotes themselves; dataUpdatedAt moves on every refetch, so a dead tracker shows as stale
+  const newest = useMemo(
+    () => Math.max(0, ...(items ?? []).map((i) => (i.quote ? Date.parse(i.quote.updatedAt) : 0))),
+    [items],
   );
+  const ageMin = newest ? Math.floor((dataUpdatedAt - newest) / 60_000) : 0;
 
-  /* ── Remove symbol ── */
-  const handleRemove = useCallback(
-    (e: React.MouseEvent, sym: string) => {
-      e.stopPropagation();
-      removeMutation.mutate(sym);
-    },
-    [removeMutation],
-  );
-
-  /* ── Keyboard navigation in dropdown ── */
-  const handleInputKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      const list = suggestions ?? [];
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setHighlightIdx((prev) => Math.min(prev + 1, list.length - 1));
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setHighlightIdx((prev) => Math.max(prev - 1, 0));
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (highlightIdx >= 0 && highlightIdx < list.length) {
-          handleAdd(list[highlightIdx].symbol);
-        } else if (searchInput.trim()) {
-          handleAdd(searchInput.trim().toUpperCase());
-        }
-      } else if (e.key === 'Escape') {
-        setShowDropdown(false);
-      }
-    },
-    [suggestions, highlightIdx, searchInput, handleAdd],
-  );
-
-  /* ── Close dropdown on outside click ── */
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(e.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  const hint =
+    open && q && matches.length === 0
+      ? searchDown
+        ? t('wlSearchDown')
+        : searching
+          ? null
+          : t('wlNoMatch').replace('{q}', q.toUpperCase())
+      : null;
 
   return (
-    <div className="h-full flex flex-col bg-black overflow-hidden">
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
-        <div className="flex items-center gap-2">
-          <Star className="w-4 h-4 text-cyan-400" />
-          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
-            {t('watchlist')}
-          </span>
-          {items && (
-            <span className="text-micro font-mono text-neutral/30">
-              {items.length}
-            </span>
-          )}
-        </div>
+    <div className="h-full flex flex-col bg-panel overflow-hidden font-mono">
+      {/* Toolbar: the panel tab already carries the name */}
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border shrink-0">
+        {user && (
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-neutral pointer-events-none" />
+            <input
+              type="text"
+              role="combobox"
+              aria-label={t('addSymbol')}
+              aria-expanded={open && (matches.length > 0 || !!hint)}
+              aria-controls={listId}
+              aria-autocomplete="list"
+              aria-activedescendant={open && matches[highlight] ? `${listId}-${highlight}` : undefined}
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value.toUpperCase());
+                setOpen(true);
+                setHighlight(-1);
+                if (addMutation.isError) addMutation.reset();
+              }}
+              onFocus={() => setOpen(true)}
+              onBlur={() => setOpen(false)}
+              onKeyDown={onSearchKey}
+              placeholder={t('addSymbol')}
+              maxLength={32}
+              className="w-full pl-7! text-mini"
+            />
+
+            {open && matches.length > 0 && (
+              <ul
+                id={listId}
+                role="listbox"
+                className="absolute inset-x-0 top-full mt-1 z-50 max-h-60 overflow-y-auto bg-raised border border-border shadow-lg animate-pop"
+              >
+                {matches.map((s, idx) => {
+                  const added = inList.has(s.symbol);
+                  return (
+                    <li
+                      key={s.symbol}
+                      id={`${listId}-${idx}`}
+                      role="option"
+                      aria-selected={idx === highlight}
+                      aria-disabled={added || undefined}
+                      // mousedown + preventDefault so the input's blur doesn't close the list before the pick lands
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        if (!added) add(s.symbol);
+                      }}
+                      onMouseEnter={() => setHighlight(idx)}
+                      className={`flex items-center gap-2 px-2 py-1.5 ${added ? 'cursor-default' : 'cursor-pointer'} ${idx === highlight ? 'bg-hover' : ''}`}
+                    >
+                      <span className={`text-mini font-bold shrink-0 ${added ? 'text-neutral' : 'text-fg'}`}>{s.symbol}</span>
+                      <span className="text-micro text-neutral truncate flex-1">{s.name}</span>
+                      <span className="text-micro text-neutral shrink-0">{added ? t('wlAdded') : s.exchange}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {hint && (
+              <p className="absolute inset-x-0 top-full mt-1 z-50 px-2 py-1.5 bg-raised border border-border text-micro text-neutral shadow-lg">
+                {hint}
+              </p>
+            )}
+          </div>
+        )}
         <button
-          onClick={() => refetch()}
-          className="p-1 text-neutral/40 hover:text-cyan-400 transition-colors"
+          type="button"
+          onClick={() => {
+            refetch();
+            refetchSparks();
+          }}
+          aria-label={t('refresh')}
+          title={t('refresh')}
+          className="ml-auto p-1 rounded-sm text-neutral hover:text-fg transition-colors"
         >
-          <RefreshCw
-            className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`}
-          />
+          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'motion-safe:animate-spin' : ''}`} />
         </button>
       </div>
 
-      {/* ── Quick Add ── */}
-      {user && (
-        <div
-          className="px-3 py-1.5 border-b border-border/20 bg-black/60 shrink-0"
-          ref={wrapperRef}
-        >
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-neutral/30" />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => {
-                setSearchInput(e.target.value.toUpperCase());
-                setShowDropdown(true);
-                setHighlightIdx(-1);
-              }}
-              onFocus={() => searchInput && setShowDropdown(true)}
-              onKeyDown={handleInputKeyDown}
-              placeholder={t('addSymbol')}
-              className="w-full bg-black border border-border/30 pl-8 pr-2 py-1 text-mini font-mono text-white placeholder:text-neutral/20 outline-none focus:border-cyan-400/50 transition-colors"
-            />
-          </div>
-
-          {/* Suggestions dropdown */}
-          {showDropdown && suggestions && suggestions.length > 0 && (
-            <div className="absolute z-50 left-3 right-3 mt-0.5 bg-raised border border-border/30 max-h-40 overflow-auto no-scrollbar">
-              {suggestions.map((s: TickerSuggestion, idx: number) => (
-                <button
-                  key={s.symbol}
-                  onClick={() => handleAdd(s.symbol)}
-                  className={`w-full flex items-center justify-between px-2 py-1.5 text-left transition-colors ${
-                    idx === highlightIdx
-                      ? 'bg-cyan-400/10 text-cyan-400'
-                      : 'hover:bg-white/[0.03] text-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-mini font-mono font-bold shrink-0">
-                      {s.symbol}
-                    </span>
-                    <span className="text-micro font-mono text-neutral/40 truncate">
-                      {s.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-micro font-mono text-neutral/20">
-                      {s.exchange}
-                    </span>
-                    <Plus className="w-2.5 h-2.5 text-cyan-400/60" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+      {addMutation.isError && (
+        <p role="alert" className="px-3 py-1 border-b border-border text-micro text-bearish shrink-0">
+          {addMutation.error.message}
+        </p>
       )}
 
-      {/* ── Column Headers ── */}
-      <div className="grid grid-cols-[1fr_0.6fr_0.5fr_0.6fr_0.5fr_0.7fr_0.8fr_36px] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider shrink-0 gap-1">
-        <ColHeader
-          label={t('symbol')}
-          sortKey="symbol"
-          current={sortKey}
-          asc={sortAsc}
-          onClick={handleSort}
-        />
-        <ColHeader
-          label={t('price')}
-          sortKey="price"
-          current={sortKey}
-          asc={sortAsc}
-          onClick={handleSort}
-          className="text-right"
-        />
-        <ColHeader
-          label={t('moversChange')}
-          sortKey="changePercent"
-          current={sortKey}
-          asc={sortAsc}
-          onClick={handleSort}
-          className="text-right"
-        />
-        <ColHeader
-          label={t('volume')}
-          sortKey="volume"
-          current={sortKey}
-          asc={sortAsc}
-          onClick={handleSort}
-          className="text-right"
-        />
-        <ColHeader
-          label="MKT CAP"
-          sortKey="marketCap"
-          current={sortKey}
-          asc={sortAsc}
-          onClick={handleSort}
-          className="text-right"
-        />
-        <ColHeader
-          label="Day H/L"
-          sortKey="dayRange"
-          current={sortKey}
-          asc={sortAsc}
-          onClick={handleSort}
-          className="text-right"
-        />
-        <ColHeader
-          label="52W"
-          sortKey="w52Range"
-          current={sortKey}
-          asc={sortAsc}
-          onClick={handleSort}
-          className="text-right"
-        />
-        {/* Sparkline / remove column - no sort */}
-        <span />
-      </div>
+      <div className="@container flex-1 min-h-0 flex flex-col">
+        {/* Column headers */}
+        <div className={`grid ${COLS} gap-x-2 px-3 py-1 border-b border-border text-micro text-neutral shrink-0`}>
+          <SortHeader k="symbol" label={t('symbol')} sort={sort} onSort={onSort} />
+          <SortHeader k="price" label={t('wlLast')} sort={sort} onSort={onSort} className="justify-end pr-1" />
+          <SortHeader k="changePercent" label={t('wlChange')} sort={sort} onSort={onSort} className="justify-end" />
+          <span className={`${AT_340} justify-end`}>{t('wlToday')}</span>
+          <span className={`${AT_480} justify-end truncate`}>{t('wlDayRange')}</span>
+          <SortHeader k="volume" label={t('volume')} sort={sort} onSort={onSort} className={`${AT_600} justify-end`} />
+          <SortHeader k="marketCap" label={t('wlMktCap')} sort={sort} onSort={onSort} className={`${AT_600} justify-end`} />
+        </div>
 
-      {/* ── List ── */}
-      <div className="flex-1 overflow-auto no-scrollbar">
-        {isLoading && !items && (
-          <div className="text-center py-8 text-cyan-400 text-mini font-mono uppercase animate-pulse">
-            {t('loading')}
-          </div>
-        )}
+        <ul className="flex-1 overflow-y-auto no-scrollbar" onKeyDown={onRowKey}>
+          {isLoading && !items &&
+            Array.from({ length: 5 }, (_, i) => (
+              <li key={i} className={`grid ${COLS} gap-x-2 items-center px-3 h-[38px] border-b border-border/50`}>
+                <span className="h-2.5 w-14 rounded-sm bg-hover motion-safe:animate-pulse" />
+                <span className="h-2.5 w-12 justify-self-end rounded-sm bg-hover motion-safe:animate-pulse" />
+                <span className="h-2.5 w-10 justify-self-end rounded-sm bg-hover motion-safe:animate-pulse" />
+              </li>
+            ))}
 
-        {!isLoading && (!items || items.length === 0) && (
-          <div className="text-center py-8">
-            <Star className="w-5 h-5 text-cyan-400/20 mx-auto mb-2" />
-            <div className="text-neutral/30 text-mini font-mono uppercase">
-              {t('addToWatchlist')}
-            </div>
-          </div>
-        )}
+          {!isLoading && sorted.length === 0 && (
+            <li className="px-4 py-10 text-center text-mini text-neutral">
+              {user ? t('wlEmpty') : t('addToWatchlist')}
+            </li>
+          )}
 
-        {sorted.map((item: WatchlistItem) => {
-          const q = item.quote;
-          const chg = q?.changePercent ?? 0;
-          const isUp = chg >= 0;
+          {sorted.map((item) => {
+            const quote = item.quote;
+            const selected = item.symbol === selectedSymbol;
+            const cp = quote?.changePercent ?? 0;
+            const tone = !quote || !cp ? 'text-neutral' : cp > 0 ? 'text-bullish' : 'text-bearish';
+            const dp = quote ? decimals(quote.price) : 2;
+            const name = quote?.name ?? item.name;
+            const series = sparks?.[item.symbol];
 
-          return (
-            <button
-              key={item.symbol}
-              onClick={() => setSelectedSymbol(item.symbol)}
-              className="w-full grid grid-cols-[1fr_0.6fr_0.5fr_0.6fr_0.5fr_0.7fr_0.8fr_36px] px-3 py-1.5 border-b border-border/10 hover:bg-white/[0.02] transition-colors text-left gap-1 group"
-            >
-              {/* Symbol + name */}
-              <div className="min-w-0 self-center">
-                <div className="text-mini font-mono font-bold text-white truncate group-hover:text-cyan-300 transition-colors">
-                  {item.symbol}
-                </div>
-                {item.name && item.name !== item.symbol && (
-                  <div className="text-micro font-mono text-neutral/30 truncate">
-                    {item.name}
-                  </div>
-                )}
-              </div>
-
-              {/* Price */}
-              <span className="text-mini font-mono text-white text-right self-center">
-                {q ? `$${fmtNum(q.price)}` : '--'}
-              </span>
-
-              {/* Change% */}
-              <span
-                className={`text-mini font-mono font-bold text-right self-center ${
-                  isUp ? 'text-bullish' : 'text-bearish'
+            return (
+              <li
+                key={item.symbol}
+                className={`group relative grid ${COLS} gap-x-2 items-start px-3 py-1 border-b border-border/50 transition-colors ${
+                  selected ? 'bg-accent/10 shadow-[inset_2px_0_0_var(--color-accent)]' : 'hover:bg-hover'
                 }`}
               >
-                {q
-                  ? `${isUp ? '+' : ''}${fmtNum(q.changePercent)}%`
-                  : '--'}
-              </span>
+                {/* Stretched select button: the whole row is the hit target, the × stays a separate control */}
+                <button
+                  type="button"
+                  data-row
+                  onClick={() => setSelectedSymbol(item.symbol)}
+                  aria-label={item.symbol}
+                  aria-current={selected || undefined}
+                  className="absolute inset-0 -outline-offset-2!"
+                />
 
-              {/* Volume */}
-              <span className="text-mini font-mono text-neutral/50 text-right self-center">
-                {q ? fmtVol(q.volume) : '--'}
-              </span>
-
-              {/* Market Cap */}
-              <span className="text-mini font-mono text-neutral/50 text-right self-center">
-                {q?.marketCap ? fmtVol(q.marketCap) : '--'}
-              </span>
-
-              {/* Day High / Low */}
-              <div className="text-right self-center">
-                {q && q.dayHigh != null && q.dayLow != null ? (
-                  <div className="text-micro font-mono text-neutral/40 leading-tight">
-                    <span className="text-bullish/70">
-                      {fmtNum(q.dayHigh)}
-                    </span>
-                    <span className="text-neutral/20 mx-0.5">/</span>
-                    <span className="text-bearish/70">
-                      {fmtNum(q.dayLow)}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-micro font-mono text-neutral/30">
-                    --
-                  </span>
-                )}
-              </div>
-
-              {/* 52W Range bar */}
-              <div className="self-center">
-                {q?.fiftyTwoWeekHigh != null &&
-                q?.fiftyTwoWeekLow != null ? (
-                  <div>
-                    <RangeBar
-                      pct={pctInRange(
-                        q.price,
-                        q.fiftyTwoWeekLow,
-                        q.fiftyTwoWeekHigh,
-                      )}
-                    />
-                    <div className="flex justify-between text-micro font-mono text-neutral/20 mt-0.5">
-                      <span>{fmtNum(q.fiftyTwoWeekLow, 0)}</span>
-                      <span>{fmtNum(q.fiftyTwoWeekHigh, 0)}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <span className="text-micro font-mono text-neutral/30">
-                    --
-                  </span>
-                )}
-              </div>
-
-              {/* Sparkline + remove */}
-              <div className="flex items-center justify-end gap-1 self-center">
-                {q && (
-                  <Sparkline
-                    data={miniTrend(
-                      q.price,
-                      q.changePercent,
-                      q.dayHigh,
-                      q.dayLow,
-                      q.previousClose,
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-bold text-fg truncate">{item.symbol}</span>
+                    {user && (
+                      <button
+                        type="button"
+                        onClick={() => removeMutation.mutate(item.symbol)}
+                        aria-label={t('wlRemove').replace('{symbol}', item.symbol)}
+                        title={t('wlRemove').replace('{symbol}', item.symbol)}
+                        className="relative z-10 shrink-0 p-0.5 rounded-sm text-neutral hover:text-bearish opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
                     )}
-                    width={36}
-                    height={14}
-                    color={isUp ? 'var(--color-green-500)' : 'var(--color-red-500)'}
-                  />
-                )}
-                {user && (
-                  <span
-                    role="button"
-                    tabIndex={-1}
-                    onClick={(e) => handleRemove(e, item.symbol)}
-                    className="opacity-0 group-hover:opacity-100 text-neutral/30 hover:text-bearish transition-all cursor-pointer"
-                  >
-                    <X className="w-3 h-3" />
-                  </span>
-                )}
-              </div>
-            </button>
-          );
-        })}
+                  </div>
+                  <div className="text-micro text-neutral truncate">
+                    {name && name !== item.symbol ? name : ' '}
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <TickPrice value={quote?.price} dp={dp} />
+                </div>
+
+                <div className={`flex flex-col items-end tabular-nums ${tone}`}>
+                  <span className="text-mini font-semibold">{quote ? `${signed(cp, 2)}%` : '—'}</span>
+                  <span className="text-micro">{quote?.change != null ? signed(quote.change, dp) : ''}</span>
+                </div>
+
+                <div className={`${AT_340} justify-end self-center`}>
+                  {series ? (
+                    <Sparkline
+                      data={series}
+                      baseline={quote?.previousClose}
+                      width={64}
+                      height={24}
+                      color={cp >= 0 ? 'var(--color-bullish)' : 'var(--color-bearish)'}
+                    />
+                  ) : (
+                    <span className="text-micro text-neutral">—</span>
+                  )}
+                </div>
+
+                <div className={`${AT_480} flex-col items-end tabular-nums text-neutral`}>
+                  <span className="text-mini">{quote?.dayHigh != null ? quote.dayHigh.toFixed(dp) : '—'}</span>
+                  <span className="text-micro">{quote?.dayLow != null ? quote.dayLow.toFixed(dp) : ''}</span>
+                </div>
+
+                <span className={`${AT_600} justify-end text-mini tabular-nums text-neutral`}>{fmtVol(quote?.volume)}</span>
+                <span className={`${AT_600} justify-end text-mini tabular-nums text-neutral`}>{fmtVol(quote?.marketCap)}</span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
-      {/* ── Status bar ── */}
-      <div className="px-3 py-1 border-t border-border/30 bg-raised shrink-0 flex items-center justify-between text-micro font-mono text-neutral/30">
-        <span>
-          {items?.length ?? 0} {t('scrResults')}
-        </span>
-        {items && items.length > 0 && (
-          <span className="text-neutral/20">
-            {t('refresh')}: 60s
-          </span>
-        )}
+      <div className="flex items-center justify-between gap-2 px-3 py-1 border-t border-border text-micro text-neutral shrink-0">
+        <span>{t('wlSymbols').replace('{n}', String(items?.length ?? 0))}</span>
+        {newest > 0 &&
+          (ageMin >= STALE_MIN ? (
+            <span className="text-orange">{t('wlStale').replace('{n}', String(ageMin))}</span>
+          ) : (
+            <span>
+              {t('wlUpdated').replace(
+                '{time}',
+                new Date(newest).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              )}
+            </span>
+          ))}
       </div>
     </div>
   );

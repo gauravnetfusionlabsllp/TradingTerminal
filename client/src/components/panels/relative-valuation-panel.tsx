@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useAppStore } from '../../stores/use-app-store';
 import { useRelativeValuation, type ValuationMetrics, type PeerEntry } from '../../api/hooks/use-relative-valuation';
 import { useT, tr, TFn } from '../../i18n';
 import { RefreshCw, TrendingUp } from 'lucide-react';
@@ -74,8 +75,15 @@ const MAX_R = 20;
 
 export function RelativeValuationPanel() {
   const t = useT();
-  const [inputSymbol, setInputSymbol] = useState('AAPL');
-  const [activeSymbol, setActiveSymbol] = useState('AAPL');
+  // Follows the app selection (Market Watch, chart…); a typed symbol holds until the next selection.
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
+  const [activeSymbol, setActiveSymbol] = useState(selectedSymbol || 'AAPL');
+  const [inputSymbol, setInputSymbol] = useState(activeSymbol);
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    setActiveSymbol(selectedSymbol);
+    setInputSymbol(selectedSymbol);
+  }, [selectedSymbol]);
   const { data, isLoading, refetch } = useRelativeValuation(activeSymbol);
 
   const [xAxis, setXAxis] = useState<MetricKey>('pe');

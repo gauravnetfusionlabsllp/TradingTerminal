@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface EstimatePeriod {
   avg: number | null;
@@ -64,7 +65,7 @@ export interface EarningsEstimatesData {
 export function useEarningsEstimates(symbol: string | null) {
   return useQuery<EarningsEstimatesData>({
     queryKey: ['earnings-estimates', symbol],
-    queryFn: () => api.get(`/earnings-estimates/${symbol}`),
+    queryFn: () => api.get(`/earnings-estimates/${encodeURIComponent(toYahoo(symbol!))}`),
     enabled: !!symbol && symbol.length > 0,
     refetchInterval: 900_000, // 15 min
     staleTime: 600_000, // 10 min

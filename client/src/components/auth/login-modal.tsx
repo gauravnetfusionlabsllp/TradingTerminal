@@ -48,7 +48,7 @@ export function LoginModal() {
   const labelClass = 'block text-xs text-neutral mb-1.5';
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg/80 backdrop-blur-sm" onClick={close}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg/80" onClick={close}>
       <div
         className="corner-flag relative w-full max-w-sm bg-panel border border-border shadow-[0_24px_64px_rgb(0_0_0/0.35)] px-8 pt-8 pb-6 mx-4"
         onClick={(e) => e.stopPropagation()}

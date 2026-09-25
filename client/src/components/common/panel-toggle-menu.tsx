@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect, type RefObject } from 'react';
+import { useState, useMemo, useEffect, useRef, type RefObject } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../stores/use-app-store';
-import { useT } from '../../i18n';
+import { useT, tr } from '../../i18n';
 import { showPanelInLayout, hidePanelInLayout } from '../layout/dock-layout';
-import { ALL_PANEL_IDS, PANEL_IDS, getLocalizedPanelName } from '../layout/panels';
-import { useWorkspaceStore, isModified } from '../../stores/use-workspace-store';
+import { ALL_PANEL_IDS, PANEL_IDS, getLocalizedPanelName, getPanelDescription } from '../layout/panels';
+import { useWorkspaceStore, isModified, wsLabel } from '../../stores/use-workspace-store';
 import { Eye, EyeOff, RotateCcw, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import type { TranslationKey } from '../../i18n/translations';
 
@@ -106,9 +106,20 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
   useAppStore((s) => s.locale);
   const [search, setSearch] = useState('');
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  // The row being pointed at or focused, and its offset from the menu top, for the side card
+  const [peek, setPeek] = useState<{ id: string; top: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const peekAt = (id: string, row: HTMLElement) => {
+    const menu = menuRef.current;
+    if (!menu) return;
+    const top = row.getBoundingClientRect().top - menu.getBoundingClientRect().top;
+    // ponytail: fixed card-height guess keeps the card inside the menu's height; measure it if descriptions grow
+    setPeek({ id, top: Math.max(0, Math.min(top, menu.clientHeight - 112)) });
+  };
 
   useEffect(() => {
-    if (!open) { setSearch(''); return; }
+    if (!open) { setSearch(''); setPeek(null); return; }
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         onClose();
@@ -136,8 +147,9 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
     const q = search.toLowerCase().trim();
     return PANEL_CATEGORIES.map(cat => ({
       ...cat,
+      // Descriptions count too, so "rates" or "calendar" finds panels by what they do
       panels: cat.panels
-        .filter(id => !q || getLocalizedPanelName(id).toLowerCase().includes(q)),
+        .filter(id => !q || `${getLocalizedPanelName(id)} ${getPanelDescription(id)}`.toLowerCase().includes(q)),
     })).filter(cat => cat.panels.length > 0);
   }, [search]);
 
@@ -145,6 +157,7 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
     <AnimatePresence>
       {open && (
         <motion.div
+          ref={menuRef}
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
@@ -157,7 +170,7 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
               <span className="text-xs font-semibold text-fg">
                 {t('catPanels')}
               </span>
-              <span className="text-micro font-mono text-neutral/30">
+              <span className="text-micro font-mono text-neutral/70">
                 {ALL_PANEL_IDS.length - hiddenPanels.length} / {ALL_PANEL_IDS.length}
               </span>
             </div>
@@ -175,7 +188,11 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
           </div>
 
           {/* Categories */}
-          <div className="flex-1 overflow-auto no-scrollbar py-1">
+          <div
+            className="flex-1 overflow-auto no-scrollbar py-1"
+            onMouseLeave={() => setPeek(null)}
+            onScroll={() => setPeek(null)}
+          >
             {filteredCategories.map((cat) => {
               const isCollapsed = collapsed.has(cat.key) && !search;
               const activeCount = cat.panels.filter(id => !hiddenPanels.includes(id)).length;
@@ -186,36 +203,48 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
                     className="w-full flex items-center gap-1.5 px-3 py-1.5 text-left hover:bg-hover transition-colors"
                   >
                     {isCollapsed ? (
-                      <ChevronRight className="w-3 h-3 text-neutral/40 shrink-0" />
+                      <ChevronRight className="w-3 h-3 text-neutral/70 shrink-0" />
                     ) : (
-                      <ChevronDown className="w-3 h-3 text-neutral/40 shrink-0" />
+                      <ChevronDown className="w-3 h-3 text-neutral/70 shrink-0" />
                     )}
                     <span className="text-mini font-semibold text-neutral flex-1">
                       {t(cat.key)}
                     </span>
-                    <span className="text-micro font-mono text-neutral/30">
+                    <span className="text-micro font-mono text-neutral/70">
                       {activeCount}/{cat.panels.length}
                     </span>
                   </button>
                   {!isCollapsed && cat.panels.map((panelId) => {
                     const isHidden = hiddenPanels.includes(panelId);
+                    const desc = getPanelDescription(panelId);
                     return (
                       <button
                         key={panelId}
                         onClick={() => togglePanel(panelId)}
-                        className={`w-full flex items-center gap-2 pl-7 pr-3 py-1.5 text-left hover:bg-hover transition-colors ${
-                          isHidden ? 'opacity-40' : ''
+                        onMouseEnter={(e) => peekAt(panelId, e.currentTarget)}
+                        onFocus={(e) => peekAt(panelId, e.currentTarget)}
+                        onBlur={() => setPeek(null)}
+                        aria-pressed={!isHidden}
+                        aria-describedby={peek?.id === panelId ? 'panel-peek' : undefined}
+                        className={`group w-full flex items-start gap-2 pl-7 pr-3 py-1.5 text-left transition-colors ${
+                          isHidden ? 'hover:bg-hover' : 'bg-accent/10 hover:bg-accent/15'
                         }`}
                       >
                         {isHidden ? (
-                          <EyeOff className="w-3 h-3 text-neutral/50 shrink-0" />
+                          <EyeOff className="w-3 h-3 mt-0.5 text-neutral/60 group-hover:text-fg shrink-0" />
                         ) : (
-                          <Eye className="w-3 h-3 text-accent-ink shrink-0" />
+                          <Eye className="w-3 h-3 mt-0.5 text-accent-ink shrink-0" />
                         )}
-                        <span className={`text-xs ${
-                          isHidden ? 'text-neutral/50' : 'text-white'
-                        }`}>
-                          {getLocalizedPanelName(panelId)}
+                        <span className="min-w-0 flex-1">
+                          <span className={`block text-xs ${
+                            isHidden ? 'text-neutral group-hover:text-fg' : 'text-fg font-medium'
+                          }`}>
+                            {getLocalizedPanelName(panelId)}
+                          </span>
+                          {/* Search results say why they matched; browsing keeps rows to one line and uses the side card */}
+                          {search && desc && (
+                            <span className="block mt-0.5 text-mini text-neutral/80 line-clamp-2">{desc}</span>
+                          )}
                         </span>
                       </button>
                     );
@@ -224,6 +253,25 @@ export function PanelToggleMenu({ open, onClose, containerRef }: PanelToggleMenu
               );
             })}
           </div>
+
+          {/* Side card: what the pointed-at panel shows and what a click will do here. Instant, no motion */}
+          {peek && !search && getPanelDescription(peek.id) && (
+            <div
+              id="panel-peek"
+              role="tooltip"
+              style={{ top: peek.top }}
+              className="hidden md:block absolute right-full mr-1.5 w-64 px-3 py-2.5 bg-raised border border-border rounded-sm shadow-[0_12px_32px_rgb(0_0_0/0.3)] pointer-events-none"
+            >
+              <p className="text-xs font-semibold text-fg">{getLocalizedPanelName(peek.id)}</p>
+              <p className="mt-1 text-mini text-neutral">{getPanelDescription(peek.id)}</p>
+              <p className="mt-2 pt-2 border-t border-border text-micro text-neutral/80">
+                {(hiddenPanels.includes(peek.id)
+                  ? tr(t, 'pmClickToAdd', 'Click to add to {ws}')
+                  : tr(t, 'pmClickToRemove', 'Click to remove from {ws}')
+                ).replace('{ws}', activeWs ? wsLabel(activeWs, t) : tr(t, 'pmThisWorkspace', 'this workspace'))}
+              </p>
+            </div>
+          )}
 
           {/* Reset: only an edited built-in workspace has an original to go back to */}
           {activeWs && isModified(activeWs) && (

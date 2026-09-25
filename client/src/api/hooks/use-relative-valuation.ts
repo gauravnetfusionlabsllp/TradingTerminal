@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { toYahoo } from '../../lib/symbols';
 
 export interface ValuationMetrics {
   pe: number | null;
@@ -34,7 +35,7 @@ export interface RelativeValuationData {
 export function useRelativeValuation(symbol: string) {
   return useQuery<RelativeValuationData>({
     queryKey: ['relative-valuation', symbol],
-    queryFn: () => api.get<RelativeValuationData>(`/relative-valuation/${encodeURIComponent(symbol)}`),
+    queryFn: () => api.get<RelativeValuationData>(`/relative-valuation/${encodeURIComponent(toYahoo(symbol))}`),
     enabled: !!symbol,
     staleTime: 60 * 60_000,
     refetchInterval: 15 * 60_000,

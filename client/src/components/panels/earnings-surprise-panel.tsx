@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { GlassCard } from '../common/glass-card';
+import { useAppStore } from '../../stores/use-app-store';
 import {
   useEarningsSurprise,
   type EarningsSurpriseHistoryEntry,
@@ -492,8 +493,15 @@ function TrendBadge({ trend }: { trend: 'up' | 'down' | 'flat' | null }) {
 
 export function EarningsSurprisePanel() {
   const t = useT();
-  const [symbol, setSymbol] = useState('AAPL');
-  const [inputValue, setInputValue] = useState('AAPL');
+  // Follows the app selection (Market Watch, chart…); a typed symbol holds until the next selection.
+  const selectedSymbol = useAppStore((s) => s.selectedSymbol);
+  const [symbol, setSymbol] = useState(selectedSymbol || 'AAPL');
+  const [inputValue, setInputValue] = useState(symbol);
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    setSymbol(selectedSymbol);
+    setInputValue(selectedSymbol);
+  }, [selectedSymbol]);
 
   const { data, isLoading, refetch, dataUpdatedAt } = useEarningsSurprise(symbol);
 

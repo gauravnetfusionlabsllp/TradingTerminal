@@ -1,19 +1,41 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
+import { getHistory } from '../services/stocks/yahoo-finance.js';
 
 const YAHOO_SEARCH = 'https://query1.finance.yahoo.com/v1/finance/search';
+// Yahoo tickers: AMZN, BRK-B, 0700.HK, ^GSPC, EURUSD=X, GC=F
+const SYMBOL_RE = /^[A-Z0-9.\-=^]{1,12}$/;
 
 const router = Router();
+
+const listTracked = () =>
+  prisma.trackedStock.findMany({
+    where: { source: { in: ['default', 'watchlist'] } },
+    orderBy: { addedAt: 'asc' },
+    take: 500,
+  });
+
+// Today's 5-minute closes per symbol. The promise itself is cached, so concurrent viewers share one Yahoo call
+// and a failure (null) is also held for the TTL instead of being retried on every request.
+const SPARK_TTL = 60_000;
+const sparkCache = new Map<string, { at: number; p: Promise<number[] | null> }>();
+
+function spark(symbol: string) {
+  const hit = sparkCache.get(symbol);
+  if (hit && Date.now() - hit.at < SPARK_TTL) return hit.p;
+  const p = getHistory(symbol, { range: '1d', interval: '5m' }).then((bars) => {
+    const closes = bars.map((b) => b.close).filter((c): c is number => typeof c === 'number');
+    return closes.length > 1 ? closes : null;
+  });
+  sparkCache.set(symbol, { at: Date.now(), p });
+  return p;
+}
 
 // GET /api/watchlist - watchlist (default + user-added), public for reading
 router.get('/', async (req, res) => {
   try {
-    const tracked = await prisma.trackedStock.findMany({
-      where: { source: { in: ['default', 'watchlist'] } },
-      orderBy: { addedAt: 'asc' },
-      take: 500,
-    });
+    const tracked = await listTracked();
 
     const symbols = tracked.map((t) => t.symbol);
     const quotes = await prisma.stockQuote.findMany({
@@ -45,7 +67,7 @@ router.post('/', requireAuth, async (req, res) => {
     }
 
     const sym = symbol.toUpperCase().trim();
-    if (!/^[A-Z0-9.\-]{1,10}$/.test(sym)) {
+    if (!SYMBOL_RE.test(sym)) {
       return res.status(400).json({ error: 'Invalid symbol format' });
     }
 
@@ -72,6 +94,18 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/watchlist/spark - { SYMBOL: today's 5-minute closes | null }
+router.get('/spark', async (_req, res) => {
+  try {
+    const symbols = (await listTracked()).map((t) => t.symbol);
+    const series = await Promise.all(symbols.map(spark));
+    res.json(Object.fromEntries(symbols.map((s, i) => [s, series[i]])));
+  } catch (err) {
+    console.error('[Watchlist] Spark error:', err);
+    res.status(500).json({ error: 'Failed to fetch sparklines' });
+  }
+});
+
 // GET /api/watchlist/search?q=... - search Yahoo Finance for ticker suggestions
 // NOTE: Must be defined BEFORE /:symbol to prevent Express from matching "search" as a symbol
 router.get('/search', async (req, res) => {
@@ -88,7 +122,7 @@ router.get('/search', async (req, res) => {
     if (!resp.ok) return res.json([]);
     const data = (await resp.json()) as any;
     const quotes = (data?.quotes || [])
-      .filter((q: any) => q.symbol && (q.quoteType === 'EQUITY' || q.quoteType === 'ETF' || q.quoteType === 'CRYPTOCURRENCY' || q.quoteType === 'INDEX'))
+      .filter((q: any) => q.symbol && ['EQUITY', 'ETF', 'CRYPTOCURRENCY', 'INDEX', 'CURRENCY', 'FUTURE'].includes(q.quoteType))
       .map((q: any) => ({
         symbol: q.symbol,
         name: q.shortname || q.longname || q.symbol,
@@ -108,7 +142,7 @@ router.get('/search', async (req, res) => {
 router.delete('/:symbol', requireAuth, async (req, res) => {
   try {
     const sym = String(req.params.symbol).toUpperCase().trim();
-    if (!/^[A-Z0-9.\-]{1,10}$/.test(sym)) return res.status(400).json({ error: 'Invalid symbol format' });
+    if (!SYMBOL_RE.test(sym)) return res.status(400).json({ error: 'Invalid symbol format' });
 
     await prisma.trackedStock.deleteMany({ where: { symbol: sym } });
     await prisma.stockQuote.deleteMany({ where: { symbol: sym } });
