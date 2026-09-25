@@ -30,10 +30,10 @@ const YIELD_SYMBOLS = new Set(['^TNX', '^TYX', '^IRX']);
 
 // Commodity color mapping
 function commodityColor(symbol: string): string {
-  if (symbol === 'GC=F' || symbol === 'SI=F') return '#f59e0b'; // amber
-  if (symbol === 'CL=F' || symbol === 'NG=F') return '#3b82f6'; // blue
-  if (symbol === 'HG=F') return '#06b6d4'; // cyan
-  return '#22c55e'; // green for grains
+  if (symbol === 'GC=F' || symbol === 'SI=F') return 'var(--color-amber-500)'; // amber
+  if (symbol === 'CL=F' || symbol === 'NG=F') return 'var(--color-blue-500)'; // blue
+  if (symbol === 'HG=F') return 'var(--color-cyan-500)'; // cyan
+  return 'var(--color-green-500)'; // green for grains
 }
 
 // ── Risk Sentiment Logic ─────────────────────────────────────────────
@@ -66,11 +66,11 @@ function computeSentiment(assets: CrossAssetQuote[]): SentimentResult {
   if (!tltUp) riskOnScore += 1;
 
   if (riskOnScore >= 4) {
-    return { label: 'RISK ON', color: '#22c55e', bgColor: 'rgba(34,197,94,0.08)' };
+    return { label: 'RISK ON', color: 'var(--color-green-500)', bgColor: 'color-mix(in srgb, var(--color-green-500) 8%, transparent)' };
   } else if (riskOnScore <= 1) {
-    return { label: 'RISK OFF', color: '#ef4444', bgColor: 'rgba(239,68,68,0.08)' };
+    return { label: 'RISK OFF', color: 'var(--color-red-500)', bgColor: 'color-mix(in srgb, var(--color-red-500) 8%, transparent)' };
   }
-  return { label: 'MIXED', color: '#f59e0b', bgColor: 'rgba(245,158,11,0.08)' };
+  return { label: 'MIXED', color: 'var(--color-amber-500)', bgColor: 'color-mix(in srgb, var(--color-amber-500) 8%, transparent)' };
 }
 
 // ── Category Performance ─────────────────────────────────────────────
@@ -83,11 +83,11 @@ interface CategoryPerf {
 
 function computeCategoryPerf(assets: CrossAssetQuote[]): CategoryPerf[] {
   const categories: Record<string, { name: string; pcts: number[]; color: string }> = {
-    equity: { name: 'Equities', pcts: [], color: '#3b82f6' },
-    fixed_income: { name: 'Fixed Inc', pcts: [], color: '#8b5cf6' },
-    commodity: { name: 'Commodities', pcts: [], color: '#f59e0b' },
-    currency: { name: 'FX', pcts: [], color: '#06b6d4' },
-    crypto: { name: 'Crypto', pcts: [], color: '#a855f7' },
+    equity: { name: 'Equities', pcts: [], color: 'var(--color-blue-500)' },
+    fixed_income: { name: 'Fixed Inc', pcts: [], color: 'var(--color-violet-500)' },
+    commodity: { name: 'Commodities', pcts: [], color: 'var(--color-amber-500)' },
+    currency: { name: 'FX', pcts: [], color: 'var(--color-cyan-500)' },
+    crypto: { name: 'Crypto', pcts: [], color: 'var(--color-purple-500)' },
   };
 
   for (const a of assets) {
@@ -110,7 +110,7 @@ function computeCategoryPerf(assets: CrossAssetQuote[]): CategoryPerf[] {
 function ChangeText({ value, isBps }: { value: number; isBps?: boolean }) {
   const color = value >= 0 ? 'text-bullish' : 'text-bearish';
   return (
-    <span className={`text-[9px] font-mono font-bold ${color}`}>
+    <span className={`text-mini font-mono font-bold ${color}`}>
       {isBps ? fmtBps(value) : fmtPct(value)}
     </span>
   );
@@ -120,9 +120,9 @@ function TrendArrow({ positive }: { positive: boolean }) {
   return (
     <svg width="8" height="6" viewBox="0 0 8 6" className="shrink-0 inline-block ml-0.5">
       {positive ? (
-        <path d="M4 0 L8 6 L0 6 Z" fill="#22c55e" />
+        <path d="M4 0 L8 6 L0 6 Z" fill="var(--color-green-500)" />
       ) : (
-        <path d="M4 6 L8 0 L0 0 Z" fill="#ef4444" />
+        <path d="M4 6 L8 0 L0 0 Z" fill="var(--color-red-500)" />
       )}
     </svg>
   );
@@ -133,7 +133,7 @@ function YieldChangeText({ value }: { value: number }) {
   // Invert color logic: yield up = red, yield down = green
   const color = value <= 0 ? 'text-bullish' : 'text-bearish';
   return (
-    <span className={`text-[9px] font-mono font-bold ${color}`}>
+    <span className={`text-mini font-mono font-bold ${color}`}>
       {fmtBps(value)}
     </span>
   );
@@ -160,12 +160,12 @@ function AssetCard({
       style={accentColor ? { borderTopColor: accentColor, borderTopWidth: '2px' } : undefined}
     >
       <div className="flex items-center justify-between gap-1">
-        <span className="text-[7px] font-mono font-black text-neutral/50 uppercase tracking-tight truncate">
+        <span className="text-micro font-mono font-black text-neutral/50 uppercase tracking-tight truncate">
           {asset.name}
         </span>
         <TrendArrow positive={isYield ? !isPositive : isPositive} />
       </div>
-      <span className="text-[11px] font-mono font-bold text-white leading-none">
+      <span className="text-xs font-mono font-bold text-white leading-none">
         {isYield ? `${fmtPrice(asset.price, 2)}%` : fmtPrice(asset.price)}
       </span>
       {isYield ? (
@@ -186,10 +186,10 @@ function SectionHeader({ title, color, count }: { title: string; color: string; 
   return (
     <div className="flex items-center gap-2 px-3 py-1 border-b border-border/15">
       <div className="w-1.5 h-1.5 shrink-0" style={{ backgroundColor: color }} />
-      <span className="text-[8px] font-black font-mono uppercase tracking-wider" style={{ color }}>
+      <span className="text-micro font-black font-mono uppercase tracking-wider" style={{ color }}>
         {title}
       </span>
-      <span className="text-[7px] font-mono text-neutral/30">{count}</span>
+      <span className="text-micro font-mono text-neutral/30">{count}</span>
     </div>
   );
 }
@@ -202,7 +202,7 @@ function SummaryBar({ assets }: { assets: CrossAssetQuote[] }) {
   const vix = assets.find(a => a.symbol === '^VIX');
 
   return (
-    <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border/30 bg-[#050505] overflow-x-auto no-scrollbar">
+    <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border/30 bg-raised overflow-x-auto no-scrollbar">
       {/* Risk sentiment badge */}
       <div
         className="flex items-center gap-1.5 px-2 py-0.5 shrink-0 border"
@@ -212,7 +212,7 @@ function SummaryBar({ assets }: { assets: CrossAssetQuote[] }) {
         }}
       >
         <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: sentiment.color }} />
-        <span className="text-[9px] font-black font-mono tracking-tight" style={{ color: sentiment.color }}>
+        <span className="text-mini font-black font-mono tracking-tight" style={{ color: sentiment.color }}>
           {sentiment.label}
         </span>
       </div>
@@ -220,8 +220,8 @@ function SummaryBar({ assets }: { assets: CrossAssetQuote[] }) {
       {/* VIX level */}
       {vix && (
         <div className="flex items-center gap-1 shrink-0">
-          <span className="text-[7px] font-mono text-neutral/40">VIX</span>
-          <span className={`text-[9px] font-mono font-bold ${
+          <span className="text-micro font-mono text-neutral/40">VIX</span>
+          <span className={`text-mini font-mono font-bold ${
             vix.price >= 30 ? 'text-bearish' : vix.price >= 20 ? 'text-yellow-500' : 'text-bullish'
           }`}>
             {vix.price.toFixed(1)}
@@ -236,10 +236,10 @@ function SummaryBar({ assets }: { assets: CrossAssetQuote[] }) {
       {/* Category performance ranking */}
       {categoryPerf.map(c => (
         <div key={c.name} className="flex items-center gap-1 shrink-0">
-          <span className="text-[7px] font-mono text-neutral/40">{c.name}</span>
+          <span className="text-micro font-mono text-neutral/40">{c.name}</span>
           <span
-            className="text-[8px] font-mono font-bold"
-            style={{ color: c.avgPct >= 0 ? '#22c55e' : '#ef4444' }}
+            className="text-micro font-mono font-bold"
+            style={{ color: c.avgPct >= 0 ? 'var(--color-green-500)' : 'var(--color-red-500)' }}
           >
             {fmtPct(c.avgPct)}
           </span>
@@ -287,20 +287,20 @@ export function CrossAssetPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <svg width="14" height="14" viewBox="0 0 14 14" className="shrink-0">
-            <rect x="0" y="0" width="4" height="14" rx="0.5" fill="#94a3b8" opacity="0.8" />
-            <rect x="5" y="3" width="4" height="11" rx="0.5" fill="#94a3b8" opacity="0.6" />
-            <rect x="10" y="6" width="4" height="8" rx="0.5" fill="#94a3b8" opacity="0.4" />
+            <rect x="0" y="0" width="4" height="14" rx="0.5" fill="var(--color-slate-400)" opacity="0.8" />
+            <rect x="5" y="3" width="4" height="11" rx="0.5" fill="var(--color-slate-400)" opacity="0.6" />
+            <rect x="10" y="6" width="4" height="8" rx="0.5" fill="var(--color-slate-400)" opacity="0.4" />
           </svg>
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-neutral/80">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-neutral/80">
             {t('panelCrossAsset')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {data?.updatedAt && (
-            <span className="text-[7px] font-mono text-neutral/30">
+            <span className="text-micro font-mono text-neutral/30">
               {new Date(data.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -316,7 +316,7 @@ export function CrossAssetPanel() {
       {/* Loading state */}
       {isLoading && !data && (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[9px] font-mono text-neutral/40 uppercase animate-pulse">
+          <span className="text-mini font-mono text-neutral/40 uppercase animate-pulse">
             {t('loading')}
           </span>
         </div>
@@ -326,21 +326,21 @@ export function CrossAssetPanel() {
       {sections && (
         <div className="flex-1 overflow-auto no-scrollbar">
           {/* Equities */}
-          <SectionHeader title="Equities" color="#3b82f6" count={sections.equities.length} />
+          <SectionHeader title="Equities" color="var(--color-blue-500)" count={sections.equities.length} />
           <div className="flex flex-wrap gap-1 px-2 py-1.5">
             {sections.equities.map(a => (
-              <AssetCard key={a.symbol} asset={a} accentColor="#3b82f6" />
+              <AssetCard key={a.symbol} asset={a} accentColor="var(--color-blue-500)" />
             ))}
           </div>
 
           {/* Fixed Income */}
-          <SectionHeader title="Fixed Income" color="#8b5cf6" count={sections.fixedIncome.length} />
+          <SectionHeader title="Fixed Income" color="var(--color-violet-500)" count={sections.fixedIncome.length} />
           <div className="flex flex-wrap gap-1 px-2 py-1.5">
             {sections.fixedIncome.map(a => (
               <AssetCard
                 key={a.symbol}
                 asset={a}
-                accentColor="#8b5cf6"
+                accentColor="var(--color-violet-500)"
                 isYield={YIELD_SYMBOLS.has(a.symbol)}
                 isBondETF={!YIELD_SYMBOLS.has(a.symbol)}
               />
@@ -348,7 +348,7 @@ export function CrossAssetPanel() {
           </div>
 
           {/* Commodities */}
-          <SectionHeader title="Commodities" color="#f59e0b" count={sections.commodities.length} />
+          <SectionHeader title="Commodities" color="var(--color-amber-500)" count={sections.commodities.length} />
           <div className="flex flex-wrap gap-1 px-2 py-1.5">
             {sections.commodities.map(a => (
               <AssetCard key={a.symbol} asset={a} accentColor={commodityColor(a.symbol)} />
@@ -356,15 +356,15 @@ export function CrossAssetPanel() {
           </div>
 
           {/* Currencies */}
-          <SectionHeader title="Currencies" color="#06b6d4" count={sections.currencies.length} />
+          <SectionHeader title="Currencies" color="var(--color-cyan-500)" count={sections.currencies.length} />
           <div className="flex flex-wrap gap-1 px-2 py-1.5">
             {sections.currencies.map(a => (
-              <AssetCard key={a.symbol} asset={a} accentColor="#06b6d4" />
+              <AssetCard key={a.symbol} asset={a} accentColor="var(--color-cyan-500)" />
             ))}
           </div>
 
           {/* Crypto */}
-          <SectionHeader title="Crypto" color="#a855f7" count={sections.crypto.length} />
+          <SectionHeader title="Crypto" color="var(--color-purple-500)" count={sections.crypto.length} />
           <div className="flex flex-wrap gap-1 px-2 py-1.5">
             {sections.crypto.map(a => (
               <CryptoCard key={a.symbol} asset={a} />
@@ -383,7 +383,7 @@ export function CrossAssetPanel() {
 
 function CryptoCard({ asset }: { asset: CrossAssetQuote }) {
   const isPositive = asset.changePct >= 0;
-  const barColor = isPositive ? '#22c55e' : '#ef4444';
+  const barColor = isPositive ? 'var(--color-green-500)' : 'var(--color-red-500)';
 
   // Generate deterministic mini-bar visualization from price digits
   const bars = useMemo(() => {
@@ -396,10 +396,10 @@ function CryptoCard({ asset }: { asset: CrossAssetQuote }) {
 
   return (
     <div className="flex flex-col gap-0.5 px-2 py-1.5 border border-border/20 bg-black/40 hover:bg-white/[0.03] transition-colors min-w-[100px]"
-      style={{ borderTopColor: '#a855f7', borderTopWidth: '2px' }}
+      style={{ borderTopColor: 'var(--color-purple-500)', borderTopWidth: '2px' }}
     >
       <div className="flex items-center justify-between gap-1">
-        <span className="text-[7px] font-mono font-black text-neutral/50 uppercase tracking-tight">
+        <span className="text-micro font-mono font-black text-neutral/50 uppercase tracking-tight">
           {asset.name}
         </span>
         <svg width="32" height="12" viewBox="0 0 32 12" className="shrink-0">
@@ -408,7 +408,7 @@ function CryptoCard({ asset }: { asset: CrossAssetQuote }) {
           ))}
         </svg>
       </div>
-      <span className="text-[11px] font-mono font-bold text-white leading-none">
+      <span className="text-xs font-mono font-bold text-white leading-none">
         {fmtPrice(asset.price)}
       </span>
       <div className="flex items-center gap-1">

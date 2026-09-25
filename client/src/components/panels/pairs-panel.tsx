@@ -111,7 +111,7 @@ function RatioChart({ data }: { data: PairsData }) {
         y={chartTop}
         width={chartW}
         height={Math.max(0, plus2Y - chartTop)}
-        fill="rgba(239,68,68,0.06)"
+        fill="color-mix(in srgb, var(--color-red-500) 6%, transparent)"
       />
       {/* Green zone below -2 sigma */}
       <rect
@@ -119,7 +119,7 @@ function RatioChart({ data }: { data: PairsData }) {
         y={minus2Y}
         width={chartW}
         height={Math.max(0, chartBottom - minus2Y)}
-        fill="rgba(34,197,94,0.06)"
+        fill="color-mix(in srgb, var(--color-green-500) 6%, transparent)"
       />
 
       {/* Sigma band lines */}
@@ -132,16 +132,16 @@ function RatioChart({ data }: { data: PairsData }) {
               y1={band.y}
               x2={viewWidth - padding.right}
               y2={band.y}
-              stroke={isMean ? 'rgba(244,114,182,0.6)' : 'rgba(161,161,170,0.3)'}
+              stroke={isMean ? 'color-mix(in srgb, var(--color-pink-400) 60%, transparent)' : 'color-mix(in srgb, var(--color-zinc-400) 30%, transparent)'}
               strokeWidth={isMean ? 1 : 0.5}
               strokeDasharray={isMean ? 'none' : '4 2'}
             />
             <text
               x={viewWidth - padding.right + 4}
               y={band.y + 3}
-              fill={isMean ? '#f472b6' : '#71717a'}
+              fill={isMean ? 'var(--color-pink-400)' : 'var(--color-zinc-500)'}
               fontSize="7"
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {band.label}
             </text>
@@ -156,9 +156,9 @@ function RatioChart({ data }: { data: PairsData }) {
           x={scaleX(xl.ts)}
           y={viewHeight - 6}
           textAnchor="middle"
-          fill="#71717a"
+          fill="var(--color-zinc-500)"
           fontSize="8"
-          fontFamily="monospace"
+          fontFamily="inherit"
         >
           {xl.label}
         </text>
@@ -169,9 +169,9 @@ function RatioChart({ data }: { data: PairsData }) {
         x={padding.left - 6}
         y={scaleY(meanRatio) + 3}
         textAnchor="end"
-        fill="#f472b6"
+        fill="var(--color-pink-400)"
         fontSize="7"
-        fontFamily="monospace"
+        fontFamily="inherit"
       >
         {formatNum(meanRatio)}
       </text>
@@ -180,7 +180,7 @@ function RatioChart({ data }: { data: PairsData }) {
       <path
         d={linePath}
         fill="none"
-        stroke="#f472b6"
+        stroke="var(--color-pink-400)"
         strokeWidth="1.5"
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -191,17 +191,17 @@ function RatioChart({ data }: { data: PairsData }) {
         cx={lastX}
         cy={lastY}
         r={3}
-        fill="#f472b6"
-        stroke="#000"
+        fill="var(--color-pink-400)"
+        stroke="var(--color-black)"
         strokeWidth="1"
       />
       <text
         x={lastX - 6}
         y={lastY - 8}
         textAnchor="end"
-        fill="#ffffff"
+        fill="var(--color-white)"
         fontSize="8"
-        fontFamily="monospace"
+        fontFamily="inherit"
         fontWeight="bold"
       >
         {formatNum(lastPoint.ratio)}
@@ -259,11 +259,11 @@ function SpreadChart({ data }: { data: PairsData }) {
     const avgSpread = (prev.spread + curr.spread) / 2;
 
     let color: string;
-    if (avgSpread > 2) color = '#ef4444';
-    else if (avgSpread > 1) color = '#f97316';
-    else if (avgSpread < -2) color = '#22c55e';
-    else if (avgSpread < -1) color = '#3b82f6';
-    else color = '#a78bfa';
+    if (avgSpread > 2) color = 'var(--color-red-500)';
+    else if (avgSpread > 1) color = 'var(--color-orange-500)';
+    else if (avgSpread < -2) color = 'var(--color-green-500)';
+    else if (avgSpread < -1) color = 'var(--color-blue-500)';
+    else color = 'var(--color-violet-400)';
 
     const x1 = scaleX(prev.timestamp).toFixed(1);
     const y1 = scaleY(prev.spread).toFixed(1);
@@ -284,14 +284,14 @@ function SpreadChart({ data }: { data: PairsData }) {
         y={padding.top}
         width={chartW}
         height={Math.max(0, scaleY(2) - padding.top)}
-        fill="rgba(239,68,68,0.05)"
+        fill="color-mix(in srgb, var(--color-red-500) 5%, transparent)"
       />
       <rect
         x={padding.left}
         y={scaleY(-2)}
         width={chartW}
         height={Math.max(0, padding.top + chartH - scaleY(-2))}
-        fill="rgba(34,197,94,0.05)"
+        fill="color-mix(in srgb, var(--color-green-500) 5%, transparent)"
       />
 
       {/* Band lines */}
@@ -305,7 +305,7 @@ function SpreadChart({ data }: { data: PairsData }) {
               y1={y}
               x2={viewWidth - padding.right}
               y2={y}
-              stroke={isZero ? 'rgba(161,161,170,0.5)' : 'rgba(161,161,170,0.2)'}
+              stroke={isZero ? 'color-mix(in srgb, var(--color-zinc-400) 50%, transparent)' : 'color-mix(in srgb, var(--color-zinc-400) 20%, transparent)'}
               strokeWidth={isZero ? 1 : 0.5}
               strokeDasharray={isZero ? 'none' : '4 2'}
             />
@@ -313,9 +313,9 @@ function SpreadChart({ data }: { data: PairsData }) {
               x={padding.left - 6}
               y={y + 3}
               textAnchor="end"
-              fill="#71717a"
+              fill="var(--color-zinc-500)"
               fontSize="7"
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {level > 0 ? '+' : ''}{level}
             </text>
@@ -330,9 +330,9 @@ function SpreadChart({ data }: { data: PairsData }) {
           x={scaleX(xl.ts)}
           y={viewHeight - 6}
           textAnchor="middle"
-          fill="#71717a"
+          fill="var(--color-zinc-500)"
           fontSize="8"
-          fontFamily="monospace"
+          fontFamily="inherit"
         >
           {xl.label}
         </text>
@@ -355,17 +355,17 @@ function SpreadChart({ data }: { data: PairsData }) {
         const last = series[series.length - 1];
         const cx = scaleX(last.timestamp);
         const cy = scaleY(last.spread);
-        const color = last.spread > 2 ? '#ef4444' : last.spread < -2 ? '#22c55e' : '#a78bfa';
+        const color = last.spread > 2 ? 'var(--color-red-500)' : last.spread < -2 ? 'var(--color-green-500)' : 'var(--color-violet-400)';
         return (
           <g>
-            <circle cx={cx} cy={cy} r={3} fill={color} stroke="#000" strokeWidth="1" />
+            <circle cx={cx} cy={cy} r={3} fill={color} stroke="var(--color-black)" strokeWidth="1" />
             <text
               x={cx - 6}
               y={cy - 8}
               textAnchor="end"
-              fill="#ffffff"
+              fill="var(--color-white)"
               fontSize="8"
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {last.spread.toFixed(2)}
@@ -429,7 +429,7 @@ export function PairsPanel() {
       headerRight={
         <button
           onClick={() => refetch()}
-          className="p-0.5 text-neutral/50 hover:text-accent transition-colors"
+          className="p-0.5 text-neutral/50 hover:text-accent-ink transition-colors"
           title="Refresh"
         >
           <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
@@ -441,14 +441,14 @@ export function PairsPanel() {
       <div className="shrink-0 px-3 py-1.5 border-b border-border/30 bg-black/20 space-y-1.5">
         <div className="flex items-center gap-1.5">
           <div className="flex-1 flex items-center gap-1">
-            <span className="text-[8px] font-mono text-neutral/50 w-3">A</span>
+            <span className="text-micro font-mono text-neutral/50 w-3">A</span>
             <input
               type="text"
               value={inputA}
               onChange={e => setInputA(e.target.value.toUpperCase())}
               onKeyDown={handleKeyDown}
               placeholder="AAPL"
-              className="flex-1 min-w-0 bg-black/40 border border-border/30 px-2 py-0.5 text-[10px] font-mono text-white placeholder-neutral/30 focus:outline-none focus:border-pink-400/50"
+              className="flex-1 min-w-0 bg-black/40 border border-border/30 px-2 py-0.5 text-mini font-mono text-white placeholder-neutral/30 focus:outline-none focus:border-pink-400/50"
             />
           </div>
           <button
@@ -459,19 +459,19 @@ export function PairsPanel() {
             <ArrowLeftRight className="w-3 h-3" />
           </button>
           <div className="flex-1 flex items-center gap-1">
-            <span className="text-[8px] font-mono text-neutral/50 w-3">B</span>
+            <span className="text-micro font-mono text-neutral/50 w-3">B</span>
             <input
               type="text"
               value={inputB}
               onChange={e => setInputB(e.target.value.toUpperCase())}
               onKeyDown={handleKeyDown}
               placeholder="MSFT"
-              className="flex-1 min-w-0 bg-black/40 border border-border/30 px-2 py-0.5 text-[10px] font-mono text-white placeholder-neutral/30 focus:outline-none focus:border-pink-400/50"
+              className="flex-1 min-w-0 bg-black/40 border border-border/30 px-2 py-0.5 text-mini font-mono text-white placeholder-neutral/30 focus:outline-none focus:border-pink-400/50"
             />
           </div>
           <button
             onClick={handleAnalyze}
-            className="px-2.5 py-0.5 text-[9px] font-mono font-bold bg-pink-400/20 text-pink-400 hover:bg-pink-400/30 transition-colors border border-pink-400/30 shrink-0"
+            className="px-2.5 py-0.5 text-mini font-mono font-bold bg-pink-400/20 text-pink-400 hover:bg-pink-400/30 transition-colors border border-pink-400/30 shrink-0"
           >
             {t('pairsAnalyze')}
           </button>
@@ -484,7 +484,7 @@ export function PairsPanel() {
           <button
             key={r.key}
             onClick={() => setRange(r.key)}
-            className={`px-2 py-0.5 text-[9px] font-mono font-black transition-all ${
+            className={`px-2 py-0.5 text-mini font-mono font-black transition-all ${
               range === r.key
                 ? 'bg-pink-400/20 text-pink-400'
                 : 'text-neutral/50 hover:text-white'
@@ -498,16 +498,16 @@ export function PairsPanel() {
       {/* Content area */}
       <div className="flex-1 flex flex-col overflow-auto min-h-0">
         {!symbolA || !symbolB || symbolA === symbolB ? (
-          <div className="flex items-center justify-center flex-1 text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center flex-1 text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {t('pairsNoData')}
           </div>
         ) : isLoading ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-2">
             <div className="w-5 h-5 border-2 border-pink-400/30 border-t-pink-400 animate-spin" />
-            <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">{t('loading')}</span>
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">{t('loading')}</span>
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center flex-1 text-red-400/60 text-[10px] font-mono uppercase tracking-widest px-4 text-center">
+          <div className="flex items-center justify-center flex-1 text-red-400/60 text-mini font-mono uppercase tracking-widest px-4 text-center">
             {(error as Error).message || 'Failed to load data'}
           </div>
         ) : data ? (
@@ -539,14 +539,14 @@ export function PairsPanel() {
 
             {/* Signal indicator */}
             {signal && (
-              <div className={`shrink-0 mx-3 mt-2 px-3 py-1.5 text-center text-[10px] font-mono font-bold border ${signal.bg} ${signal.color} tracking-wider`}>
+              <div className={`shrink-0 mx-3 mt-2 px-3 py-1.5 text-center text-mini font-mono font-bold border ${signal.bg} ${signal.color} tracking-wider`}>
                 {t('pairsSignal')}: {signal.text}
               </div>
             )}
 
             {/* Ratio Chart */}
             <div className="shrink-0 px-2 pt-2">
-              <div className="text-[8px] font-mono text-neutral/50 uppercase px-1 mb-0.5">{t('pairsRatio')} ({data.symbolA}/{data.symbolB})</div>
+              <div className="text-micro font-mono text-neutral/50 uppercase px-1 mb-0.5">{t('pairsRatio')} ({data.symbolA}/{data.symbolB})</div>
               <div style={{ minHeight: 140 }}>
                 <RatioChart data={data} />
               </div>
@@ -554,7 +554,7 @@ export function PairsPanel() {
 
             {/* Spread Chart */}
             <div className="shrink-0 px-2 pt-1 pb-1">
-              <div className="text-[8px] font-mono text-neutral/50 uppercase px-1 mb-0.5">{t('pairsSpread')}</div>
+              <div className="text-micro font-mono text-neutral/50 uppercase px-1 mb-0.5">{t('pairsSpread')}</div>
               <div style={{ minHeight: 120 }}>
                 <SpreadChart data={data} />
               </div>
@@ -562,7 +562,7 @@ export function PairsPanel() {
 
             {/* Statistics table */}
             <div className="shrink-0 px-3 pb-2">
-              <table className="w-full text-[9px] font-mono">
+              <table className="w-full text-mini font-mono">
                 <tbody>
                   <StatRow label="Current Ratio" value={formatNum(data.stats.currentRatio)} />
                   <StatRow label={t('pairsMean')} value={formatNum(data.stats.meanRatio)} />
@@ -587,7 +587,7 @@ export function PairsPanel() {
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center flex-1 text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center flex-1 text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {t('pairsNoData')}
           </div>
         )}
@@ -599,9 +599,9 @@ export function PairsPanel() {
 function StatCell({ label, value, color, subtitle }: { label: string; value: string; color: string; subtitle?: string }) {
   return (
     <div className="text-center">
-      <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">{label}</div>
-      <div className={`text-[11px] font-mono font-bold ${color}`}>{value}</div>
-      {subtitle && <div className="text-[7px] font-mono text-neutral/40 uppercase">{subtitle}</div>}
+      <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">{label}</div>
+      <div className={`text-xs font-mono font-bold ${color}`}>{value}</div>
+      {subtitle && <div className="text-micro font-mono text-neutral/40 uppercase">{subtitle}</div>}
     </div>
   );
 }

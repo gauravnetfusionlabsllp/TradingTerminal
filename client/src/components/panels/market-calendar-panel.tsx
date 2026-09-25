@@ -274,9 +274,9 @@ export function MarketCalendarPanel() {
           </button>
           <button
             onClick={() => setWeekOffset(0)}
-            className={`px-1.5 py-0.5 text-[8px] font-mono font-black uppercase transition-all ${
+            className={`px-1.5 py-0.5 text-micro font-mono font-black uppercase transition-all ${
               weekOffset === 0
-                ? 'bg-accent/20 text-accent'
+                ? 'bg-accent/20 text-accent-ink'
                 : 'text-neutral/50 hover:text-white'
             }`}
           >
@@ -288,7 +288,7 @@ export function MarketCalendarPanel() {
           >
             <ChevronRight className="w-3 h-3" />
           </button>
-          <span className="text-[8px] font-mono text-neutral/40 ml-1">{weekLabel}</span>
+          <span className="text-micro font-mono text-neutral/40 ml-1">{weekLabel}</span>
         </div>
 
         <div className="w-px h-3 bg-border/30" />
@@ -302,7 +302,7 @@ export function MarketCalendarPanel() {
               <button
                 key={type}
                 onClick={() => toggleType(type)}
-                className={`flex items-center gap-1 px-1.5 py-0.5 text-[8px] font-mono font-black uppercase transition-all border ${
+                className={`flex items-center gap-1 px-1.5 py-0.5 text-micro font-mono font-black uppercase transition-all border ${
                   active
                     ? `${colors.bg} ${colors.text} ${colors.border}`
                     : 'text-neutral/30 border-transparent hover:text-neutral/60'
@@ -310,7 +310,7 @@ export function MarketCalendarPanel() {
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${active ? colors.dot : 'bg-neutral/20'}`} />
                 {t(typeKeys[type] as 'mcEarnings' | 'mcEconomic' | 'mcDividends' | 'mcIPO')}
-                <span className="text-[7px] opacity-60">{typeCounts[type]}</span>
+                <span className="text-micro opacity-60">{typeCounts[type]}</span>
               </button>
             );
           })}
@@ -323,7 +323,7 @@ export function MarketCalendarPanel() {
           <button
             onClick={() => setViewMode('grid')}
             className={`p-0.5 transition-colors ${
-              viewMode === 'grid' ? 'text-accent' : 'text-neutral/40 hover:text-white'
+              viewMode === 'grid' ? 'text-accent-ink' : 'text-neutral/40 hover:text-white'
             }`}
             title={t('mcGrid')}
           >
@@ -332,7 +332,7 @@ export function MarketCalendarPanel() {
           <button
             onClick={() => setViewMode('list')}
             className={`p-0.5 transition-colors ${
-              viewMode === 'list' ? 'text-accent' : 'text-neutral/40 hover:text-white'
+              viewMode === 'list' ? 'text-accent-ink' : 'text-neutral/40 hover:text-white'
             }`}
             title={t('mcList')}
           >
@@ -346,14 +346,14 @@ export function MarketCalendarPanel() {
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-8 gap-2">
             <div className="w-4 h-4 border-2 border-accent/30 border-t-accent animate-spin" />
-            <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
               {t('loading')}
             </span>
           </div>
         )}
 
         {!isLoading && allEvents.length === 0 && (
-          <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('mcNoEvents')}
           </div>
         )}
@@ -414,17 +414,17 @@ function GridView({
                 today ? 'bg-accent/10' : 'bg-black/30'
               }`}
             >
-              <div className={`text-[8px] font-mono uppercase ${today ? 'text-accent' : 'text-neutral/40'}`}>
+              <div className={`text-micro font-mono uppercase ${today ? 'text-accent-ink' : 'text-neutral/40'}`}>
                 {dayName}
               </div>
               <div
-                className={`text-[11px] font-mono font-black ${
-                  today ? 'text-accent' : 'text-neutral/60'
+                className={`text-xs font-mono font-black ${
+                  today ? 'text-accent-ink' : 'text-neutral/60'
                 }`}
               >
                 {dayNum}
                 {today && (
-                  <span className="ml-1 text-[7px] font-normal px-1 py-0.5 bg-accent/20 text-accent border border-accent/30">
+                  <span className="ml-1 text-micro font-normal px-1 py-0.5 bg-accent/20 text-accent-ink border border-accent/30">
                     {t('mcToday')}
                   </span>
                 )}
@@ -466,17 +466,17 @@ function ListView({
           <div key={dateStr}>
             {/* Date header */}
             <div
-              className={`sticky top-0 z-10 px-3 py-1 text-[9px] font-mono font-black uppercase tracking-widest border-b border-border/20 ${
-                today ? 'bg-accent/10 text-accent border-accent/30' : 'bg-black/40 text-neutral/60'
+              className={`sticky top-0 z-10 px-3 py-1 text-mini font-mono font-black uppercase tracking-widest border-b border-border/20 ${
+                today ? 'bg-accent/10 text-accent-ink border-accent/30' : 'bg-black/40 text-neutral/60'
               }`}
             >
               {getDayLabel(dateStr)}
               {today && (
-                <span className="ml-2 px-1 py-0.5 text-[7px] bg-accent/20 text-accent border border-accent/30">
+                <span className="ml-2 px-1 py-0.5 text-micro bg-accent/20 text-accent-ink border border-accent/30">
                   {t('mcToday')}
                 </span>
               )}
-              <span className="ml-2 text-[7px] font-normal text-neutral/30">
+              <span className="ml-2 text-micro font-normal text-neutral/30">
                 {events.length} event{events.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -509,15 +509,15 @@ function EventPill({ event, onClick }: { event: CalendarEvent; onClick: (ev: Cal
       <div className="flex items-center gap-0.5">
         <Icon className={`w-2 h-2 shrink-0 ${colors.text}`} />
         {event.symbol && (
-          <span className={`text-[8px] font-mono font-black ${colors.text} truncate`}>
+          <span className={`text-micro font-mono font-black ${colors.text} truncate`}>
             {event.symbol}
           </span>
         )}
         {event.time && (
-          <span className="text-[7px] font-mono text-neutral/40 ml-auto shrink-0">{event.time}</span>
+          <span className="text-micro font-mono text-neutral/40 ml-auto shrink-0">{event.time}</span>
         )}
       </div>
-      <div className="text-[7px] font-mono text-neutral/50 truncate leading-tight">
+      <div className="text-micro font-mono text-neutral/50 truncate leading-tight">
         {event.symbol ? event.title : event.title.slice(0, 30)}
       </div>
       {event.importance === 'high' && (
@@ -537,12 +537,12 @@ function EventRow({ event, onClick }: { event: CalendarEvent; onClick: (ev: Cale
     <button
       onClick={() => onClick(event)}
       disabled={!clickable}
-      className={`w-full grid grid-cols-[40px_50px_1fr_1fr] text-[10px] font-mono px-3 py-1.5 border-b border-border/5 hover:bg-accent/[0.04] transition-colors text-left ${
+      className={`w-full grid grid-cols-[40px_50px_1fr_1fr] text-mini font-mono px-3 py-1.5 border-b border-border/5 hover:bg-accent/[0.04] transition-colors text-left ${
         clickable ? 'cursor-pointer' : 'cursor-default'
       }`}
     >
       {/* Time */}
-      <span className="text-neutral/40 text-[9px]">{event.time || '--:--'}</span>
+      <span className="text-neutral/40 text-mini">{event.time || '--:--'}</span>
 
       {/* Type badge */}
       <span className={`flex items-center gap-0.5 ${colors.text}`}>

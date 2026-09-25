@@ -41,7 +41,7 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
 
   if (data.length === 0) {
     return (
-      <div className="text-center text-neutral/30 text-[9px] font-mono py-6 uppercase tracking-wider">
+      <div className="text-center text-neutral/30 text-mini font-mono py-6 uppercase tracking-wider">
         No earnings history
       </div>
     );
@@ -86,7 +86,7 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
       <line
         x1={pad.left} x2={chartW - pad.right}
         y1={zeroY} y2={zeroY}
-        stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"
+        stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth="0.5"
       />
 
       {/* Surprise bars */}
@@ -96,8 +96,8 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
         const barH = (Math.abs(d.surprisePct) / maxSurprise) * (innerH / 2);
         const y = d.surprisePct >= 0 ? zeroY - barH : zeroY;
         const fill = d.beat
-          ? 'rgba(74,222,128,0.6)'
-          : 'rgba(248,113,113,0.6)';
+          ? 'color-mix(in srgb, var(--color-green-400) 60%, transparent)'
+          : 'color-mix(in srgb, var(--color-red-400) 60%, transparent)';
 
         return (
           <g key={`bar-${i}`}>
@@ -107,9 +107,9 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
               x={x + barW / 2}
               y={d.surprisePct >= 0 ? y - 3 : y + barH + 8}
               textAnchor="middle"
-              fill={d.beat ? '#4ade80' : '#f87171'}
+              fill={d.beat ? 'var(--color-green-400)' : 'var(--color-red-400)'}
               fontSize="7"
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {fmtPct(d.surprisePct)}
             </text>
@@ -122,7 +122,7 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
         <polyline
           points={estimatePts.join(' ')}
           fill="none"
-          stroke="rgba(148,163,184,0.4)"
+          stroke="color-mix(in srgb, var(--color-slate-400) 40%, transparent)"
           strokeWidth="1"
           strokeDasharray="3,2"
         />
@@ -133,7 +133,7 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
         <polyline
           points={actualPts.join(' ')}
           fill="none"
-          stroke="rgba(250,204,21,0.7)"
+          stroke="color-mix(in srgb, var(--color-amber-300) 70%, transparent)"
           strokeWidth="1.2"
         />
       )}
@@ -148,7 +148,7 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
             cx={x}
             cy={epsY(d.epsActual)}
             r="2"
-            fill={d.beat ? '#4ade80' : '#f87171'}
+            fill={d.beat ? 'var(--color-green-400)' : 'var(--color-red-400)'}
             stroke="rgba(0,0,0,0.5)"
             strokeWidth="0.5"
           />
@@ -164,9 +164,9 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
             x={x}
             y={chartH - 4}
             textAnchor="middle"
-            fill="rgba(255,255,255,0.3)"
+            fill="color-mix(in srgb, var(--color-white) 30%, transparent)"
             fontSize="6.5"
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {d.quarter.replace(/\s\d{4}$/, `'${d.date.slice(2, 4)}`)}
           </text>
@@ -174,14 +174,14 @@ function SurpriseBarChart({ history }: { history: EarningsSurpriseHistoryEntry[]
       })}
 
       {/* Legend */}
-      <rect x={pad.left} y={2} width={8} height={4} fill="rgba(74,222,128,0.6)" />
-      <text x={pad.left + 10} y={6} fill="rgba(255,255,255,0.35)" fontSize="6" fontFamily="monospace">Beat</text>
-      <rect x={pad.left + 35} y={2} width={8} height={4} fill="rgba(248,113,113,0.6)" />
-      <text x={pad.left + 45} y={6} fill="rgba(255,255,255,0.35)" fontSize="6" fontFamily="monospace">Miss</text>
-      <line x1={pad.left + 72} y1={4} x2={pad.left + 84} y2={4} stroke="rgba(148,163,184,0.4)" strokeWidth="1" strokeDasharray="3,2" />
-      <text x={pad.left + 86} y={6} fill="rgba(255,255,255,0.35)" fontSize="6" fontFamily="monospace">Est</text>
-      <line x1={pad.left + 100} y1={4} x2={pad.left + 112} y2={4} stroke="rgba(250,204,21,0.7)" strokeWidth="1.2" />
-      <text x={pad.left + 114} y={6} fill="rgba(255,255,255,0.35)" fontSize="6" fontFamily="monospace">Actual</text>
+      <rect x={pad.left} y={2} width={8} height={4} fill="color-mix(in srgb, var(--color-green-400) 60%, transparent)" />
+      <text x={pad.left + 10} y={6} fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize="6" fontFamily="inherit">Beat</text>
+      <rect x={pad.left + 35} y={2} width={8} height={4} fill="color-mix(in srgb, var(--color-red-400) 60%, transparent)" />
+      <text x={pad.left + 45} y={6} fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize="6" fontFamily="inherit">Miss</text>
+      <line x1={pad.left + 72} y1={4} x2={pad.left + 84} y2={4} stroke="color-mix(in srgb, var(--color-slate-400) 40%, transparent)" strokeWidth="1" strokeDasharray="3,2" />
+      <text x={pad.left + 86} y={6} fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize="6" fontFamily="inherit">Est</text>
+      <line x1={pad.left + 100} y1={4} x2={pad.left + 112} y2={4} stroke="color-mix(in srgb, var(--color-amber-300) 70%, transparent)" strokeWidth="1.2" />
+      <text x={pad.left + 114} y={6} fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize="6" fontFamily="inherit">Actual</text>
     </svg>
   );
 }
@@ -194,7 +194,7 @@ function DriftChart({ driftCurve }: { driftCurve: DriftPoint[] }) {
 
   if (!hasBeats && !hasMisses) {
     return (
-      <div className="text-center text-neutral/30 text-[9px] font-mono py-6 uppercase tracking-wider">
+      <div className="text-center text-neutral/30 text-mini font-mono py-6 uppercase tracking-wider">
         Insufficient data for drift analysis
       </div>
     );
@@ -265,15 +265,15 @@ function DriftChart({ driftCurve }: { driftCurve: DriftPoint[] }) {
           <line
             x1={pad.left} x2={chartW - pad.right}
             y1={yScale(v)} y2={yScale(v)}
-            stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"
+            stroke="color-mix(in srgb, var(--color-white) 5%, transparent)" strokeWidth="0.5"
           />
           <text
             x={pad.left - 3}
             y={yScale(v) + 2.5}
             textAnchor="end"
-            fill="rgba(255,255,255,0.25)"
+            fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
             fontSize="6"
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {v.toFixed(1)}%
           </text>
@@ -284,31 +284,31 @@ function DriftChart({ driftCurve }: { driftCurve: DriftPoint[] }) {
       <line
         x1={pad.left} x2={chartW - pad.right}
         y1={zeroY} y2={zeroY}
-        stroke="rgba(255,255,255,0.2)" strokeWidth="0.7"
+        stroke="color-mix(in srgb, var(--color-white) 20%, transparent)" strokeWidth="0.7"
       />
 
       {/* Earnings day marker */}
       <line
         x1={xScale(0)} x2={xScale(0)}
         y1={pad.top} y2={pad.top + innerH}
-        stroke="rgba(250,204,21,0.3)" strokeWidth="0.7" strokeDasharray="3,2"
+        stroke="color-mix(in srgb, var(--color-amber-300) 30%, transparent)" strokeWidth="0.7" strokeDasharray="3,2"
       />
       <text
         x={xScale(0)} y={pad.top - 3}
         textAnchor="middle"
-        fill="rgba(250,204,21,0.5)"
+        fill="color-mix(in srgb, var(--color-amber-300) 50%, transparent)"
         fontSize="6"
-        fontFamily="monospace"
+        fontFamily="inherit"
       >
         EARNINGS
       </text>
 
       {/* Shaded areas */}
       {beatFillPath && (
-        <path d={beatFillPath} fill="rgba(74,222,128,0.06)" />
+        <path d={beatFillPath} fill="color-mix(in srgb, var(--color-green-400) 6%, transparent)" />
       )}
       {missFillPath && (
-        <path d={missFillPath} fill="rgba(248,113,113,0.06)" />
+        <path d={missFillPath} fill="color-mix(in srgb, var(--color-red-400) 6%, transparent)" />
       )}
 
       {/* Beat line */}
@@ -316,7 +316,7 @@ function DriftChart({ driftCurve }: { driftCurve: DriftPoint[] }) {
         <polyline
           points={beatPts}
           fill="none"
-          stroke="rgba(74,222,128,0.8)"
+          stroke="color-mix(in srgb, var(--color-green-400) 80%, transparent)"
           strokeWidth="1.5"
         />
       )}
@@ -326,7 +326,7 @@ function DriftChart({ driftCurve }: { driftCurve: DriftPoint[] }) {
         <polyline
           points={missPts}
           fill="none"
-          stroke="rgba(248,113,113,0.8)"
+          stroke="color-mix(in srgb, var(--color-red-400) 80%, transparent)"
           strokeWidth="1.5"
         />
       )}
@@ -338,19 +338,19 @@ function DriftChart({ driftCurve }: { driftCurve: DriftPoint[] }) {
           x={xScale(d)}
           y={chartH - 4}
           textAnchor="middle"
-          fill="rgba(255,255,255,0.25)"
+          fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
           fontSize="6"
-          fontFamily="monospace"
+          fontFamily="inherit"
         >
           {d === 0 ? 'D0' : d > 0 ? `+${d}` : `${d}`}
         </text>
       ))}
 
       {/* Legend */}
-      <line x1={chartW - 100} y1={pad.top + 3} x2={chartW - 88} y2={pad.top + 3} stroke="rgba(74,222,128,0.8)" strokeWidth="1.5" />
-      <text x={chartW - 85} y={pad.top + 5.5} fill="rgba(255,255,255,0.35)" fontSize="6" fontFamily="monospace">After Beat</text>
-      <line x1={chartW - 100} y1={pad.top + 13} x2={chartW - 88} y2={pad.top + 13} stroke="rgba(248,113,113,0.8)" strokeWidth="1.5" />
-      <text x={chartW - 85} y={pad.top + 15.5} fill="rgba(255,255,255,0.35)" fontSize="6" fontFamily="monospace">After Miss</text>
+      <line x1={chartW - 100} y1={pad.top + 3} x2={chartW - 88} y2={pad.top + 3} stroke="color-mix(in srgb, var(--color-green-400) 80%, transparent)" strokeWidth="1.5" />
+      <text x={chartW - 85} y={pad.top + 5.5} fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize="6" fontFamily="inherit">After Beat</text>
+      <line x1={chartW - 100} y1={pad.top + 13} x2={chartW - 88} y2={pad.top + 13} stroke="color-mix(in srgb, var(--color-red-400) 80%, transparent)" strokeWidth="1.5" />
+      <text x={chartW - 85} y={pad.top + 15.5} fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize="6" fontFamily="inherit">After Miss</text>
     </svg>
   );
 }
@@ -395,8 +395,8 @@ function StatsGrid({ stats }: { stats: EarningsSurpriseStats }) {
     <div className="grid grid-cols-3 gap-px bg-border/10">
       {cards.map(c => (
         <div key={c.label} className="bg-black px-2 py-1.5">
-          <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">{c.label}</div>
-          <div className={`text-[11px] font-mono font-bold ${c.color}`}>{c.value}</div>
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">{c.label}</div>
+          <div className={`text-xs font-mono font-bold ${c.color}`}>{c.value}</div>
         </div>
       ))}
     </div>
@@ -410,7 +410,7 @@ function HistoryTable({ history }: { history: EarningsSurpriseHistoryEntry[] }) 
 
   return (
     <div className="border border-border/20 overflow-hidden">
-      <table className="w-full text-[9px] font-mono">
+      <table className="w-full text-mini font-mono">
         <thead>
           <tr className="bg-white/[0.03] border-b border-border/20">
             <th className="text-left px-2 py-1 text-neutral/40 uppercase tracking-wider font-medium">Date</th>
@@ -455,7 +455,7 @@ function BeatRateBadge({ rate }: { rate: number | null }) {
   if (rate == null) return null;
   const good = rate >= 50;
   return (
-    <span className={`px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-wider border ${
+    <span className={`px-1.5 py-0.5 text-micro font-mono uppercase tracking-wider border ${
       good
         ? 'text-green-400 bg-green-500/10 border-green-500/30'
         : 'text-red-400 bg-red-500/10 border-red-500/30'
@@ -468,7 +468,7 @@ function BeatRateBadge({ rate }: { rate: number | null }) {
 function StreakBadge({ streak }: { streak: number }) {
   if (streak === 0) return null;
   return (
-    <span className="px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-wider border text-yellow-400 bg-yellow-500/10 border-yellow-500/30">
+    <span className="px-1.5 py-0.5 text-micro font-mono uppercase tracking-wider border text-yellow-400 bg-yellow-500/10 border-yellow-500/30">
       {streak}x Streak
     </span>
   );
@@ -482,7 +482,7 @@ function TrendBadge({ trend }: { trend: 'up' | 'down' | 'flat' | null }) {
     flat: { text: 'EPS Flat', cls: 'text-neutral/50 bg-white/5 border-border/30' },
   }[trend];
   return (
-    <span className={`px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-wider border ${cfg.cls}`}>
+    <span className={`px-1.5 py-0.5 text-micro font-mono uppercase tracking-wider border ${cfg.cls}`}>
       {cfg.text}
     </span>
   );
@@ -511,18 +511,18 @@ export function EarningsSurprisePanel() {
   }, [data?.stats.nextEarningsDate]);
 
   return (
-    <GlassCard className="flex flex-col h-full text-[10px]">
+    <GlassCard className="flex flex-col h-full text-mini">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/20">
         <div className="flex items-center gap-1.5">
           <TrendingUp size={12} className="text-yellow-400" />
-          <span className="text-[10px] font-mono font-bold tracking-widest text-neutral/80 uppercase">
+          <span className="text-mini font-mono font-bold tracking-widest text-neutral/80 uppercase">
             {tr(t, 'panelEarningsSurprise', 'EARNINGS SURPRISE')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {dataUpdatedAt > 0 && (
-            <span className="text-[8px] font-mono text-neutral/30">
+            <span className="text-micro font-mono text-neutral/30">
               {new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -545,11 +545,11 @@ export function EarningsSurprisePanel() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value.toUpperCase())}
             placeholder="SYMBOL"
-            className="bg-white/[0.04] border border-border/30 px-2 py-0.5 text-[10px] font-mono text-white w-20 outline-none focus:border-yellow-400/50 uppercase"
+            className="bg-white/[0.04] border border-border/30 px-2 py-0.5 text-mini font-mono text-white w-20 outline-none focus:border-yellow-400/50 uppercase"
           />
           <button
             type="submit"
-            className="px-2 py-0.5 text-[9px] font-mono uppercase bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-colors"
+            className="px-2 py-0.5 text-mini font-mono uppercase bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-colors"
           >
             Go
           </button>
@@ -560,7 +560,7 @@ export function EarningsSurprisePanel() {
             <StreakBadge streak={data.stats.beatStreak} />
             <TrendBadge trend={data.stats.epsTrend} />
             {data.stats.nextEarningsDate && (
-              <span className="px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-wider border text-yellow-400 bg-yellow-500/10 border-yellow-500/30">
+              <span className="px-1.5 py-0.5 text-micro font-mono uppercase tracking-wider border text-yellow-400 bg-yellow-500/10 border-yellow-500/30">
                 {tr(t, 'esNext', 'Next')}: {data.stats.nextEarningsDate}
                 {countdown != null && countdown >= 0 && (
                   <span className="text-neutral/40"> ({countdown}d)</span>
@@ -578,20 +578,20 @@ export function EarningsSurprisePanel() {
             <div className="w-4 h-4 border-2 border-yellow-400/30 border-t-yellow-400 animate-spin" />
           </div>
         ) : !data ? (
-          <div className="flex items-center justify-center h-full text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center h-full text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {tr(t, 'esNoData', 'No data available')}
           </div>
         ) : (
           <div className="flex flex-col gap-3">
             {/* Company name */}
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono text-neutral/60 truncate max-w-[200px]">{data.name}</span>
-              <span className="text-[10px] font-mono text-yellow-400 font-bold">{data.symbol}</span>
+              <span className="text-mini font-mono text-neutral/60 truncate max-w-[200px]">{data.name}</span>
+              <span className="text-mini font-mono text-yellow-400 font-bold">{data.symbol}</span>
             </div>
 
             {/* Surprise Chart */}
             <div>
-              <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">
+              <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">
                 {tr(t, 'esSurpriseHistory', 'EARNINGS SURPRISE HISTORY')}
               </div>
               <div className="bg-black border border-border/20 p-2">
@@ -601,7 +601,7 @@ export function EarningsSurprisePanel() {
 
             {/* Post-Earnings Drift */}
             <div>
-              <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">
+              <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">
                 {tr(t, 'esDriftAnalysis', 'POST-EARNINGS DRIFT (AVG)')}
               </div>
               <div className="bg-black border border-border/20 p-2">
@@ -611,7 +611,7 @@ export function EarningsSurprisePanel() {
 
             {/* Stats Cards */}
             <div>
-              <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">
+              <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">
                 {tr(t, 'esKeyStats', 'KEY STATISTICS')}
               </div>
               <div className="border border-border/20 overflow-hidden">
@@ -621,7 +621,7 @@ export function EarningsSurprisePanel() {
 
             {/* Earnings History Table */}
             <div>
-              <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">
+              <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">
                 {tr(t, 'esHistoryTable', 'EARNINGS HISTORY')}
               </div>
               <HistoryTable history={data.history} />
@@ -631,7 +631,7 @@ export function EarningsSurprisePanel() {
       </div>
 
       {/* ── Footer ── */}
-      <div className="flex items-center justify-between px-3 py-1 border-t border-border/20 text-[8px] font-mono text-neutral/30">
+      <div className="flex items-center justify-between px-3 py-1 border-t border-border/20 text-micro font-mono text-neutral/30">
         <span>
           {data?.history.length ?? 0} {tr(t, 'esQuarters', 'quarters')}
         </span>

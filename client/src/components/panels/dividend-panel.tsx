@@ -151,12 +151,12 @@ export function DividendPanel() {
       }
       headerRight={
         <div className="flex items-center gap-2">
-          <span className="text-[8px] font-mono text-neutral/50">
+          <span className="text-micro font-mono text-neutral/50">
             {data?.length ?? 0} {t('symbol').toLowerCase()}s | {t('dvdAvgYield')} {avgYield.toFixed(2)}%
           </span>
           <button
             onClick={() => refetch()}
-            className="text-neutral/40 hover:text-accent transition-colors"
+            className="text-neutral/40 hover:text-accent-ink transition-colors"
             title={t('refresh')}
           >
             <RefreshCw className="w-3 h-3" />
@@ -170,16 +170,16 @@ export function DividendPanel() {
         <div className="flex items-center gap-0.5">
           <button
             onClick={() => setView('calendar')}
-            className={`px-2 py-0.5 text-[9px] font-mono font-black transition-all ${
-              view === 'calendar' ? 'bg-accent/20 text-accent' : 'text-neutral/50 hover:text-white'
+            className={`px-2 py-0.5 text-mini font-mono font-black transition-all ${
+              view === 'calendar' ? 'bg-accent/20 text-accent-ink' : 'text-neutral/50 hover:text-white'
             }`}
           >
             {t('dvdCalendar')}
           </button>
           <button
             onClick={() => setView('screener')}
-            className={`px-2 py-0.5 text-[9px] font-mono font-black transition-all ${
-              view === 'screener' ? 'bg-accent/20 text-accent' : 'text-neutral/50 hover:text-white'
+            className={`px-2 py-0.5 text-mini font-mono font-black transition-all ${
+              view === 'screener' ? 'bg-accent/20 text-accent-ink' : 'text-neutral/50 hover:text-white'
             }`}
           >
             {t('dvdScreener')}
@@ -191,8 +191,8 @@ export function DividendPanel() {
             <button
               key={key}
               onClick={() => setFilter(key)}
-              className={`px-1.5 py-0.5 text-[8px] font-mono font-bold whitespace-nowrap transition-all ${
-                filter === key ? 'bg-accent/15 text-accent' : 'text-neutral/40 hover:text-white'
+              className={`px-1.5 py-0.5 text-micro font-mono font-bold whitespace-nowrap transition-all ${
+                filter === key ? 'bg-accent/15 text-accent-ink' : 'text-neutral/40 hover:text-white'
               }`}
             >
               {label}
@@ -206,17 +206,17 @@ export function DividendPanel() {
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-8 gap-2">
             <div className="w-4 h-4 border-2 border-accent/30 border-t-accent animate-spin" />
-            <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">{t('loading')}</span>
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">{t('loading')}</span>
           </div>
         )}
         {error && (
           <div className="flex flex-col items-center justify-center py-8 gap-2">
-            <span className="text-[10px] font-mono text-bearish/60 uppercase tracking-widest">{t('dvdNoData')}</span>
-            <button onClick={() => refetch()} className="text-[9px] font-mono text-accent hover:text-white border border-accent/30 px-2 py-0.5 transition-colors">{t('retry')}</button>
+            <span className="text-mini font-mono text-bearish/60 uppercase tracking-widest">{t('dvdNoData')}</span>
+            <button onClick={() => refetch()} className="text-mini font-mono text-accent-ink hover:text-white border border-accent/30 px-2 py-0.5 transition-colors">{t('retry')}</button>
           </div>
         )}
         {!isLoading && !error && filtered.length === 0 && (
-          <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('dvdNoData')}
           </div>
         )}
@@ -230,9 +230,9 @@ export function DividendPanel() {
               return (
                 <div key={dateKey}>
                   <div
-                    className={`sticky top-0 z-10 px-3 py-1 text-[9px] font-mono font-black uppercase tracking-widest border-b border-border/20 ${
+                    className={`sticky top-0 z-10 px-3 py-1 text-mini font-mono font-black uppercase tracking-widest border-b border-border/20 ${
                       upcoming
-                        ? 'bg-accent/10 text-accent border-accent/30'
+                        ? 'bg-accent/10 text-accent-ink border-accent/30'
                         : past
                           ? 'bg-black/40 text-neutral/40'
                           : 'bg-black/40 text-neutral/60'
@@ -240,7 +240,7 @@ export function DividendPanel() {
                   >
                     {formatDate(dateKey)}
                     {upcoming && (
-                      <span className="ml-2 px-1 py-0.5 text-[7px] bg-accent/20 text-accent border border-accent/30">
+                      <span className="ml-2 px-1 py-0.5 text-micro bg-accent/20 text-accent-ink border border-accent/30">
                         {t('dvdUpcoming')}
                       </span>
                     )}
@@ -252,14 +252,14 @@ export function DividendPanel() {
                       onClick={() => setSelectedSymbol(stock.symbol)}
                       className={`w-full flex items-center gap-3 px-3 py-1.5 border-b border-border/5 hover:bg-accent/[0.04] transition-colors text-left ${yieldBg(stock.dividendYield)}`}
                     >
-                      <span className="text-[10px] font-mono font-black text-accent w-12 shrink-0">{stock.symbol}</span>
+                      <span className="text-mini font-mono font-black text-accent-ink w-12 shrink-0">{stock.symbol}</span>
                       <span className={`text-[12px] font-mono font-bold w-14 text-right shrink-0 ${yieldColor(stock.dividendYield)}`}>
                         {stock.dividendYield != null ? stock.dividendYield.toFixed(2) + '%' : '--'}
                       </span>
-                      <span className="text-[9px] font-mono text-neutral/50 w-14 text-right shrink-0">
+                      <span className="text-mini font-mono text-neutral/50 w-14 text-right shrink-0">
                         {stock.annualDividend != null ? '$' + stock.annualDividend.toFixed(2) : '--'}
                       </span>
-                      <span className="text-[8px] font-mono text-neutral/40 truncate flex-1">
+                      <span className="text-micro font-mono text-neutral/40 truncate flex-1">
                         {stock.paymentDate ? 'Pay: ' + formatDate(stock.paymentDate) : ''}
                       </span>
                     </button>
@@ -271,7 +271,7 @@ export function DividendPanel() {
             {/* Stocks without ex-div dates */}
             {filtered.filter(s => !s.exDividendDate).length > 0 && (
               <div>
-                <div className="sticky top-0 z-10 px-3 py-1 text-[9px] font-mono font-black uppercase tracking-widest border-b border-border/20 bg-black/40 text-neutral/40">
+                <div className="sticky top-0 z-10 px-3 py-1 text-mini font-mono font-black uppercase tracking-widest border-b border-border/20 bg-black/40 text-neutral/40">
                   {t('dvdNoData')}
                 </div>
                 {filtered.filter(s => !s.exDividendDate).map((stock, i) => (
@@ -280,11 +280,11 @@ export function DividendPanel() {
                     onClick={() => setSelectedSymbol(stock.symbol)}
                     className="w-full flex items-center gap-3 px-3 py-1.5 border-b border-border/5 hover:bg-accent/[0.04] transition-colors text-left"
                   >
-                    <span className="text-[10px] font-mono font-black text-accent w-12 shrink-0">{stock.symbol}</span>
+                    <span className="text-mini font-mono font-black text-accent-ink w-12 shrink-0">{stock.symbol}</span>
                     <span className={`text-[12px] font-mono font-bold w-14 text-right shrink-0 ${yieldColor(stock.dividendYield)}`}>
                       {stock.dividendYield != null ? stock.dividendYield.toFixed(2) + '%' : '--'}
                     </span>
-                    <span className="text-[9px] font-mono text-neutral/50 w-14 text-right shrink-0">
+                    <span className="text-mini font-mono text-neutral/50 w-14 text-right shrink-0">
                       {stock.annualDividend != null ? '$' + stock.annualDividend.toFixed(2) : '--'}
                     </span>
                   </button>
@@ -298,7 +298,7 @@ export function DividendPanel() {
         {!isLoading && !error && view === 'screener' && sorted.length > 0 && (
           <>
             {/* Table header */}
-            <div className="sticky top-0 z-10 grid grid-cols-[50px_55px_55px_50px_72px_72px_50px_50px] text-[7px] font-mono text-neutral/40 uppercase tracking-wider px-3 py-1 border-b border-border/20 bg-black/60">
+            <div className="sticky top-0 z-10 grid grid-cols-[50px_55px_55px_50px_72px_72px_50px_50px] text-micro font-mono text-neutral/40 uppercase tracking-wider px-3 py-1 border-b border-border/20 bg-black/60">
               <button className="text-left hover:text-white transition-colors" onClick={() => handleSort('symbol')}>
                 {t('symbol')}{sortIndicator('symbol')}
               </button>
@@ -330,9 +330,9 @@ export function DividendPanel() {
               <button
                 key={`${stock.symbol}-${i}`}
                 onClick={() => setSelectedSymbol(stock.symbol)}
-                className={`w-full grid grid-cols-[50px_55px_55px_50px_72px_72px_50px_50px] text-[9px] font-mono px-3 py-1.5 border-b border-border/5 hover:bg-accent/[0.04] transition-colors text-left ${yieldBg(stock.dividendYield)}`}
+                className={`w-full grid grid-cols-[50px_55px_55px_50px_72px_72px_50px_50px] text-mini font-mono px-3 py-1.5 border-b border-border/5 hover:bg-accent/[0.04] transition-colors text-left ${yieldBg(stock.dividendYield)}`}
               >
-                <span className="font-black text-accent truncate">{stock.symbol}</span>
+                <span className="font-black text-accent-ink truncate">{stock.symbol}</span>
                 <span className="text-right text-neutral/70">${stock.price.toFixed(2)}</span>
                 <span className={`text-right font-bold ${yieldColor(stock.dividendYield)}`}>
                   {stock.dividendYield != null ? stock.dividendYield.toFixed(2) + '%' : '--'}
@@ -340,10 +340,10 @@ export function DividendPanel() {
                 <span className="text-right text-neutral/60">
                   {stock.annualDividend != null ? '$' + stock.annualDividend.toFixed(2) : '--'}
                 </span>
-                <span className={`text-right text-[8px] ${stock.exDividendDate && isWithinDays(stock.exDividendDate, 7) ? 'text-accent font-bold' : 'text-neutral/50'}`}>
+                <span className={`text-right text-micro ${stock.exDividendDate && isWithinDays(stock.exDividendDate, 7) ? 'text-accent-ink font-bold' : 'text-neutral/50'}`}>
                   {stock.exDividendDate ? formatDate(stock.exDividendDate) : '--'}
                 </span>
-                <span className="text-right text-[8px] text-neutral/50">
+                <span className="text-right text-micro text-neutral/50">
                   {stock.paymentDate ? formatDate(stock.paymentDate) : '--'}
                 </span>
                 <span className="text-right text-neutral/50">

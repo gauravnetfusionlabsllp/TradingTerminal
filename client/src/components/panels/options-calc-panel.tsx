@@ -118,17 +118,17 @@ function InputField({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{label}</label>
+      <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">{label}</label>
       <div className="flex items-center bg-black/40 border border-border/50 focus-within:border-amber-400/50 transition-colors">
-        {prefix && <span className="text-[10px] font-mono text-neutral/40 pl-2">{prefix}</span>}
+        {prefix && <span className="text-mini font-mono text-neutral/40 pl-2">{prefix}</span>}
         <input
           type="number"
           step={step ?? 'any'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-transparent px-2 py-1 text-[11px] font-mono text-gray-200 outline-none w-full min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="flex-1 bg-transparent px-2 py-1 text-xs font-mono text-gray-200 outline-none w-full min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
-        {suffix && <span className="text-[10px] font-mono text-neutral/40 pr-2">{suffix}</span>}
+        {suffix && <span className="text-mini font-mono text-neutral/40 pr-2">{suffix}</span>}
       </div>
     </div>
   );
@@ -236,34 +236,34 @@ function PayoffDiagram({
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
       {/* Green fill (profit) */}
       {greenParts.length > 0 && (
-        <path d={greenParts.join(' ')} fill="rgba(34,197,94,0.15)" />
+        <path d={greenParts.join(' ')} fill="color-mix(in srgb, var(--color-green-500) 15%, transparent)" />
       )}
       {/* Red fill (loss) */}
       {redParts.length > 0 && (
-        <path d={redParts.join(' ')} fill="rgba(239,68,68,0.15)" />
+        <path d={redParts.join(' ')} fill="color-mix(in srgb, var(--color-red-500) 15%, transparent)" />
       )}
       {/* Zero line */}
-      <line x1={pad.left} y1={zeroY} x2={width - pad.right} y2={zeroY} stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" strokeDasharray="3,3" />
+      <line x1={pad.left} y1={zeroY} x2={width - pad.right} y2={zeroY} stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth="0.5" strokeDasharray="3,3" />
       {/* Payoff line */}
-      <path d={linePath} fill="none" stroke="rgb(251,191,36)" strokeWidth="1.5" />
+      <path d={linePath} fill="none" stroke="var(--color-amber-400)" strokeWidth="1.5" />
       {/* Strike line */}
-      <line x1={scaleX(K)} y1={pad.top} x2={scaleX(K)} y2={height - pad.bottom} stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" strokeDasharray="2,2" />
-      <text x={scaleX(K)} y={pad.top - 2} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="7" fontFamily="monospace">K</text>
+      <line x1={scaleX(K)} y1={pad.top} x2={scaleX(K)} y2={height - pad.bottom} stroke="color-mix(in srgb, var(--color-white) 20%, transparent)" strokeWidth="0.5" strokeDasharray="2,2" />
+      <text x={scaleX(K)} y={pad.top - 2} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 40%, transparent)" fontSize="7" fontFamily="inherit">K</text>
       {/* Breakeven line */}
       {breakeven > minS && breakeven < maxS && (
         <>
-          <line x1={beX} y1={pad.top} x2={beX} y2={height - pad.bottom} stroke="rgba(251,191,36,0.4)" strokeWidth="0.5" strokeDasharray="2,2" />
-          <text x={beX} y={height - pad.bottom + 10} textAnchor="middle" fill="rgb(251,191,36)" fontSize="7" fontFamily="monospace">BE</text>
+          <line x1={beX} y1={pad.top} x2={beX} y2={height - pad.bottom} stroke="color-mix(in srgb, var(--color-amber-400) 40%, transparent)" strokeWidth="0.5" strokeDasharray="2,2" />
+          <text x={beX} y={height - pad.bottom + 10} textAnchor="middle" fill="var(--color-amber-400)" fontSize="7" fontFamily="inherit">BE</text>
         </>
       )}
       {/* X axis labels */}
-      <text x={pad.left} y={height - 2} fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="monospace">{minS.toFixed(0)}</text>
-      <text x={width - pad.right} y={height - 2} textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="monospace">{maxS.toFixed(0)}</text>
-      <text x={pad.left + innerW / 2} y={height - 2} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="monospace">{K.toFixed(0)}</text>
+      <text x={pad.left} y={height - 2} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="7" fontFamily="inherit">{minS.toFixed(0)}</text>
+      <text x={width - pad.right} y={height - 2} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="7" fontFamily="inherit">{maxS.toFixed(0)}</text>
+      <text x={pad.left + innerW / 2} y={height - 2} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="7" fontFamily="inherit">{K.toFixed(0)}</text>
       {/* Y axis labels */}
-      <text x={pad.left - 4} y={scaleY(maxY)} textAnchor="end" fill="rgba(34,197,94,0.6)" fontSize="7" fontFamily="monospace">{maxY.toFixed(1)}</text>
-      <text x={pad.left - 4} y={scaleY(minY)} textAnchor="end" fill="rgba(239,68,68,0.6)" fontSize="7" fontFamily="monospace">{minY.toFixed(1)}</text>
-      <text x={pad.left - 4} y={zeroY + 3} textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="monospace">0</text>
+      <text x={pad.left - 4} y={scaleY(maxY)} textAnchor="end" fill="color-mix(in srgb, var(--color-green-500) 60%, transparent)" fontSize="7" fontFamily="inherit">{maxY.toFixed(1)}</text>
+      <text x={pad.left - 4} y={scaleY(minY)} textAnchor="end" fill="color-mix(in srgb, var(--color-red-500) 60%, transparent)" fontSize="7" fontFamily="inherit">{minY.toFixed(1)}</text>
+      <text x={pad.left - 4} y={zeroY + 3} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="7" fontFamily="inherit">0</text>
     </svg>
   );
 }
@@ -306,7 +306,7 @@ function SensitivityTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[9px] font-mono border-collapse">
+      <table className="w-full text-mini font-mono border-collapse">
         <thead>
           <tr>
             <th className="text-neutral/40 text-left p-1 border-b border-border/20">S \ IV</th>
@@ -363,7 +363,7 @@ function ValueBreakdown({
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-2 text-[9px] font-mono">
+      <div className="flex items-center gap-2 text-mini font-mono">
         <span className="text-neutral/50">{t('opcIntrinsic')}</span>
         <span className="text-amber-400">${intrinsic.toFixed(2)}</span>
         <span className="text-neutral/30">|</span>
@@ -474,7 +474,7 @@ export function OptionsCalcPanel() {
               prefix="$"
             />
             {selectedSymbol && currentStockPrice && stockPriceStr === '' && (
-              <div className="text-[8px] font-mono text-amber-400/60 -mt-1">
+              <div className="text-micro font-mono text-amber-400/60 -mt-1">
                 {selectedSymbol} @ ${currentStockPrice.toFixed(2)}
               </div>
             )}
@@ -487,7 +487,7 @@ export function OptionsCalcPanel() {
             />
 
             <div className="flex flex-col gap-0.5">
-              <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{t('opcExpiry')}</label>
+              <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">{t('opcExpiry')}</label>
               <div className="flex items-center gap-1">
                 <div className="flex-1 flex items-center bg-black/40 border border-border/50 focus-within:border-amber-400/50 transition-colors">
                   <input
@@ -495,7 +495,7 @@ export function OptionsCalcPanel() {
                     step="any"
                     value={expiryStr}
                     onChange={(e) => setExpiryStr(e.target.value)}
-                    className="flex-1 bg-transparent px-2 py-1 text-[11px] font-mono text-gray-200 outline-none w-full min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 bg-transparent px-2 py-1 text-xs font-mono text-gray-200 outline-none w-full min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
                 <div className="flex border border-border/50 bg-black/40">
@@ -503,7 +503,7 @@ export function OptionsCalcPanel() {
                     <button
                       key={opt.value}
                       onClick={() => setExpiryUnit(opt.value)}
-                      className={`px-2 py-1 text-[9px] font-mono transition-colors ${
+                      className={`px-2 py-1 text-mini font-mono transition-colors ${
                         expiryUnit === opt.value
                           ? 'bg-amber-400/20 text-amber-400'
                           : 'text-neutral/40 hover:text-neutral/60'
@@ -534,11 +534,11 @@ export function OptionsCalcPanel() {
 
             {/* Call/Put toggle */}
             <div className="flex flex-col gap-0.5">
-              <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">Type</label>
+              <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">Type</label>
               <div className="flex border border-border/50 bg-black/40">
                 <button
                   onClick={() => setIsCall(true)}
-                  className={`flex-1 px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider transition-colors ${
+                  className={`flex-1 px-3 py-1.5 text-mini font-mono font-bold tracking-wider transition-colors ${
                     isCall
                       ? 'bg-green-500/20 text-green-400 border-r border-border/50'
                       : 'text-neutral/40 hover:text-neutral/60 border-r border-border/50'
@@ -548,7 +548,7 @@ export function OptionsCalcPanel() {
                 </button>
                 <button
                   onClick={() => setIsCall(false)}
-                  className={`flex-1 px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider transition-colors ${
+                  className={`flex-1 px-3 py-1.5 text-mini font-mono font-bold tracking-wider transition-colors ${
                     !isCall
                       ? 'bg-red-500/20 text-red-400'
                       : 'text-neutral/40 hover:text-neutral/60'
@@ -564,12 +564,12 @@ export function OptionsCalcPanel() {
           <div className="space-y-3">
             {/* Option Price */}
             <div className="bg-black/30 border border-border/30 p-3">
-              <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">{t('opcPrice')}</div>
+              <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">{t('opcPrice')}</div>
               <div className="text-2xl font-mono font-bold text-amber-400">
                 {result ? `$${result.price.toFixed(4)}` : '\u2014'}
               </div>
               {result && (
-                <div className="text-[9px] font-mono text-neutral/40 mt-1">
+                <div className="text-mini font-mono text-neutral/40 mt-1">
                   {t('opcBreakeven')}: ${result.breakeven.toFixed(2)}
                 </div>
               )}
@@ -577,12 +577,12 @@ export function OptionsCalcPanel() {
 
             {/* Greeks */}
             <div className="bg-black/30 border border-border/30 p-2">
-              <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-2">{t('opcGreeks')}</div>
+              <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-2">{t('opcGreeks')}</div>
               <div className="grid grid-cols-5 gap-1">
                 {greeks.map((g) => (
                   <div key={g.label} className="text-center">
-                    <div className={`text-[8px] font-mono uppercase ${g.color} opacity-70`}>{g.label}</div>
-                    <div className={`text-[11px] font-mono font-bold ${g.color}`}>
+                    <div className={`text-micro font-mono uppercase ${g.color} opacity-70`}>{g.label}</div>
+                    <div className={`text-xs font-mono font-bold ${g.color}`}>
                       {g.value !== undefined && g.value !== null ? g.fmt(g.value) : '\u2014'}
                     </div>
                   </div>
@@ -605,7 +605,7 @@ export function OptionsCalcPanel() {
             {/* Payoff Diagram */}
             {result && (
               <div className="bg-black/30 border border-border/30 p-2">
-                <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">{t('opcPayoff')}</div>
+                <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">{t('opcPayoff')}</div>
                 <PayoffDiagram K={result.K} premium={result.price} isCall={isCall} />
               </div>
             )}
@@ -615,7 +615,7 @@ export function OptionsCalcPanel() {
         {/* Sensitivity Table */}
         {result && (
           <div className="mt-3 bg-black/30 border border-border/30 p-2">
-            <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-2">{t('opcSensitivity')}</div>
+            <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-2">{t('opcSensitivity')}</div>
             <SensitivityTable
               S={result.S}
               K={result.K}

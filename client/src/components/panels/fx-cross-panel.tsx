@@ -14,28 +14,28 @@ function formatRate(value: number): string {
 
 /** Cell background color based on rate value */
 function getCellBg(value: number, isDiagonal: boolean): string {
-  if (isDiagonal) return 'rgba(30,58,138,0.15)'; // blue-900 tint for diagonal
+  if (isDiagonal) return 'color-mix(in srgb, var(--color-blue-900) 15%, transparent)'; // blue-900 tint for diagonal
   if (value === 0) return 'transparent';
   if (value > 1) {
     // Green tint — intensity scales with distance from 1
     const intensity = Math.min((value - 1) / 10, 0.5);
-    return `rgba(34,197,94,${0.05 + intensity * 0.25})`;
+    return `color-mix(in srgb, var(--color-green-500) calc((${0.05 + intensity * 0.25}) * 100%), transparent)`;
   }
   if (value < 1) {
     // Red tint — intensity scales with distance from 1
     const intensity = Math.min((1 - value) / 0.5, 0.5);
-    return `rgba(239,68,68,${0.05 + intensity * 0.25})`;
+    return `color-mix(in srgb, var(--color-red-500) calc((${0.05 + intensity * 0.25}) * 100%), transparent)`;
   }
   return 'transparent';
 }
 
 /** Text color for rate values */
 function getTextColor(value: number, isDiagonal: boolean): string {
-  if (isDiagonal) return '#60a5fa'; // blue-400
-  if (value === 0) return '#52525b';
-  if (value > 1) return '#4ade80'; // green-400
-  if (value < 1) return '#f87171'; // red-400
-  return '#a1a1aa';
+  if (isDiagonal) return 'var(--color-blue-400)'; // blue-400
+  if (value === 0) return 'var(--color-zinc-600)';
+  if (value > 1) return 'var(--color-green-400)'; // green-400
+  if (value < 1) return 'var(--color-red-400)'; // red-400
+  return 'var(--color-zinc-400)';
 }
 
 interface PairDetail {
@@ -75,16 +75,16 @@ export function FxCrossPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Grid3X3 className="w-4 h-4 text-blue-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-blue-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-blue-400">
             {t('fxcTitle')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {data?.updatedAt && (
-            <span className="text-[7px] font-mono text-neutral/30">
+            <span className="text-micro font-mono text-neutral/30">
               {t('fxcUpdated')}: {new Date(data.updatedAt).toLocaleTimeString()}
             </span>
           )}
@@ -103,7 +103,7 @@ export function FxCrossPanel() {
         {isLoading && !data && (
           <div className="flex flex-col items-center justify-center py-8 gap-2">
             <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 animate-spin" />
-            <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
               {t('fxcLoading')}
             </span>
           </div>
@@ -112,12 +112,12 @@ export function FxCrossPanel() {
         {/* Error */}
         {error && !data && (
           <div className="flex flex-col items-center justify-center py-8 gap-2">
-            <span className="text-[10px] font-mono text-red-400/60 uppercase tracking-widest">
+            <span className="text-mini font-mono text-red-400/60 uppercase tracking-widest">
               {t('fxcError')}
             </span>
             <button
               onClick={() => refetch()}
-              className="text-[9px] font-mono text-blue-400 hover:text-white border border-blue-400/30 px-2 py-0.5 transition-colors"
+              className="text-mini font-mono text-blue-400 hover:text-white border border-blue-400/30 px-2 py-0.5 transition-colors"
             >
               {t('fxcRetry')}
             </button>
@@ -132,16 +132,16 @@ export function FxCrossPanel() {
                 <thead>
                   <tr>
                     {/* Corner cell with base/quote label */}
-                    <th className="p-1 text-[7px] font-mono text-neutral/20 w-10 sticky left-0 bg-black z-10">
+                    <th className="p-1 text-micro font-mono text-neutral/20 w-10 sticky left-0 bg-black z-10">
                       <div className="flex flex-col">
                         <span>{t('fxcBase')}</span>
-                        <span className="text-[6px]">\ {t('fxcQuote')}</span>
+                        <span className="text-micro">\ {t('fxcQuote')}</span>
                       </div>
                     </th>
                     {data.currencies.map((ccy, j) => (
                       <th
                         key={ccy}
-                        className={`p-1 text-[8px] font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+                        className={`p-1 text-micro font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
                           hoveredCol === j ? 'text-white bg-blue-400/10' : 'text-blue-400'
                         }`}
                       >
@@ -155,7 +155,7 @@ export function FxCrossPanel() {
                     <tr key={data.currencies[i]}>
                       {/* Row header */}
                       <td
-                        className={`p-1 text-[8px] font-mono font-bold uppercase tracking-wider whitespace-nowrap sticky left-0 bg-black z-10 transition-colors ${
+                        className={`p-1 text-micro font-mono font-bold uppercase tracking-wider whitespace-nowrap sticky left-0 bg-black z-10 transition-colors ${
                           hoveredRow === i ? 'text-white bg-blue-400/10' : 'text-blue-400'
                         }`}
                       >
@@ -181,7 +181,7 @@ export function FxCrossPanel() {
                             onMouseLeave={() => handleCellHover(null, null)}
                           >
                             <span
-                              className="text-[9px] font-mono font-bold tabular-nums"
+                              className="text-mini font-mono font-bold tabular-nums"
                               style={{ color: getTextColor(val, isDiagonal) }}
                             >
                               {isDiagonal ? '1.0000' : formatRate(val)}
@@ -198,16 +198,16 @@ export function FxCrossPanel() {
             {/* Legend */}
             <div className="flex items-center justify-center gap-4 mt-2 pt-2 border-t border-border/10">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'rgba(34,197,94,0.2)' }} />
-                <span className="text-[7px] font-mono text-neutral/40">{t('fxcLegendBuy')}</span>
+                <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'color-mix(in srgb, var(--color-green-500) 20%, transparent)' }} />
+                <span className="text-micro font-mono text-neutral/40">{t('fxcLegendBuy')}</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'rgba(30,58,138,0.15)' }} />
-                <span className="text-[7px] font-mono text-neutral/40">{t('fxcLegendPar')}</span>
+                <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'color-mix(in srgb, var(--color-blue-900) 15%, transparent)' }} />
+                <span className="text-micro font-mono text-neutral/40">{t('fxcLegendPar')}</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'rgba(239,68,68,0.2)' }} />
-                <span className="text-[7px] font-mono text-neutral/40">{t('fxcLegendSell')}</span>
+                <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'color-mix(in srgb, var(--color-red-500) 20%, transparent)' }} />
+                <span className="text-micro font-mono text-neutral/40">{t('fxcLegendSell')}</span>
               </div>
             </div>
           </>
@@ -215,7 +215,7 @@ export function FxCrossPanel() {
 
         {/* No data */}
         {!isLoading && !error && (!data || data.currencies.length === 0) && (
-          <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('fxcNoData')}
           </div>
         )}
@@ -224,10 +224,10 @@ export function FxCrossPanel() {
       {/* Pair detail overlay */}
       {selectedPair && data && (
         <div className="absolute inset-0 z-20 bg-black/90 flex items-center justify-center">
-          <div className="bg-[#0a0a0a] border border-border/30 p-4 min-w-[220px] max-w-[280px]">
+          <div className="bg-raised border border-border/30 p-4 min-w-[220px] max-w-[280px]">
             {/* Detail header */}
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-black font-mono text-blue-400 uppercase tracking-wider">
+              <span className="text-xs font-black font-mono text-blue-400 uppercase tracking-wider">
                 {selectedPair.base}/{selectedPair.quote}
               </span>
               <button
@@ -241,7 +241,7 @@ export function FxCrossPanel() {
             {/* Rate info */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[8px] font-mono text-neutral/50 uppercase">
+                <span className="text-micro font-mono text-neutral/50 uppercase">
                   {t('fxcRate')}
                 </span>
                 <span
@@ -253,23 +253,23 @@ export function FxCrossPanel() {
               </div>
 
               <div className="border-t border-border/20 pt-2">
-                <div className="text-[7px] font-mono text-neutral/30 mb-1">
+                <div className="text-micro font-mono text-neutral/30 mb-1">
                   1 {selectedPair.base} = {formatRate(selectedPair.rate)} {selectedPair.quote}
                 </div>
               </div>
 
               {/* Inverse rate */}
               <div className="flex items-center justify-between">
-                <span className="text-[8px] font-mono text-neutral/50 uppercase">
+                <span className="text-micro font-mono text-neutral/50 uppercase">
                   {t('fxcInverse')}
                 </span>
-                <span className="text-[11px] font-mono font-bold text-neutral/70 tabular-nums">
+                <span className="text-xs font-mono font-bold text-neutral/70 tabular-nums">
                   {selectedPair.rate > 0 ? formatRate(1 / selectedPair.rate) : '---'}
                 </span>
               </div>
 
               <div className="border-t border-border/20 pt-2">
-                <div className="text-[7px] font-mono text-neutral/30">
+                <div className="text-micro font-mono text-neutral/30">
                   1 {selectedPair.quote} ={' '}
                   {selectedPair.rate > 0 ? formatRate(1 / selectedPair.rate) : '---'}{' '}
                   {selectedPair.base}
@@ -280,7 +280,7 @@ export function FxCrossPanel() {
             {/* Close button */}
             <button
               onClick={() => setSelectedPair(null)}
-              className="mt-3 w-full text-[8px] font-mono text-blue-400 hover:text-white border border-blue-400/30 hover:border-blue-400/60 px-2 py-1 transition-colors uppercase tracking-wider"
+              className="mt-3 w-full text-micro font-mono text-blue-400 hover:text-white border border-blue-400/30 hover:border-blue-400/60 px-2 py-1 transition-colors uppercase tracking-wider"
             >
               {t('fxcClose')}
             </button>

@@ -44,10 +44,10 @@ export function RelativeStrengthPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-amber-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-amber-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-amber-400">
             {t('panelRelStrength')}
           </span>
         </div>
@@ -61,7 +61,7 @@ export function RelativeStrengthPanel() {
         <div className="flex gap-1">
           {(['all', 'strong', 'weak'] as FilterMode[]).map((mode) => (
             <button key={mode} onClick={() => setFilter(mode)}
-              className={`px-2 py-0.5 text-[7px] font-black uppercase tracking-wider border transition-colors ${
+              className={`px-2 py-0.5 text-micro font-black uppercase tracking-wider border transition-colors ${
                 filter === mode
                   ? mode === 'strong' ? 'border-bullish/40 text-bullish bg-bullish/10'
                     : mode === 'weak' ? 'border-bearish/40 text-bearish bg-bearish/10'
@@ -72,13 +72,13 @@ export function RelativeStrengthPanel() {
             </button>
           ))}
         </div>
-        <div className="text-[8px] font-mono text-neutral/40">
+        <div className="text-micro font-mono text-neutral/40">
           {t('rsBenchmark')}: SPY
         </div>
       </div>
 
       {/* Column headers */}
-      <div className="grid grid-cols-[1fr_0.5fr_0.5fr_0.5fr_0.5fr_0.5fr_0.5fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider shrink-0">
+      <div className="grid grid-cols-[1fr_0.5fr_0.5fr_0.5fr_0.5fr_0.5fr_0.5fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider shrink-0">
         <SortHeader label={t('symbol')} k="symbol" current={sortKey} asc={sortAsc} onClick={handleSort} />
         <SortHeader label="RS" k="rsRating" current={sortKey} asc={sortAsc} onClick={handleSort} className="text-right" />
         <SortHeader label="1M" k="rs1m" current={sortKey} asc={sortAsc} onClick={handleSort} className="text-right" />
@@ -91,7 +91,7 @@ export function RelativeStrengthPanel() {
       {/* Results */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !stocks && (
-          <div className="text-center py-8 text-amber-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-amber-400 text-mini font-mono uppercase animate-pulse">
             {t('rsScanning')}
           </div>
         )}
@@ -103,8 +103,8 @@ export function RelativeStrengthPanel() {
             className="w-full grid grid-cols-[1fr_0.5fr_0.5fr_0.5fr_0.5fr_0.5fr_0.5fr] px-3 py-1.5 border-b border-border/10 hover:bg-white/[0.02] transition-colors text-left"
           >
             <div className="min-w-0">
-              <div className="text-[10px] font-mono font-bold text-white truncate">{s.symbol}</div>
-              <div className="text-[7px] font-mono text-neutral/30 truncate">${s.price.toFixed(2)}</div>
+              <div className="text-mini font-mono font-bold text-white truncate">{s.symbol}</div>
+              <div className="text-micro font-mono text-neutral/30 truncate">${s.price.toFixed(2)}</div>
             </div>
             <div className="text-right self-center">
               <RatingBadge rating={s.rsRating} />
@@ -113,7 +113,7 @@ export function RelativeStrengthPanel() {
             <RSCell value={s.rs3m} />
             <RSCell value={s.rs6m} />
             <RSCell value={s.rs12m} />
-            <span className={`text-[9px] font-mono font-bold text-right self-center ${s.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}`}>
+            <span className={`text-mini font-mono font-bold text-right self-center ${s.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}`}>
               {s.changePercent >= 0 ? '+' : ''}{s.changePercent.toFixed(2)}%
             </span>
           </button>
@@ -121,7 +121,7 @@ export function RelativeStrengthPanel() {
       </div>
 
       {/* Status */}
-      <div className="px-3 py-1 border-t border-border/30 bg-[#050505] shrink-0 text-[8px] font-mono text-neutral/30">
+      <div className="px-3 py-1 border-t border-border/30 bg-raised shrink-0 text-micro font-mono text-neutral/30">
         {filtered.length} / {stocks?.length ?? 0} {t('rsStocks')}
       </div>
     </div>
@@ -135,7 +135,7 @@ function RatingBadge({ rating }: { rating: number }) {
     : rating >= 20 ? 'text-orange-400 bg-orange-400/10'
     : 'text-red-400 bg-red-400/15';
   return (
-    <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 ${color}`}>
+    <span className={`text-mini font-mono font-black px-1.5 py-0.5 ${color}`}>
       {rating}
     </span>
   );
@@ -143,7 +143,7 @@ function RatingBadge({ rating }: { rating: number }) {
 
 function RSCell({ value }: { value: number }) {
   return (
-    <span className={`text-[8px] font-mono text-right self-center ${value >= 0 ? 'text-bullish/70' : 'text-bearish/70'}`}>
+    <span className={`text-micro font-mono text-right self-center ${value >= 0 ? 'text-bullish/70' : 'text-bearish/70'}`}>
       {value >= 0 ? '+' : ''}{value.toFixed(1)}%
     </span>
   );

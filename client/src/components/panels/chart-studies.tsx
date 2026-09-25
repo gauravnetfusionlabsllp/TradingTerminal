@@ -22,7 +22,7 @@ export interface Study {
   plots?: Record<string, { color?: string; hidden?: boolean }>;
 }
 
-/** Indicator line colors: clear of green/red (bull/bear) and amber (UI state) */
+/** Indicator line colors: clear of green/red (bull/bear) */
 export const PALETTE = ['#38bdf8', '#a78bfa', '#f472b6', '#2dd4bf', '#facc15', '#60a5fa', '#e879f9', '#cbd5e1'];
 
 export const DEFAULT_STUDIES: Study[] = [
@@ -284,7 +284,7 @@ export function LegendList({ items, limit, maxHeight, render }: {
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="pointer-events-auto h-[18px] -ml-1 px-1 text-[9px] text-white/55 hover:text-white border border-transparent hover:border-white/[0.06] hover:bg-black/80"
+          className="pointer-events-auto h-[18px] -ml-1 px-1 text-mini text-white/55 hover:text-white border border-transparent hover:border-white/[0.06] hover:bg-black/80"
         >
           {open ? 'Show less' : `+${extra} more`}
         </button>
@@ -300,12 +300,12 @@ export function StudyChip({ o, index, fmt, onToggle, onEdit, onRemove }: ChipPro
   const f = o.pane ? (v: number) => v.toFixed(o.digits) : fmt;
   return (
     <div className="group flex items-center gap-1.5 h-[18px] -ml-1 pl-1 pr-0.5 pointer-events-auto border border-transparent hover:border-white/[0.06] hover:bg-black/80 focus-within:bg-black/80">
-      <span className="w-1.5 h-1.5 shrink-0" style={{ background: off ? 'rgba(255,255,255,0.2)' : o.plots[0]?.color ?? '#a1a1aa' }} />
-      <button type="button" onClick={onEdit} className={`text-[9px] hover:text-white ${off ? 'text-white/30 line-through' : 'text-white/75'}`}>
+      <span className="w-1.5 h-1.5 shrink-0" style={{ background: off ? 'color-mix(in srgb, var(--color-fg) 20%, transparent)' : o.plots[0]?.color ?? 'var(--color-neutral)' }} />
+      <button type="button" onClick={onEdit} className={`text-mini hover:text-white ${off ? 'text-white/30 line-through' : 'text-white/75'}`}>
         {o.label}
       </button>
       {values.map(({ p, v }) => v != null && (
-        <span key={p.id} className="text-[9px] tabular-nums" style={{ color: p.color }}>{f(v)}</span>
+        <span key={p.id} className="text-mini tabular-nums" style={{ color: p.color }}>{f(v)}</span>
       ))}
       <span className="flex items-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-100 motion-reduce:transition-none">
         <IconButton label={off ? 'Show' : 'Hide'} onClick={onToggle}>{off ? <EyeOff size={11} /> : <Eye size={11} />}</IconButton>
@@ -334,7 +334,7 @@ function useDismiss(ref: React.RefObject<HTMLElement | null>, onClose: () => voi
   }, [ref]);
 }
 
-const field = 'h-6 !py-0 !px-1.5 text-[10px] !bg-black !border-white/10';
+const field = 'h-6 !py-0 !px-1.5 text-mini !bg-black !border-white/10';
 
 // ─── Picker ───
 
@@ -453,7 +453,7 @@ export function IndicatorPicker({ reg, studies, volume, at, onAdd, onStudy, onRe
           aria-controls="ind-list"
           aria-activedescendant={rows.length ? `ind-opt-${active}` : undefined}
           aria-label="Search indicators"
-          className="flex-1 min-w-0 h-7 text-[11px] text-white !bg-transparent !border-0 !p-0 !shadow-none"
+          className="flex-1 min-w-0 h-7 text-xs text-white !bg-transparent !border-0 !p-0 !shadow-none"
         />
         <button type="button" onClick={onClose} aria-label="Close" className="w-6 h-6 flex items-center justify-center text-white/40 hover:text-white">
           <X size={13} />
@@ -470,13 +470,13 @@ export function IndicatorPicker({ reg, studies, volume, at, onAdd, onStudy, onRe
                 type="button"
                 onClick={() => { setCat(c); setQ(''); }}
                 aria-current={on || undefined}
-                className={`relative w-full @max-lg:w-auto shrink-0 flex items-center justify-between gap-2 text-left whitespace-nowrap h-7 px-3 text-[10px] ${
-                  on ? 'text-amber-400 bg-amber-400/10' : 'text-white/55 hover:text-white hover:bg-white/5'
+                className={`relative w-full @max-lg:w-auto shrink-0 flex items-center justify-between gap-2 text-left whitespace-nowrap h-7 px-3 text-mini ${
+                  on ? 'text-accent-ink bg-accent/10' : 'text-white/55 hover:text-white hover:bg-white/5'
                 } ${c === 'On chart' ? 'mb-1 @max-lg:mb-0 border-b border-white/[0.06] @max-lg:border-b-0 @max-lg:border-r' : ''}`}
               >
-                {on && <span className="absolute left-0 top-1 bottom-1 w-0.5 bg-amber-400 @max-lg:top-auto @max-lg:bottom-0 @max-lg:left-1 @max-lg:right-1 @max-lg:w-auto @max-lg:h-0.5" aria-hidden />}
+                {on && <span className="absolute left-0 top-1 bottom-1 w-0.5 bg-accent @max-lg:top-auto @max-lg:bottom-0 @max-lg:left-1 @max-lg:right-1 @max-lg:w-auto @max-lg:h-0.5" aria-hidden />}
                 {CATEGORY_LABEL[c as keyof typeof CATEGORY_LABEL] ?? c}
-                {c === 'On chart' && <span className={on ? 'text-amber-400/70' : 'text-white/35'}>{onChart}</span>}
+                {c === 'On chart' && <span className={on ? 'text-accent-ink/70' : 'text-white/35'}>{onChart}</span>}
               </button>
             );
           })}
@@ -486,8 +486,8 @@ export function IndicatorPicker({ reg, studies, volume, at, onAdd, onStudy, onRe
           <AppliedList reg={reg} studies={studies} volume={volume} onStudy={onStudy} onRemove={onRemoveStudy} onVolume={onVolume} />
         ) : (
         <ul id="ind-list" role="listbox" aria-label="Indicators" className="flex-1 min-h-0 overflow-y-auto py-1">
-          {!reg && <li className="px-3 py-6 text-center text-[10px] text-white/40">Loading indicators…</li>}
-          {reg && !rows.length && <li className="px-3 py-6 text-center text-[10px] text-white/40">No indicators match "{q.trim()}".</li>}
+          {!reg && <li className="px-3 py-6 text-center text-mini text-white/40">Loading indicators…</li>}
+          {reg && !rows.length && <li className="px-3 py-6 text-center text-mini text-white/40">No indicators match "{q.trim()}".</li>}
           {rows.map((r, i) => {
             const n = r.entry ? counts.get(r.key) ?? 0 : volume ? 1 : 0;
             return (
@@ -498,9 +498,9 @@ export function IndicatorPicker({ reg, studies, volume, at, onAdd, onStudy, onRe
                 aria-selected={i === active}
                 onMouseEnter={() => setActive(i)}
                 onClick={() => pick(r)}
-                className={`flex items-center gap-2 h-[26px] px-3 cursor-pointer text-[10px] ${i === active ? 'bg-white/[0.06] text-white' : 'text-white/70'}`}
+                className={`flex items-center gap-2 h-[26px] px-3 cursor-pointer text-mini ${i === active ? 'bg-white/[0.06] text-white' : 'text-white/70'}`}
               >
-                <span className="w-3 shrink-0 text-amber-400" aria-label={n ? 'On chart' : undefined}>{n > 0 && <Check size={11} />}</span>
+                <span className="w-3 shrink-0 text-accent-ink" aria-label={n ? 'On chart' : undefined}>{n > 0 && <Check size={11} />}</span>
                 <span className="flex-1 truncate">{r.name}</span>
                 {r.pane && <PanelBottom size={11} className="shrink-0 text-white/25" aria-label="Opens in its own pane" />}
                 <span className="w-20 shrink-0 text-right truncate text-white/35">{r.short}{n > 1 ? ` ×${n}` : ''}</span>
@@ -516,14 +516,14 @@ export function IndicatorPicker({ reg, studies, volume, at, onAdd, onStudy, onRe
           <button
             type="button"
             onClick={() => { setCat('On chart'); setQ(''); }}
-            className={`h-6 px-1.5 text-[10px] ${!q.trim() && cat === 'On chart' ? 'text-white/40 cursor-default' : 'text-white/50 hover:text-white underline-offset-2 hover:underline'}`}
+            className={`h-6 px-1.5 text-mini ${!q.trim() && cat === 'On chart' ? 'text-white/40 cursor-default' : 'text-white/50 hover:text-white underline-offset-2 hover:underline'}`}
           >
             {onChart} on chart
           </button>
           <button
             type="button"
             onClick={() => { if (confirming) { onRemoveAll(); setConfirming(false); } else setConfirming(true); }}
-            className={`h-6 px-2 flex items-center gap-1.5 text-[10px] ${confirming ? 'text-white bg-red-600' : 'text-white/50 hover:text-red-400 hover:bg-red-500/10'}`}
+            className={`h-6 px-2 flex items-center gap-1.5 text-mini ${confirming ? 'text-white bg-red-600' : 'text-white/50 hover:text-red-400 hover:bg-red-500/10'}`}
           >
             <Trash2 size={12} aria-hidden />
             {confirming ? 'Click again to remove all' : 'Remove all'}
@@ -546,7 +546,7 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
       aria-checked={on}
       aria-label={label}
       onClick={() => onChange(!on)}
-      className={`w-3.5 h-3.5 border flex items-center justify-center ${on ? 'bg-amber-400/25 border-amber-400 text-amber-400' : 'border-white/25 hover:border-white/50'}`}
+      className={`w-3.5 h-3.5 border flex items-center justify-center ${on ? 'bg-accent/25 border-accent text-accent-ink' : 'border-white/25 hover:border-white/50'}`}
     >
       {on && <Check size={9} strokeWidth={3} />}
     </button>
@@ -588,7 +588,7 @@ function InputRow({ uid, def, value, onChange }: { uid: string; def: InputConfig
   }
   return (
     <div className="flex items-center justify-between gap-3 min-h-[28px] px-3">
-      <label htmlFor={id} className="text-[10px] text-white/60 truncate">{def.title ?? def.id}</label>
+      <label htmlFor={id} className="text-mini text-white/60 truncate">{def.title ?? def.id}</label>
       {control}
     </div>
   );
@@ -615,7 +615,7 @@ function SettingsBody({ study, entry, onChange }: { study: Study; entry: Entry; 
   const setPlot = (id: string, change: { color?: string; hidden?: boolean }) =>
     onChange({ ...study, plots: { ...study.plots, [id]: { ...study.plots?.[id], ...change } } });
 
-  if (!inputs.length && !plots.length) return <p className="px-3 py-3 text-[10px] text-white/40">This indicator has no settings.</p>;
+  if (!inputs.length && !plots.length) return <p className="px-3 py-3 text-mini text-white/40">This indicator has no settings.</p>;
   return (
     <>
       {inputs.map((def) => (
@@ -633,7 +633,7 @@ function SettingsBody({ study, entry, onChange }: { study: Study; entry: Entry; 
               className="w-4 h-4 shrink-0 border border-white/20 hover:border-white/50"
               style={{ background: p.color }}
             />
-            <span className={`flex-1 truncate text-[10px] ${p.hidden ? 'text-white/30' : 'text-white/60'}`}>{p.title}</span>
+            <span className={`flex-1 truncate text-mini ${p.hidden ? 'text-white/30' : 'text-white/60'}`}>{p.title}</span>
             <IconButton label={p.hidden ? `Show ${p.title}` : `Hide ${p.title}`} onClick={() => setPlot(p.id, { hidden: !p.hidden })}>
               {p.hidden ? <EyeOff size={11} /> : <Eye size={11} />}
             </IconButton>
@@ -646,7 +646,7 @@ function SettingsBody({ study, entry, onChange }: { study: Study; entry: Entry; 
                   type="button"
                   aria-label={c}
                   onClick={() => { setPlot(p.id, { color: c }); setPicking(null); }}
-                  className={`w-4 h-4 border ${c.toLowerCase() === p.color.toLowerCase() ? 'border-amber-400' : 'border-transparent hover:border-white/50'}`}
+                  className={`w-4 h-4 border ${c.toLowerCase() === p.color.toLowerCase() ? 'border-accent' : 'border-transparent hover:border-white/50'}`}
                   style={{ background: c }}
                 />
               ))}
@@ -681,8 +681,8 @@ export function StudySettings({ o, top, onChange, onClose }: SettingsProps) {
       style={{ top, maxHeight: `calc(100% - ${top + 8}px)` }}
     >
       <div className="flex items-center gap-2 h-9 shrink-0 pl-3 pr-1.5 border-b border-white/[0.06]">
-        <span className="flex-1 truncate text-[11px] text-white">{longName(entry.name, entry.shortName)}</span>
-        <span className="text-[10px] text-white/35">{entry.shortName}</span>
+        <span className="flex-1 truncate text-xs text-white">{longName(entry.name, entry.shortName)}</span>
+        <span className="text-mini text-white/35">{entry.shortName}</span>
         <button type="button" onClick={onClose} aria-label="Close" className="w-6 h-6 flex items-center justify-center text-white/40 hover:text-white">
           <X size={13} />
         </button>
@@ -693,10 +693,10 @@ export function StudySettings({ o, top, onChange, onClose }: SettingsProps) {
       </div>
 
       <div className="flex items-center justify-between h-9 shrink-0 px-1.5 border-t border-white/[0.06]">
-        <button type="button" onClick={() => { onChange(resetStudy(study, entry)); setReset((n) => n + 1); }} className="h-6 px-2 text-[10px] text-white/50 hover:text-white">
+        <button type="button" onClick={() => { onChange(resetStudy(study, entry)); setReset((n) => n + 1); }} className="h-6 px-2 text-mini text-white/50 hover:text-white">
           Reset
         </button>
-        <button type="button" onClick={onClose} className="h-6 px-3 text-[10px] font-bold text-amber-400 border border-amber-400/40 hover:bg-amber-400/15">Done</button>
+        <button type="button" onClick={onClose} className="h-6 px-3 text-mini font-bold text-accent-ink border border-accent/40 hover:bg-accent/15">Done</button>
       </div>
     </div>
   );
@@ -721,7 +721,7 @@ function AppliedList({ reg, studies, volume, onStudy, onRemove, onVolume }: {
   }, [open]);
 
   if (!studies.length && !volume) {
-    return <p className="flex-1 px-6 py-8 text-center text-[10px] leading-relaxed text-white/40">Nothing on the chart yet. Pick an indicator from a category, or search above.</p>;
+    return <p className="flex-1 px-6 py-8 text-center text-mini leading-relaxed text-white/40">Nothing on the chart yet. Pick an indicator from a category, or search above.</p>;
   }
   return (
     <ul aria-label="On the chart" className="flex-1 min-h-0 overflow-y-auto py-1">
@@ -729,8 +729,8 @@ function AppliedList({ reg, studies, volume, onStudy, onRemove, onVolume }: {
         <li className="flex items-center gap-2 h-[30px] pl-3 pr-1.5">
           <span className="w-[11px] shrink-0" aria-hidden />
           <span className="w-2 h-2 shrink-0 bg-emerald-500/50" aria-hidden />
-          <span className="text-[10px] text-white">Volume</span>
-          <span className="flex-1 truncate text-[10px] text-white/35">Bars under the price</span>
+          <span className="text-mini text-white">Volume</span>
+          <span className="flex-1 truncate text-mini text-white/35">Bars under the price</span>
           <IconButton big label="Remove Volume" onClick={() => onVolume(false)}><X size={12} /></IconButton>
         </li>
       )}
@@ -739,7 +739,7 @@ function AppliedList({ reg, studies, volume, onStudy, onRemove, onVolume }: {
         if (!e) return null;
         const label = studyLabel(e.shortName, e.inputConfig, { ...e.defaultInputs, ...s.inputs });
         const first = shownPlots(e)[0];
-        const color = first ? s.plots?.[first.id]?.color ?? first.color : '#a1a1aa';
+        const color = first ? s.plots?.[first.id]?.color ?? first.color : 'var(--color-neutral)';
         const isOpen = open === s.uid;
         return (
           <li key={s.uid} id={`applied-${s.uid}`} className={isOpen ? 'bg-black/30 border-y border-white/[0.06]' : undefined}>
@@ -752,9 +752,9 @@ function AppliedList({ reg, studies, volume, onStudy, onRemove, onVolume }: {
                 className="flex-1 min-w-0 flex items-center gap-2 h-full text-left group"
               >
                 <ChevronRight size={11} className={`shrink-0 text-white/30 group-hover:text-white transition-transform duration-100 motion-reduce:transition-none ${isOpen ? 'rotate-90' : ''}`} aria-hidden />
-                <span className="w-2 h-2 shrink-0" style={{ background: s.hidden ? 'rgba(255,255,255,0.2)' : color }} aria-hidden />
-                <span className={`shrink-0 text-[10px] ${s.hidden ? 'text-white/35 line-through' : 'text-white'}`}>{label}</span>
-                <span className="flex-1 truncate text-[10px] text-white/35">{longName(e.name, e.shortName)}</span>
+                <span className="w-2 h-2 shrink-0" style={{ background: s.hidden ? 'color-mix(in srgb, var(--color-fg) 20%, transparent)' : color }} aria-hidden />
+                <span className={`shrink-0 text-mini ${s.hidden ? 'text-white/35 line-through' : 'text-white'}`}>{label}</span>
+                <span className="flex-1 truncate text-mini text-white/35">{longName(e.name, e.shortName)}</span>
               </button>
               {!e.overlay && <PanelBottom size={11} className="shrink-0 text-white/25" aria-label="In its own pane" />}
               <IconButton big label={s.hidden ? `Show ${label}` : `Hide ${label}`} onClick={() => onStudy({ ...s, hidden: !s.hidden })}>
@@ -770,7 +770,7 @@ function AppliedList({ reg, studies, volume, onStudy, onRemove, onVolume }: {
                 <button
                   type="button"
                   onClick={() => { onStudy(resetStudy(s, e)); setReset((n) => n + 1); }}
-                  className="ml-1.5 mt-1 h-6 px-2 text-[10px] text-white/50 hover:text-white"
+                  className="ml-1.5 mt-1 h-6 px-2 text-mini text-white/50 hover:text-white"
                 >
                   Reset to defaults
                 </button>

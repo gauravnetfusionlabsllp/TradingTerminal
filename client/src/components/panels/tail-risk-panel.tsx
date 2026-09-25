@@ -12,24 +12,24 @@ type Category = TailRiskIndicator['category'];
 function getLevelColor(level: RiskLevel): { text: string; fill: string; bg: string; glow: string } {
   switch (level) {
     case 'complacent':
-      return { text: 'text-cyan-400', fill: '#22d3ee', bg: 'rgba(34,211,238,0.08)', glow: 'rgba(34,211,238,0.3)' };
+      return { text: 'text-cyan-400', fill: 'var(--color-cyan-400)', bg: 'color-mix(in srgb, var(--color-cyan-400) 8%, transparent)', glow: 'color-mix(in srgb, var(--color-cyan-400) 30%, transparent)' };
     case 'normal':
-      return { text: 'text-emerald-400', fill: '#34d399', bg: 'rgba(52,211,153,0.08)', glow: 'rgba(52,211,153,0.3)' };
+      return { text: 'text-emerald-400', fill: 'var(--color-emerald-400)', bg: 'color-mix(in srgb, var(--color-emerald-400) 8%, transparent)', glow: 'color-mix(in srgb, var(--color-emerald-400) 30%, transparent)' };
     case 'elevated':
-      return { text: 'text-amber-400', fill: '#fbbf24', bg: 'rgba(251,191,36,0.08)', glow: 'rgba(251,191,36,0.3)' };
+      return { text: 'text-amber-400', fill: 'var(--color-amber-400)', bg: 'color-mix(in srgb, var(--color-amber-400) 8%, transparent)', glow: 'color-mix(in srgb, var(--color-amber-400) 30%, transparent)' };
     case 'high':
-      return { text: 'text-orange-400', fill: '#fb923c', bg: 'rgba(251,146,60,0.08)', glow: 'rgba(251,146,60,0.3)' };
+      return { text: 'text-orange-400', fill: 'var(--color-orange-400)', bg: 'color-mix(in srgb, var(--color-orange-400) 8%, transparent)', glow: 'color-mix(in srgb, var(--color-orange-400) 30%, transparent)' };
     case 'extreme':
-      return { text: 'text-red-400', fill: '#f87171', bg: 'rgba(248,113,113,0.08)', glow: 'rgba(248,113,113,0.4)' };
+      return { text: 'text-red-400', fill: 'var(--color-red-400)', bg: 'color-mix(in srgb, var(--color-red-400) 8%, transparent)', glow: 'color-mix(in srgb, var(--color-red-400) 40%, transparent)' };
   }
 }
 
 function getAlertDotColor(alert: AlertLevel): string {
   switch (alert) {
-    case 'normal': return '#525252';
-    case 'watch': return '#fbbf24';
-    case 'warning': return '#fb923c';
-    case 'critical': return '#ef4444';
+    case 'normal': return 'var(--color-neutral-600)';
+    case 'watch': return 'var(--color-amber-400)';
+    case 'warning': return 'var(--color-orange-400)';
+    case 'critical': return 'var(--color-red-500)';
   }
 }
 
@@ -70,17 +70,17 @@ export function TailRiskPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-red-500" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-red-500">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-red-500">
             {tr(t, 'tailRiskTitle', 'Tail Risk Monitor')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {data && levelColor && (
             <span
-              className={`text-[8px] font-black font-mono uppercase px-1.5 py-0.5 ${levelColor.text}`}
+              className={`text-micro font-black font-mono uppercase px-1.5 py-0.5 ${levelColor.text}`}
               style={{
                 background: levelColor.bg,
                 boxShadow: shouldPulse ? `0 0 8px ${levelColor.glow}` : 'none',
@@ -103,20 +103,20 @@ export function TailRiskPanel() {
           50% { opacity: 0.6; }
         }
         @keyframes tail-risk-glow {
-          0%, 100% { box-shadow: 0 0 4px rgba(239,68,68,0.3); }
-          50% { box-shadow: 0 0 12px rgba(239,68,68,0.6); }
+          0%, 100% { box-shadow: 0 0 4px color-mix(in srgb, var(--color-red-500) 30%, transparent); }
+          50% { box-shadow: 0 0 12px color-mix(in srgb, var(--color-red-500) 60%, transparent); }
         }
       `}</style>
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-red-500 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-red-500 text-mini font-mono uppercase animate-pulse">
             {tr(t, 'loading', 'Loading...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {tr(t, 'tailRiskNoData', 'No data available')}
           </div>
         )}
@@ -155,11 +155,11 @@ function RiskGauge({ data }: { data: TailRiskData }) {
 
   // Zone arcs
   const zones = [
-    { from: 0, to: 20, color: '#22d3ee' },   // Complacent - cyan
-    { from: 20, to: 40, color: '#34d399' },   // Normal - green
-    { from: 40, to: 60, color: '#fbbf24' },   // Elevated - amber
-    { from: 60, to: 80, color: '#fb923c' },   // High - orange
-    { from: 80, to: 100, color: '#ef4444' },  // Extreme - red
+    { from: 0, to: 20, color: 'var(--color-cyan-400)' },   // Complacent - cyan
+    { from: 20, to: 40, color: 'var(--color-emerald-400)' },   // Normal - green
+    { from: 40, to: 60, color: 'var(--color-amber-400)' },   // Elevated - amber
+    { from: 60, to: 80, color: 'var(--color-orange-400)' },   // High - orange
+    { from: 80, to: 100, color: 'var(--color-red-500)' },  // Extreme - red
   ];
 
   function arcPath(fromPct: number, toPct: number): string {
@@ -180,7 +180,7 @@ function RiskGauge({ data }: { data: TailRiskData }) {
         <path
           d={arcPath(0, 100)}
           fill="none"
-          stroke="rgba(255,255,255,0.04)"
+          stroke="color-mix(in srgb, var(--color-white) 4%, transparent)"
           strokeWidth={STROKE_W}
           strokeLinecap="round"
         />
@@ -225,7 +225,7 @@ function RiskGauge({ data }: { data: TailRiskData }) {
           strokeLinecap="round"
         />
         <circle cx={CX} cy={CY} r={3.5} fill={levelColor.fill} />
-        <circle cx={CX} cy={CY} r={1.5} fill="#000" />
+        <circle cx={CX} cy={CY} r={1.5} fill="var(--color-black)" />
 
         {/* Score text */}
         <text
@@ -234,7 +234,7 @@ function RiskGauge({ data }: { data: TailRiskData }) {
           textAnchor="middle"
           fill={levelColor.fill}
           fontSize={26}
-          fontFamily="monospace"
+          fontFamily="inherit"
           fontWeight="900"
           dominantBaseline="hanging"
         >
@@ -242,15 +242,15 @@ function RiskGauge({ data }: { data: TailRiskData }) {
         </text>
 
         {/* End labels */}
-        <text x={CX - R - 8} y={CY + 8} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace">0</text>
-        <text x={CX + R + 8} y={CY + 8} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace">100</text>
+        <text x={CX - R - 8} y={CY + 8} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit">0</text>
+        <text x={CX + R + 8} y={CY + 8} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit">100</text>
 
         {/* Zone labels at top */}
-        <text x={CX - R + 5} y={CY - R + 5} textAnchor="start" fill="rgba(255,255,255,0.15)" fontSize={5} fontFamily="monospace">SAFE</text>
-        <text x={CX + R - 5} y={CY - R + 5} textAnchor="end" fill="rgba(255,255,255,0.15)" fontSize={5} fontFamily="monospace">CRISIS</text>
+        <text x={CX - R + 5} y={CY - R + 5} textAnchor="start" fill="color-mix(in srgb, var(--color-white) 15%, transparent)" fontSize={5} fontFamily="inherit">SAFE</text>
+        <text x={CX + R - 5} y={CY - R + 5} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 15%, transparent)" fontSize={5} fontFamily="inherit">CRISIS</text>
       </svg>
 
-      <span className={`text-[10px] font-black font-mono uppercase tracking-wider -mt-1 ${levelColor.text}`}>
+      <span className={`text-mini font-black font-mono uppercase tracking-wider -mt-1 ${levelColor.text}`}>
         {level}
       </span>
     </div>
@@ -269,16 +269,16 @@ function ActiveAlerts({ alerts }: { alerts: string[] }) {
             key={i}
             className="flex items-start gap-1.5 px-2 py-1.5 border"
             style={{
-              borderColor: isCritical ? 'rgba(239,68,68,0.5)' : 'rgba(251,146,60,0.3)',
-              background: isCritical ? 'rgba(239,68,68,0.06)' : 'rgba(251,146,60,0.04)',
+              borderColor: isCritical ? 'color-mix(in srgb, var(--color-red-500) 50%, transparent)' : 'color-mix(in srgb, var(--color-orange-400) 30%, transparent)',
+              background: isCritical ? 'color-mix(in srgb, var(--color-red-500) 6%, transparent)' : 'color-mix(in srgb, var(--color-orange-400) 4%, transparent)',
               animation: isCritical ? 'tail-risk-glow 2s ease-in-out infinite' : 'none',
             }}
           >
             <AlertTriangle
               className="w-3 h-3 shrink-0 mt-0.5"
-              style={{ color: isCritical ? '#ef4444' : '#fb923c' }}
+              style={{ color: isCritical ? 'var(--color-red-500)' : 'var(--color-orange-400)' }}
             />
-            <span className="text-[8px] font-mono text-neutral-300 leading-tight">
+            <span className="text-micro font-mono text-neutral-300 leading-tight">
               {alert}
             </span>
           </div>
@@ -295,7 +295,7 @@ function IndicatorGrid({ indicators }: { indicators: TailRiskIndicator[] }) {
 
   return (
     <div className="px-3 py-2 border-b border-border/20">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr(t, 'tailRiskIndicators', 'Risk Indicators')}
       </div>
       <div className="grid grid-cols-2 gap-1.5">
@@ -315,9 +315,9 @@ function IndicatorCard({ indicator }: { indicator: TailRiskIndicator }) {
 
   return (
     <div
-      className="p-1.5 border border-border/20 bg-[#060606]"
+      className="p-1.5 border border-border/20 bg-raised"
       style={{
-        borderColor: alertLevel === 'critical' ? 'rgba(239,68,68,0.4)' : alertLevel === 'warning' ? 'rgba(251,146,60,0.25)' : undefined,
+        borderColor: alertLevel === 'critical' ? 'color-mix(in srgb, var(--color-red-500) 40%, transparent)' : alertLevel === 'warning' ? 'color-mix(in srgb, var(--color-orange-400) 25%, transparent)' : undefined,
       }}
     >
       {/* Name row */}
@@ -332,21 +332,21 @@ function IndicatorCard({ indicator }: { indicator: TailRiskIndicator }) {
               boxShadow: alertLevel === 'critical' ? `0 0 4px ${dotColor}` : 'none',
             }}
           />
-          <span className="text-[7px] font-mono font-bold text-neutral-300 truncate">
+          <span className="text-micro font-mono font-bold text-neutral-300 truncate">
             {name}
           </span>
         </div>
-        <span className={`text-[6px] font-mono font-bold px-1 py-0.5 ${catBadge.color}`}>
+        <span className={`text-micro font-mono font-bold px-1 py-0.5 ${catBadge.color}`}>
           {catBadge.label}
         </span>
       </div>
 
       {/* Value + direction */}
       <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-[11px] font-mono font-black text-white">
+        <span className="text-xs font-mono font-black text-white">
           {formatValue(currentValue)}
         </span>
-        <span className={`text-[9px] font-mono font-bold ${dirInfo.color}`}>
+        <span className={`text-mini font-mono font-bold ${dirInfo.color}`}>
           {dirInfo.arrow}
         </span>
       </div>
@@ -354,8 +354,8 @@ function IndicatorCard({ indicator }: { indicator: TailRiskIndicator }) {
       {/* Z-score bar */}
       <div className="mb-1">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="text-[6px] font-mono text-neutral-600">Z-SCORE</span>
-          <span className={`text-[6px] font-mono font-bold ${zScore > 1.5 ? 'text-red-400' : zScore < -1.5 ? 'text-emerald-400' : 'text-neutral-400'}`}>
+          <span className="text-micro font-mono text-neutral-600">Z-SCORE</span>
+          <span className={`text-micro font-mono font-bold ${zScore > 1.5 ? 'text-red-400' : zScore < -1.5 ? 'text-emerald-400' : 'text-neutral-400'}`}>
             {zScore > 0 ? '+' : ''}{zScore.toFixed(2)}
           </span>
         </div>
@@ -368,7 +368,7 @@ function IndicatorCard({ indicator }: { indicator: TailRiskIndicator }) {
             const centerPct = 50;
             const barWidthPct = Math.abs(clampedZ) / 3 * 50;
             const barLeft = clampedZ >= 0 ? centerPct : centerPct - barWidthPct;
-            const barColor = clampedZ > 1.5 ? '#ef4444' : clampedZ < -1.5 ? '#34d399' : '#a3a3a3';
+            const barColor = clampedZ > 1.5 ? 'var(--color-red-500)' : clampedZ < -1.5 ? 'var(--color-emerald-400)' : 'var(--color-neutral-400)';
             return (
               <div
                 className="absolute top-0 h-full"
@@ -387,15 +387,15 @@ function IndicatorCard({ indicator }: { indicator: TailRiskIndicator }) {
       {/* Percentile bar */}
       <div className="mb-1">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="text-[6px] font-mono text-neutral-600">PCTL</span>
-          <span className="text-[6px] font-mono text-neutral-400">{percentile}%</span>
+          <span className="text-micro font-mono text-neutral-600">PCTL</span>
+          <span className="text-micro font-mono text-neutral-400">{percentile}%</span>
         </div>
         <div className="h-1 bg-neutral-900 relative">
           <div
             className="absolute top-0 left-0 h-full"
             style={{
               width: `${percentile}%`,
-              backgroundColor: percentile > 80 ? '#ef4444' : percentile > 60 ? '#fb923c' : percentile < 20 ? '#34d399' : '#525252',
+              backgroundColor: percentile > 80 ? 'var(--color-red-500)' : percentile > 60 ? 'var(--color-orange-400)' : percentile < 20 ? 'var(--color-emerald-400)' : 'var(--color-neutral-600)',
               opacity: 0.6,
             }}
           />
@@ -421,7 +421,7 @@ function MiniSparkline({ values, alertLevel }: { values: number[]; alertLevel: A
   }));
 
   const pathD = points.map((p, i) => (i === 0 ? `M ${p.x},${p.y}` : `L ${p.x},${p.y}`)).join(' ');
-  const strokeColor = alertLevel === 'critical' ? '#ef4444' : alertLevel === 'warning' ? '#fb923c' : alertLevel === 'watch' ? '#fbbf24' : '#525252';
+  const strokeColor = alertLevel === 'critical' ? 'var(--color-red-500)' : alertLevel === 'warning' ? 'var(--color-orange-400)' : alertLevel === 'watch' ? 'var(--color-amber-400)' : 'var(--color-neutral-600)';
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 12 }}>
@@ -459,18 +459,18 @@ function CompositeHistoryChart({ data }: { data: TailRiskData }) {
 
   // Color zone bands
   const zoneBands = [
-    { from: 0, to: 20, color: 'rgba(34,211,238,0.04)', label: 'Complacent' },
-    { from: 20, to: 40, color: 'rgba(52,211,153,0.04)', label: 'Normal' },
-    { from: 40, to: 60, color: 'rgba(251,191,36,0.04)', label: 'Elevated' },
-    { from: 60, to: 80, color: 'rgba(251,146,60,0.04)', label: 'High' },
-    { from: 80, to: 100, color: 'rgba(239,68,68,0.05)', label: 'Extreme' },
+    { from: 0, to: 20, color: 'color-mix(in srgb, var(--color-cyan-400) 4%, transparent)', label: 'Complacent' },
+    { from: 20, to: 40, color: 'color-mix(in srgb, var(--color-emerald-400) 4%, transparent)', label: 'Normal' },
+    { from: 40, to: 60, color: 'color-mix(in srgb, var(--color-amber-400) 4%, transparent)', label: 'Elevated' },
+    { from: 60, to: 80, color: 'color-mix(in srgb, var(--color-orange-400) 4%, transparent)', label: 'High' },
+    { from: 80, to: 100, color: 'color-mix(in srgb, var(--color-red-500) 5%, transparent)', label: 'Extreme' },
   ];
 
   const zoneLines = [
-    { y: 20, color: 'rgba(34,211,238,0.15)' },
-    { y: 40, color: 'rgba(52,211,153,0.15)' },
-    { y: 60, color: 'rgba(251,191,36,0.15)' },
-    { y: 80, color: 'rgba(251,146,60,0.15)' },
+    { y: 20, color: 'color-mix(in srgb, var(--color-cyan-400) 15%, transparent)' },
+    { y: 40, color: 'color-mix(in srgb, var(--color-emerald-400) 15%, transparent)' },
+    { y: 60, color: 'color-mix(in srgb, var(--color-amber-400) 15%, transparent)' },
+    { y: 80, color: 'color-mix(in srgb, var(--color-orange-400) 15%, transparent)' },
   ];
 
   const points = history.map((h, i) => ({
@@ -488,14 +488,14 @@ function CompositeHistoryChart({ data }: { data: TailRiskData }) {
 
   // Gradient-like coloring for the line: use the score of the last point
   const lastScore = points[points.length - 1].score;
-  const lineColor = lastScore >= 80 ? '#ef4444' : lastScore >= 60 ? '#fb923c' : lastScore >= 40 ? '#fbbf24' : lastScore >= 20 ? '#34d399' : '#22d3ee';
+  const lineColor = lastScore >= 80 ? 'var(--color-red-500)' : lastScore >= 60 ? 'var(--color-orange-400)' : lastScore >= 40 ? 'var(--color-amber-400)' : lastScore >= 20 ? 'var(--color-emerald-400)' : 'var(--color-cyan-400)';
 
   // Y-axis ticks
   const yTicks = [0, 20, 40, 60, 80, 100];
 
   return (
     <div className="px-3 py-2">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr(t, 'tailRiskHistory', 'Composite Score History (40d)')}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 170 }}>
@@ -531,9 +531,9 @@ function CompositeHistoryChart({ data }: { data: TailRiskData }) {
             x={PAD_X - 4}
             y={scaleY(v) + 3}
             textAnchor="end"
-            fill="rgba(255,255,255,0.2)"
+            fill="color-mix(in srgb, var(--color-white) 20%, transparent)"
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {v}
           </text>
@@ -559,7 +559,7 @@ function CompositeHistoryChart({ data }: { data: TailRiskData }) {
               cx={points[points.length - 1].x}
               cy={points[points.length - 1].y}
               r={1.5}
-              fill="#000"
+              fill="var(--color-black)"
             />
             {/* Score label */}
             <text
@@ -568,7 +568,7 @@ function CompositeHistoryChart({ data }: { data: TailRiskData }) {
               textAnchor="end"
               fill={lineColor}
               fontSize={7}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {points[points.length - 1].score}
@@ -582,9 +582,9 @@ function CompositeHistoryChart({ data }: { data: TailRiskData }) {
             x={points[0].x + 2}
             y={points[0].y - 5}
             textAnchor="start"
-            fill="rgba(255,255,255,0.4)"
+            fill="color-mix(in srgb, var(--color-white) 40%, transparent)"
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {points[0].score}
           </text>
@@ -600,9 +600,9 @@ function CompositeHistoryChart({ data }: { data: TailRiskData }) {
               x={p.x}
               y={H - 4}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.2)"
+              fill="color-mix(in srgb, var(--color-white) 20%, transparent)"
               fontSize={6}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {dateLabel}
             </text>
@@ -616,9 +616,9 @@ function CompositeHistoryChart({ data }: { data: TailRiskData }) {
             x={W - PAD_X + 3}
             y={(scaleY(z.to) + scaleY(z.from)) / 2 + 2}
             textAnchor="start"
-            fill="rgba(255,255,255,0.1)"
+            fill="color-mix(in srgb, var(--color-white) 10%, transparent)"
             fontSize={4.5}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {z.label.slice(0, 3).toUpperCase()}
           </text>

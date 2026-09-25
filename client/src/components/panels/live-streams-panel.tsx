@@ -137,9 +137,9 @@ export function LiveStreamsPanel() {
           <button
             key={s.id}
             onClick={() => setActiveStream(s)}
-            className={`px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider border transition-colors ${
+            className={`px-2 py-0.5 text-mini font-mono uppercase tracking-wider border transition-colors ${
               activeStream.id === s.id
-                ? 'bg-accent/20 border-accent text-accent'
+                ? 'bg-accent/20 border-accent text-accent-ink'
                 : 'border-border text-neutral hover:text-primary hover:border-accent/50'
             }`}
           >
@@ -153,22 +153,22 @@ export function LiveStreamsPanel() {
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <div className="w-4 h-4 border-2 border-accent/30 border-t-accent animate-spin" />
-            <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">{t('loadingStream')}</span>
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">{t('loadingStream')}</span>
           </div>
         ) : showFallback ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-            <Radio size={24} className="text-accent/40" />
-            <span className="text-[11px] font-mono text-neutral/60 uppercase tracking-widest text-center px-4">
+            <Radio size={24} className="text-accent-ink/40" />
+            <span className="text-xs font-mono text-neutral/60 uppercase tracking-widest text-center px-4">
               {activeStream.name}
             </span>
-            <span className="text-[9px] font-mono text-neutral/30 uppercase tracking-widest text-center px-4">
+            <span className="text-mini font-mono text-neutral/30 uppercase tracking-widest text-center px-4">
               {embedError ? t('embedRestricted') : t('noLiveStream')}
             </span>
             <a
               href={youtubeLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono text-accent border border-accent/40 hover:bg-accent/10 transition-colors uppercase tracking-wider"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-mini font-mono text-accent-ink border border-accent/40 hover:bg-accent/10 transition-colors uppercase tracking-wider"
             >
               <ExternalLink size={11} />
               {t('watchOnYouTube')}

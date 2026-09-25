@@ -53,7 +53,7 @@ function CurrencySelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="bg-[#0a0a0a] border border-border/40 text-neutral text-xs font-mono px-2 py-1.5 rounded focus:outline-none focus:border-cyan-400/60 cursor-pointer min-w-[160px]"
+      className="bg-raised border border-border/40 text-neutral text-xs font-mono px-2 py-1.5 rounded focus:outline-none focus:border-cyan-400/60 cursor-pointer min-w-[160px]"
     >
       {rates.map((r) => (
         <option key={r.code} value={r.code}>
@@ -137,10 +137,10 @@ export function FXConverterPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <ArrowLeftRight className="w-4 h-4 text-cyan-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-cyan-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
             {t('panelFXConverter')}
           </span>
         </div>
@@ -155,7 +155,7 @@ export function FXConverterPanel() {
       <div className="flex-1 overflow-y-auto min-h-0 p-3 space-y-4">
         {/* Converter section */}
         {!rates || rates.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {isLoading ? t('loading') : t('fxNoData')}
           </div>
         ) : (
@@ -163,7 +163,7 @@ export function FXConverterPanel() {
             <div className="space-y-3">
               {/* FROM row */}
               <div className="space-y-1">
-                <label className="text-[9px] font-mono uppercase tracking-wider text-neutral/50">
+                <label className="text-mini font-mono uppercase tracking-wider text-neutral/50">
                   {t('fxFrom')}
                 </label>
                 <div className="flex items-center gap-2">
@@ -174,7 +174,7 @@ export function FXConverterPanel() {
                     value={amount}
                     onChange={handleAmountChange}
                     placeholder="0"
-                    className="flex-1 bg-[#0a0a0a] border border-border/40 text-neutral text-lg font-mono px-3 py-1.5 rounded text-right focus:outline-none focus:border-cyan-400/60 min-w-0"
+                    className="flex-1 bg-raised border border-border/40 text-neutral text-lg font-mono px-3 py-1.5 rounded text-right focus:outline-none focus:border-cyan-400/60 min-w-0"
                   />
                 </div>
               </div>
@@ -192,12 +192,12 @@ export function FXConverterPanel() {
 
               {/* TO row */}
               <div className="space-y-1">
-                <label className="text-[9px] font-mono uppercase tracking-wider text-neutral/50">
+                <label className="text-mini font-mono uppercase tracking-wider text-neutral/50">
                   {t('fxTo')}
                 </label>
                 <div className="flex items-center gap-2">
                   <CurrencySelect value={toCode} onChange={setToCode} rates={rates} />
-                  <div className="flex-1 bg-[#0a0a0a] border border-border/20 text-cyan-400 text-lg font-mono px-3 py-1.5 rounded text-right min-w-0 truncate">
+                  <div className="flex-1 bg-raised border border-border/20 text-cyan-400 text-lg font-mono px-3 py-1.5 rounded text-right min-w-0 truncate">
                     {parsedAmount > 0 ? formatRate(convertedAmount) : '0'}
                   </div>
                 </div>
@@ -206,11 +206,11 @@ export function FXConverterPanel() {
               {/* Rate display */}
               {exchangeRate > 0 && (
                 <div className="pt-1 space-y-0.5 border-t border-border/20">
-                  <div className="text-[10px] font-mono text-neutral/60">
+                  <div className="text-mini font-mono text-neutral/60">
                     <span className="text-neutral/40">{t('fxRate')}:</span>{' '}
                     1 {fromCode} = {formatRate(exchangeRate)} {toCode}
                   </div>
-                  <div className="text-[10px] font-mono text-neutral/40">
+                  <div className="text-mini font-mono text-neutral/40">
                     <span className="text-neutral/30">{t('fxInverse')}:</span>{' '}
                     1 {toCode} = {formatRate(inverseRate)} {fromCode}
                   </div>
@@ -221,11 +221,11 @@ export function FXConverterPanel() {
             {/* Cross Rates Matrix */}
             {matrixData && (
               <div className="space-y-1.5">
-                <div className="text-[9px] font-mono uppercase tracking-wider text-neutral/50 font-bold">
+                <div className="text-mini font-mono uppercase tracking-wider text-neutral/50 font-bold">
                   {t('fxCrossRates')}
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-[9px] font-mono">
+                  <table className="w-full border-collapse text-mini font-mono">
                     <thead>
                       <tr>
                         <th className="text-left text-neutral/30 p-1 border-b border-border/20 w-10" />

@@ -14,12 +14,12 @@ interface TileData {
 
 function getHeatmapColor(change: number): string {
   if (change > 3) return '#00ff00'; // Bright Green
-  if (change > 1.5) return '#00cc00';
-  if (change > 0) return '#008800';
-  if (change === 0) return '#333333';
-  if (change > -1.5) return '#880000';
-  if (change > -3) return '#cc0000';
-  return '#ff0000'; // Bright Red
+  if (change > 1.5) return 'var(--color-green-500)';
+  if (change > 0) return 'var(--color-green-700)';
+  if (change === 0) return 'var(--color-zinc-800)';
+  if (change > -1.5) return 'var(--color-red-900)';
+  if (change > -3) return 'var(--color-red-700)';
+  return 'var(--color-red-500)'; // Bright Red
 }
 
 function computeTreemap(items: WatchlistItem[]): TileData[] {
@@ -95,7 +95,7 @@ export function MarketHeatmap() {
 
   if (tiles.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-neutral text-[10px] font-mono uppercase tracking-widest bg-black">
+      <div className="flex-1 flex items-center justify-center text-neutral text-mini font-mono uppercase tracking-widest bg-black">
         NO MARKET DATA AVAILABLE
       </div>
     );
@@ -116,15 +116,15 @@ export function MarketHeatmap() {
             backgroundColor: getHeatmapColor(tile.changePercent),
           }}
         >
-          <span className="font-mono font-bold text-black text-[12px] leading-none mix-blend-plus-lighter" style={{ color: Math.abs(tile.changePercent) > 1.5 ? '#000' : '#fff' }}>
+          <span className="font-mono font-bold text-black text-[12px] leading-none mix-blend-plus-lighter" style={{ color: Math.abs(tile.changePercent) > 1.5 ? 'var(--color-black)' : 'var(--color-white)' }}>
             {tile.symbol}
           </span>
           {tile.width > 8 && tile.height > 12 && (
             <>
-              <span className="font-mono text-[10px] mt-0.5 font-bold" style={{ color: Math.abs(tile.changePercent) > 1.5 ? '#000' : '#fff' }}>
+              <span className="font-mono text-mini mt-0.5 font-bold" style={{ color: Math.abs(tile.changePercent) > 1.5 ? 'var(--color-black)' : 'var(--color-white)' }}>
                 {tile.changePercent >= 0 ? '+' : ''}{tile.changePercent.toFixed(2)}%
               </span>
-              <span className="font-mono text-[9px] mt-0.5" style={{ color: Math.abs(tile.changePercent) > 1.5 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.7)' }}>
+              <span className="font-mono text-mini mt-0.5" style={{ color: Math.abs(tile.changePercent) > 1.5 ? 'rgba(0,0,0,0.7)' : 'color-mix(in srgb, var(--color-white) 70%, transparent)' }}>
                 {tile.price.toFixed(2)}
               </span>
             </>

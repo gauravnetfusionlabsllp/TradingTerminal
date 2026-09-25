@@ -17,16 +17,16 @@ const RANGE_TABS: { key: RangeKey; label: string }[] = [
 
 // Fibonacci level color scheme (golden/yellow accent theme)
 const LEVEL_COLORS: Record<string, { line: string; text: string; fill: string }> = {
-  '0%':    { line: '#e5e7eb', text: 'text-neutral-300', fill: 'rgba(229,231,235,0.03)' },
-  '23.6%': { line: '#a3e635', text: 'text-lime-400', fill: 'rgba(163,230,53,0.04)' },
-  '38.2%': { line: '#facc15', text: 'text-yellow-400', fill: 'rgba(250,204,21,0.05)' },
-  '50%':   { line: '#fb923c', text: 'text-orange-400', fill: 'rgba(251,146,60,0.05)' },
-  '61.8%': { line: '#f59e0b', text: 'text-amber-400', fill: 'rgba(245,158,11,0.08)' },
-  '78.6%': { line: '#ef4444', text: 'text-red-400', fill: 'rgba(239,68,68,0.05)' },
-  '100%':  { line: '#e5e7eb', text: 'text-neutral-300', fill: 'rgba(229,231,235,0.03)' },
+  '0%':    { line: 'var(--color-gray-200)', text: 'text-neutral-300', fill: 'color-mix(in srgb, var(--color-gray-200) 3%, transparent)' },
+  '23.6%': { line: 'var(--color-lime-400)', text: 'text-lime-400', fill: 'color-mix(in srgb, var(--color-lime-400) 4%, transparent)' },
+  '38.2%': { line: 'var(--color-amber-300)', text: 'text-yellow-400', fill: 'color-mix(in srgb, var(--color-amber-300) 5%, transparent)' },
+  '50%':   { line: 'var(--color-orange-400)', text: 'text-orange-400', fill: 'color-mix(in srgb, var(--color-orange-400) 5%, transparent)' },
+  '61.8%': { line: 'var(--color-amber-500)', text: 'text-amber-400', fill: 'color-mix(in srgb, var(--color-amber-500) 8%, transparent)' },
+  '78.6%': { line: 'var(--color-red-500)', text: 'text-red-400', fill: 'color-mix(in srgb, var(--color-red-500) 5%, transparent)' },
+  '100%':  { line: 'var(--color-gray-200)', text: 'text-neutral-300', fill: 'color-mix(in srgb, var(--color-gray-200) 3%, transparent)' },
 };
 
-const EXTENSION_COLOR = '#6366f1'; // indigo for extensions
+const EXTENSION_COLOR = 'var(--color-indigo-500)'; // indigo for extensions
 
 /** 7 significant digits — FX keeps its pips (1.139602), indices and crypto their cents. */
 function formatPrice(n: number): string {
@@ -106,7 +106,7 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
         const y2 = priceToY(levels[i + 1].price);
         const topY = Math.min(y1, y2);
         const h = Math.abs(y2 - y1);
-        const color = LEVEL_COLORS[level.level]?.fill || 'rgba(255,255,255,0.02)';
+        const color = LEVEL_COLORS[level.level]?.fill || 'color-mix(in srgb, var(--color-white) 2%, transparent)';
         return (
           <rect
             key={`band-${i}`}
@@ -122,7 +122,7 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
       {/* Fibonacci retracement lines */}
       {levels.map((level) => {
         const y = priceToY(level.price);
-        const color = LEVEL_COLORS[level.level]?.line || '#666';
+        const color = LEVEL_COLORS[level.level]?.line || 'var(--color-stone-500)';
         const isGolden = level.level === '61.8%';
         return (
           <g key={`level-${level.level}`}>
@@ -142,7 +142,7 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
               textAnchor="start"
               fill={color}
               fontSize="8"
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight={isGolden ? 'bold' : 'normal'}
               opacity={0.9}
             >
@@ -154,7 +154,7 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
               textAnchor="start"
               fill={color}
               fontSize="7.5"
-              fontFamily="monospace"
+              fontFamily="inherit"
               opacity={0.7}
             >
               {formatPrice(level.price)}
@@ -186,7 +186,7 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
               textAnchor="start"
               fill={EXTENSION_COLOR}
               fontSize="7.5"
-              fontFamily="monospace"
+              fontFamily="inherit"
               opacity={0.8}
             >
               {ext.level}
@@ -197,7 +197,7 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
               textAnchor="start"
               fill={EXTENSION_COLOR}
               fontSize="7"
-              fontFamily="monospace"
+              fontFamily="inherit"
               opacity={0.6}
             >
               {formatPrice(ext.price)}
@@ -207,10 +207,10 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
       })}
 
       {/* Price area fill */}
-      <path d={areaPath} fill="rgba(250,204,21,0.06)" />
+      <path d={areaPath} fill="color-mix(in srgb, var(--color-amber-300) 6%, transparent)" />
 
       {/* Price line */}
-      <path d={linePath} fill="none" stroke="#facc15" strokeWidth={1.5} opacity={0.8} />
+      <path d={linePath} fill="none" stroke="var(--color-amber-300)" strokeWidth={1.5} opacity={0.8} />
 
       {/* Current price marker */}
       <line
@@ -218,14 +218,14 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
         y1={currentY}
         x2={leftMargin + chartWidth}
         y2={currentY}
-        stroke="#818cf8"
+        stroke="var(--color-indigo-400)"
         strokeWidth={1.5}
         strokeDasharray="2,2"
         opacity={0.8}
       />
       <polygon
         points={`${leftMargin - 2},${currentY - 4} ${leftMargin + 5},${currentY} ${leftMargin - 2},${currentY + 4}`}
-        fill="#818cf8"
+        fill="var(--color-indigo-400)"
       />
       <rect
         x={leftMargin + chartWidth + 1}
@@ -233,16 +233,16 @@ function FibonacciChart({ data }: { data: FibonacciData }) {
         width={rightMargin - 4}
         height={14}
         rx={2}
-        fill="#818cf8"
+        fill="var(--color-indigo-400)"
         opacity={0.15}
       />
       <text
         x={leftMargin + chartWidth + 4}
         y={currentY + 3}
         textAnchor="start"
-        fill="#818cf8"
+        fill="var(--color-indigo-400)"
         fontSize="8.5"
-        fontFamily="monospace"
+        fontFamily="inherit"
         fontWeight="bold"
       >
         {formatPrice(currentPrice)}
@@ -277,10 +277,10 @@ function LevelsTable({
 
   return (
     <div>
-      <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider mb-1">
+      <div className="text-mini font-mono text-neutral-500 uppercase tracking-wider mb-1">
         {title}
       </div>
-      <table className="w-full text-[10px] font-mono">
+      <table className="w-full text-mini font-mono">
         <thead>
           <tr className="text-neutral-500 border-b border-white/5">
             <th className="text-left py-0.5 px-1.5 font-normal">Level</th>
@@ -316,7 +316,7 @@ function LevelsTable({
                 <td className={`py-1 px-1.5 font-semibold ${textColor}`}>
                   {level.level}
                   {isGolden && !isExtension && (
-                    <span className="ml-1 text-[7px] text-amber-400/60 font-normal">GR</span>
+                    <span className="ml-1 text-micro text-amber-400/60 font-normal">GR</span>
                   )}
                 </td>
                 <td className="text-right py-1 px-1.5 text-neutral-200">
@@ -340,7 +340,7 @@ function LevelsTable({
                 </td>
                 <td className="text-center py-1 px-1.5">
                   <span
-                    className={`text-[8px] ${
+                    className={`text-micro ${
                       isAbove ? 'text-emerald-400/60' : 'text-red-400/60'
                     }`}
                   >
@@ -380,12 +380,12 @@ function ZoneIndicator({ data }: { data: FibonacciData }) {
 
   return (
     <div className="px-3 py-2 border-t border-white/5">
-      <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider mb-1.5">
+      <div className="text-mini font-mono text-neutral-500 uppercase tracking-wider mb-1.5">
         {t('fibZone')}
       </div>
       <div className="space-y-1">
         {upperLevel && lowerLevel ? (
-          <div className="text-[10px] font-mono text-neutral-300">
+          <div className="text-mini font-mono text-neutral-300">
             <span className="text-yellow-400/80">Price is between</span>{' '}
             <span className="text-neutral-200">{upperLevel.level}</span>{' '}
             <span className="text-neutral-500">({formatPrice(upperLevel.price)})</span>{' '}
@@ -394,12 +394,12 @@ function ZoneIndicator({ data }: { data: FibonacciData }) {
             <span className="text-neutral-500">({formatPrice(lowerLevel.price)})</span>
           </div>
         ) : (
-          <div className="text-[10px] font-mono text-neutral-500">
+          <div className="text-mini font-mono text-neutral-500">
             Price outside retracement range
           </div>
         )}
         {goldenLevel && (
-          <div className="text-[10px] font-mono text-amber-400/70">
+          <div className="text-mini font-mono text-amber-400/70">
             Key {data.trend === 'uptrend' ? 'support' : 'resistance'} at 61.8%{' '}
             <span className="text-neutral-500">({formatPrice(goldenLevel.price)})</span>
           </div>
@@ -430,12 +430,12 @@ export function FibonacciPanel() {
       <div className="flex flex-col h-full bg-black">
         <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
           <GitBranch className="w-3.5 h-3.5 text-yellow-400" />
-          <span className="text-[11px] font-mono font-semibold tracking-widest text-neutral-300 uppercase">
+          <span className="text-xs font-mono font-semibold tracking-widest text-neutral-300 uppercase">
             {t('panelFibonacci')}
           </span>
         </div>
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+          <span className="text-mini font-mono text-neutral-500 uppercase tracking-widest">
             {t('fibNoSymbol')}
           </span>
         </div>
@@ -449,10 +449,10 @@ export function FibonacciPanel() {
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 shrink-0">
         <div className="flex items-center gap-2">
           <GitBranch className="w-3.5 h-3.5 text-yellow-400" />
-          <span className="text-[11px] font-mono font-semibold tracking-widest text-neutral-300 uppercase">
+          <span className="text-xs font-mono font-semibold tracking-widest text-neutral-300 uppercase">
             {t('panelFibonacci')}
           </span>
-          <span className="text-[10px] font-mono text-yellow-400">{symbol}</span>
+          <span className="text-mini font-mono text-yellow-400">{symbol}</span>
         </div>
         <button
           onClick={handleRefresh}
@@ -469,7 +469,7 @@ export function FibonacciPanel() {
           <button
             key={tab.key}
             onClick={() => setRange(tab.key)}
-            className={`flex-1 px-2 py-1.5 text-[9px] font-mono uppercase tracking-wider transition-colors ${
+            className={`flex-1 px-2 py-1.5 text-mini font-mono uppercase tracking-wider transition-colors ${
               range === tab.key
                 ? 'text-yellow-400 border-b border-yellow-400 bg-yellow-400/5'
                 : 'text-neutral-500 hover:text-neutral-300'
@@ -490,7 +490,7 @@ export function FibonacciPanel() {
       {/* Error */}
       {isError && !isLoading && (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[10px] font-mono text-red-400/70 uppercase tracking-widest">
+          <span className="text-mini font-mono text-red-400/70 uppercase tracking-widest">
             {t('fibNoData')}
           </span>
         </div>
@@ -504,7 +504,7 @@ export function FibonacciPanel() {
             <div className="flex items-center gap-3 mb-1.5">
               {/* Trend Indicator */}
               <div
-                className={`flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider ${
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-mini font-mono font-bold uppercase tracking-wider ${
                   data.trend === 'uptrend'
                     ? 'bg-emerald-500/10 text-emerald-400'
                     : 'bg-red-500/10 text-red-400'
@@ -526,24 +526,24 @@ export function FibonacciPanel() {
             {/* Swing High / Low */}
             <div className="grid grid-cols-2 gap-2">
               <div className="flex flex-col py-1 px-2 rounded bg-white/[0.03]">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase">
+                <span className="text-micro font-mono text-neutral-500 uppercase">
                   {t('fibSwingHigh')}
                 </span>
-                <span className="text-[10px] font-mono text-emerald-400">
+                <span className="text-mini font-mono text-emerald-400">
                   {formatPrice(data.swingHigh)}
                 </span>
-                <span className="text-[8px] font-mono text-neutral-600">
+                <span className="text-micro font-mono text-neutral-600">
                   {formatDate(data.swingHighDate)}
                 </span>
               </div>
               <div className="flex flex-col py-1 px-2 rounded bg-white/[0.03]">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase">
+                <span className="text-micro font-mono text-neutral-500 uppercase">
                   {t('fibSwingLow')}
                 </span>
-                <span className="text-[10px] font-mono text-red-400">
+                <span className="text-mini font-mono text-red-400">
                   {formatPrice(data.swingLow)}
                 </span>
-                <span className="text-[8px] font-mono text-neutral-600">
+                <span className="text-micro font-mono text-neutral-600">
                   {formatDate(data.swingLowDate)}
                 </span>
               </div>

@@ -33,24 +33,24 @@ function fmtPct(n: number): string {
 // ── Color helpers ──
 
 function mfiColor(mfi: number): string {
-  if (mfi <= 20) return '#4ade80'; // oversold = green (buy opportunity)
-  if (mfi <= 40) return '#86efac';
-  if (mfi <= 60) return '#fbbf24'; // neutral = amber
-  if (mfi <= 80) return '#f87171';
-  return '#ef4444'; // overbought = red
+  if (mfi <= 20) return 'var(--color-green-400)'; // oversold = green (buy opportunity)
+  if (mfi <= 40) return 'var(--color-green-300)';
+  if (mfi <= 60) return 'var(--color-amber-400)'; // neutral = amber
+  if (mfi <= 80) return 'var(--color-red-400)';
+  return 'var(--color-red-500)'; // overbought = red
 }
 
 function flowColor(n: number): string {
-  if (n > 0) return '#34d399';
-  if (n < 0) return '#f87171';
-  return 'rgba(255,255,255,0.3)';
+  if (n > 0) return 'var(--color-emerald-400)';
+  if (n < 0) return 'var(--color-red-400)';
+  return 'color-mix(in srgb, var(--color-white) 30%, transparent)';
 }
 
 function signalBadge(signal: 'inflow' | 'outflow' | 'neutral'): { text: string; color: string; bg: string } {
   switch (signal) {
-    case 'inflow': return { text: 'INFLOW', color: '#34d399', bg: 'rgba(52,211,153,0.1)' };
-    case 'outflow': return { text: 'OUTFLOW', color: '#f87171', bg: 'rgba(248,113,113,0.1)' };
-    default: return { text: 'NEUTRAL', color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.03)' };
+    case 'inflow': return { text: 'INFLOW', color: 'var(--color-emerald-400)', bg: 'color-mix(in srgb, var(--color-emerald-400) 10%, transparent)' };
+    case 'outflow': return { text: 'OUTFLOW', color: 'var(--color-red-400)', bg: 'color-mix(in srgb, var(--color-red-400) 10%, transparent)' };
+    default: return { text: 'NEUTRAL', color: 'color-mix(in srgb, var(--color-white) 40%, transparent)', bg: 'color-mix(in srgb, var(--color-white) 3%, transparent)' };
   }
 }
 
@@ -70,11 +70,11 @@ function MfiGauge({ value, size = 32 }: { value: number; size?: number }) {
   const needleY = CY - (R - 3) * Math.sin(needleAngle);
 
   const zones = [
-    { from: 0, to: 20, color: '#4ade80' },
-    { from: 20, to: 40, color: '#86efac' },
-    { from: 40, to: 60, color: '#fbbf24' },
-    { from: 60, to: 80, color: '#f87171' },
-    { from: 80, to: 100, color: '#ef4444' },
+    { from: 0, to: 20, color: 'var(--color-green-400)' },
+    { from: 20, to: 40, color: 'var(--color-green-300)' },
+    { from: 40, to: 60, color: 'var(--color-amber-400)' },
+    { from: 60, to: 80, color: 'var(--color-red-400)' },
+    { from: 80, to: 100, color: 'var(--color-red-500)' },
   ];
 
   function arcPath(fromPct: number, toPct: number): string {
@@ -93,7 +93,7 @@ function MfiGauge({ value, size = 32 }: { value: number; size?: number }) {
   return (
     <svg viewBox="0 0 100 52" width={size} height={size * 0.52}>
       {/* Background */}
-      <path d={arcPath(0, 100)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={SW} />
+      <path d={arcPath(0, 100)} fill="none" stroke="color-mix(in srgb, var(--color-white) 5%, transparent)" strokeWidth={SW} />
       {/* Zone arcs */}
       {zones.map(z => (
         <path key={z.from} d={arcPath(z.from, z.to)} fill="none" stroke={z.color} strokeWidth={SW} opacity={0.35} />
@@ -102,7 +102,7 @@ function MfiGauge({ value, size = 32 }: { value: number; size?: number }) {
       <line x1={CX} y1={CY} x2={needleX} y2={needleY} stroke={color} strokeWidth={1.5} strokeLinecap="round" />
       <circle cx={CX} cy={CY} r={2} fill={color} />
       {/* Value */}
-      <text x={CX} y={CY + 2} textAnchor="middle" fill="white" fontSize={10} fontFamily="monospace" fontWeight="900" dominantBaseline="hanging">
+      <text x={CX} y={CY + 2} textAnchor="middle" fill="white" fontSize={10} fontFamily="inherit" fontWeight="900" dominantBaseline="hanging">
         {Math.round(value)}
       </text>
     </svg>
@@ -113,13 +113,13 @@ function MfiGauge({ value, size = 32 }: { value: number; size?: number }) {
 
 function VolumeBar({ ratio }: { ratio: number }) {
   const pct = Math.min(ratio * 50, 100); // 2x avg = full bar
-  const color = ratio >= 1.5 ? '#34d399' : ratio >= 1.0 ? '#fbbf24' : 'rgba(255,255,255,0.2)';
+  const color = ratio >= 1.5 ? 'var(--color-emerald-400)' : ratio >= 1.0 ? 'var(--color-amber-400)' : 'color-mix(in srgb, var(--color-white) 20%, transparent)';
   return (
     <div className="flex items-center gap-1">
       <div className="w-12 h-1.5 bg-white/[0.03] rounded-sm overflow-hidden">
         <div className="h-full rounded-sm" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
-      <span className="text-[7px] font-mono" style={{ color }}>{ratio.toFixed(2)}x</span>
+      <span className="text-micro font-mono" style={{ color }}>{ratio.toFixed(2)}x</span>
     </div>
   );
 }
@@ -135,11 +135,11 @@ function FlowCard({ flow }: { flow: FlowData }) {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-[9px] font-black font-mono text-neutral/90">{flow.symbol}</span>
-          <span className="text-[7px] font-mono text-neutral/30 truncate max-w-[60px]">{flow.name}</span>
+          <span className="text-mini font-black font-mono text-neutral/90">{flow.symbol}</span>
+          <span className="text-micro font-mono text-neutral/30 truncate max-w-[60px]">{flow.name}</span>
         </div>
         <span
-          className="text-[6px] font-black font-mono uppercase px-1.5 py-0.5 rounded-sm"
+          className="text-micro font-black font-mono uppercase px-1.5 py-0.5 rounded-sm"
           style={{ color: badge.color, backgroundColor: badge.bg }}
         >
           {badge.text}
@@ -149,8 +149,8 @@ function FlowCard({ flow }: { flow: FlowData }) {
       {/* Price + MFI row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono font-bold text-neutral/80">${fmtPrice(flow.price)}</span>
-          <span className={`text-[8px] font-mono font-bold ${changeColor}`}>{fmtPct(flow.change)}</span>
+          <span className="text-mini font-mono font-bold text-neutral/80">${fmtPrice(flow.price)}</span>
+          <span className={`text-micro font-mono font-bold ${changeColor}`}>{fmtPct(flow.change)}</span>
         </div>
         <MfiGauge value={flow.mfi} size={28} />
       </div>
@@ -159,20 +159,20 @@ function FlowCard({ flow }: { flow: FlowData }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex flex-col">
-            <span className="text-[6px] font-mono text-neutral/30 uppercase">5D FLOW</span>
-            <span className="text-[8px] font-mono font-bold" style={{ color: flowColor(flow.netFlow5d) }}>
+            <span className="text-micro font-mono text-neutral/30 uppercase">5D FLOW</span>
+            <span className="text-micro font-mono font-bold" style={{ color: flowColor(flow.netFlow5d) }}>
               {fmtFlowSigned(flow.netFlow5d)}
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[6px] font-mono text-neutral/30 uppercase">1D FLOW</span>
-            <span className="text-[8px] font-mono font-bold" style={{ color: flowColor(flow.netFlow1d) }}>
+            <span className="text-micro font-mono text-neutral/30 uppercase">1D FLOW</span>
+            <span className="text-micro font-mono font-bold" style={{ color: flowColor(flow.netFlow1d) }}>
               {fmtFlowSigned(flow.netFlow1d)}
             </span>
           </div>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-[6px] font-mono text-neutral/30 uppercase">VOL/AVG</span>
+          <span className="text-micro font-mono text-neutral/30 uppercase">VOL/AVG</span>
           <VolumeBar ratio={flow.volumeRatio} />
         </div>
       </div>
@@ -198,15 +198,15 @@ function SectorBarChart({ flows }: { flows: FlowData[] }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 280 }}>
       {/* Center line */}
-      <line x1={CENTER_X} y1={0} x2={CENTER_X} y2={H} stroke="rgba(255,255,255,0.08)" strokeWidth={0.5} />
+      <line x1={CENTER_X} y1={0} x2={CENTER_X} y2={H} stroke="color-mix(in srgb, var(--color-white) 8%, transparent)" strokeWidth={0.5} />
 
       {sorted.map((flow, i) => {
         const y = i * (BAR_HEIGHT + GAP) + 2;
         const barW = (Math.abs(flow.netFlow5d) / maxFlow) * (CHART_W / 2 - 4);
         const isPositive = flow.netFlow5d >= 0;
         const barX = isPositive ? CENTER_X : CENTER_X - barW;
-        const color = isPositive ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)';
-        const textColor = isPositive ? '#34d399' : '#f87171';
+        const color = isPositive ? 'color-mix(in srgb, var(--color-emerald-400) 70%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 70%, transparent)';
+        const textColor = isPositive ? 'var(--color-emerald-400)' : 'var(--color-red-400)';
 
         return (
           <g key={flow.symbol}>
@@ -215,9 +215,9 @@ function SectorBarChart({ flows }: { flows: FlowData[] }) {
               x={LABEL_W - 4}
               y={y + BAR_HEIGHT / 2 + 3}
               textAnchor="end"
-              fill="rgba(255,255,255,0.6)"
+              fill="color-mix(in srgb, var(--color-white) 60%, transparent)"
               fontSize={7}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {flow.symbol}
@@ -233,7 +233,7 @@ function SectorBarChart({ flows }: { flows: FlowData[] }) {
               textAnchor="start"
               fill={textColor}
               fontSize={7}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {fmtFlowSigned(flow.netFlow5d)}
@@ -257,7 +257,7 @@ function FixedIncomeTab({ flows, allFlows }: { flows: FlowData[]; allFlows: Flow
   const tltFlow = tlt?.netFlow5d ?? 0;
 
   const riskSignal = hygFlow > tltFlow ? 'RISK-ON' : hygFlow < tltFlow ? 'RISK-OFF' : 'NEUTRAL';
-  const riskColor = riskSignal === 'RISK-ON' ? '#34d399' : riskSignal === 'RISK-OFF' ? '#f87171' : '#fbbf24';
+  const riskColor = riskSignal === 'RISK-ON' ? 'var(--color-emerald-400)' : riskSignal === 'RISK-OFF' ? 'var(--color-red-400)' : 'var(--color-amber-400)';
 
   // Overall equity vs bond flow for risk appetite
   const equityFlows = allFlows.filter(f => f.category === 'index' || f.category === 'sector');
@@ -270,12 +270,12 @@ function FixedIncomeTab({ flows, allFlows }: { flows: FlowData[]; allFlows: Flow
       {/* Risk indicator */}
       <div className="px-3 py-2 border-b border-border/20">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
             {tr(t, 'mfBondRisk', 'Credit Risk Signal')}
           </span>
-          <span className="text-[10px] font-black font-mono" style={{ color: riskColor }}>{riskSignal}</span>
+          <span className="text-mini font-black font-mono" style={{ color: riskColor }}>{riskSignal}</span>
         </div>
-        <div className="flex items-center gap-2 text-[7px] font-mono text-neutral/30">
+        <div className="flex items-center gap-2 text-micro font-mono text-neutral/30">
           <span>HYG 5D: <span style={{ color: flowColor(hygFlow) }}>{fmtFlowSigned(hygFlow)}</span></span>
           <span>|</span>
           <span>TLT 5D: <span style={{ color: flowColor(tltFlow) }}>{fmtFlowSigned(tltFlow)}</span></span>
@@ -284,14 +284,14 @@ function FixedIncomeTab({ flows, allFlows }: { flows: FlowData[]; allFlows: Flow
 
       {/* Equity vs Bond flow comparison */}
       <div className="px-3 py-1">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
           {tr(t, 'mfFlowComparison', 'Equity vs Bond Flows (5D)')}
         </span>
         <div className="flex items-center gap-2 mt-1">
           <div className="flex-1">
             <div className="flex items-center justify-between mb-0.5">
-              <span className="text-[7px] font-mono text-neutral/30">EQUITY</span>
-              <span className="text-[8px] font-mono font-bold" style={{ color: flowColor(totalEquityFlow) }}>
+              <span className="text-micro font-mono text-neutral/30">EQUITY</span>
+              <span className="text-micro font-mono font-bold" style={{ color: flowColor(totalEquityFlow) }}>
                 {fmtFlowSigned(totalEquityFlow)}
               </span>
             </div>
@@ -305,8 +305,8 @@ function FixedIncomeTab({ flows, allFlows }: { flows: FlowData[]; allFlows: Flow
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-0.5">
-              <span className="text-[7px] font-mono text-neutral/30">BOND</span>
-              <span className="text-[8px] font-mono font-bold" style={{ color: flowColor(totalBondFlow) }}>
+              <span className="text-micro font-mono text-neutral/30">BOND</span>
+              <span className="text-micro font-mono font-bold" style={{ color: flowColor(totalBondFlow) }}>
                 {fmtFlowSigned(totalBondFlow)}
               </span>
             </div>
@@ -323,7 +323,7 @@ function FixedIncomeTab({ flows, allFlows }: { flows: FlowData[]; allFlows: Flow
 
       {/* Bond ETF cards */}
       <div className="px-3 py-1">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1 block">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1 block">
           {tr(t, 'mfBondEtfs', 'Bond ETF Flows')}
         </span>
         <div className="flex flex-col gap-1">
@@ -349,13 +349,13 @@ function FlowSummary({ flows }: { flows: FlowData[] }) {
   let riskColor: string;
   if (totalEquity > 0 && totalEquity > Math.abs(totalBond)) {
     riskAppetite = 'HIGH';
-    riskColor = '#34d399';
+    riskColor = 'var(--color-emerald-400)';
   } else if (totalBond > 0 && totalBond > Math.abs(totalEquity)) {
     riskAppetite = 'LOW';
-    riskColor = '#f87171';
+    riskColor = 'var(--color-red-400)';
   } else {
     riskAppetite = 'MODERATE';
-    riskColor = '#fbbf24';
+    riskColor = 'var(--color-amber-400)';
   }
 
   // Top inflows / outflows
@@ -370,18 +370,18 @@ function FlowSummary({ flows }: { flows: FlowData[] }) {
     <div className="border-t border-border/20 px-3 py-2 flex flex-col gap-1.5">
       {/* Risk Appetite */}
       <div className="flex items-center justify-between">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
           {tr(t, 'mfRiskAppetite', 'Risk Appetite')}
         </span>
-        <span className="text-[10px] font-black font-mono" style={{ color: riskColor }}>{riskAppetite}</span>
+        <span className="text-mini font-black font-mono" style={{ color: riskColor }}>{riskAppetite}</span>
       </div>
 
       {/* Total Market Flow */}
       <div className="flex items-center justify-between">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
           {tr(t, 'mfTotalFlow', 'Total Market Flow (5D)')}
         </span>
-        <span className="text-[9px] font-mono font-bold" style={{ color: flowColor(totalFlow) }}>
+        <span className="text-mini font-mono font-bold" style={{ color: flowColor(totalFlow) }}>
           {fmtFlowSigned(totalFlow)}
         </span>
       </div>
@@ -391,30 +391,30 @@ function FlowSummary({ flows }: { flows: FlowData[] }) {
         <div className="flex-1">
           <div className="flex items-center gap-1 mb-0.5">
             <TrendingUp className="w-2.5 h-2.5 text-emerald-400" />
-            <span className="text-[7px] font-mono text-emerald-400/70 uppercase">
+            <span className="text-micro font-mono text-emerald-400/70 uppercase">
               {tr(t, 'mfTopInflows', 'Top Inflows')}
             </span>
           </div>
-          {topInflows.length === 0 && <span className="text-[7px] font-mono text-neutral/20">None</span>}
+          {topInflows.length === 0 && <span className="text-micro font-mono text-neutral/20">None</span>}
           {topInflows.map(f => (
             <div key={f.symbol} className="flex items-center justify-between py-0.5">
-              <span className="text-[8px] font-mono font-bold text-neutral/60">{f.symbol}</span>
-              <span className="text-[8px] font-mono font-bold text-emerald-400">{fmtFlowSigned(f.netFlow5d)}</span>
+              <span className="text-micro font-mono font-bold text-neutral/60">{f.symbol}</span>
+              <span className="text-micro font-mono font-bold text-emerald-400">{fmtFlowSigned(f.netFlow5d)}</span>
             </div>
           ))}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-1 mb-0.5">
             <TrendingDown className="w-2.5 h-2.5 text-red-400" />
-            <span className="text-[7px] font-mono text-red-400/70 uppercase">
+            <span className="text-micro font-mono text-red-400/70 uppercase">
               {tr(t, 'mfTopOutflows', 'Top Outflows')}
             </span>
           </div>
-          {topOutflows.length === 0 && <span className="text-[7px] font-mono text-neutral/20">None</span>}
+          {topOutflows.length === 0 && <span className="text-micro font-mono text-neutral/20">None</span>}
           {topOutflows.map(f => (
             <div key={f.symbol} className="flex items-center justify-between py-0.5">
-              <span className="text-[8px] font-mono font-bold text-neutral/60">{f.symbol}</span>
-              <span className="text-[8px] font-mono font-bold text-red-400">{fmtFlowSigned(f.netFlow5d)}</span>
+              <span className="text-micro font-mono font-bold text-neutral/60">{f.symbol}</span>
+              <span className="text-micro font-mono font-bold text-red-400">{fmtFlowSigned(f.netFlow5d)}</span>
             </div>
           ))}
         </div>
@@ -436,10 +436,10 @@ function SummaryBar({ flows }: { flows: FlowData[] }) {
   return (
     <div className="px-3 py-1.5 border-b border-border/20">
       <div className="flex items-center justify-between mb-0.5">
-        <span className="text-[7px] font-mono text-emerald-400">
+        <span className="text-micro font-mono text-emerald-400">
           INFLOWS: {inflows.length} ETFs | {fmtFlowSigned(totalIn)}
         </span>
-        <span className="text-[7px] font-mono text-red-400">
+        <span className="text-micro font-mono text-red-400">
           OUTFLOWS: {outflows.length} ETFs | -${fmtFlow(totalOut)}
         </span>
       </div>
@@ -465,7 +465,7 @@ function OverviewTab({ flows }: { flows: FlowData[] }) {
 
       {/* Index ETFs */}
       <div className="px-3 py-1">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
           {tr(t, 'mfMajorIndices', 'Major Indices')}
         </span>
         <div className="grid grid-cols-2 gap-1 mt-1">
@@ -475,7 +475,7 @@ function OverviewTab({ flows }: { flows: FlowData[] }) {
 
       {/* Commodities */}
       <div className="px-3 py-1">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
           {tr(t, 'mfCommodities', 'Commodities')}
         </span>
         <div className="grid grid-cols-3 gap-1 mt-1">
@@ -485,7 +485,7 @@ function OverviewTab({ flows }: { flows: FlowData[] }) {
 
       {/* International */}
       <div className="px-3 py-1">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
           {tr(t, 'mfInternational', 'International')}
         </span>
         <div className="grid grid-cols-2 gap-1 mt-1">
@@ -509,7 +509,7 @@ function SectorsTab({ flows }: { flows: FlowData[] }) {
     <div className="flex flex-col gap-1.5">
       {/* Bar chart */}
       <div className="px-3 py-2">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
           {tr(t, 'mfSectorNetFlows', 'Sector Net Flows (5D)')}
         </span>
         <div className="mt-1.5">
@@ -519,11 +519,11 @@ function SectorsTab({ flows }: { flows: FlowData[] }) {
 
       {/* MFI table */}
       <div className="px-3 py-1 border-t border-border/20">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1 block">
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1 block">
           {tr(t, 'mfSectorDetails', 'Sector Detail')}
         </span>
         {/* Table header */}
-        <div className="flex items-center py-0.5 border-b border-border/10 text-[7px] font-mono text-neutral/30 uppercase">
+        <div className="flex items-center py-0.5 border-b border-border/10 text-micro font-mono text-neutral/30 uppercase">
           <span className="w-10">SYM</span>
           <span className="flex-1">NAME</span>
           <span className="w-14 text-right">PRICE</span>
@@ -536,7 +536,7 @@ function SectorsTab({ flows }: { flows: FlowData[] }) {
           const badge = signalBadge(f.signal);
           const changeColor = f.change >= 0 ? 'text-emerald-400' : 'text-red-400';
           return (
-            <div key={f.symbol} className="flex items-center py-0.5 border-b border-border/5 text-[8px] font-mono">
+            <div key={f.symbol} className="flex items-center py-0.5 border-b border-border/5 text-micro font-mono">
               <span className="w-10 font-bold text-neutral/80">{f.symbol}</span>
               <span className="flex-1 text-neutral/40 truncate">{f.name}</span>
               <span className="w-14 text-right text-neutral/60">${fmtPrice(f.price)}</span>
@@ -545,7 +545,7 @@ function SectorsTab({ flows }: { flows: FlowData[] }) {
               <span className="w-16 text-right font-bold" style={{ color: flowColor(f.netFlow5d) }}>
                 {fmtFlowSigned(f.netFlow5d)}
               </span>
-              <span className="w-12 text-right text-[6px] font-black" style={{ color: badge.color }}>{badge.text}</span>
+              <span className="w-12 text-right text-micro font-black" style={{ color: badge.color }}>{badge.text}</span>
             </div>
           );
         })}
@@ -570,18 +570,18 @@ export function MoneyFlowPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <svg viewBox="0 0 16 16" className="w-4 h-4">
-            <path d="M2 14V2h2v5l3-3 3 3V2h2v12" fill="none" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M2 14V2h2v5l3-3 3 3V2h2v12" fill="none" stroke="var(--color-emerald-400)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-emerald-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-emerald-400">
             {tr(t, 'mfTitle', 'Money Flow')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {data && (
-            <span className="text-[7px] font-mono text-neutral/20">
+            <span className="text-micro font-mono text-neutral/20">
               {new Date(data.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -597,7 +597,7 @@ export function MoneyFlowPanel() {
           <button
             key={tb.key}
             onClick={() => setTab(tb.key)}
-            className={`flex-1 py-1 text-[8px] font-black font-mono uppercase tracking-wider transition-colors ${
+            className={`flex-1 py-1 text-micro font-black font-mono uppercase tracking-wider transition-colors ${
               tab === tb.key
                 ? 'text-emerald-400 border-b border-emerald-400'
                 : 'text-neutral/30 hover:text-neutral/60'
@@ -614,7 +614,7 @@ export function MoneyFlowPanel() {
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-2">
               <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
-              <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+              <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
                 {tr(t, 'loading', 'Loading...')}
               </span>
             </div>
@@ -631,7 +631,7 @@ export function MoneyFlowPanel() {
             )}
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-[10px] font-mono text-neutral/40 uppercase">
+          <div className="flex items-center justify-center h-full text-mini font-mono text-neutral/40 uppercase">
             {tr(t, 'mfNoData', 'No data available')}
           </div>
         )}

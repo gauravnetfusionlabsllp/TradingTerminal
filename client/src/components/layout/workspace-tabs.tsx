@@ -11,7 +11,7 @@ import { ConfirmDialog } from '../common/confirm-dialog';
 import { cn } from '../common/glass-card';
 
 const NO_SPACE = { list: [] as Workspace[], active: 'trade' };
-const TAB = 'relative shrink-0 flex items-center gap-1.5 px-3 text-[10px] font-mono font-bold uppercase tracking-widest whitespace-nowrap';
+const TAB = 'relative shrink-0 flex items-center gap-1.5 px-3 text-xs whitespace-nowrap';
 
 /** Close on outside mousedown or Escape */
 function useDismiss(ref: React.RefObject<HTMLElement | null>, open: boolean, close: () => void) {
@@ -92,15 +92,15 @@ export function WorkspaceTabs() {
               }}
               onContextMenu={(e) => { e.preventDefault(); switchTo(w.key); openMenu(w.key, e.currentTarget); }}
               onDoubleClick={() => { if (!w.preset) { setMenu(null); setEditing(w.key); } }}
-              className={cn(TAB, 'transition-colors', on ? 'text-white' : 'text-neutral/45 hover:text-neutral')}
+              className={cn(TAB, 'transition-colors', on ? 'text-fg font-semibold bg-hover' : 'text-neutral hover:text-fg')}
             >
               <span className="max-w-[12rem] truncate">{label}</span>
-              {isModified(w) && <span title={t('wsModified')} aria-label={t('wsModified')} className="w-1 h-1 bg-accent" />}
-              {on && <ChevronDown aria-hidden className="w-3 h-3 -mr-1 text-neutral/50" />}
+              {isModified(w) && <span title={t('wsModified')} aria-label={t('wsModified')} className="w-1 h-1 rounded-full bg-accent" />}
+              {on && <ChevronDown aria-hidden className="w-3 h-3 -mr-1 text-neutral" />}
               {on && (
                 <motion.span
                   layoutId="ws-active-bar"
-                  className="absolute inset-x-0 bottom-0 h-0.5 bg-accent"
+                  className="absolute top-0 right-0 w-[7px] h-[7px] bg-accent [clip-path:polygon(0_0,100%_0,100%_100%)]"
                   transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 520, damping: 42 }}
                 />
               )}
@@ -115,7 +115,7 @@ export function WorkspaceTabs() {
           aria-label={t('wsNew')}
           aria-expanded={adding}
           title={t('wsNew')}
-          className={cn('p-1 border border-transparent hover:border-border hover:text-accent transition-colors', adding ? 'text-accent border-border' : 'text-neutral/50')}
+          className={cn('grid place-items-center h-7 w-7 transition-colors', adding ? 'text-fg bg-hover' : 'text-neutral hover:text-fg hover:bg-hover')}
         >
           <Plus className="w-3.5 h-3.5" />
         </button>
@@ -123,7 +123,7 @@ export function WorkspaceTabs() {
       </div>
 
       {menu && menuWs && (
-        <div ref={menuRef} role="menu" onKeyDown={onMenuKey} style={{ left: menu.x, top: menu.y }} className="fixed z-50 min-w-[11rem] bg-black border border-border py-1 animate-pop">
+        <div ref={menuRef} role="menu" onKeyDown={onMenuKey} style={{ left: menu.x, top: menu.y }} className="fixed z-50 min-w-[11rem] bg-raised border border-border rounded-sm shadow-[0_12px_32px_rgb(0_0_0/0.3)] py-1 animate-pop">
           {!menuWs.preset && <MenuItem onClick={() => { setMenu(null); setEditing(menuWs.key); }}>{t('wsRename')}</MenuItem>}
           <MenuItem
             disabled={customs >= MAX_CUSTOM}
@@ -168,8 +168,8 @@ function MenuItem({ children, danger, ...rest }: { children: ReactNode; danger?:
       role="menuitem"
       {...rest}
       className={cn(
-        'block w-full text-left px-3 py-1.5 text-[11px] font-mono whitespace-nowrap disabled:opacity-30 disabled:pointer-events-none',
-        danger ? 'text-bearish hover:bg-bearish/10' : 'text-neutral hover:text-white hover:bg-white/5',
+        'block w-full text-left px-3 py-1.5 text-xs whitespace-nowrap disabled:opacity-30 disabled:pointer-events-none',
+        danger ? 'text-bearish hover:bg-bearish/10' : 'text-fg hover:bg-hover',
       )}
     >
       {children}
@@ -191,7 +191,7 @@ function RenameInput({ initial, label, onDone }: { initial: string; label: strin
         if (e.key === 'Enter') e.currentTarget.blur();
         if (e.key === 'Escape') { cancelled.current = true; e.currentTarget.blur(); }
       }}
-      className="shrink-0 w-36 self-center mx-1 bg-black border border-accent px-1.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest text-white outline-none"
+      className="shrink-0 w-36 self-center mx-1 bg-panel border border-accent px-1.5 py-0.5 text-xs text-fg outline-none"
     />
   );
 }
@@ -217,42 +217,42 @@ function NewWorkspace({ full, onCreate }: { full: boolean; onCreate: (name: stri
   };
 
   return (
-    <form onSubmit={submit} aria-label={t('wsNew')} className="absolute left-0 top-full mt-1 z-50 w-[26rem] max-w-[calc(100vw-1rem)] bg-black border border-border p-3 flex flex-col gap-3 animate-pop">
-      <span className="text-[9px] font-black uppercase tracking-[0.15em] text-accent">{t('wsNew')}</span>
+    <form onSubmit={submit} aria-label={t('wsNew')} className="absolute left-0 top-full mt-1 z-50 w-[26rem] max-w-[calc(100vw-1rem)] bg-raised border border-border rounded-sm shadow-[0_12px_32px_rgb(0_0_0/0.3)] p-4 flex flex-col gap-3 animate-pop">
+      <span className="text-xs font-semibold text-fg">{t('wsNew')}</span>
 
       <label className="flex flex-col gap-1">
-        <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-neutral/60">{t('wsName')}</span>
+        <span className="text-mini text-neutral">{t('wsName')}</span>
         <input
           autoFocus
           value={name}
           maxLength={40}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('wsNamePlaceholder')}
-          className="bg-black border border-border px-2 py-1.5 text-[11px] font-mono text-white placeholder:text-neutral/30 outline-none"
+          className="bg-panel border border-border rounded-sm px-2 h-8 text-xs text-fg outline-none"
         />
       </label>
 
       <div className="flex flex-col gap-1.5">
-        <span id="ws-start-from" className="text-[9px] font-mono font-bold uppercase tracking-wider text-neutral/60">{t('wsStartFrom')}</span>
+        <span id="ws-start-from" className="text-mini text-neutral">{t('wsStartFrom')}</span>
         <div role="radiogroup" aria-labelledby="ws-start-from" className="grid grid-cols-4 gap-2">
           {options.map((o) => {
             const on = from === o.id;
             return (
               <button key={o.id} type="button" role="radio" aria-checked={on} onClick={() => setFrom(o.id)} className="group flex flex-col gap-1 text-left">
-                <LayoutThumb layout={o.layout} className={cn('h-14 w-full p-px gap-px border transition-colors', on ? 'border-accent' : 'border-border/40 group-hover:border-neutral/60')} />
-                <span className={cn('text-[9px] font-mono font-bold uppercase tracking-wider truncate', on ? 'text-accent' : 'text-neutral/60')}>{o.label}</span>
+                <LayoutThumb layout={o.layout} className={cn('h-14 w-full p-px gap-px border transition-colors', on ? 'border-accent' : 'border-border group-hover:border-neutral/60')} />
+                <span className={cn('text-mini truncate', on ? 'text-accent-ink font-medium' : 'text-neutral')}>{o.label}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {full && <p className="text-[10px] font-mono text-bearish">{t('wsLimit')}</p>}
+      {full && <p className="text-mini text-bearish">{t('wsLimit')}</p>}
 
       <button
         type="submit"
         disabled={!name.trim() || full}
-        className="self-end px-3 py-1.5 bg-accent text-black text-[10px] font-mono font-black uppercase tracking-widest disabled:opacity-30"
+        className="self-end h-8 px-4 bg-accent text-on-accent text-xs font-semibold rounded-sm disabled:opacity-30"
       >
         {t('wsCreate')}
       </button>

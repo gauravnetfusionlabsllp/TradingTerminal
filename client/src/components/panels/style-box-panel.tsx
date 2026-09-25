@@ -10,7 +10,7 @@ import { Grid3x3, RefreshCw, ArrowRight } from 'lucide-react';
 
 // ── Constants ──
 
-const ACCENT = '#6366f1'; // indigo-400
+const ACCENT = 'var(--color-indigo-500)'; // indigo-400
 
 type View = 'GRID' | 'TABLE' | 'ROTATION';
 type ReturnPeriod = '1D' | '1W' | '1M' | '3M' | 'YTD' | '1Y';
@@ -40,9 +40,9 @@ type SortKey =
 // ── Color Helpers ──
 
 function getReturnColor(ret: number): string {
-  if (ret > 0) return '#22c55e';
-  if (ret < 0) return '#ef4444';
-  return '#71717a';
+  if (ret > 0) return 'var(--color-green-500)';
+  if (ret < 0) return 'var(--color-red-500)';
+  return 'var(--color-zinc-500)';
 }
 
 function fmtPct(n: number): string {
@@ -67,17 +67,17 @@ function getCellReturn(cell: StyleCell, period: ReturnPeriod): number {
 
 function getHeatIntensity(value: number, min: number, max: number): string {
   const range = max - min;
-  if (range === 0) return 'rgba(63,63,70,0.3)';
+  if (range === 0) return 'color-mix(in srgb, var(--color-zinc-700) 30%, transparent)';
 
   if (value > 0) {
     const intensity = Math.min(value / (max || 1), 1);
-    return `rgba(34,197,94,${0.1 + intensity * 0.6})`;
+    return `color-mix(in srgb, var(--color-green-500) calc((${0.1 + intensity * 0.6}) * 100%), transparent)`;
   }
   if (value < 0) {
     const intensity = Math.min(Math.abs(value) / (Math.abs(min) || 1), 1);
-    return `rgba(239,68,68,${0.1 + intensity * 0.6})`;
+    return `color-mix(in srgb, var(--color-red-500) calc((${0.1 + intensity * 0.6}) * 100%), transparent)`;
   }
-  return 'rgba(63,63,70,0.2)';
+  return 'color-mix(in srgb, var(--color-zinc-700) 20%, transparent)';
 }
 
 function styleLabelFromKey(style: string): string {
@@ -108,7 +108,7 @@ function MiniSparkline({ data, width = 36, height = 12 }: { data: number[]; widt
 
   const lastVal = data[data.length - 1];
   const firstVal = data[0];
-  const color = lastVal >= firstVal ? ACCENT : '#ef4444';
+  const color = lastVal >= firstVal ? ACCENT : 'var(--color-red-500)';
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
@@ -133,7 +133,7 @@ function StrengthBar({ value }: { value: number }) {
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-      <rect x={0} y={0} width={W} height={H} fill="rgba(255,255,255,0.05)" />
+      <rect x={0} y={0} width={W} height={H} fill="color-mix(in srgb, var(--color-white) 5%, transparent)" />
       <rect x={0} y={0} width={(clamped / 100) * W} height={H} fill={ACCENT} opacity={0.8} />
     </svg>
   );
@@ -150,20 +150,20 @@ function SpreadBar({ label, value }: { label: string; value: number }) {
   const barWidth = (Math.abs(clamped) / maxSpread) * (W / 2 - 2);
   const isPositive = clamped >= 0;
   const barX = isPositive ? CENTER : CENTER - barWidth;
-  const color = isPositive ? '#22c55e' : '#ef4444';
+  const color = isPositive ? 'var(--color-green-500)' : 'var(--color-red-500)';
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[7px] font-mono text-neutral-500 uppercase w-[80px] text-right shrink-0">
+      <span className="text-micro font-mono text-neutral-500 uppercase w-[80px] text-right shrink-0">
         {label}
       </span>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-        <rect x={0} y={0} width={W} height={H} fill="rgba(255,255,255,0.03)" />
-        <line x1={CENTER} y1={0} x2={CENTER} y2={H} stroke="rgba(255,255,255,0.15)" strokeWidth={0.5} />
+        <rect x={0} y={0} width={W} height={H} fill="color-mix(in srgb, var(--color-white) 3%, transparent)" />
+        <line x1={CENTER} y1={0} x2={CENTER} y2={H} stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth={0.5} />
         <rect x={barX} y={1} width={Math.max(barWidth, 0.5)} height={H - 2} fill={color} opacity={0.7} />
       </svg>
       <span
-        className="text-[8px] font-mono font-bold tabular-nums w-[50px]"
+        className="text-micro font-mono font-bold tabular-nums w-[50px]"
         style={{ color }}
       >
         {fmtPct(value)}
@@ -213,7 +213,7 @@ function GridView({ data, period }: { data: StyleBoxResponse; period: ReturnPeri
         <div />
         {STYLE_LABELS.map((label) => (
           <div key={label} className="text-center">
-            <span className="text-[7px] font-mono font-black uppercase tracking-widest text-neutral-600">
+            <span className="text-micro font-mono font-black uppercase tracking-widest text-neutral-600">
               {label}
             </span>
           </div>
@@ -225,7 +225,7 @@ function GridView({ data, period }: { data: StyleBoxResponse; period: ReturnPeri
         <div key={sizeLabel} className="grid grid-cols-[32px_1fr_1fr_1fr] gap-0">
           {/* Left axis label */}
           <div className="flex items-center justify-end pr-1.5">
-            <span className="text-[7px] font-mono font-black uppercase tracking-wider text-neutral-600 [writing-mode:horizontal-tb]">
+            <span className="text-micro font-mono font-black uppercase tracking-wider text-neutral-600 [writing-mode:horizontal-tb]">
               {sizeLabel}
             </span>
           </div>
@@ -245,14 +245,14 @@ function GridView({ data, period }: { data: StyleBoxResponse; period: ReturnPeri
                 style={{ backgroundColor: bg }}
               >
                 <div className="flex flex-col">
-                  <span className="text-[7px] font-mono font-bold text-neutral-300 uppercase leading-tight">
+                  <span className="text-micro font-mono font-bold text-neutral-300 uppercase leading-tight">
                     {cell.label}
                   </span>
-                  <span className="text-[6px] font-mono text-neutral-500">{cell.etf}</span>
+                  <span className="text-micro font-mono text-neutral-500">{cell.etf}</span>
                 </div>
                 <div className="flex flex-col items-end">
                   <span
-                    className="text-[10px] font-mono font-black tabular-nums"
+                    className="text-mini font-mono font-black tabular-nums"
                     style={{ color: getReturnColor(ret) }}
                   >
                     {fmtPct(ret)}
@@ -344,7 +344,7 @@ function TableView({ data }: { data: StyleBoxResponse }) {
 
   return (
     <div className="flex-1 overflow-auto no-scrollbar">
-      <table className="w-full text-[7px] font-mono">
+      <table className="w-full text-micro font-mono">
         <thead>
           <tr className="border-b border-border/30 sticky top-0 bg-black z-10">
             {headers.map((h) => (
@@ -422,12 +422,12 @@ function RotationView({ data }: { data: StyleBoxResponse }) {
   return (
     <div className="flex-1 overflow-auto no-scrollbar px-2 py-2">
       {/* Rotation Signals */}
-      <div className="text-[7px] font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1">
         {tr(t, 'sbRotationSignals', 'Rotation Signals')}
       </div>
 
       {data.rotation.length === 0 ? (
-        <div className="text-center py-4 text-[9px] font-mono text-neutral-600 uppercase">
+        <div className="text-center py-4 text-mini font-mono text-neutral-600 uppercase">
           {tr(t, 'sbNoRotation', 'No significant rotation detected')}
         </div>
       ) : (
@@ -439,11 +439,11 @@ function RotationView({ data }: { data: StyleBoxResponse }) {
             >
               {/* From -> To */}
               <div className="flex items-center gap-1 shrink-0">
-                <span className="text-[8px] font-mono font-bold text-red-400 uppercase">
+                <span className="text-micro font-mono font-bold text-red-400 uppercase">
                   {styleLabelFromKey(signal.from)}
                 </span>
                 <ArrowRight className="w-3 h-3 text-neutral-600" />
-                <span className="text-[8px] font-mono font-bold text-green-400 uppercase">
+                <span className="text-micro font-mono font-bold text-green-400 uppercase">
                   {styleLabelFromKey(signal.to)}
                 </span>
               </div>
@@ -454,12 +454,12 @@ function RotationView({ data }: { data: StyleBoxResponse }) {
               </div>
 
               {/* Strength label */}
-              <span className="text-[7px] font-mono font-bold tabular-nums shrink-0" style={{ color: ACCENT }}>
+              <span className="text-micro font-mono font-bold tabular-nums shrink-0" style={{ color: ACCENT }}>
                 {signal.strength.toFixed(0)}
               </span>
 
               {/* Description */}
-              <span className="text-[7px] font-mono text-neutral-500 truncate flex-1">
+              <span className="text-micro font-mono text-neutral-500 truncate flex-1">
                 {signal.description}
               </span>
             </div>
@@ -468,7 +468,7 @@ function RotationView({ data }: { data: StyleBoxResponse }) {
       )}
 
       {/* Spread Charts */}
-      <div className="text-[7px] font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1 mt-3">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1 mt-3">
         {tr(t, 'sbStyleSpreads', 'Style Spreads (YTD)')}
       </div>
 
@@ -478,14 +478,14 @@ function RotationView({ data }: { data: StyleBoxResponse }) {
       </div>
 
       {/* Style performance ranking */}
-      <div className="text-[7px] font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1 mt-4">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1 mt-4">
         {tr(t, 'sbYtdRanking', 'YTD Performance Ranking')}
       </div>
 
       <RankingBars cells={data.cells} />
 
       {/* Timestamp */}
-      <div className="mt-3 text-[6px] font-mono text-neutral-700 uppercase px-1">
+      <div className="mt-3 text-micro font-mono text-neutral-700 uppercase px-1">
         {tr(t, 'sbUpdated', 'Updated')}: {new Date(data.timestamp).toLocaleTimeString()}
       </div>
     </div>
@@ -520,7 +520,7 @@ function RankingBars({ cells }: { cells: StyleCell[] }) {
         y1={0}
         x2={CENTER_X}
         y2={H}
-        stroke="rgba(255,255,255,0.08)"
+        stroke="color-mix(in srgb, var(--color-white) 8%, transparent)"
         strokeWidth={0.5}
       />
 
@@ -538,9 +538,9 @@ function RankingBars({ cells }: { cells: StyleCell[] }) {
               y={y + ROW_H / 2}
               textAnchor="end"
               dominantBaseline="middle"
-              fill="#a1a1aa"
+              fill="var(--color-zinc-400)"
               fontSize={6.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {cell.label}
@@ -560,7 +560,7 @@ function RankingBars({ cells }: { cells: StyleCell[] }) {
               dominantBaseline="middle"
               fill={barColor}
               fontSize={6.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {fmtPct(cell.returnYtd)}
@@ -583,11 +583,11 @@ export function StyleBoxPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Grid3x3 className="w-3.5 h-3.5" style={{ color: ACCENT }} />
           <span
-            className="text-[9px] font-black font-mono uppercase tracking-tighter"
+            className="text-mini font-black font-mono uppercase tracking-tighter"
             style={{ color: ACCENT }}
           >
             {tr(t, 'sbTitle', 'Equity Style Box')}
@@ -596,10 +596,10 @@ export function StyleBoxPanel() {
           {/* Best / Worst badges */}
           {data && (
             <>
-              <span className="text-[6px] font-mono font-black uppercase px-1 py-[1px] bg-green-500/20 text-green-400">
+              <span className="text-micro font-mono font-black uppercase px-1 py-[1px] bg-green-500/20 text-green-400">
                 {styleLabelFromKey(data.bestStyle)}
               </span>
-              <span className="text-[6px] font-mono font-black uppercase px-1 py-[1px] bg-red-500/20 text-red-400">
+              <span className="text-micro font-mono font-black uppercase px-1 py-[1px] bg-red-500/20 text-red-400">
                 {styleLabelFromKey(data.worstStyle)}
               </span>
             </>
@@ -615,14 +615,14 @@ export function StyleBoxPanel() {
       </div>
 
       {/* Controls */}
-      <div className="shrink-0 flex items-center gap-2 px-3 py-1 border-b border-border/20 bg-[#050505]">
+      <div className="shrink-0 flex items-center gap-2 px-3 py-1 border-b border-border/20 bg-raised">
         {/* View toggle */}
         <div className="flex items-center gap-0.5">
           {(['GRID', 'TABLE', 'ROTATION'] as View[]).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`px-2 py-0.5 text-[8px] font-mono font-black uppercase transition-all ${
+              className={`px-2 py-0.5 text-micro font-mono font-black uppercase transition-all ${
                 view === v
                   ? 'bg-indigo-500/20 text-indigo-400'
                   : 'text-neutral-600 hover:text-white'
@@ -642,7 +642,7 @@ export function StyleBoxPanel() {
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-1.5 py-0.5 text-[7px] font-mono font-black transition-all ${
+                className={`px-1.5 py-0.5 text-micro font-mono font-black transition-all ${
                   period === p
                     ? 'bg-indigo-500/20 text-indigo-400'
                     : 'text-neutral-600 hover:text-white'
@@ -658,7 +658,7 @@ export function StyleBoxPanel() {
       {/* Content */}
       {isLoading && !data && (
         <div
-          className="flex-1 flex items-center justify-center text-[9px] font-mono uppercase animate-pulse"
+          className="flex-1 flex items-center justify-center text-mini font-mono uppercase animate-pulse"
           style={{ color: ACCENT }}
         >
           {tr(t, 'loading', 'Loading...')}
@@ -666,7 +666,7 @@ export function StyleBoxPanel() {
       )}
 
       {!data && !isLoading && (
-        <div className="flex-1 flex items-center justify-center text-neutral-600 text-[9px] font-mono uppercase">
+        <div className="flex-1 flex items-center justify-center text-neutral-600 text-mini font-mono uppercase">
           {tr(t, 'sbNoData', 'No data available')}
         </div>
       )}

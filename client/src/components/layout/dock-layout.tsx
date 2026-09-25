@@ -107,7 +107,7 @@ function LazyWrap({ children }: { children: React.ReactNode }) {
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center h-full bg-black gap-2">
         <div className="w-5 h-5 border-2 border-accent/30 border-t-accent animate-spin" />
-        <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">{translations[useAppStore.getState().locale]?.loading ?? 'Loading...'}</span>
+        <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">{translations[useAppStore.getState().locale]?.loading ?? 'Loading...'}</span>
       </div>
     }>
       {children}
@@ -119,7 +119,7 @@ function LazyWrap({ children }: { children: React.ReactNode }) {
 function UnderDevelopment() {
   const locale = useAppStore((s) => s.locale);
   return (
-    <div className="flex items-center justify-center h-full text-neutral/40 text-[10px] font-mono uppercase tracking-widest text-center px-4">
+    <div className="flex items-center justify-center h-full text-neutral/40 text-mini font-mono uppercase tracking-widest text-center px-4">
       {translations[locale]?.underDevelopment ?? translations.en.underDevelopment}
     </div>
   );

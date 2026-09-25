@@ -45,10 +45,10 @@ export function IntermarketPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-cyan-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
             {tr(t, 'panelIntermarket', 'INTERMARKET DIVERGENCE')}
           </span>
         </div>
@@ -65,13 +65,13 @@ export function IntermarketPanel() {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-cyan-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-cyan-400 text-mini font-mono uppercase animate-pulse">
             {tr(t, 'loading', 'Loading...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             No data available
           </div>
         )}
@@ -87,7 +87,7 @@ export function IntermarketPanel() {
             ))}
 
             {/* Timestamp */}
-            <div className="px-3 py-1.5 text-[7px] font-mono text-neutral/25 text-right border-t border-border/10">
+            <div className="px-3 py-1.5 text-micro font-mono text-neutral/25 text-right border-t border-border/10">
               {new Date(data.timestamp).toLocaleTimeString()}
             </div>
           </>
@@ -110,7 +110,7 @@ function RiskBadge({
 }) {
   const style = riskColor(level);
   return (
-    <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider ${style.text} ${style.bg} border`}>
+    <span className={`px-1.5 py-0.5 text-micro font-black font-mono uppercase tracking-wider ${style.text} ${style.bg} border`}>
       {count} {tr(t, 'imDivergences', 'DIV')} — {level.toUpperCase()}
     </span>
   );
@@ -121,10 +121,10 @@ function RiskBadge({
 function DominantTheme({ theme }: { theme: string }) {
   return (
     <div className="px-3 py-2 bg-cyan-500/[0.04] border-b border-cyan-500/10">
-      <span className="text-[7px] font-mono font-bold uppercase tracking-wider text-cyan-400/50">
+      <span className="text-micro font-mono font-bold uppercase tracking-wider text-cyan-400/50">
         DOMINANT THEME
       </span>
-      <p className="text-[9px] font-mono text-white/80 mt-0.5 leading-relaxed">
+      <p className="text-mini font-mono text-white/80 mt-0.5 leading-relaxed">
         {theme}
       </p>
     </div>
@@ -149,8 +149,8 @@ function PairRow({
       {/* Pair header row */}
       <div className="flex items-center justify-between px-3 pt-2 pb-0.5">
         <div className="flex items-center gap-2">
-          <span className="text-[9px] font-mono font-bold text-white">{pair.name}</span>
-          <span className={`text-[7px] font-mono px-1 py-px border ${
+          <span className="text-mini font-mono font-bold text-white">{pair.name}</span>
+          <span className={`text-micro font-mono px-1 py-px border ${
             pair.expectedRelation === 'inverse'
               ? 'text-red-400/60 border-red-500/20 bg-red-500/5'
               : 'text-emerald-400/60 border-emerald-500/20 bg-emerald-500/5'
@@ -160,12 +160,12 @@ function PairRow({
         </div>
         <div className="flex items-center gap-2">
           {pair.divergent && (
-            <span className={`text-[7px] font-mono font-bold px-1 py-px bg-red-500/10 border border-red-500/30 text-red-400 uppercase`}>
+            <span className={`text-micro font-mono font-bold px-1 py-px bg-red-500/10 border border-red-500/30 text-red-400 uppercase`}>
               DIVERGENT
             </span>
           )}
           {pair.divergenceScore > 0 && (
-            <span className={`text-[8px] font-mono font-bold ${divScoreColor(pair.divergenceScore)}`}>
+            <span className={`text-micro font-mono font-bold ${divScoreColor(pair.divergenceScore)}`}>
               {pair.divergenceScore.toFixed(1)}
             </span>
           )}
@@ -176,28 +176,28 @@ function PairRow({
       <div className="grid grid-cols-[1fr_auto_1fr] gap-2 px-3 pb-1">
         {/* Symbol A */}
         <div className="flex items-baseline gap-1.5">
-          <span className="text-[8px] font-mono font-bold text-cyan-300/80">{pair.symbolA}</span>
-          <span className="text-[9px] font-mono text-white">{fmtPrice(pair.priceA)}</span>
-          <span className={`text-[8px] font-mono ${returnColor(pair.changeA)}`}>
+          <span className="text-micro font-mono font-bold text-cyan-300/80">{pair.symbolA}</span>
+          <span className="text-mini font-mono text-white">{fmtPrice(pair.priceA)}</span>
+          <span className={`text-micro font-mono ${returnColor(pair.changeA)}`}>
             {pair.changeA >= 0 ? '+' : ''}{pair.changeA.toFixed(2)}%
           </span>
         </div>
 
         {/* Correlation */}
         <div className="flex flex-col items-center">
-          <span className="text-[6px] font-mono text-neutral/30 uppercase">ρ 20d</span>
-          <span className={`text-[9px] font-mono font-bold ${corrColor(pair.correlation20d)}`}>
+          <span className="text-micro font-mono text-neutral/30 uppercase">ρ 20d</span>
+          <span className={`text-mini font-mono font-bold ${corrColor(pair.correlation20d)}`}>
             {pair.correlation20d.toFixed(2)}
           </span>
         </div>
 
         {/* Symbol B */}
         <div className="flex items-baseline gap-1.5 justify-end">
-          <span className={`text-[8px] font-mono ${returnColor(pair.changeB)}`}>
+          <span className={`text-micro font-mono ${returnColor(pair.changeB)}`}>
             {pair.changeB >= 0 ? '+' : ''}{pair.changeB.toFixed(2)}%
           </span>
-          <span className="text-[9px] font-mono text-white">{fmtPrice(pair.priceB)}</span>
-          <span className="text-[8px] font-mono font-bold text-cyan-300/80">{pair.symbolB}</span>
+          <span className="text-mini font-mono text-white">{fmtPrice(pair.priceB)}</span>
+          <span className="text-micro font-mono font-bold text-cyan-300/80">{pair.symbolB}</span>
         </div>
       </div>
 
@@ -209,13 +209,13 @@ function PairRow({
           divergent={pair.divergent}
         />
         <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[6px] font-mono text-neutral/30 uppercase">5D RET</span>
+          <span className="text-micro font-mono text-neutral/30 uppercase">5D RET</span>
           <div className="flex gap-1.5">
-            <span className={`text-[8px] font-mono font-bold ${returnColor(pair.returnA_5d)}`}>
+            <span className={`text-micro font-mono font-bold ${returnColor(pair.returnA_5d)}`}>
               {pair.returnA_5d >= 0 ? '+' : ''}{pair.returnA_5d.toFixed(2)}%
             </span>
-            <span className="text-[8px] font-mono text-neutral/20">vs</span>
-            <span className={`text-[8px] font-mono font-bold ${returnColor(pair.returnB_5d)}`}>
+            <span className="text-micro font-mono text-neutral/20">vs</span>
+            <span className={`text-micro font-mono font-bold ${returnColor(pair.returnB_5d)}`}>
               {pair.returnB_5d >= 0 ? '+' : ''}{pair.returnB_5d.toFixed(2)}%
             </span>
           </div>
@@ -225,7 +225,7 @@ function PairRow({
 
       {/* Signal text */}
       <div className="px-3 pb-2">
-        <p className={`text-[8px] font-mono leading-relaxed ${
+        <p className={`text-micro font-mono leading-relaxed ${
           pair.divergent ? 'text-yellow-400/70' : 'text-neutral/40'
         }`}>
           {pair.signal}
@@ -281,7 +281,7 @@ function DualSparkline({
 
   if (!chart) {
     return (
-      <div className="h-8 flex items-center justify-center text-[7px] font-mono text-neutral/20">
+      <div className="h-8 flex items-center justify-center text-micro font-mono text-neutral/20">
         NO DATA
       </div>
     );
@@ -295,16 +295,16 @@ function DualSparkline({
         y1={chart.H / 2}
         x2={chart.W - 2}
         y2={chart.H / 2}
-        stroke="rgba(255,255,255,0.05)"
+        stroke="color-mix(in srgb, var(--color-white) 5%, transparent)"
         strokeDasharray="2,3"
       />
       {/* Asset A line (cyan) */}
       {chart.pathA && (
-        <path d={chart.pathA} fill="none" stroke="#22d3ee" strokeWidth={1.2} opacity={0.8} />
+        <path d={chart.pathA} fill="none" stroke="var(--color-cyan-400)" strokeWidth={1.2} opacity={0.8} />
       )}
       {/* Asset B line (purple) */}
       {chart.pathB && (
-        <path d={chart.pathB} fill="none" stroke="#a78bfa" strokeWidth={1.2} opacity={0.8} />
+        <path d={chart.pathB} fill="none" stroke="var(--color-violet-400)" strokeWidth={1.2} opacity={0.8} />
       )}
     </svg>
   );

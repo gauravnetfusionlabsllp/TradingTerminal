@@ -22,7 +22,7 @@ export function MarketMoversPanel() {
           <button
             key={t_}
             onClick={() => setTab(t_)}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[8px] font-black uppercase tracking-widest border-b-2 transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-micro font-black uppercase tracking-widest border-b-2 transition-colors ${
               tab === t_
                 ? t_ === 'gainers'
                   ? 'border-bullish text-bullish'
@@ -41,7 +41,7 @@ export function MarketMoversPanel() {
       </div>
 
       {/* Column header */}
-      <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+      <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider">
         <span>{t('symbol')}</span>
         <span className="text-right">{t('price')}</span>
         <span className="text-right">{t('moversChange')}</span>
@@ -51,13 +51,13 @@ export function MarketMoversPanel() {
       {/* List */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-emerald-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-emerald-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
 
         {!isLoading && list.length === 0 && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {t('noData')}
           </div>
         )}
@@ -69,23 +69,23 @@ export function MarketMoversPanel() {
             className="w-full grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] px-3 py-1.5 border-b border-border/10 hover:bg-white/[0.02] transition-colors text-left group"
           >
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[8px] font-mono text-neutral/25 w-4 shrink-0">{i + 1}</span>
+              <span className="text-micro font-mono text-neutral/25 w-4 shrink-0">{i + 1}</span>
               <div className="min-w-0">
-                <div className="text-[10px] font-mono font-bold text-white group-hover:text-emerald-300 truncate">
+                <div className="text-mini font-mono font-bold text-white group-hover:text-emerald-300 truncate">
                   {q.symbol}
                 </div>
-                <div className="text-[7px] font-mono text-neutral/30 truncate">{q.name}</div>
+                <div className="text-micro font-mono text-neutral/30 truncate">{q.name}</div>
               </div>
             </div>
-            <span className="text-[10px] font-mono text-white text-right self-center">
+            <span className="text-mini font-mono text-white text-right self-center">
               ${q.price.toFixed(2)}
             </span>
-            <span className={`text-[10px] font-mono font-bold text-right self-center ${
+            <span className={`text-mini font-mono font-bold text-right self-center ${
               q.changePercent >= 0 ? 'text-bullish' : 'text-bearish'
             }`}>
               {q.changePercent >= 0 ? '+' : ''}{q.changePercent.toFixed(2)}%
             </span>
-            <span className="text-[9px] font-mono text-neutral/50 text-right self-center">
+            <span className="text-mini font-mono text-neutral/50 text-right self-center">
               {fmtVolume(q.volume)}
             </span>
           </button>

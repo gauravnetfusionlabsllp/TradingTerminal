@@ -3,7 +3,8 @@ import { useAuthStore } from '../../stores/use-auth-store';
 import { useAuthActions } from '../../api/hooks/use-auth';
 import { useT } from '../../i18n';
 import { LEGAL_URL } from '../../lib/legal';
-import { X, Shield } from 'lucide-react';
+import { X } from 'lucide-react';
+import logoSvg from '../../assets/logo.svg?raw';
 
 export function LoginModal() {
   const t = useT();
@@ -43,29 +44,28 @@ export function LoginModal() {
     }
   };
 
-  const inputClass = 'w-full bg-black border border-border px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral/30 mb-3 focus:border-accent outline-none';
-  const labelClass = 'block text-[9px] font-bold uppercase tracking-widest text-neutral mb-1.5';
+  const inputClass = 'w-full h-9 bg-raised border border-border rounded-sm px-3 text-sm text-fg mb-4 focus:border-accent outline-none';
+  const labelClass = 'block text-xs text-neutral mb-1.5';
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={close}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg/80 backdrop-blur-sm" onClick={close}>
       <div
-        className="relative w-full max-w-sm bg-black border border-border p-6 mx-4"
+        className="corner-flag relative w-full max-w-sm bg-panel border border-border shadow-[0_24px_64px_rgb(0_0_0/0.35)] px-8 pt-8 pb-6 mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
         <button
           onClick={close}
-          className="absolute top-3 right-3 text-neutral hover:text-white p-1"
+          aria-label="Close"
+          className="absolute top-3 right-4 text-neutral hover:text-fg p-1"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Header */}
-        <div className="flex items-center gap-2 mb-6">
-          <Shield className="w-5 h-5 text-accent" />
-          <h2 className="text-sm font-black uppercase tracking-widest text-accent">
-            {t('login')}
-          </h2>
+        <div className="mb-7">
+          <span aria-hidden className="block h-7 w-[108px] text-fg [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: logoSvg }} />
+          <h2 className="mt-5 text-base font-semibold text-fg">{t('loginWithMt5')}</h2>
         </div>
 
         <form onSubmit={handleLogin}>
@@ -93,36 +93,34 @@ export function LoginModal() {
             className={inputClass}
           />
 
-          <label className="flex items-center gap-2 mb-4 text-[10px] font-mono text-neutral cursor-pointer select-none">
+          <label className="flex items-center gap-2 mb-5 text-xs text-neutral cursor-pointer select-none">
             <input
               type="checkbox"
               checked={investor}
               onChange={(e) => setInvestor(e.target.checked)}
+              className="accent-accent w-3.5 h-3.5 p-0"
             />
             {t('investorReadOnly')}
           </label>
 
+          {error && <p role="alert" className="-mt-2 mb-3 text-xs text-bearish">{error}</p>}
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-accent text-black text-[11px] font-black uppercase tracking-widest hover:bg-accent/90 disabled:opacity-50"
+            className="w-full h-10 bg-accent text-on-accent text-sm font-semibold rounded-sm hover:bg-accent/90 disabled:opacity-50"
           >
             {loading ? t('loggingIn') : t('login')}
           </button>
         </form>
 
         {/* Terms consent note */}
-        <p className="mt-4 text-[9px] font-mono text-neutral/50 text-center leading-relaxed">
+        <p className="mt-5 text-mini text-neutral leading-relaxed">
           {t('cookieConsent')}{' '}
-          <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('termsOfService')}</a>
+          <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="text-accent-ink hover:underline">{t('termsOfService')}</a>
           {' '}{t('and')}{' '}
-          <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="text-accent/60 hover:text-accent">{t('privacyPolicy')}</a>.
+          <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" className="text-accent-ink hover:underline">{t('privacyPolicy')}</a>.
         </p>
-
-        {/* Error */}
-        {error && (
-          <p role="alert" className="mt-3 text-[10px] font-mono text-bearish text-center">{error}</p>
-        )}
       </div>
     </div>
   );

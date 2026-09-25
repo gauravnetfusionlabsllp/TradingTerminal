@@ -35,29 +35,29 @@ function fmtVol(n: number): string {
 
 // ── Color helpers ──
 
-const TEAL = '#14b8a6';
-const GREEN = '#34d399';
-const RED = '#f87171';
+const TEAL = 'var(--color-teal-500)';
+const GREEN = 'var(--color-emerald-400)';
+const RED = 'var(--color-red-400)';
 
 function flowColor(n: number): string {
   if (n > 0) return GREEN;
   if (n < 0) return RED;
-  return 'rgba(255,255,255,0.3)';
+  return 'color-mix(in srgb, var(--color-white) 30%, transparent)';
 }
 
 function trendBadge(trend: 'inflow' | 'outflow' | 'neutral'): { text: string; color: string; bg: string } {
   switch (trend) {
-    case 'inflow': return { text: 'INFLOW', color: GREEN, bg: 'rgba(52,211,153,0.1)' };
-    case 'outflow': return { text: 'OUTFLOW', color: RED, bg: 'rgba(248,113,113,0.1)' };
-    default: return { text: 'NEUTRAL', color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.03)' };
+    case 'inflow': return { text: 'INFLOW', color: GREEN, bg: 'color-mix(in srgb, var(--color-emerald-400) 10%, transparent)' };
+    case 'outflow': return { text: 'OUTFLOW', color: RED, bg: 'color-mix(in srgb, var(--color-red-400) 10%, transparent)' };
+    default: return { text: 'NEUTRAL', color: 'color-mix(in srgb, var(--color-white) 40%, transparent)', bg: 'color-mix(in srgb, var(--color-white) 3%, transparent)' };
   }
 }
 
 function riskBadge(risk: 'risk_on' | 'risk_off' | 'neutral'): { text: string; color: string; bg: string } {
   switch (risk) {
-    case 'risk_on': return { text: 'RISK ON', color: GREEN, bg: 'rgba(52,211,153,0.12)' };
-    case 'risk_off': return { text: 'RISK OFF', color: RED, bg: 'rgba(248,113,113,0.12)' };
-    default: return { text: 'NEUTRAL', color: '#fbbf24', bg: 'rgba(251,191,36,0.1)' };
+    case 'risk_on': return { text: 'RISK ON', color: GREEN, bg: 'color-mix(in srgb, var(--color-emerald-400) 12%, transparent)' };
+    case 'risk_off': return { text: 'RISK OFF', color: RED, bg: 'color-mix(in srgb, var(--color-red-400) 12%, transparent)' };
+    default: return { text: 'NEUTRAL', color: 'var(--color-amber-400)', bg: 'color-mix(in srgb, var(--color-amber-400) 10%, transparent)' };
   }
 }
 
@@ -90,17 +90,17 @@ function Sparkline({ data, width = 60, height = 16 }: { data: number[]; width?: 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height}>
       {/* Zero line */}
-      <line x1={0} y1={midY} x2={width} y2={midY} stroke="rgba(255,255,255,0.06)" strokeWidth={0.5} />
+      <line x1={0} y1={midY} x2={width} y2={midY} stroke="color-mix(in srgb, var(--color-white) 6%, transparent)" strokeWidth={0.5} />
       {/* Bars for each day */}
       {data.map((v, i) => {
         const x = i * stepX;
         const barH = Math.abs(v) * scaleY;
         const y = v >= 0 ? midY - barH : midY;
-        const color = v >= 0 ? 'rgba(52,211,153,0.5)' : 'rgba(248,113,113,0.5)';
+        const color = v >= 0 ? 'color-mix(in srgb, var(--color-emerald-400) 50%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 50%, transparent)';
         return <rect key={i} x={x - stepX * 0.3} y={y} width={stepX * 0.6} height={Math.max(barH, 0.5)} fill={color} />;
       })}
       {/* Line */}
-      <polyline points={points} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={0.7} />
+      <polyline points={points} fill="none" stroke="color-mix(in srgb, var(--color-white) 40%, transparent)" strokeWidth={0.7} />
     </svg>
   );
 }
@@ -112,12 +112,12 @@ function CategoryFlowBox({ name, flow5d, trend }: { name: string; flow5d: number
   const arrow = flow5d > 0 ? '\u2191' : flow5d < 0 ? '\u2193' : '\u2192';
   return (
     <div className="flex-1 px-2 py-1.5 border border-white/[0.06] bg-white/[0.01]">
-      <div className="text-[7px] font-mono text-white/30 uppercase tracking-wider mb-0.5">{name}</div>
+      <div className="text-micro font-mono text-white/30 uppercase tracking-wider mb-0.5">{name}</div>
       <div className="flex items-center gap-1">
-        <span className="text-[10px] font-mono font-black" style={{ color }}>{arrow}</span>
-        <span className="text-[9px] font-mono font-bold" style={{ color }}>{fmtFlowSigned(flow5d)}</span>
+        <span className="text-mini font-mono font-black" style={{ color }}>{arrow}</span>
+        <span className="text-mini font-mono font-bold" style={{ color }}>{fmtFlowSigned(flow5d)}</span>
       </div>
-      <div className="text-[6px] font-mono uppercase mt-0.5" style={{ color }}>{trend}</div>
+      <div className="text-micro font-mono uppercase mt-0.5" style={{ color }}>{trend}</div>
     </div>
   );
 }
@@ -125,10 +125,10 @@ function CategoryFlowBox({ name, flow5d, trend }: { name: string; flow5d: number
 // ── Stacked Waterfall Chart (SVG) ──
 
 const CATEGORY_COLORS: Record<string, { pos: string; neg: string }> = {
-  'Equity': { pos: 'rgba(52,211,153,0.7)', neg: 'rgba(248,113,113,0.7)' },
-  'Fixed Income': { pos: 'rgba(96,165,250,0.7)', neg: 'rgba(251,146,60,0.7)' },
-  'Commodities': { pos: 'rgba(251,191,36,0.7)', neg: 'rgba(168,85,247,0.7)' },
-  'Sector': { pos: 'rgba(20,184,166,0.7)', neg: 'rgba(244,63,94,0.7)' },
+  'Equity': { pos: 'color-mix(in srgb, var(--color-emerald-400) 70%, transparent)', neg: 'color-mix(in srgb, var(--color-red-400) 70%, transparent)' },
+  'Fixed Income': { pos: 'color-mix(in srgb, var(--color-blue-400) 70%, transparent)', neg: 'color-mix(in srgb, var(--color-orange-400) 70%, transparent)' },
+  'Commodities': { pos: 'color-mix(in srgb, var(--color-amber-400) 70%, transparent)', neg: 'color-mix(in srgb, var(--color-purple-500) 70%, transparent)' },
+  'Sector': { pos: 'color-mix(in srgb, var(--color-teal-500) 70%, transparent)', neg: 'color-mix(in srgb, var(--color-rose-500) 70%, transparent)' },
 };
 
 function WaterfallChart({ categories }: { categories: FundFlowCategory[] }) {
@@ -201,13 +201,13 @@ function WaterfallChart({ categories }: { categories: FundFlowCategory[] }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 140 }}>
       {/* Grid lines */}
-      <line x1={PADDING_L} y1={zeroY} x2={W - PADDING_R} y2={zeroY} stroke="rgba(255,255,255,0.1)" strokeWidth={0.5} />
-      <line x1={PADDING_L} y1={PADDING_T} x2={W - PADDING_R} y2={PADDING_T} stroke="rgba(255,255,255,0.03)" strokeWidth={0.3} strokeDasharray="2,2" />
-      <line x1={PADDING_L} y1={PADDING_T + chartH} x2={W - PADDING_R} y2={PADDING_T + chartH} stroke="rgba(255,255,255,0.03)" strokeWidth={0.3} strokeDasharray="2,2" />
+      <line x1={PADDING_L} y1={zeroY} x2={W - PADDING_R} y2={zeroY} stroke="color-mix(in srgb, var(--color-white) 10%, transparent)" strokeWidth={0.5} />
+      <line x1={PADDING_L} y1={PADDING_T} x2={W - PADDING_R} y2={PADDING_T} stroke="color-mix(in srgb, var(--color-white) 3%, transparent)" strokeWidth={0.3} strokeDasharray="2,2" />
+      <line x1={PADDING_L} y1={PADDING_T + chartH} x2={W - PADDING_R} y2={PADDING_T + chartH} stroke="color-mix(in srgb, var(--color-white) 3%, transparent)" strokeWidth={0.3} strokeDasharray="2,2" />
 
       {/* Y-axis labels */}
       {yLabels.map((l, i) => (
-        <text key={i} x={PADDING_L - 2} y={l.y + 2.5} textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize={5} fontFamily="monospace">
+        <text key={i} x={PADDING_L - 2} y={l.y + 2.5} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 25%, transparent)" fontSize={5} fontFamily="inherit">
           {l.value >= 0 ? '+' : ''}{Math.round(l.value)}M
         </text>
       ))}
@@ -236,7 +236,7 @@ function WaterfallChart({ categories }: { categories: FundFlowCategory[] }) {
 
       {/* X-axis day labels (every 5th) */}
       {[0, 5, 10, 15, 19].map(d => (
-        <text key={d} x={PADDING_L + d * barW + barW / 2} y={H - 2} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize={5} fontFamily="monospace">
+        <text key={d} x={PADDING_L + d * barW + barW / 2} y={H - 2} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={5} fontFamily="inherit">
           {d === 0 ? '-20d' : d === 19 ? 'now' : `-${20 - d}d`}
         </text>
       ))}
@@ -245,7 +245,7 @@ function WaterfallChart({ categories }: { categories: FundFlowCategory[] }) {
       {Object.entries(CATEGORY_COLORS).map(([name, colors], i) => (
         <g key={name} transform={`translate(${PADDING_L + i * 70}, ${H - 8})`}>
           <rect x={0} y={-3} width={5} height={3} fill={colors.pos} />
-          <text x={7} y={0} fill="rgba(255,255,255,0.3)" fontSize={4} fontFamily="monospace">{name}</text>
+          <text x={7} y={0} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize={4} fontFamily="inherit">{name}</text>
         </g>
       ))}
     </svg>
@@ -274,7 +274,7 @@ function FlowBar({ value, maxAbs }: { value: number; maxAbs: number }) {
 function EtfRow({ etf, maxAbs }: { etf: FundFlowEtf; maxAbs: number }) {
   const changeColor = etf.changePct >= 0 ? 'text-emerald-400' : 'text-red-400';
   return (
-    <div className="flex items-center py-0.5 border-b border-white/[0.03] text-[8px] font-mono gap-1">
+    <div className="flex items-center py-0.5 border-b border-white/[0.03] text-micro font-mono gap-1">
       <span className="w-10 font-bold text-white/80 shrink-0">{etf.symbol}</span>
       <span className="w-20 text-white/30 truncate shrink-0">{etf.name}</span>
       <span className="w-14 text-right text-white/60 shrink-0">${fmtPrice(etf.price)}</span>
@@ -310,21 +310,21 @@ function CategorySection({ category }: { category: FundFlowCategory }) {
           {expanded
             ? <ChevronDown className="w-2.5 h-2.5 text-white/30" />
             : <ChevronRight className="w-2.5 h-2.5 text-white/30" />}
-          <span className="text-[8px] font-black font-mono uppercase text-white/70">{category.name}</span>
+          <span className="text-micro font-black font-mono uppercase text-white/70">{category.name}</span>
           <span
-            className="text-[6px] font-black font-mono uppercase px-1 py-0.5"
+            className="text-micro font-black font-mono uppercase px-1 py-0.5"
             style={{ color: badge.color, backgroundColor: badge.bg }}
           >
             {badge.text}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[7px] font-mono text-white/30">5D:</span>
-          <span className="text-[8px] font-mono font-bold" style={{ color: flowColor(category.totalFlow5d) }}>
+          <span className="text-micro font-mono text-white/30">5D:</span>
+          <span className="text-micro font-mono font-bold" style={{ color: flowColor(category.totalFlow5d) }}>
             {fmtFlowSigned(category.totalFlow5d)}
           </span>
-          <span className="text-[7px] font-mono text-white/30">20D:</span>
-          <span className="text-[8px] font-mono font-bold" style={{ color: flowColor(category.totalFlow20d) }}>
+          <span className="text-micro font-mono text-white/30">20D:</span>
+          <span className="text-micro font-mono font-bold" style={{ color: flowColor(category.totalFlow20d) }}>
             {fmtFlowSigned(category.totalFlow20d)}
           </span>
         </div>
@@ -334,7 +334,7 @@ function CategorySection({ category }: { category: FundFlowCategory }) {
       {expanded && (
         <div className="px-2 pb-1">
           {/* Table header */}
-          <div className="flex items-center py-0.5 border-b border-white/[0.06] text-[6px] font-mono text-white/25 uppercase gap-1">
+          <div className="flex items-center py-0.5 border-b border-white/[0.06] text-micro font-mono text-white/25 uppercase gap-1">
             <span className="w-10 shrink-0">SYM</span>
             <span className="w-20 shrink-0">NAME</span>
             <span className="w-14 text-right shrink-0">PRICE</span>
@@ -367,26 +367,26 @@ export function FundFlowsPanel() {
   const commodityCat = data?.categories.find(c => c.name === 'Commodities');
 
   return (
-    <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
+    <div className="h-full flex flex-col bg-black overflow-hidden text-mini font-mono">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-white/[0.08] shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-white/[0.08] shrink-0">
         <div className="flex items-center gap-2">
           <svg viewBox="0 0 16 16" className="w-4 h-4">
             <path d="M2 14V8l3-4 3 4V5l3-3 3 3v9" fill="none" stroke={TEAL} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-[9px] font-black uppercase tracking-tighter" style={{ color: TEAL }}>
+          <span className="text-mini font-black uppercase tracking-tighter" style={{ color: TEAL }}>
             {tr(t, 'ffTitle', 'Fund Flows')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {summary && (
             <>
-              <span className="text-[7px] text-white/25 truncate max-w-[100px]">
+              <span className="text-micro text-white/25 truncate max-w-[100px]">
                 {summary.rotationSignal}
               </span>
               {risk && (
                 <span
-                  className="text-[6px] font-black uppercase px-1.5 py-0.5"
+                  className="text-micro font-black uppercase px-1.5 py-0.5"
                   style={{ color: risk.color, backgroundColor: risk.bg }}
                 >
                   {risk.text}
@@ -395,7 +395,7 @@ export function FundFlowsPanel() {
             </>
           )}
           {data && (
-            <span className="text-[7px] text-white/20">
+            <span className="text-micro text-white/20">
               {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -411,7 +411,7 @@ export function FundFlowsPanel() {
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-2">
               <div className="w-5 h-5 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
-              <span className="text-[10px] text-white/40 uppercase tracking-widest">
+              <span className="text-mini text-white/40 uppercase tracking-widest">
                 {tr(t, 'loading', 'Loading...')}
               </span>
             </div>
@@ -428,7 +428,7 @@ export function FundFlowsPanel() {
             {/* Waterfall chart */}
             <div className="px-2 py-1.5 border-b border-white/[0.06]">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[7px] text-white/30 uppercase tracking-wider">
+                <span className="text-micro text-white/30 uppercase tracking-wider">
                   {tr(t, 'ffDailyFlows', 'Daily Net Flows (20D)')}
                 </span>
               </div>
@@ -443,7 +443,7 @@ export function FundFlowsPanel() {
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-[10px] text-white/40 uppercase">
+          <div className="flex items-center justify-center h-full text-mini text-white/40 uppercase">
             {tr(t, 'ffNoData', 'No data available')}
           </div>
         )}

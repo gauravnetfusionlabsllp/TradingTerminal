@@ -122,15 +122,15 @@ export function BacktestPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <FlaskConical className="w-4 h-4 text-rose-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-rose-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-rose-400">
             {tr('panelBacktest', 'STRATEGY BACKTESTER')}
           </span>
         </div>
         {isLoading && (
-          <span className="text-[8px] font-mono text-rose-400 animate-pulse uppercase tracking-wider">
+          <span className="text-micro font-mono text-rose-400 animate-pulse uppercase tracking-wider">
             {tr('btRunning', 'Running...')}
           </span>
         )}
@@ -141,7 +141,7 @@ export function BacktestPanel() {
         {/* Row 1: Symbol, Strategy, Dates, Run */}
         <div className="flex items-end gap-2 flex-wrap">
           <div>
-            <label className="block text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+            <label className="block text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
               {tr('btSymbol', 'Symbol')}
             </label>
             <input
@@ -150,18 +150,18 @@ export function BacktestPanel() {
               onChange={(e) => setSymbol(e.target.value.toUpperCase())}
               onKeyDown={handleKeyDown}
               placeholder="SPY"
-              className="w-20 px-1.5 py-1 bg-white/[0.03] border border-border/20 text-[10px] font-mono text-white placeholder:text-neutral/30 focus:outline-none focus:border-rose-400/40"
+              className="w-20 px-1.5 py-1 bg-white/[0.03] border border-border/20 text-mini font-mono text-white placeholder:text-neutral/30 focus:outline-none focus:border-rose-400/40"
             />
           </div>
 
           <div>
-            <label className="block text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+            <label className="block text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
               {tr('btStrategy', 'Strategy')}
             </label>
             <select
               value={strategy}
               onChange={(e) => handleStrategyChange(e.target.value)}
-              className="px-1.5 py-1 bg-white/[0.03] border border-border/20 text-[10px] font-mono text-white focus:outline-none focus:border-rose-400/40 appearance-none cursor-pointer"
+              className="px-1.5 py-1 bg-white/[0.03] border border-border/20 text-mini font-mono text-white focus:outline-none focus:border-rose-400/40 appearance-none cursor-pointer"
             >
               {STRATEGIES.map((s) => (
                 <option key={s.value} value={s.value} className="bg-black">
@@ -172,33 +172,33 @@ export function BacktestPanel() {
           </div>
 
           <div>
-            <label className="block text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+            <label className="block text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
               {tr('btStart', 'Start')}
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-1.5 py-1 bg-white/[0.03] border border-border/20 text-[10px] font-mono text-white focus:outline-none focus:border-rose-400/40"
+              className="px-1.5 py-1 bg-white/[0.03] border border-border/20 text-mini font-mono text-white focus:outline-none focus:border-rose-400/40"
             />
           </div>
 
           <div>
-            <label className="block text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+            <label className="block text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
               {tr('btEnd', 'End')}
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-1.5 py-1 bg-white/[0.03] border border-border/20 text-[10px] font-mono text-white focus:outline-none focus:border-rose-400/40"
+              className="px-1.5 py-1 bg-white/[0.03] border border-border/20 text-mini font-mono text-white focus:outline-none focus:border-rose-400/40"
             />
           </div>
 
           <button
             onClick={handleRun}
             disabled={isLoading}
-            className="flex items-center gap-1 px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-[9px] font-black font-mono uppercase text-rose-400 hover:bg-rose-500/20 transition-colors disabled:opacity-40"
+            className="flex items-center gap-1 px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-mini font-black font-mono uppercase text-rose-400 hover:bg-rose-500/20 transition-colors disabled:opacity-40"
           >
             <Play className="w-3 h-3" />
             {tr('btRun', 'Run Backtest')}
@@ -209,7 +209,7 @@ export function BacktestPanel() {
         <div className="flex items-end gap-3">
           {(STRATEGY_PARAMS[strategy] ?? []).map((def) => (
             <div key={def.key}>
-              <label className="block text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+              <label className="block text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
                 {def.label}
               </label>
               <input
@@ -219,7 +219,7 @@ export function BacktestPanel() {
                 min={def.min}
                 max={def.max}
                 step={def.step}
-                className="w-16 px-1.5 py-1 bg-white/[0.03] border border-border/20 text-[10px] font-mono text-white focus:outline-none focus:border-rose-400/40"
+                className="w-16 px-1.5 py-1 bg-white/[0.03] border border-border/20 text-mini font-mono text-white focus:outline-none focus:border-rose-400/40"
               />
             </div>
           ))}
@@ -229,19 +229,19 @@ export function BacktestPanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-rose-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-rose-400 text-mini font-mono uppercase animate-pulse">
             {tr('btLoading', 'Running backtest...')}
           </div>
         )}
 
         {error && !data && (
-          <div className="text-center py-8 text-rose-500 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-rose-500 text-mini font-mono uppercase">
             {tr('btError', 'Failed to run backtest')}
           </div>
         )}
 
         {!data && !isLoading && !error && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {tr('btEmpty', 'Configure strategy and click Run Backtest')}
           </div>
         )}
@@ -318,18 +318,18 @@ function MetricsSummary({
 
   return (
     <div className="px-3 py-3 border-b border-border/20">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr('btMetrics', 'Performance Metrics')}
       </div>
       <div className="grid grid-cols-4 gap-2">
         {items.map((item) => (
           <div key={item.label} className="bg-white/[0.02] px-2 py-1.5 border border-border/10">
-            <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+            <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
               {item.label}
             </div>
             <div className={`text-[13px] font-black font-mono ${item.color}`}>{item.value}</div>
             {item.sub && (
-              <div className="text-[6px] font-mono text-neutral/25 mt-0.5">{item.sub}</div>
+              <div className="text-micro font-mono text-neutral/25 mt-0.5">{item.sub}</div>
             )}
           </div>
         ))}
@@ -524,17 +524,17 @@ function EquityCurveChart({
   return (
     <div className="px-3 py-3 border-b border-border/20">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40">
           {tr('btEquityCurve', 'Equity Curve')}
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <div className="w-3 h-0.5 bg-rose-400" />
-            <span className="text-[7px] font-mono text-neutral/40">{tr('btStrategy', 'Strategy')}</span>
+            <span className="text-micro font-mono text-neutral/40">{tr('btStrategy', 'Strategy')}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-0.5 bg-neutral/30 border-t border-dashed border-neutral/30" />
-            <span className="text-[7px] font-mono text-neutral/40">{tr('btBuyHold', 'Buy & Hold')}</span>
+            <span className="text-micro font-mono text-neutral/40">{tr('btBuyHold', 'Buy & Hold')}</span>
           </div>
         </div>
       </div>
@@ -542,8 +542,8 @@ function EquityCurveChart({
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="bt-dd-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(244,63,94,0.02)" />
-            <stop offset="100%" stopColor="rgba(244,63,94,0.12)" />
+            <stop offset="0%" stopColor="color-mix(in srgb, var(--color-rose-500) 2%, transparent)" />
+            <stop offset="100%" stopColor="color-mix(in srgb, var(--color-rose-500) 12%, transparent)" />
           </linearGradient>
         </defs>
 
@@ -557,16 +557,16 @@ function EquityCurveChart({
                 y1={y}
                 x2={W - PAD_R}
                 y2={y}
-                stroke="rgba(255,255,255,0.05)"
+                stroke="color-mix(in srgb, var(--color-white) 5%, transparent)"
                 strokeDasharray="3,3"
               />
               <text
                 x={PAD_L - 6}
                 y={y + 3}
                 textAnchor="end"
-                fill="rgba(255,255,255,0.25)"
+                fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
                 fontSize={7}
-                fontFamily="monospace"
+                fontFamily="inherit"
               >
                 ${Math.round(v).toLocaleString()}
               </text>
@@ -581,9 +581,9 @@ function EquityCurveChart({
             x={lbl.x}
             y={H - 6}
             textAnchor="middle"
-            fill="rgba(255,255,255,0.25)"
+            fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
             fontSize={7}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {lbl.label}
           </text>
@@ -597,7 +597,7 @@ function EquityCurveChart({
           <path
             d={bhPath}
             fill="none"
-            stroke="rgba(255,255,255,0.2)"
+            stroke="color-mix(in srgb, var(--color-white) 20%, transparent)"
             strokeWidth={1}
             strokeDasharray="4,3"
           />
@@ -605,7 +605,7 @@ function EquityCurveChart({
 
         {/* Strategy equity line */}
         {strategyPath && (
-          <path d={strategyPath} fill="none" stroke="#f43f5e" strokeWidth={1.5} opacity={0.9} />
+          <path d={strategyPath} fill="none" stroke="var(--color-rose-500)" strokeWidth={1.5} opacity={0.9} />
         )}
 
         {/* Trade markers */}
@@ -615,7 +615,7 @@ function EquityCurveChart({
             cx={m.x}
             cy={m.y}
             r={2.5}
-            fill={m.type === 'entry' ? '#22c55e' : m.pnlPct >= 0 ? '#22c55e' : '#ef4444'}
+            fill={m.type === 'entry' ? 'var(--color-green-500)' : m.pnlPct >= 0 ? 'var(--color-green-500)' : 'var(--color-red-500)'}
             opacity={0.7}
           />
         ))}
@@ -626,7 +626,7 @@ function EquityCurveChart({
           y1={scaleY(10000)}
           x2={W - PAD_R}
           y2={scaleY(10000)}
-          stroke="rgba(255,255,255,0.1)"
+          stroke="color-mix(in srgb, var(--color-white) 10%, transparent)"
           strokeWidth={0.5}
           strokeDasharray="2,2"
         />
@@ -663,22 +663,22 @@ function MonthlyReturnsGrid({
 
   return (
     <div className="px-3 py-3 border-b border-border/20">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr('btMonthlyReturns', 'Monthly Returns')}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr>
-              <th className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider text-left px-1 py-0.5">
+              <th className="text-micro font-mono text-neutral/40 uppercase tracking-wider text-left px-1 py-0.5">
                 {tr('btYear', 'Year')}
               </th>
               {monthLabels.map((m) => (
-                <th key={m} className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider text-center px-0.5 py-0.5">
+                <th key={m} className="text-micro font-mono text-neutral/40 uppercase tracking-wider text-center px-0.5 py-0.5">
                   {m}
                 </th>
               ))}
-              <th className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider text-center px-1 py-0.5">
+              <th className="text-micro font-mono text-neutral/40 uppercase tracking-wider text-center px-1 py-0.5">
                 {tr('btYTD', 'YTD')}
               </th>
             </tr>
@@ -691,7 +691,7 @@ function MonthlyReturnsGrid({
               }, 0);
               return (
                 <tr key={year} className="border-t border-border/8">
-                  <td className="text-[8px] font-mono font-bold text-neutral/50 px-1 py-0.5">
+                  <td className="text-micro font-mono font-bold text-neutral/50 px-1 py-0.5">
                     {year}
                   </td>
                   {months.map((m) => {
@@ -700,21 +700,21 @@ function MonthlyReturnsGrid({
                       <td key={m} className="text-center px-0.5 py-0.5">
                         {val != null ? (
                           <span
-                            className={`text-[8px] font-mono ${
+                            className={`text-micro font-mono ${
                               val > 0 ? 'text-emerald-400' : val < 0 ? 'text-rose-400' : 'text-neutral/30'
                             }`}
                           >
                             {val > 0 ? '+' : ''}{val.toFixed(1)}
                           </span>
                         ) : (
-                          <span className="text-[8px] font-mono text-neutral/15">-</span>
+                          <span className="text-micro font-mono text-neutral/15">-</span>
                         )}
                       </td>
                     );
                   })}
                   <td className="text-center px-1 py-0.5">
                     <span
-                      className={`text-[8px] font-mono font-bold ${
+                      className={`text-micro font-mono font-bold ${
                         ytd > 0 ? 'text-emerald-400' : ytd < 0 ? 'text-rose-400' : 'text-neutral/30'
                       }`}
                     >
@@ -779,7 +779,7 @@ function TradeLog({
 
   if (trades.length === 0) {
     return (
-      <div className="px-3 py-4 text-center text-neutral/30 text-[9px] font-mono uppercase">
+      <div className="px-3 py-4 text-center text-neutral/30 text-mini font-mono uppercase">
         {tr('btNoTrades', 'No trades generated')}
       </div>
     );
@@ -789,7 +789,7 @@ function TradeLog({
     <div className="px-3 py-3">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1 mb-2 text-[8px] font-black uppercase tracking-widest text-neutral/40 hover:text-rose-400 transition-colors"
+        className="flex items-center gap-1 mb-2 text-micro font-black uppercase tracking-widest text-neutral/40 hover:text-rose-400 transition-colors"
       >
         {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         {tr('btTradeLog', 'Trade Log')} ({trades.length})
@@ -800,13 +800,13 @@ function TradeLog({
           {/* Header */}
           <div className="grid grid-cols-[1fr_0.8fr_1fr_0.8fr_0.7fr_0.5fr] gap-1 px-1 py-1 border-b border-border/15">
             <SortHeader label={tr('btEntry', 'Entry')} field="entryDate" current={sortField} dir={sortDir} onSort={toggleSort} />
-            <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
+            <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
               {tr('btEntryPx', 'Entry $')}
             </span>
-            <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider">
+            <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider">
               {tr('btExit', 'Exit')}
             </span>
-            <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
+            <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
               {tr('btExitPx', 'Exit $')}
             </span>
             <SortHeader label={tr('btPnl', 'P&L%')} field="pnlPct" current={sortField} dir={sortDir} onSort={toggleSort} />
@@ -821,22 +821,22 @@ function TradeLog({
                 trade.pnlPct >= 0 ? 'bg-emerald-500/[0.02]' : 'bg-rose-500/[0.02]'
               }`}
             >
-              <span className="text-[9px] font-mono text-neutral/60">{trade.entryDate}</span>
-              <span className="text-[9px] font-mono text-neutral/60 text-right">
+              <span className="text-mini font-mono text-neutral/60">{trade.entryDate}</span>
+              <span className="text-mini font-mono text-neutral/60 text-right">
                 {trade.entryPrice.toFixed(2)}
               </span>
-              <span className="text-[9px] font-mono text-neutral/60">{trade.exitDate}</span>
-              <span className="text-[9px] font-mono text-neutral/60 text-right">
+              <span className="text-mini font-mono text-neutral/60">{trade.exitDate}</span>
+              <span className="text-mini font-mono text-neutral/60 text-right">
                 {trade.exitPrice.toFixed(2)}
               </span>
               <span
-                className={`text-[9px] font-mono font-bold text-right ${
+                className={`text-mini font-mono font-bold text-right ${
                   trade.pnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'
                 }`}
               >
                 {trade.pnlPct > 0 ? '+' : ''}{trade.pnlPct.toFixed(1)}%
               </span>
-              <span className="text-[9px] font-mono text-neutral/50 text-right">
+              <span className="text-mini font-mono text-neutral/50 text-right">
                 {trade.holdingDays}d
               </span>
             </div>
@@ -867,14 +867,14 @@ function SortHeader({
   return (
     <button
       onClick={() => onSort(field)}
-      className={`flex items-center gap-0.5 text-[7px] font-black font-mono uppercase tracking-wider text-left ${
+      className={`flex items-center gap-0.5 text-micro font-black font-mono uppercase tracking-wider text-left ${
         isActive ? 'text-rose-400' : 'text-neutral/40 hover:text-neutral/60'
       } transition-colors`}
     >
       {label}
       <ArrowUpDown className={`w-2 h-2 ${isActive ? 'text-rose-400' : 'text-neutral/20'}`} />
       {isActive && (
-        <span className="text-[6px]">{dir === 'asc' ? 'ASC' : 'DESC'}</span>
+        <span className="text-micro">{dir === 'asc' ? 'ASC' : 'DESC'}</span>
       )}
     </button>
   );

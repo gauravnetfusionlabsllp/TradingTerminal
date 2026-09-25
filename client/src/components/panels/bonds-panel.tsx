@@ -13,10 +13,10 @@ export function BondsPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Landmark className="w-4 h-4 text-amber-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-amber-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-amber-400">
             {t('panelBonds')}
           </span>
         </div>
@@ -31,7 +31,7 @@ export function BondsPanel() {
           <button
             key={t_}
             onClick={() => setTab(t_)}
-            className={`flex-1 py-1.5 text-[8px] font-black uppercase tracking-widest border-b-2 transition-colors ${
+            className={`flex-1 py-1.5 text-micro font-black uppercase tracking-widest border-b-2 transition-colors ${
               tab === t_
                 ? 'border-amber-400 text-amber-400'
                 : 'border-transparent text-neutral/40 hover:text-neutral'
@@ -44,7 +44,7 @@ export function BondsPanel() {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-amber-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-amber-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
@@ -60,14 +60,14 @@ function YieldCurveView({ yields, spreads }: { yields: YieldPoint[]; spreads: { 
   const t = useT();
 
   if (yields.length === 0) {
-    return <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">{t('noData')}</div>;
+    return <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">{t('noData')}</div>;
   }
 
   return (
     <div>
       {/* Yield curve chart */}
       <div className="px-3 py-3 border-b border-border/20">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
           {t('bondsYieldCurve')}
         </div>
         <YieldCurveChart yields={yields} />
@@ -77,10 +77,10 @@ function YieldCurveView({ yields, spreads }: { yields: YieldPoint[]; spreads: { 
       <div className="grid grid-cols-2 gap-px bg-border/10">
         {yields.map((y) => (
           <div key={y.symbol} className="px-3 py-2 bg-black">
-            <div className="text-[8px] font-mono text-neutral/40 uppercase">{y.maturity} {t('bondsYield')}</div>
+            <div className="text-micro font-mono text-neutral/40 uppercase">{y.maturity} {t('bondsYield')}</div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
               <span className="text-[16px] font-mono font-black text-white">{y.yield.toFixed(3)}%</span>
-              <span className={`text-[9px] font-mono font-bold ${y.change >= 0 ? 'text-bearish' : 'text-bullish'}`}>
+              <span className={`text-mini font-mono font-bold ${y.change >= 0 ? 'text-bearish' : 'text-bullish'}`}>
                 {y.change >= 0 ? '+' : ''}{(y.change * 100).toFixed(1)}bp
               </span>
             </div>
@@ -90,14 +90,14 @@ function YieldCurveView({ yields, spreads }: { yields: YieldPoint[]; spreads: { 
 
       {/* Spreads */}
       <div className="px-3 py-2 border-t border-border/20">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-1.5">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-1.5">
           {t('bondsSpreads')}
         </div>
         <div className="flex gap-4">
           {spreads.map((s) => (
             <div key={s.name} className="flex items-center gap-1.5">
-              <span className="text-[8px] font-mono text-neutral/50 uppercase">{s.name}</span>
-              <span className={`text-[10px] font-mono font-bold ${
+              <span className="text-micro font-mono text-neutral/50 uppercase">{s.name}</span>
+              <span className={`text-mini font-mono font-bold ${
                 s.value >= 0 ? 'text-bullish' : 'text-bearish'
               }`}>
                 {s.value >= 0 ? '+' : ''}{s.value}bp
@@ -147,22 +147,22 @@ function YieldCurveChart({ yields }: { yields: YieldPoint[] }) {
         <g key={v}>
           <line
             x1={PAD_X} y1={scaleY(v)} x2={W - PAD_X} y2={scaleY(v)}
-            stroke="rgba(255,255,255,0.05)" strokeDasharray="2,2"
+            stroke="color-mix(in srgb, var(--color-white) 5%, transparent)" strokeDasharray="2,2"
           />
-          <text x={PAD_X - 3} y={scaleY(v) + 3} textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize={7} fontFamily="monospace">
+          <text x={PAD_X - 3} y={scaleY(v) + 3} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 25%, transparent)" fontSize={7} fontFamily="inherit">
             {v.toFixed(1)}
           </text>
         </g>
       ))}
 
       {/* Curve line */}
-      <path d={pathD} fill="none" stroke="#f59e0b" strokeWidth={2} />
+      <path d={pathD} fill="none" stroke="var(--color-amber-500)" strokeWidth={2} />
 
       {/* Data points */}
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r={3} fill="#f59e0b" />
-          <text x={p.x} y={H - 2} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize={7} fontFamily="monospace">
+          <circle cx={p.x} cy={p.y} r={3} fill="var(--color-amber-500)" />
+          <text x={p.x} y={H - 2} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize={7} fontFamily="inherit">
             {p.yield.maturity}
           </text>
         </g>
@@ -175,12 +175,12 @@ function BondEtfList({ etfs }: { etfs: BondEtf[] }) {
   const t = useT();
 
   if (etfs.length === 0) {
-    return <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">{t('noData')}</div>;
+    return <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">{t('noData')}</div>;
   }
 
   return (
     <div>
-      <div className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+      <div className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider">
         <span>{t('symbol')}</span>
         <span className="text-right">{t('price')}</span>
         <span className="text-right">{t('moversChange')}</span>
@@ -190,18 +190,18 @@ function BondEtfList({ etfs }: { etfs: BondEtf[] }) {
       {etfs.map((etf) => (
         <div key={etf.symbol} className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr] px-3 py-1.5 border-b border-border/10 hover:bg-white/[0.02] transition-colors">
           <div>
-            <div className="text-[10px] font-mono font-bold text-white">{etf.symbol}</div>
-            <div className="text-[7px] font-mono text-neutral/30 truncate">{etf.name}</div>
+            <div className="text-mini font-mono font-bold text-white">{etf.symbol}</div>
+            <div className="text-micro font-mono text-neutral/30 truncate">{etf.name}</div>
           </div>
-          <span className="text-[10px] font-mono text-white text-right self-center">
+          <span className="text-mini font-mono text-white text-right self-center">
             ${etf.price.toFixed(2)}
           </span>
-          <span className={`text-[10px] font-mono font-bold text-right self-center ${
+          <span className={`text-mini font-mono font-bold text-right self-center ${
             etf.changePercent >= 0 ? 'text-bullish' : 'text-bearish'
           }`}>
             {etf.changePercent >= 0 ? '+' : ''}{etf.changePercent.toFixed(2)}%
           </span>
-          <span className="text-[9px] font-mono text-neutral/50 text-right self-center">
+          <span className="text-mini font-mono text-neutral/50 text-right self-center">
             {fmtVol(etf.volume)}
           </span>
         </div>

@@ -27,9 +27,9 @@ function getHeatBg(changePercent: number): string {
   if (abs < 0.1) return '';
   const intensity = Math.min(abs / 3, 1); // cap at 3% for max intensity
   if (changePercent > 0) {
-    return `rgba(34, 197, 94, ${0.03 + intensity * 0.08})`;
+    return `color-mix(in srgb, var(--color-green-500) calc((${0.03 + intensity * 0.08}) * 100%), transparent)`;
   }
-  return `rgba(239, 68, 68, ${0.03 + intensity * 0.08})`;
+  return `color-mix(in srgb, var(--color-red-500) calc((${0.03 + intensity * 0.08}) * 100%), transparent)`;
 }
 
 export function FuturesPanel() {
@@ -90,10 +90,10 @@ export function FuturesPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-amber-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-amber-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-amber-400">
             {t('panelFutures')}
           </span>
         </div>
@@ -107,8 +107,8 @@ export function FuturesPanel() {
 
       {/* Summary bar */}
       {summary && (
-        <div className="flex items-center justify-between px-3 py-1 bg-[#080808] border-b border-border/20 shrink-0">
-          <div className="flex items-center gap-3 text-[8px] font-mono">
+        <div className="flex items-center justify-between px-3 py-1 bg-raised border-b border-border/20 shrink-0">
+          <div className="flex items-center gap-3 text-micro font-mono">
             <span className="text-neutral/50">
               <TrendingUp className="w-2.5 h-2.5 inline text-bullish mr-0.5" />
               <span className="text-bullish">{summary.up}</span>
@@ -117,7 +117,7 @@ export function FuturesPanel() {
               <span className="text-bearish">{summary.down}</span>
             </span>
           </div>
-          <div className="flex items-center gap-3 text-[8px] font-mono font-bold">
+          <div className="flex items-center gap-3 text-micro font-mono font-bold">
             {summary.es && (
               <span className={summary.es.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}>
                 ES {summary.es.changePercent >= 0 ? '+' : ''}{summary.es.changePercent.toFixed(2)}%
@@ -134,11 +134,11 @@ export function FuturesPanel() {
 
       {/* Implied open indicator */}
       {impliedOpen && (
-        <div className="flex items-center justify-center px-3 py-1 bg-[#060606] border-b border-border/20 shrink-0">
-          <span className="text-[8px] font-mono text-neutral/50 mr-1.5">
+        <div className="flex items-center justify-center px-3 py-1 bg-raised border-b border-border/20 shrink-0">
+          <span className="text-micro font-mono text-neutral/50 mr-1.5">
             {t('futImpliedOpen')}:
           </span>
-          <span className={`text-[8px] font-mono font-bold ${
+          <span className={`text-micro font-mono font-bold ${
             impliedOpen.direction === 'up' ? 'text-bullish' : 'text-bearish'
           }`}>
             {impliedOpen.direction === 'up' ? '+' : ''}{impliedOpen.percent.toFixed(2)}%
@@ -152,7 +152,7 @@ export function FuturesPanel() {
           <button
             key={cat}
             onClick={() => setCategory(cat)}
-            className={`flex-1 py-1.5 text-[7px] font-black uppercase tracking-widest border-b-2 transition-colors ${
+            className={`flex-1 py-1.5 text-micro font-black uppercase tracking-widest border-b-2 transition-colors ${
               category === cat
                 ? 'border-amber-400 text-amber-400'
                 : 'border-transparent text-neutral/40 hover:text-neutral'
@@ -164,7 +164,7 @@ export function FuturesPanel() {
       </div>
 
       {/* Column headers */}
-      <div className={`grid ${showVsCash ? 'grid-cols-[1.2fr_0.8fr_0.7fr_0.5fr_0.9fr_0.6fr_0.6fr]' : 'grid-cols-[1.2fr_0.8fr_0.7fr_0.5fr_0.9fr_0.6fr]'} px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider`}>
+      <div className={`grid ${showVsCash ? 'grid-cols-[1.2fr_0.8fr_0.7fr_0.5fr_0.9fr_0.6fr_0.6fr]' : 'grid-cols-[1.2fr_0.8fr_0.7fr_0.5fr_0.9fr_0.6fr]'} px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider`}>
         <SortHeader label={t('eventDescription').split(' ')[0]} sortKey="name" currentKey={sortKey} asc={sortAsc} onClick={handleSort} />
         <SortHeader label={t('priceUsd').split(' ')[0]} sortKey="price" currentKey={sortKey} asc={sortAsc} onClick={handleSort} className="text-right" />
         <SortHeader label={t('moversChange')} sortKey="changePercent" currentKey={sortKey} asc={sortAsc} onClick={handleSort} className="text-right" />
@@ -177,13 +177,13 @@ export function FuturesPanel() {
       {/* List */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !futures && (
-          <div className="text-center py-8 text-amber-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-amber-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
 
         {!isLoading && sorted.length === 0 && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {t('futNoData')}
           </div>
         )}
@@ -213,24 +213,24 @@ function FutureRow({ future: f, showVsCash, onClick }: { future: FutureData; sho
     >
       {/* Name */}
       <div className="flex flex-col justify-center min-w-0">
-        <span className="text-[10px] font-mono font-bold text-white truncate">{f.name}</span>
-        <span className="text-[7px] font-mono text-neutral/40">{f.symbol}</span>
+        <span className="text-mini font-mono font-bold text-white truncate">{f.name}</span>
+        <span className="text-micro font-mono text-neutral/40">{f.symbol}</span>
       </div>
 
       {/* Price */}
-      <span className="text-[10px] font-mono text-white text-right self-center">
+      <span className="text-mini font-mono text-white text-right self-center">
         {f.price.toFixed(decimals)}
       </span>
 
       {/* Change */}
-      <span className={`text-[10px] font-mono font-bold text-right self-center ${
+      <span className={`text-mini font-mono font-bold text-right self-center ${
         isPositive ? 'text-bullish' : 'text-bearish'
       }`}>
         {isPositive ? '+' : ''}{f.change.toFixed(decimals)}
       </span>
 
       {/* Change % */}
-      <span className={`text-[9px] font-mono font-bold text-right self-center ${
+      <span className={`text-mini font-mono font-bold text-right self-center ${
         isPositive ? 'text-bullish' : 'text-bearish'
       }`}>
         {isPositive ? '+' : ''}{f.changePercent.toFixed(2)}%
@@ -240,23 +240,23 @@ function FutureRow({ future: f, showVsCash, onClick }: { future: FutureData; sho
       <div className="flex items-center justify-end gap-1 self-center">
         {f.dayLow != null && f.dayHigh != null ? (
           <>
-            <span className="text-[7px] font-mono text-bearish/60">{f.dayLow.toFixed(decimals > 3 ? 4 : 2)}</span>
+            <span className="text-micro font-mono text-bearish/60">{f.dayLow.toFixed(decimals > 3 ? 4 : 2)}</span>
             <DayRangeBar low={f.dayLow} high={f.dayHigh} current={f.price} />
-            <span className="text-[7px] font-mono text-bullish/60">{f.dayHigh.toFixed(decimals > 3 ? 4 : 2)}</span>
+            <span className="text-micro font-mono text-bullish/60">{f.dayHigh.toFixed(decimals > 3 ? 4 : 2)}</span>
           </>
         ) : (
-          <span className="text-[7px] font-mono text-neutral/20">--</span>
+          <span className="text-micro font-mono text-neutral/20">--</span>
         )}
       </div>
 
       {/* Volume */}
-      <span className="text-[9px] font-mono text-neutral/60 text-right self-center">
+      <span className="text-mini font-mono text-neutral/60 text-right self-center">
         {f.volume > 0 ? formatVolume(f.volume) : '--'}
       </span>
 
       {/* vs Cash (fair value spread) */}
       {showVsCash && (
-        <span className={`text-[9px] font-mono text-right self-center ${
+        <span className={`text-mini font-mono text-right self-center ${
           f.fairValueSpread == null
             ? 'text-neutral/20'
             : f.fairValueSpread >= 0 ? 'text-bullish/70' : 'text-bearish/70'

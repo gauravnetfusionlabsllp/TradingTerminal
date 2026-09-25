@@ -32,10 +32,10 @@ export function GlobalDashboardPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Globe2 className="w-4 h-4 text-blue-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-blue-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-blue-400">
             {t('panelGlobalDashboard')}
           </span>
         </div>
@@ -46,7 +46,7 @@ export function GlobalDashboardPanel() {
 
       {/* Summary bar */}
       {stats && (
-        <div className="flex items-center gap-4 px-3 py-1.5 border-b border-border/20 bg-black/60 shrink-0 text-[8px] font-mono">
+        <div className="flex items-center gap-4 px-3 py-1.5 border-b border-border/20 bg-black/60 shrink-0 text-micro font-mono">
           <span className="text-neutral/40">
             {t('gdIndices')}: <span className="text-bullish">{stats.indicesUp}</span>
             /<span className="text-bearish">{stats.indicesTotal - stats.indicesUp}</span>
@@ -67,7 +67,7 @@ export function GlobalDashboardPanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !items && (
-          <div className="text-center py-8 text-blue-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-blue-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
@@ -78,7 +78,7 @@ export function GlobalDashboardPanel() {
           return (
             <div key={cat}>
               <div className="px-3 py-1 bg-white/[0.02] border-b border-border/20">
-                <span className="text-[7px] font-black uppercase tracking-[0.15em] text-blue-400/60">
+                <span className="text-micro font-black uppercase tracking-[0.15em] text-blue-400/60">
                   {t(`gd_${cat}` as any)}
                 </span>
               </div>
@@ -108,8 +108,8 @@ function MarketTile({ item }: { item: MarketItem }) {
       />
       <div className="relative z-10">
         <div className="flex items-center justify-between">
-          <span className="text-[8px] font-mono text-neutral/50 uppercase">{item.name}</span>
-          <span className={`text-[9px] font-mono font-bold ${isPositive ? 'text-bullish' : 'text-bearish'}`}>
+          <span className="text-micro font-mono text-neutral/50 uppercase">{item.name}</span>
+          <span className={`text-mini font-mono font-bold ${isPositive ? 'text-bullish' : 'text-bearish'}`}>
             {isPositive ? '+' : ''}{item.changePercent.toFixed(2)}%
           </span>
         </div>
@@ -117,7 +117,7 @@ function MarketTile({ item }: { item: MarketItem }) {
           <span className="text-[14px] font-mono font-black text-white">
             {fmtPrice(item.price, item.category)}
           </span>
-          <span className={`text-[8px] font-mono ${isPositive ? 'text-bullish/60' : 'text-bearish/60'}`}>
+          <span className={`text-micro font-mono ${isPositive ? 'text-bullish/60' : 'text-bearish/60'}`}>
             {isPositive ? '+' : ''}{item.change.toFixed(2)}
           </span>
         </div>

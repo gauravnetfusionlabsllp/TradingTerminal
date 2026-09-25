@@ -4,6 +4,8 @@ import type { Locale } from '../i18n/translations';
 
 interface SavedWatchlist { tabs: string[]; tabSymbols: Record<string, string[]>; active: string }
 
+export type ThemeSetting = 'dark' | 'light' | 'system';
+
 export interface Notification {
   id: number;
   title: string;
@@ -23,7 +25,7 @@ export interface UserSettings {
   soundEnabled: boolean;
   autoRefreshInterval: number;
   tickerSpeed: number;
-  theme: 'dark' | 'midnight';
+  theme: ThemeSetting;
   quoteThrottle: boolean;   // off = every live tick batch renders on arrival
   quoteThrottleMs: number;  // on = at most one live price render per this many ms
 }
@@ -295,7 +297,9 @@ export const useAppStore = create<AppState>()(
       // Default merge is shallow: a saved `settings` would drop fields added since — keep their defaults
       merge: (persisted, current) => {
         const p = persisted as Partial<AppState> | undefined;
-        return { ...current, ...p, settings: { ...current.settings, ...p?.settings } };
+        const settings = { ...current.settings, ...p?.settings };
+        if (!['dark', 'light', 'system'].includes(settings.theme)) settings.theme = 'dark'; // retired 'midnight'
+        return { ...current, ...p, settings };
       },
     }
   )

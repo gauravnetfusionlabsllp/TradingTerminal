@@ -125,7 +125,7 @@ function RangeBar({ pct }: { pct: number | null }) {
           style={{ left: `calc(${clamped}% - 2.5px)` }}
         />
       </div>
-      <span className="text-[7px] font-mono text-neutral/40 w-7 text-right shrink-0">
+      <span className="text-micro font-mono text-neutral/40 w-7 text-right shrink-0">
         {clamped.toFixed(0)}%
       </span>
     </div>
@@ -280,14 +280,14 @@ export function WatchlistPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Star className="w-4 h-4 text-cyan-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-cyan-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
             {t('watchlist')}
           </span>
           {items && (
-            <span className="text-[7px] font-mono text-neutral/30">
+            <span className="text-micro font-mono text-neutral/30">
               {items.length}
             </span>
           )}
@@ -321,13 +321,13 @@ export function WatchlistPanel() {
               onFocus={() => searchInput && setShowDropdown(true)}
               onKeyDown={handleInputKeyDown}
               placeholder={t('addSymbol')}
-              className="w-full bg-black border border-border/30 pl-8 pr-2 py-1 text-[9px] font-mono text-white placeholder:text-neutral/20 outline-none focus:border-cyan-400/50 transition-colors"
+              className="w-full bg-black border border-border/30 pl-8 pr-2 py-1 text-mini font-mono text-white placeholder:text-neutral/20 outline-none focus:border-cyan-400/50 transition-colors"
             />
           </div>
 
           {/* Suggestions dropdown */}
           {showDropdown && suggestions && suggestions.length > 0 && (
-            <div className="absolute z-50 left-3 right-3 mt-0.5 bg-[#0a0a0a] border border-border/30 max-h-40 overflow-auto no-scrollbar">
+            <div className="absolute z-50 left-3 right-3 mt-0.5 bg-raised border border-border/30 max-h-40 overflow-auto no-scrollbar">
               {suggestions.map((s: TickerSuggestion, idx: number) => (
                 <button
                   key={s.symbol}
@@ -339,15 +339,15 @@ export function WatchlistPanel() {
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-[9px] font-mono font-bold shrink-0">
+                    <span className="text-mini font-mono font-bold shrink-0">
                       {s.symbol}
                     </span>
-                    <span className="text-[7px] font-mono text-neutral/40 truncate">
+                    <span className="text-micro font-mono text-neutral/40 truncate">
                       {s.name}
                     </span>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-[7px] font-mono text-neutral/20">
+                    <span className="text-micro font-mono text-neutral/20">
                       {s.exchange}
                     </span>
                     <Plus className="w-2.5 h-2.5 text-cyan-400/60" />
@@ -360,7 +360,7 @@ export function WatchlistPanel() {
       )}
 
       {/* ── Column Headers ── */}
-      <div className="grid grid-cols-[1fr_0.6fr_0.5fr_0.6fr_0.5fr_0.7fr_0.8fr_36px] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider shrink-0 gap-1">
+      <div className="grid grid-cols-[1fr_0.6fr_0.5fr_0.6fr_0.5fr_0.7fr_0.8fr_36px] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider shrink-0 gap-1">
         <ColHeader
           label={t('symbol')}
           sortKey="symbol"
@@ -423,7 +423,7 @@ export function WatchlistPanel() {
       {/* ── List ── */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !items && (
-          <div className="text-center py-8 text-cyan-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-cyan-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
@@ -431,7 +431,7 @@ export function WatchlistPanel() {
         {!isLoading && (!items || items.length === 0) && (
           <div className="text-center py-8">
             <Star className="w-5 h-5 text-cyan-400/20 mx-auto mb-2" />
-            <div className="text-neutral/30 text-[9px] font-mono uppercase">
+            <div className="text-neutral/30 text-mini font-mono uppercase">
               {t('addToWatchlist')}
             </div>
           </div>
@@ -450,24 +450,24 @@ export function WatchlistPanel() {
             >
               {/* Symbol + name */}
               <div className="min-w-0 self-center">
-                <div className="text-[10px] font-mono font-bold text-white truncate group-hover:text-cyan-300 transition-colors">
+                <div className="text-mini font-mono font-bold text-white truncate group-hover:text-cyan-300 transition-colors">
                   {item.symbol}
                 </div>
                 {item.name && item.name !== item.symbol && (
-                  <div className="text-[7px] font-mono text-neutral/30 truncate">
+                  <div className="text-micro font-mono text-neutral/30 truncate">
                     {item.name}
                   </div>
                 )}
               </div>
 
               {/* Price */}
-              <span className="text-[10px] font-mono text-white text-right self-center">
+              <span className="text-mini font-mono text-white text-right self-center">
                 {q ? `$${fmtNum(q.price)}` : '--'}
               </span>
 
               {/* Change% */}
               <span
-                className={`text-[9px] font-mono font-bold text-right self-center ${
+                className={`text-mini font-mono font-bold text-right self-center ${
                   isUp ? 'text-bullish' : 'text-bearish'
                 }`}
               >
@@ -477,19 +477,19 @@ export function WatchlistPanel() {
               </span>
 
               {/* Volume */}
-              <span className="text-[9px] font-mono text-neutral/50 text-right self-center">
+              <span className="text-mini font-mono text-neutral/50 text-right self-center">
                 {q ? fmtVol(q.volume) : '--'}
               </span>
 
               {/* Market Cap */}
-              <span className="text-[9px] font-mono text-neutral/50 text-right self-center">
+              <span className="text-mini font-mono text-neutral/50 text-right self-center">
                 {q?.marketCap ? fmtVol(q.marketCap) : '--'}
               </span>
 
               {/* Day High / Low */}
               <div className="text-right self-center">
                 {q && q.dayHigh != null && q.dayLow != null ? (
-                  <div className="text-[8px] font-mono text-neutral/40 leading-tight">
+                  <div className="text-micro font-mono text-neutral/40 leading-tight">
                     <span className="text-bullish/70">
                       {fmtNum(q.dayHigh)}
                     </span>
@@ -499,7 +499,7 @@ export function WatchlistPanel() {
                     </span>
                   </div>
                 ) : (
-                  <span className="text-[8px] font-mono text-neutral/30">
+                  <span className="text-micro font-mono text-neutral/30">
                     --
                   </span>
                 )}
@@ -517,13 +517,13 @@ export function WatchlistPanel() {
                         q.fiftyTwoWeekHigh,
                       )}
                     />
-                    <div className="flex justify-between text-[6px] font-mono text-neutral/20 mt-0.5">
+                    <div className="flex justify-between text-micro font-mono text-neutral/20 mt-0.5">
                       <span>{fmtNum(q.fiftyTwoWeekLow, 0)}</span>
                       <span>{fmtNum(q.fiftyTwoWeekHigh, 0)}</span>
                     </div>
                   </div>
                 ) : (
-                  <span className="text-[8px] font-mono text-neutral/30">
+                  <span className="text-micro font-mono text-neutral/30">
                     --
                   </span>
                 )}
@@ -542,7 +542,7 @@ export function WatchlistPanel() {
                     )}
                     width={36}
                     height={14}
-                    color={isUp ? '#22c55e' : '#ef4444'}
+                    color={isUp ? 'var(--color-green-500)' : 'var(--color-red-500)'}
                   />
                 )}
                 {user && (
@@ -562,7 +562,7 @@ export function WatchlistPanel() {
       </div>
 
       {/* ── Status bar ── */}
-      <div className="px-3 py-1 border-t border-border/30 bg-[#050505] shrink-0 flex items-center justify-between text-[8px] font-mono text-neutral/30">
+      <div className="px-3 py-1 border-t border-border/30 bg-raised shrink-0 flex items-center justify-between text-micro font-mono text-neutral/30">
         <span>
           {items?.length ?? 0} {t('scrResults')}
         </span>

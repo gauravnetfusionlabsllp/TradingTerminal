@@ -22,10 +22,10 @@ export function DrawdownPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <TrendingDown className="w-4 h-4 text-rose-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-rose-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-rose-400">
             {t('panelDrawdown') ?? 'DRAWDOWN ANALYSIS'}
           </span>
         </div>
@@ -44,12 +44,12 @@ export function DrawdownPanel() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value.toUpperCase())}
               placeholder="Symbol"
-              className="w-20 pl-6 pr-1.5 py-1 bg-white/[0.03] border border-border/20 rounded text-[10px] font-mono text-white placeholder:text-neutral/30 focus:outline-none focus:border-rose-400/40"
+              className="w-20 pl-6 pr-1.5 py-1 bg-white/[0.03] border border-border/20 rounded text-mini font-mono text-white placeholder:text-neutral/30 focus:outline-none focus:border-rose-400/40"
             />
           </div>
           <button
             type="submit"
-            className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-[8px] font-black font-mono uppercase text-rose-400 hover:bg-rose-500/20 transition-colors"
+            className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-micro font-black font-mono uppercase text-rose-400 hover:bg-rose-500/20 transition-colors"
           >
             GO
           </button>
@@ -60,7 +60,7 @@ export function DrawdownPanel() {
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-2 py-1 rounded text-[8px] font-black font-mono uppercase tracking-wider transition-colors ${
+              className={`px-2 py-1 rounded text-micro font-black font-mono uppercase tracking-wider transition-colors ${
                 period === p
                   ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                   : 'text-neutral/40 hover:text-neutral/60 border border-transparent'
@@ -75,13 +75,13 @@ export function DrawdownPanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-rose-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-rose-400 text-mini font-mono uppercase animate-pulse">
             {t('loading') ?? 'Loading...'}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {t('ddNoData') ?? 'No drawdown data available'}
           </div>
         )}
@@ -134,13 +134,13 @@ function SummaryStatsBar({ stats, symbol }: { stats: DrawdownStats; symbol: stri
 
   return (
     <div className="px-3 py-3 border-b border-border/20">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {symbol} {t('ddSummary') ?? 'Summary'}
       </div>
       <div className="grid grid-cols-5 gap-2">
         {items.map((item) => (
           <div key={item.label} className="text-center">
-            <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+            <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
               {item.label}
             </div>
             <div className={`text-[13px] font-black font-mono ${item.color}`}>{item.value}</div>
@@ -253,15 +253,15 @@ function UnderwaterChart({ series, stats }: { series: DrawdownPoint[]; stats: Dr
 
   return (
     <div className="px-3 py-3 border-b border-border/20">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {t('ddUnderwaterChart') ?? 'Underwater Chart'}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(244,63,94,0.05)" />
-            <stop offset="40%" stopColor="rgba(244,63,94,0.15)" />
-            <stop offset="100%" stopColor="rgba(190,18,60,0.45)" />
+            <stop offset="0%" stopColor="color-mix(in srgb, var(--color-rose-500) 5%, transparent)" />
+            <stop offset="40%" stopColor="color-mix(in srgb, var(--color-rose-500) 15%, transparent)" />
+            <stop offset="100%" stopColor="color-mix(in srgb, var(--color-rose-700) 45%, transparent)" />
           </linearGradient>
         </defs>
 
@@ -275,16 +275,16 @@ function UnderwaterChart({ series, stats }: { series: DrawdownPoint[]; stats: Dr
                 y1={y}
                 x2={W - PAD_R}
                 y2={y}
-                stroke={v === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}
+                stroke={v === 0 ? 'color-mix(in srgb, var(--color-white) 15%, transparent)' : 'color-mix(in srgb, var(--color-white) 5%, transparent)'}
                 strokeDasharray={v === 0 ? undefined : '3,3'}
               />
               <text
                 x={PAD_L - 6}
                 y={y + 3}
                 textAnchor="end"
-                fill={v === 0 ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.25)'}
+                fill={v === 0 ? 'color-mix(in srgb, var(--color-white) 50%, transparent)' : 'color-mix(in srgb, var(--color-white) 25%, transparent)'}
                 fontSize={8}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight={v === 0 ? 'bold' : 'normal'}
               >
                 {v === 0 ? '0%' : `${v}%`}
@@ -300,9 +300,9 @@ function UnderwaterChart({ series, stats }: { series: DrawdownPoint[]; stats: Dr
             x={lbl.x}
             y={H - 6}
             textAnchor="middle"
-            fill="rgba(255,255,255,0.25)"
+            fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
             fontSize={7}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {lbl.label}
           </text>
@@ -313,7 +313,7 @@ function UnderwaterChart({ series, stats }: { series: DrawdownPoint[]; stats: Dr
 
         {/* Drawdown line */}
         {pathD && (
-          <path d={pathD} fill="none" stroke="#f43f5e" strokeWidth={1.2} opacity={0.9} />
+          <path d={pathD} fill="none" stroke="var(--color-rose-500)" strokeWidth={1.2} opacity={0.9} />
         )}
 
         {/* 0% reference line (solid) */}
@@ -322,21 +322,21 @@ function UnderwaterChart({ series, stats }: { series: DrawdownPoint[]; stats: Dr
           y1={scaleY(0)}
           x2={W - PAD_R}
           y2={scaleY(0)}
-          stroke="rgba(255,255,255,0.2)"
+          stroke="color-mix(in srgb, var(--color-white) 20%, transparent)"
           strokeWidth={1}
         />
 
         {/* Current drawdown annotation */}
         {lastPt && lastPt.drawdown < 0 && (
           <g>
-            <circle cx={lastX} cy={lastY} r={3.5} fill="#f43f5e" />
-            <circle cx={lastX} cy={lastY} r={2} fill="#000" />
+            <circle cx={lastX} cy={lastY} r={3.5} fill="var(--color-rose-500)" />
+            <circle cx={lastX} cy={lastY} r={2} fill="var(--color-black)" />
             <line
               x1={lastX}
               y1={lastY + 5}
               x2={lastX}
               y2={lastY + 18}
-              stroke="#f43f5e"
+              stroke="var(--color-rose-500)"
               strokeWidth={0.8}
               strokeDasharray="2,1"
             />
@@ -346,17 +346,17 @@ function UnderwaterChart({ series, stats }: { series: DrawdownPoint[]; stats: Dr
               width={56}
               height={14}
               rx={2}
-              fill="rgba(244,63,94,0.15)"
-              stroke="rgba(244,63,94,0.4)"
+              fill="color-mix(in srgb, var(--color-rose-500) 15%, transparent)"
+              stroke="color-mix(in srgb, var(--color-rose-500) 40%, transparent)"
               strokeWidth={0.5}
             />
             <text
               x={lastX}
               y={lastY + 28}
               textAnchor="middle"
-              fill="#fb7185"
+              fill="var(--color-rose-400)"
               fontSize={8}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {lastPt.drawdown.toFixed(1)}%
@@ -379,7 +379,7 @@ function UnderwaterChart({ series, stats }: { series: DrawdownPoint[]; stats: Dr
                 y1={my - 3}
                 x2={mx}
                 y2={my - 14}
-                stroke="#be123c"
+                stroke="var(--color-rose-700)"
                 strokeWidth={0.8}
                 strokeDasharray="2,1"
               />
@@ -389,17 +389,17 @@ function UnderwaterChart({ series, stats }: { series: DrawdownPoint[]; stats: Dr
                 width={64}
                 height={14}
                 rx={2}
-                fill="rgba(190,18,60,0.2)"
-                stroke="rgba(190,18,60,0.5)"
+                fill="color-mix(in srgb, var(--color-rose-700) 20%, transparent)"
+                stroke="color-mix(in srgb, var(--color-rose-700) 50%, transparent)"
                 strokeWidth={0.5}
               />
               <text
                 x={mx}
                 y={my - 18}
                 textAnchor="middle"
-                fill="#fda4af"
+                fill="var(--color-rose-300)"
                 fontSize={7}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 MAX {stats.maxDrawdown.toFixed(1)}%
@@ -472,17 +472,17 @@ function RiskMetrics({ series, stats }: { series: DrawdownPoint[]; stats: Drawdo
 
   return (
     <div className="px-3 py-3 border-b border-border/20">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {t('ddRiskMetrics') ?? 'Risk Metrics'}
       </div>
       <div className="grid grid-cols-3 gap-3">
         {items.map((item) => (
           <div key={item.label} className="bg-white/[0.02] rounded px-2.5 py-2 border border-border/10">
-            <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-1">
+            <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">
               {item.label}
             </div>
             <div className={`text-[16px] font-black font-mono ${item.color}`}>{item.value}</div>
-            <div className="text-[6px] font-mono text-neutral/25 mt-0.5">{item.desc}</div>
+            <div className="text-micro font-mono text-neutral/25 mt-0.5">{item.desc}</div>
           </div>
         ))}
       </div>
@@ -502,7 +502,7 @@ function DrawdownEventsTable({ events }: { events: DrawdownEvent[] }) {
 
   if (sorted.length === 0) {
     return (
-      <div className="px-3 py-4 text-center text-neutral/30 text-[9px] font-mono uppercase">
+      <div className="px-3 py-4 text-center text-neutral/30 text-mini font-mono uppercase">
         {t('ddNoEvents') ?? 'No significant drawdowns (> 5%) detected'}
       </div>
     );
@@ -510,12 +510,12 @@ function DrawdownEventsTable({ events }: { events: DrawdownEvent[] }) {
 
   return (
     <div className="px-3 py-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {t('ddEvents') ?? 'Drawdown Events'} ({sorted.length})
       </div>
 
       {/* Header */}
-      <div className="grid grid-cols-[0.3fr_1fr_1fr_1fr_0.8fr_0.7fr_0.7fr_0.6fr] gap-1 px-1 py-1 border-b border-border/15 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+      <div className="grid grid-cols-[0.3fr_1fr_1fr_1fr_0.8fr_0.7fr_0.7fr_0.6fr] gap-1 px-1 py-1 border-b border-border/15 text-micro font-black text-neutral/40 uppercase tracking-wider">
         <span>#</span>
         <span>{t('ddPeakDate') ?? 'Peak'}</span>
         <span>{t('ddTroughDate') ?? 'Trough'}</span>
@@ -536,27 +536,27 @@ function DrawdownEventsTable({ events }: { events: DrawdownEvent[] }) {
             key={i}
             className="grid grid-cols-[0.3fr_1fr_1fr_1fr_0.8fr_0.7fr_0.7fr_0.6fr] gap-1 px-1 py-1.5 border-b border-border/8 hover:bg-white/[0.02] transition-colors"
           >
-            <span className="text-[9px] font-mono text-neutral/30">{i + 1}</span>
-            <span className="text-[9px] font-mono text-neutral/60">{formatDate(event.peakDate)}</span>
-            <span className="text-[9px] font-mono text-neutral/60">{formatDate(event.troughDate)}</span>
-            <span className="text-[9px] font-mono text-neutral/60">
+            <span className="text-mini font-mono text-neutral/30">{i + 1}</span>
+            <span className="text-mini font-mono text-neutral/60">{formatDate(event.peakDate)}</span>
+            <span className="text-mini font-mono text-neutral/60">{formatDate(event.troughDate)}</span>
+            <span className="text-mini font-mono text-neutral/60">
               {event.recoveryDate ? formatDate(event.recoveryDate) : '--'}
             </span>
             <span
-              className="text-[9px] font-mono font-bold text-right"
-              style={{ color: `rgba(244,63,94,${0.4 + ddIntensity * 0.6})` }}
+              className="text-mini font-mono font-bold text-right"
+              style={{ color: `color-mix(in srgb, var(--color-rose-500) calc((${0.4 + ddIntensity * 0.6}) * 100%), transparent)` }}
             >
               {event.maxDrawdown.toFixed(1)}%
             </span>
-            <span className="text-[9px] font-mono text-neutral/50 text-right">
+            <span className="text-mini font-mono text-neutral/50 text-right">
               {event.durationDays}d
             </span>
-            <span className="text-[9px] font-mono text-neutral/50 text-right">
+            <span className="text-mini font-mono text-neutral/50 text-right">
               {event.recoveryDays != null ? `${event.recoveryDays}d` : '--'}
             </span>
             <span className="text-right">
               <span
-                className={`inline-block px-1.5 py-0.5 rounded text-[7px] font-black font-mono uppercase tracking-wider ${
+                className={`inline-block px-1.5 py-0.5 rounded text-micro font-black font-mono uppercase tracking-wider ${
                   isActive
                     ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                     : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'

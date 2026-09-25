@@ -73,10 +73,10 @@ export function CarryTradePanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-green-500" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-green-500">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-green-500">
             {tr(t, 'ctTitle', 'Carry Trade Monitor')}
           </span>
         </div>
@@ -93,13 +93,13 @@ export function CarryTradePanel() {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-green-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-green-400 text-mini font-mono uppercase animate-pulse">
             {tr(t, 'loading', 'Loading...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral-500 text-mini font-mono uppercase">
             {tr(t, 'ctNoData', 'No data available')}
           </div>
         )}
@@ -134,7 +134,7 @@ function EnvironmentBadge({
       : tr(t, 'ctNeutral', 'Neutral');
 
   return (
-    <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider ${style.text} ${style.bg}`}>
+    <span className={`px-1.5 py-0.5 text-micro font-black font-mono uppercase tracking-wider ${style.text} ${style.bg}`}>
       {label}
     </span>
   );
@@ -177,10 +177,10 @@ function SummaryMetrics({
       <div className="grid grid-cols-4 gap-px bg-border/10">
         {metrics.map((m) => (
           <div key={m.label} className="bg-black px-2 py-1.5">
-            <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+            <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
               {m.label}
             </div>
-            <div className={`text-[9px] font-mono font-bold ${m.color} truncate`}>
+            <div className={`text-mini font-mono font-bold ${m.color} truncate`}>
               {m.value}
             </div>
           </div>
@@ -211,7 +211,7 @@ function CarryTable({
       {/* G10 Section */}
       <div className="px-3 py-1 border-b border-border/10 flex items-center gap-2">
         <div className="w-1 h-1 bg-green-500" />
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'ctG10Carry', 'G10 Carry')}
         </span>
       </div>
@@ -223,7 +223,7 @@ function CarryTable({
       {/* EM Section */}
       <div className="px-3 py-1 border-b border-border/10 border-t border-border/10 flex items-center gap-2">
         <div className="w-1 h-1 bg-yellow-500" />
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'ctEMCarry', 'EM Carry')}
         </span>
       </div>
@@ -237,17 +237,17 @@ function CarryTable({
 
 function TableHeader({ t }: { t: ReturnType<typeof useT> }) {
   return (
-    <div className="grid grid-cols-[80px_64px_48px_48px_44px_60px_48px_40px_56px_1fr] gap-0 px-2 py-0.5 border-b border-border/10 bg-[#030303]">
-      <span className="text-[7px] font-mono text-neutral-600 uppercase">{tr(t, 'ctPair', 'Pair')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctSpot', 'Spot')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctChg', 'Chg%')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctCarry', 'Carry')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctVol', 'Vol')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctCtoV', 'C/V')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-center">{tr(t, 'ctTrend', 'Trend')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-center">{tr(t, 'ctRisk', 'Risk')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-center">{tr(t, 'ctSignal', 'Signal')}</span>
-      <span className="text-[7px] font-mono text-neutral-600 uppercase text-right pr-1">{tr(t, 'ct20d', '20D')}</span>
+    <div className="grid grid-cols-[80px_64px_48px_48px_44px_60px_48px_40px_56px_1fr] gap-0 px-2 py-0.5 border-b border-border/10 bg-raised">
+      <span className="text-micro font-mono text-neutral-600 uppercase">{tr(t, 'ctPair', 'Pair')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctSpot', 'Spot')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctChg', 'Chg%')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctCarry', 'Carry')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctVol', 'Vol')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-right">{tr(t, 'ctCtoV', 'C/V')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-center">{tr(t, 'ctTrend', 'Trend')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-center">{tr(t, 'ctRisk', 'Risk')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-center">{tr(t, 'ctSignal', 'Signal')}</span>
+      <span className="text-micro font-mono text-neutral-600 uppercase text-right pr-1">{tr(t, 'ct20d', '20D')}</span>
     </div>
   );
 }
@@ -266,24 +266,24 @@ function CarryRow({
     <div className="grid grid-cols-[80px_64px_48px_48px_44px_60px_48px_40px_56px_1fr] gap-0 px-2 py-[3px] border-b border-border/5 hover:bg-white/[0.02] transition-colors items-center">
       {/* Pair name */}
       <div className="flex items-center gap-1">
-        <span className="text-[8px] font-mono font-bold text-white">{pair.name}</span>
+        <span className="text-micro font-mono font-bold text-white">{pair.name}</span>
       </div>
 
       {/* Spot */}
-      <span className="text-[8px] font-mono text-white text-right">{fmtSpot(pair.spot)}</span>
+      <span className="text-micro font-mono text-white text-right">{fmtSpot(pair.spot)}</span>
 
       {/* Change % */}
-      <span className={`text-[8px] font-mono font-bold text-right ${changeColor(pair.changePct)}`}>
+      <span className={`text-micro font-mono font-bold text-right ${changeColor(pair.changePct)}`}>
         {fmtPct(pair.changePct)}
       </span>
 
       {/* Carry estimate */}
-      <span className="text-[8px] font-mono text-green-400/80 text-right">
+      <span className="text-micro font-mono text-green-400/80 text-right">
         {pair.carryEstimate.toFixed(1)}%
       </span>
 
       {/* Vol */}
-      <span className="text-[8px] font-mono text-neutral-400 text-right">
+      <span className="text-micro font-mono text-neutral-400 text-right">
         {pair.vol20d.toFixed(1)}
       </span>
 
@@ -295,24 +295,24 @@ function CarryRow({
             style={{ width: `${Math.min(barWidth, 100)}%` }}
           />
         </div>
-        <span className="text-[8px] font-mono font-bold text-white w-7 text-right">
+        <span className="text-micro font-mono font-bold text-white w-7 text-right">
           {fmtRatio(pair.carryToVol)}
         </span>
       </div>
 
       {/* Trend */}
-      <span className={`text-[7px] font-mono font-bold text-center uppercase ${trendColor(pair.trend)}`}>
+      <span className={`text-micro font-mono font-bold text-center uppercase ${trendColor(pair.trend)}`}>
         {pair.trend === 'favorable' ? 'FAV' : pair.trend === 'adverse' ? 'ADV' : 'NEU'}
       </span>
 
       {/* Risk */}
-      <span className={`text-[7px] font-mono font-bold text-center uppercase ${riskColor(pair.risk)}`}>
+      <span className={`text-micro font-mono font-bold text-center uppercase ${riskColor(pair.risk)}`}>
         {pair.risk === 'low' ? 'L' : pair.risk === 'high' ? 'H' : 'M'}
       </span>
 
       {/* Signal badge */}
       <div className="flex justify-center">
-        <span className={`px-1 py-px text-[6px] font-mono font-black uppercase border ${signal.text} ${signal.bg}`}>
+        <span className={`px-1 py-px text-micro font-mono font-black uppercase border ${signal.text} ${signal.bg}`}>
           {pair.signal === 'attractive' ? 'BUY' : pair.signal === 'dangerous' ? 'RISK' : 'HOLD'}
         </span>
       </div>
@@ -356,7 +356,7 @@ function MiniSparkline({
 
   if (!path) return null;
 
-  const color = trend === 'favorable' ? '#22c55e' : trend === 'adverse' ? '#ef4444' : '#eab308';
+  const color = trend === 'favorable' ? 'var(--color-green-500)' : trend === 'adverse' ? 'var(--color-red-500)' : 'var(--color-yellow-500)';
 
   return (
     <svg viewBox={`0 0 ${path.W} ${path.H}`} width={48} height={14}>
@@ -377,7 +377,7 @@ function YieldDifferentialsSection({
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'ctYieldDiff', 'Yield Differentials')}
         </span>
       </div>
@@ -386,18 +386,18 @@ function YieldDifferentialsSection({
           const arrow = directionArrow(d.direction);
           return (
             <div key={d.pair} className="bg-black px-2 py-1.5">
-              <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider truncate">
+              <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider truncate">
                 {d.pair}
               </div>
               <div className="flex items-center gap-1 mt-0.5">
-                <span className="text-[10px] font-mono font-bold text-white">
+                <span className="text-mini font-mono font-bold text-white">
                   {d.differential >= 0 ? '+' : ''}{d.differential.toFixed(2)}%
                 </span>
-                <span className={`text-[9px] font-mono font-bold ${arrow.color}`}>
+                <span className={`text-mini font-mono font-bold ${arrow.color}`}>
                   {arrow.symbol}
                 </span>
               </div>
-              <div className={`text-[7px] font-mono uppercase ${arrow.color}`}>
+              <div className={`text-micro font-mono uppercase ${arrow.color}`}>
                 {d.direction}
               </div>
             </div>
@@ -421,14 +421,14 @@ function NarrativeSection({
 }) {
   return (
     <div className="px-3 py-2">
-      <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider mb-1">
+      <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider mb-1">
         {tr(t, 'ctAnalysis', 'Analysis')}
       </div>
-      <p className="text-[8px] font-mono text-neutral-400 leading-relaxed">
+      <p className="text-micro font-mono text-neutral-400 leading-relaxed">
         {narrative}
       </p>
       <div className="mt-2 pt-1 border-t border-border/10">
-        <span className="text-[7px] font-mono text-neutral-700">
+        <span className="text-micro font-mono text-neutral-700">
           {tr(t, 'ctLastUpdate', 'Last update')}: {new Date(timestamp).toLocaleTimeString()}
         </span>
       </div>

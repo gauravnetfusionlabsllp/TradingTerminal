@@ -15,26 +15,26 @@ import { Compass, RefreshCw } from 'lucide-react';
 
 function getSignalColor(signal: SignalLevel): { text: string; fill: string; bg: string } {
   switch (signal) {
-    case 'EXTREME_BULLISH': return { text: 'text-emerald-300', fill: '#6ee7b7', bg: 'rgba(110,231,183,0.12)' };
-    case 'BULLISH': return { text: 'text-green-400', fill: '#4ade80', bg: 'rgba(74,222,128,0.08)' };
-    case 'NEUTRAL': return { text: 'text-neutral-400', fill: '#a3a3a3', bg: 'rgba(163,163,163,0.06)' };
-    case 'BEARISH': return { text: 'text-red-400', fill: '#f87171', bg: 'rgba(248,113,113,0.08)' };
-    case 'EXTREME_BEARISH': return { text: 'text-red-300', fill: '#fca5a5', bg: 'rgba(252,165,165,0.12)' };
+    case 'EXTREME_BULLISH': return { text: 'text-emerald-300', fill: 'var(--color-emerald-300)', bg: 'color-mix(in srgb, var(--color-emerald-300) 12%, transparent)' };
+    case 'BULLISH': return { text: 'text-green-400', fill: 'var(--color-green-400)', bg: 'color-mix(in srgb, var(--color-green-400) 8%, transparent)' };
+    case 'NEUTRAL': return { text: 'text-neutral-400', fill: 'var(--color-neutral-400)', bg: 'color-mix(in srgb, var(--color-neutral-400) 6%, transparent)' };
+    case 'BEARISH': return { text: 'text-red-400', fill: 'var(--color-red-400)', bg: 'color-mix(in srgb, var(--color-red-400) 8%, transparent)' };
+    case 'EXTREME_BEARISH': return { text: 'text-red-300', fill: 'var(--color-red-300)', bg: 'color-mix(in srgb, var(--color-red-300) 12%, transparent)' };
   }
 }
 
 function getSentimentColor(score: number): { text: string; fill: string } {
-  if (score <= -60) return { text: 'text-red-300', fill: '#fca5a5' };
-  if (score <= -20) return { text: 'text-red-400', fill: '#f87171' };
-  if (score <= 20) return { text: 'text-neutral-400', fill: '#a3a3a3' };
-  if (score <= 60) return { text: 'text-green-400', fill: '#4ade80' };
-  return { text: 'text-emerald-300', fill: '#6ee7b7' };
+  if (score <= -60) return { text: 'text-red-300', fill: 'var(--color-red-300)' };
+  if (score <= -20) return { text: 'text-red-400', fill: 'var(--color-red-400)' };
+  if (score <= 20) return { text: 'text-neutral-400', fill: 'var(--color-neutral-400)' };
+  if (score <= 60) return { text: 'text-green-400', fill: 'var(--color-green-400)' };
+  return { text: 'text-emerald-300', fill: 'var(--color-emerald-300)' };
 }
 
 function getPercentileColor(pct: number): string {
-  if (pct >= 85 || pct <= 15) return '#4ade80'; // extreme = contrarian potential (green)
-  if (pct >= 70 || pct <= 30) return '#facc15';
-  return '#525252';
+  if (pct >= 85 || pct <= 15) return 'var(--color-green-400)'; // extreme = contrarian potential (green)
+  if (pct >= 70 || pct <= 30) return 'var(--color-amber-300)';
+  return 'var(--color-neutral-600)';
 }
 
 // ── Formatting ──
@@ -80,16 +80,16 @@ export function PositioningPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Compass className="w-4 h-4 text-sky-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-sky-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-sky-400">
             {tr(t, 'posTitle', 'Positioning & Flows')}
           </span>
           {data && sentimentColor && (
             <span
-              className={`text-[7px] font-mono font-black uppercase px-1.5 py-[1px] ${sentimentColor.text}`}
-              style={{ background: `${sentimentColor.fill}11` }}
+              className={`text-micro font-mono font-black uppercase px-1.5 py-[1px] ${sentimentColor.text}`}
+              style={{ background: `color-mix(in srgb, ${sentimentColor.fill} 7%, transparent)` }}
             >
               {data.overallSentiment.label}
             </span>
@@ -101,12 +101,12 @@ export function PositioningPanel() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-0.5 px-3 py-1 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center gap-0.5 px-3 py-1 bg-raised border-b border-border/30 shrink-0">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-2 py-0.5 text-[8px] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
+            className={`px-2 py-0.5 text-micro font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
               activeTab === tab.key
                 ? 'bg-sky-500/20 text-sky-400 border border-sky-400/30'
                 : 'text-neutral/40 hover:text-neutral/70 border border-transparent'
@@ -120,13 +120,13 @@ export function PositioningPanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-sky-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-sky-400 text-mini font-mono uppercase animate-pulse">
             {tr(t, 'loading', 'Loading...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {tr(t, 'posNoData', 'No data available')}
           </div>
         )}
@@ -166,7 +166,7 @@ function IndicatorsTab({ data }: { data: PositioningResponse }) {
           <button
             key={cat.key}
             onClick={() => setFilter(cat.key)}
-            className={`px-1.5 py-0.5 text-[7px] font-mono uppercase tracking-wider transition-colors ${
+            className={`px-1.5 py-0.5 text-micro font-mono uppercase tracking-wider transition-colors ${
               filter === cat.key
                 ? 'text-sky-400 bg-sky-400/10'
                 : 'text-neutral/30 hover:text-neutral/50'
@@ -178,7 +178,7 @@ function IndicatorsTab({ data }: { data: PositioningResponse }) {
       </div>
 
       {/* Table header */}
-      <div className="grid grid-cols-[1fr_60px_56px_70px_72px_1fr_46px] gap-px px-3 py-1 border-b border-border/20 text-[7px] font-mono uppercase tracking-wider text-neutral/30">
+      <div className="grid grid-cols-[1fr_60px_56px_70px_72px_1fr_46px] gap-px px-3 py-1 border-b border-border/20 text-micro font-mono uppercase tracking-wider text-neutral/30">
         <span>{tr(t, 'posName', 'Name')}</span>
         <span className="text-right">{tr(t, 'posValue', 'Value')}</span>
         <span className="text-right">{tr(t, 'posChange', 'Chg')}</span>
@@ -205,17 +205,17 @@ function IndicatorRow({ indicator }: { indicator: PositioningIndicator }) {
     <div className="grid grid-cols-[1fr_60px_56px_70px_72px_1fr_46px] gap-px px-3 py-1 border-b border-border/10 hover:bg-sky-400/[0.02] transition-colors items-center">
       {/* Name */}
       <div className="flex flex-col">
-        <span className="text-[8px] font-mono font-bold text-neutral-300 truncate">{indicator.name}</span>
-        <span className="text-[6px] font-mono text-neutral/25 uppercase">{indicator.category}</span>
+        <span className="text-micro font-mono font-bold text-neutral-300 truncate">{indicator.name}</span>
+        <span className="text-micro font-mono text-neutral/25 uppercase">{indicator.category}</span>
       </div>
 
       {/* Value */}
-      <span className="text-[9px] font-mono font-bold text-white text-right tabular-nums">
+      <span className="text-mini font-mono font-bold text-white text-right tabular-nums">
         {fmtVal(indicator.currentValue, indicator.unit)}
       </span>
 
       {/* Change */}
-      <span className={`text-[8px] font-mono font-bold text-right tabular-nums ${changeColor}`}>
+      <span className={`text-micro font-mono font-bold text-right tabular-nums ${changeColor}`}>
         {fmtChange(indicator.change)}
       </span>
 
@@ -227,21 +227,21 @@ function IndicatorRow({ indicator }: { indicator: PositioningIndicator }) {
             style={{ width: `${indicator.percentile}%`, background: pctColor, opacity: 0.7 }}
           />
         </div>
-        <span className="text-[7px] font-mono tabular-nums text-neutral/40 w-[18px] text-right">
+        <span className="text-micro font-mono tabular-nums text-neutral/40 w-[18px] text-right">
           {indicator.percentile}
         </span>
       </div>
 
       {/* Signal badge */}
       <span
-        className={`text-[6.5px] font-mono font-black uppercase px-1 py-[1px] truncate ${color.text}`}
+        className={`text-micro font-mono font-black uppercase px-1 py-[1px] truncate ${color.text}`}
         style={{ background: color.bg }}
       >
         {indicator.signal.replace('_', ' ')}
       </span>
 
       {/* Interpretation */}
-      <span className="text-[7px] font-mono text-neutral/40 truncate">
+      <span className="text-micro font-mono text-neutral/40 truncate">
         {indicator.interpretation}
       </span>
 
@@ -264,12 +264,12 @@ function FlowsTab({ data }: { data: PositioningResponse }) {
     <div>
       {/* Flow table */}
       <div className="px-3 py-1.5 border-b border-border/20">
-        <div className="text-[7px] font-black uppercase tracking-widest text-neutral/40 mb-1 font-mono">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-1 font-mono">
           {tr(t, 'posFlowTable', 'Fund Flow Summary')}
         </div>
 
         {/* Header */}
-        <div className="grid grid-cols-[1fr_70px_70px_70px_60px] gap-px py-1 border-b border-border/20 text-[7px] font-mono uppercase tracking-wider text-neutral/30">
+        <div className="grid grid-cols-[1fr_70px_70px_70px_60px] gap-px py-1 border-b border-border/20 text-micro font-mono uppercase tracking-wider text-neutral/30">
           <span>{tr(t, 'posCategory', 'Category')}</span>
           <span className="text-right">{tr(t, 'posWeekly', 'Weekly')}</span>
           <span className="text-right">{tr(t, 'posMonthly', 'Monthly')}</span>
@@ -285,7 +285,7 @@ function FlowsTab({ data }: { data: PositioningResponse }) {
 
       {/* Weekly flow bar chart */}
       <div className="px-3 py-2">
-        <div className="text-[7px] font-black uppercase tracking-widest text-neutral/40 mb-2 font-mono">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2 font-mono">
           {tr(t, 'posWeeklyChart', 'Weekly Flows ($B)')}
         </div>
         <FlowBarChart flows={data.flows} />
@@ -302,23 +302,23 @@ function FlowRow({ flow }: { flow: FlowData }) {
 
   return (
     <div className="grid grid-cols-[1fr_70px_70px_70px_60px] gap-px py-1.5 border-b border-border/10 hover:bg-sky-400/[0.02] transition-colors items-center">
-      <span className="text-[8px] font-mono font-bold text-neutral-300">{flow.category}</span>
-      <span className={`text-[8px] font-mono font-bold text-right tabular-nums ${
+      <span className="text-micro font-mono font-bold text-neutral-300">{flow.category}</span>
+      <span className={`text-micro font-mono font-bold text-right tabular-nums ${
         flow.weeklyFlow > 0 ? 'text-emerald-400' : flow.weeklyFlow < 0 ? 'text-red-400' : 'text-neutral/40'
       }`}>
         {fmtFlow(flow.weeklyFlow)}
       </span>
-      <span className={`text-[8px] font-mono font-bold text-right tabular-nums ${
+      <span className={`text-micro font-mono font-bold text-right tabular-nums ${
         flow.monthlyFlow > 0 ? 'text-emerald-400' : flow.monthlyFlow < 0 ? 'text-red-400' : 'text-neutral/40'
       }`}>
         {fmtFlow(flow.monthlyFlow)}
       </span>
-      <span className={`text-[8px] font-mono font-bold text-right tabular-nums ${
+      <span className={`text-micro font-mono font-bold text-right tabular-nums ${
         flow.ytdFlow > 0 ? 'text-emerald-400' : flow.ytdFlow < 0 ? 'text-red-400' : 'text-neutral/40'
       }`}>
         {fmtFlow(flow.ytdFlow)}
       </span>
-      <span className={`text-[7px] font-mono font-black uppercase text-right ${trendColor}`}>
+      <span className={`text-micro font-mono font-black uppercase text-right ${trendColor}`}>
         {trendLabel}
       </span>
     </div>
@@ -343,14 +343,14 @@ function FlowBarChart({ flows }: { flows: FlowData[] }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 120 }}>
       {/* Zero line */}
-      <line x1={PAD_X} y1={zeroY} x2={W - PAD_X} y2={zeroY} stroke="rgba(255,255,255,0.1)" strokeWidth={0.5} />
+      <line x1={PAD_X} y1={zeroY} x2={W - PAD_X} y2={zeroY} stroke="color-mix(in srgb, var(--color-white) 10%, transparent)" strokeWidth={0.5} />
 
       {/* Bars */}
       {flows.map((flow, i) => {
         const x = PAD_X + (i / flows.length) * chartW + (chartW / flows.length - barW) / 2;
         const barH = (Math.abs(flow.weeklyFlow) / maxAbs) * (chartH / 2);
         const y = flow.weeklyFlow >= 0 ? zeroY - barH : zeroY;
-        const fill = flow.weeklyFlow >= 0 ? '#4ade80' : '#f87171';
+        const fill = flow.weeklyFlow >= 0 ? 'var(--color-green-400)' : 'var(--color-red-400)';
 
         return (
           <g key={flow.category}>
@@ -362,7 +362,7 @@ function FlowBarChart({ flows }: { flows: FlowData[] }) {
               textAnchor="middle"
               fill={fill}
               fontSize={6}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {fmtFlow(flow.weeklyFlow)}
@@ -372,9 +372,9 @@ function FlowBarChart({ flows }: { flows: FlowData[] }) {
               x={x + barW / 2}
               y={H - 3}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.25)"
+              fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
               fontSize={5.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {flow.category.length > 8 ? flow.category.slice(0, 7) + '.' : flow.category}
             </text>
@@ -383,13 +383,13 @@ function FlowBarChart({ flows }: { flows: FlowData[] }) {
       })}
 
       {/* Y-axis labels */}
-      <text x={PAD_X - 4} y={PAD_Y + 4} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace">
+      <text x={PAD_X - 4} y={PAD_Y + 4} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit">
         +{maxAbs.toFixed(1)}
       </text>
-      <text x={PAD_X - 4} y={zeroY + 3} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace">
+      <text x={PAD_X - 4} y={zeroY + 3} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit">
         0
       </text>
-      <text x={PAD_X - 4} y={H - PAD_BOTTOM} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace">
+      <text x={PAD_X - 4} y={H - PAD_BOTTOM} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit">
         -{maxAbs.toFixed(1)}
       </text>
     </svg>
@@ -412,14 +412,14 @@ function DashboardTab({ data }: { data: PositioningResponse }) {
 
       {/* Bull / Bear / Neutral counts */}
       <div className="grid grid-cols-3 gap-px px-3 py-2 border-b border-border/20">
-        <CountBox label={tr(t, 'posBullish', 'Bullish')} count={bullCount} color="text-emerald-400" bg="rgba(74,222,128,0.06)" />
-        <CountBox label={tr(t, 'posNeutral', 'Neutral')} count={neutralCount} color="text-neutral-400" bg="rgba(163,163,163,0.04)" />
-        <CountBox label={tr(t, 'posBearish', 'Bearish')} count={bearCount} color="text-red-400" bg="rgba(248,113,113,0.06)" />
+        <CountBox label={tr(t, 'posBullish', 'Bullish')} count={bullCount} color="text-emerald-400" bg="color-mix(in srgb, var(--color-green-400) 6%, transparent)" />
+        <CountBox label={tr(t, 'posNeutral', 'Neutral')} count={neutralCount} color="text-neutral-400" bg="color-mix(in srgb, var(--color-neutral-400) 4%, transparent)" />
+        <CountBox label={tr(t, 'posBearish', 'Bearish')} count={bearCount} color="text-red-400" bg="color-mix(in srgb, var(--color-red-400) 6%, transparent)" />
       </div>
 
       {/* Mini indicator cards grid */}
       <div className="px-2 py-2">
-        <div className="text-[7px] font-black uppercase tracking-widest text-neutral/40 mb-1.5 px-1 font-mono">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-1.5 px-1 font-mono">
           {tr(t, 'posAllIndicators', 'All Indicators')}
         </div>
         <div className="grid grid-cols-2 gap-1">
@@ -448,11 +448,11 @@ function SentimentGauge({ score, label, color }: { score: number; label: string;
   const needleY = CY - (R - 6) * Math.sin(needleAngle);
 
   const zones = [
-    { from: 0, to: 20, color: '#ef4444' },     // Extreme Fear
-    { from: 20, to: 40, color: '#f97316' },     // Fear
-    { from: 40, to: 60, color: '#a3a3a3' },     // Neutral
-    { from: 60, to: 80, color: '#22c55e' },     // Greed
-    { from: 80, to: 100, color: '#10b981' },    // Extreme Greed
+    { from: 0, to: 20, color: 'var(--color-red-500)' },     // Extreme Fear
+    { from: 20, to: 40, color: 'var(--color-orange-500)' },     // Fear
+    { from: 40, to: 60, color: 'var(--color-neutral-400)' },     // Neutral
+    { from: 60, to: 80, color: 'var(--color-green-500)' },     // Greed
+    { from: 80, to: 100, color: 'var(--color-emerald-500)' },    // Extreme Greed
   ];
 
   function arcPath(fromPct: number, toPct: number): string {
@@ -470,7 +470,7 @@ function SentimentGauge({ score, label, color }: { score: number; label: string;
     <div className="flex flex-col items-center">
       <svg viewBox="0 0 240 125" className="w-full" style={{ maxWidth: 300, maxHeight: 155 }}>
         {/* Background track */}
-        <path d={arcPath(0, 100)} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={STROKE_W} strokeLinecap="round" />
+        <path d={arcPath(0, 100)} fill="none" stroke="color-mix(in srgb, var(--color-white) 4%, transparent)" strokeWidth={STROKE_W} strokeLinecap="round" />
 
         {/* Zone arcs */}
         {zones.map((z) => (
@@ -483,23 +483,23 @@ function SentimentGauge({ score, label, color }: { score: number; label: string;
         {/* Needle */}
         <line x1={CX} y1={CY} x2={needleX} y2={needleY} stroke={color.fill} strokeWidth={2.5} strokeLinecap="round" />
         <circle cx={CX} cy={CY} r={5} fill={color.fill} />
-        <circle cx={CX} cy={CY} r={2.5} fill="#000" />
+        <circle cx={CX} cy={CY} r={2.5} fill="var(--color-black)" />
 
         {/* Score text */}
-        <text x={CX} y={CY + 5} textAnchor="middle" fill="white" fontSize={30} fontFamily="monospace" fontWeight="900" dominantBaseline="hanging">
+        <text x={CX} y={CY + 5} textAnchor="middle" fill="white" fontSize={30} fontFamily="inherit" fontWeight="900" dominantBaseline="hanging">
           {score > 0 ? '+' : ''}{score}
         </text>
 
         {/* End labels */}
-        <text x={CX - R - 8} y={CY + 12} textAnchor="middle" fill="#f87171" fontSize={6} fontFamily="monospace" opacity={0.5}>-100</text>
-        <text x={CX + R + 8} y={CY + 12} textAnchor="middle" fill="#34d399" fontSize={6} fontFamily="monospace" opacity={0.5}>+100</text>
+        <text x={CX - R - 8} y={CY + 12} textAnchor="middle" fill="var(--color-red-400)" fontSize={6} fontFamily="inherit" opacity={0.5}>-100</text>
+        <text x={CX + R + 8} y={CY + 12} textAnchor="middle" fill="var(--color-emerald-400)" fontSize={6} fontFamily="inherit" opacity={0.5}>+100</text>
 
         {/* Bottom labels */}
-        <text x={CX - R + 12} y={CY + 22} textAnchor="middle" fill="#f87171" fontSize={5} fontFamily="monospace" opacity={0.4}>FEAR</text>
-        <text x={CX + R - 12} y={CY + 22} textAnchor="middle" fill="#34d399" fontSize={5} fontFamily="monospace" opacity={0.4}>GREED</text>
+        <text x={CX - R + 12} y={CY + 22} textAnchor="middle" fill="var(--color-red-400)" fontSize={5} fontFamily="inherit" opacity={0.4}>FEAR</text>
+        <text x={CX + R - 12} y={CY + 22} textAnchor="middle" fill="var(--color-emerald-400)" fontSize={5} fontFamily="inherit" opacity={0.4}>GREED</text>
       </svg>
 
-      <span className={`text-[11px] font-black font-mono uppercase tracking-wider -mt-1 ${color.text}`}>
+      <span className={`text-xs font-black font-mono uppercase tracking-wider -mt-1 ${color.text}`}>
         {label.replace('_', ' ')}
       </span>
     </div>
@@ -509,7 +509,7 @@ function SentimentGauge({ score, label, color }: { score: number; label: string;
 function CountBox({ label, count, color, bg }: { label: string; count: number; color: string; bg: string }) {
   return (
     <div className="flex flex-col items-center py-2" style={{ background: bg }}>
-      <span className="text-[7px] font-mono uppercase tracking-wider text-neutral/40">{label}</span>
+      <span className="text-micro font-mono uppercase tracking-wider text-neutral/40">{label}</span>
       <span className={`text-[18px] font-black font-mono ${color}`}>{count}</span>
     </div>
   );
@@ -521,13 +521,13 @@ function MiniIndicatorCard({ indicator }: { indicator: PositioningIndicator }) {
   return (
     <div
       className="px-1.5 py-1.5 border border-border/10 hover:border-border/20 transition-colors"
-      style={{ background: 'rgba(255,255,255,0.01)' }}
+      style={{ background: 'color-mix(in srgb, var(--color-white) 1%, transparent)' }}
     >
       {/* Name + signal */}
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[7px] font-mono font-bold text-neutral-300 truncate">{indicator.name}</span>
+        <span className="text-micro font-mono font-bold text-neutral-300 truncate">{indicator.name}</span>
         <span
-          className={`text-[5.5px] font-mono font-black uppercase px-1 py-[0.5px] shrink-0 ${color.text}`}
+          className={`text-micro font-mono font-black uppercase px-1 py-[0.5px] shrink-0 ${color.text}`}
           style={{ background: color.bg }}
         >
           {indicator.signal.replace('_', ' ')}
@@ -536,7 +536,7 @@ function MiniIndicatorCard({ indicator }: { indicator: PositioningIndicator }) {
 
       {/* Value + sparkline */}
       <div className="flex items-center justify-between">
-        <span className={`text-[10px] font-black font-mono tabular-nums ${color.text}`}>
+        <span className={`text-mini font-black font-mono tabular-nums ${color.text}`}>
           {fmtVal(indicator.currentValue, indicator.unit)}
         </span>
         {indicator.history.length > 1 && (

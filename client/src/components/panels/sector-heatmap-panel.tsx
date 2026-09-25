@@ -12,7 +12,7 @@ import { RefreshCw, Grid3X3 } from 'lucide-react';
 
 // ── Constants ──
 
-const ACCENT = '#f59e0b'; // amber-400
+const ACCENT = 'var(--color-amber-500)'; // amber-400
 
 // ── Squarified treemap algorithm ──
 
@@ -112,7 +112,7 @@ function getHeatColor(changePct: number): string {
   const abs = Math.min(Math.abs(changePct), 3);
   const intensity = abs / 3; // 0..1
 
-  if (Math.abs(changePct) < 0.05) return '#27272a'; // zinc-800 for ~0%
+  if (Math.abs(changePct) < 0.05) return 'var(--color-zinc-800)'; // zinc-800 for ~0%
 
   if (changePct > 0) {
     // Green: from emerald-900 (#064e3b) to emerald-500 (#10b981)
@@ -130,9 +130,9 @@ function getHeatColor(changePct: number): string {
 }
 
 function getTextColor(changePct: number): string {
-  if (changePct > 0) return '#6ee7b7'; // emerald-300
-  if (changePct < 0) return '#fca5a5'; // red-300
-  return 'rgba(255,255,255,0.5)';
+  if (changePct > 0) return 'var(--color-emerald-300)'; // emerald-300
+  if (changePct < 0) return 'var(--color-red-300)'; // red-300
+  return 'color-mix(in srgb, var(--color-white) 50%, transparent)';
 }
 
 function fmtPct(n: number): string {
@@ -230,7 +230,7 @@ function SectorTreemap({
                       width={Math.max(stR.w - 0.5, 0)}
                       height={Math.max(stR.h - 0.5, 0)}
                       fill={getHeatColor(stock.changePct)}
-                      stroke="#000"
+                      stroke="var(--color-black)"
                       strokeWidth={0.5}
                     />
                     {minDim > 20 && (
@@ -240,9 +240,9 @@ function SectorTreemap({
                           y={stR.y + stR.h / 2 - (minDim > 35 ? 4 : 0)}
                           textAnchor="middle"
                           dominantBaseline="central"
-                          fill="#fff"
+                          fill="var(--color-white)"
                           fontSize={minDim > 50 ? 9 : 7}
-                          fontFamily="monospace"
+                          fontFamily="inherit"
                           fontWeight="bold"
                         >
                           {stock.symbol}
@@ -255,7 +255,7 @@ function SectorTreemap({
                             dominantBaseline="central"
                             fill={getTextColor(stock.changePct)}
                             fontSize={7}
-                            fontFamily="monospace"
+                            fontFamily="inherit"
                           >
                             {fmtPct(stock.changePct)}
                           </text>
@@ -283,7 +283,7 @@ function SectorTreemap({
               width={Math.max(sr.w - GAP * 2, 0)}
               height={Math.max(sr.h - GAP * 2, 0)}
               fill={getHeatColor(sector.changePct)}
-              stroke="#000"
+              stroke="var(--color-black)"
               strokeWidth={0.5}
             />
             {minDim > 30 && (
@@ -293,9 +293,9 @@ function SectorTreemap({
                   y={sr.y + sr.h / 2 - (minDim > 50 ? 6 : 0)}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill="#fff"
+                  fill="var(--color-white)"
                   fontSize={minDim > 70 ? 10 : 8}
-                  fontFamily="monospace"
+                  fontFamily="inherit"
                   fontWeight="bold"
                 >
                   {sector.name.length > 14 && sr.w < 100
@@ -310,7 +310,7 @@ function SectorTreemap({
                     dominantBaseline="central"
                     fill={getTextColor(sector.changePct)}
                     fontSize={9}
-                    fontFamily="monospace"
+                    fontFamily="inherit"
                     fontWeight="bold"
                   >
                     {fmtPct(sector.changePct)}
@@ -349,11 +349,11 @@ function SectorTable({
     <div className="w-full">
       {/* Header */}
       <div className="grid grid-cols-[1fr_50px_60px_80px_80px] gap-1 px-2 py-1 border-b border-amber-500/20">
-        <span className="text-[8px] font-mono uppercase tracking-wider text-amber-500/60">Sector</span>
-        <span className="text-[8px] font-mono uppercase tracking-wider text-amber-500/60 text-right">ETF</span>
-        <span className="text-[8px] font-mono uppercase tracking-wider text-amber-500/60 text-right">Chg%</span>
-        <span className="text-[8px] font-mono uppercase tracking-wider text-amber-500/60 text-right">Top Gainer</span>
-        <span className="text-[8px] font-mono uppercase tracking-wider text-amber-500/60 text-right">Top Loser</span>
+        <span className="text-micro font-mono uppercase tracking-wider text-amber-500/60">Sector</span>
+        <span className="text-micro font-mono uppercase tracking-wider text-amber-500/60 text-right">ETF</span>
+        <span className="text-micro font-mono uppercase tracking-wider text-amber-500/60 text-right">Chg%</span>
+        <span className="text-micro font-mono uppercase tracking-wider text-amber-500/60 text-right">Top Gainer</span>
+        <span className="text-micro font-mono uppercase tracking-wider text-amber-500/60 text-right">Top Loser</span>
       </div>
       {/* Rows */}
       {sorted.map((sector) => {
@@ -365,7 +365,7 @@ function SectorTable({
           : null;
 
         const barWidth = Math.min(Math.abs(sector.changePct) / maxAbsChange, 1) * 100;
-        const barColor = sector.changePct >= 0 ? '#10b981' : '#ef4444';
+        const barColor = sector.changePct >= 0 ? 'var(--color-emerald-500)' : 'var(--color-red-500)';
 
         return (
           <div key={sector.name} className="grid grid-cols-[1fr_50px_60px_80px_80px] gap-1 px-2 py-0.5 border-b border-white/5 hover:bg-white/[0.02] relative">
@@ -377,28 +377,28 @@ function SectorTable({
                 backgroundColor: barColor,
               }}
             />
-            <span className="text-[9px] font-mono text-white/70 truncate relative z-10">
+            <span className="text-mini font-mono text-white/70 truncate relative z-10">
               {sector.name}
             </span>
-            <span className="text-[9px] font-mono text-white/40 text-right relative z-10">
+            <span className="text-mini font-mono text-white/40 text-right relative z-10">
               {sector.etfSymbol}
             </span>
             <span
-              className="text-[9px] font-mono font-bold text-right relative z-10"
-              style={{ color: sector.changePct >= 0 ? '#34d399' : '#f87171' }}
+              className="text-mini font-mono font-bold text-right relative z-10"
+              style={{ color: sector.changePct >= 0 ? 'var(--color-emerald-400)' : 'var(--color-red-400)' }}
             >
               {fmtPct(sector.changePct)}
             </span>
             <span
-              className="text-[9px] font-mono text-right relative z-10 cursor-pointer hover:underline"
-              style={{ color: '#34d399' }}
+              className="text-mini font-mono text-right relative z-10 cursor-pointer hover:underline"
+              style={{ color: 'var(--color-emerald-400)' }}
               onClick={() => gainer && onClickStock(gainer.symbol)}
             >
               {gainer ? `${gainer.symbol} ${fmtPct(gainer.changePct)}` : '-'}
             </span>
             <span
-              className="text-[9px] font-mono text-right relative z-10 cursor-pointer hover:underline"
-              style={{ color: '#f87171' }}
+              className="text-mini font-mono text-right relative z-10 cursor-pointer hover:underline"
+              style={{ color: 'var(--color-red-400)' }}
               onClick={() => loser && onClickStock(loser.symbol)}
             >
               {loser ? `${loser.symbol} ${fmtPct(loser.changePct)}` : '-'}
@@ -450,11 +450,11 @@ export function SectorHeatmapPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-amber-500/20 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-amber-500/20 shrink-0">
         <div className="flex items-center gap-2">
           <Grid3X3 className="w-4 h-4" style={{ color: ACCENT }} />
           <span
-            className="text-[9px] font-black font-mono uppercase tracking-tighter"
+            className="text-mini font-black font-mono uppercase tracking-tighter"
             style={{ color: ACCENT }}
           >
             {tr(t, 'panelSectorHeatmap', 'SECTOR HEATMAP')}
@@ -463,10 +463,10 @@ export function SectorHeatmapPanel() {
         <div className="flex items-center gap-2">
           {summary && (
             <>
-              <span className="text-[8px] font-mono text-emerald-400">
+              <span className="text-micro font-mono text-emerald-400">
                 {summary.advancers} adv
               </span>
-              <span className="text-[8px] font-mono text-red-400">
+              <span className="text-micro font-mono text-red-400">
                 {summary.decliners} dec
               </span>
             </>
@@ -483,13 +483,13 @@ export function SectorHeatmapPanel() {
       {/* Breadth & strongest/weakest */}
       {summary && (
         <div className="flex items-center gap-3 px-3 py-1 border-b border-amber-500/10 bg-black/40 shrink-0">
-          <span className="text-[8px] font-mono text-white/30">
+          <span className="text-micro font-mono text-white/30">
             Breadth: <span className="text-amber-400">{summary.marketBreadth}%</span>
           </span>
-          <span className="text-[8px] font-mono text-white/30">
+          <span className="text-micro font-mono text-white/30">
             Best: <span className="text-emerald-400">{summary.strongestSector}</span>
           </span>
-          <span className="text-[8px] font-mono text-white/30">
+          <span className="text-micro font-mono text-white/30">
             Worst: <span className="text-red-400">{summary.weakestSector}</span>
           </span>
         </div>
@@ -500,9 +500,9 @@ export function SectorHeatmapPanel() {
         <div className="flex flex-col items-center justify-center flex-1 gap-2">
           <div
             className="w-5 h-5 border-2 border-t-amber-400 animate-spin"
-            style={{ borderColor: 'rgba(245,158,11,0.2)', borderTopColor: ACCENT }}
+            style={{ borderColor: 'color-mix(in srgb, var(--color-amber-500) 20%, transparent)', borderTopColor: ACCENT }}
           />
-          <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest">
+          <span className="text-mini font-mono text-white/30 uppercase tracking-widest">
             {tr(t, 'loading', 'Loading...')}
           </span>
         </div>
@@ -511,7 +511,7 @@ export function SectorHeatmapPanel() {
       {/* Empty state */}
       {!isLoading && sectors.length === 0 && (
         <div className="flex items-center justify-center flex-1">
-          <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+          <span className="text-mini font-mono text-white/20 uppercase tracking-widest">
             No sector data available
           </span>
         </div>

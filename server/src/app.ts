@@ -79,6 +79,9 @@ const authLimiter = rateLimit({
 export function createApp() {
   const app = express();
 
+  // Arrival time for MT5 latency (mt5.ts): everything from here on, auth lookup included, counts as node time
+  app.use('/api/mt5', (_req, res, next) => { res.locals.t0 = performance.now(); next(); });
+
   // ── Trust Cloud Run proxy ──
   app.set('trust proxy', isProd ? 1 : false);
 

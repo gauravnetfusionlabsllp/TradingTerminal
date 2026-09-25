@@ -20,6 +20,7 @@ import {
 import { useDrawings, DrawRail, DrawingBar, DrawHint, DrawTextEditor } from './chart-drawings';
 import { GlassCard } from '../common/glass-card';
 import { useT } from '../../i18n';
+import { useChartColors, alpha, type ChartColors } from '../../lib/theme';
 
 // ─── Formatting helpers ───
 
@@ -50,8 +51,8 @@ function ToolButton({ active = false, className = '', ...rest }: React.ButtonHTM
     <button
       type="button"
       {...rest}
-      className={`h-6 px-2 text-[10px] font-bold tracking-wider border transition-colors duration-100 motion-reduce:transition-none ${
-        active ? 'bg-amber-400/15 text-amber-400 border-amber-400/40' : 'text-white/45 border-transparent hover:text-white/85 hover:bg-white/[0.05]'
+      className={`h-6 px-2 text-mini font-bold tracking-wider border transition-colors duration-100 motion-reduce:transition-none ${
+        active ? 'bg-accent/15 text-accent-ink border-accent/40' : 'text-white/45 border-transparent hover:text-white/85 hover:bg-white/[0.05]'
       } ${className}`}
     />
   );
@@ -82,7 +83,7 @@ export function TechnicalChartPanel() {
       <GlassCard className="h-full flex flex-col items-center justify-center">
         <button
           onClick={() => setLoginModalOpen(true)}
-          className="px-4 py-2 border border-accent text-accent text-[11px] font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-colors"
+          className="px-4 h-8 rounded-sm bg-accent text-on-accent text-xs font-semibold hover:bg-accent/90 transition-colors"
         >
           {t('loginWithMt5')}
         </button>
@@ -165,7 +166,7 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
   const changePct = prevCandle && prevCandle.close !== 0 ? (change / prevCandle.close) * 100 : 0;
 
   return (
-    <div ref={rootRef} className="@container relative flex flex-col h-full bg-black text-white overflow-hidden select-none" style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' }}>
+    <div ref={rootRef} className="@container relative flex flex-col h-full bg-black text-white overflow-hidden select-none">
       {/* Top control bar */}
       <div className="flex items-center gap-0.5 px-2 py-1 border-b border-white/[0.06] shrink-0 flex-wrap">
         {picker}
@@ -195,7 +196,7 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
         >
           {tr('chartIndicators', 'INDICATORS')}
           {studies.length > 0 && (
-            <span className={`min-w-4 h-4 px-1 flex items-center justify-center text-[9px] ${pickerAt ? 'bg-amber-400/25' : 'bg-white/10 text-white/70'}`}>
+            <span className={`min-w-4 h-4 px-1 flex items-center justify-center text-mini ${pickerAt ? 'bg-accent/25' : 'bg-white/10 text-white/70'}`}>
               {studies.length}
             </span>
           )}
@@ -215,10 +216,10 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
         )}
 
         {/* Stats bar (right side) */}
-        <div className="ml-auto flex items-center gap-3 text-[9px] font-mono">
+        <div className="ml-auto flex items-center gap-3 text-mini font-mono">
           {lastCandle && (
             <>
-              <span className="text-amber-400 font-bold">{symbol}</span>
+              <span className="text-accent-ink font-bold">{symbol}</span>
               <span className="text-white font-bold">{formatPrice(lastCandle.close)}</span>
               <span className={change >= 0 ? 'text-emerald-400' : 'text-red-400'}>
                 {change >= 0 ? '+' : ''}{formatPrice(change)} ({changePct >= 0 ? '+' : ''}{changePct.toFixed(2)}%)
@@ -255,17 +256,17 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
 
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
-            <div className="w-5 h-5 border-2 border-amber-400/30 border-t-amber-400 animate-spin" />
+            <div className="w-5 h-5 border-2 border-accent/30 border-t-accent animate-spin" />
           </div>
         )}
         {/* A failed older page keeps the chart that's already drawn */}
         {error && !candles.length && (
-          <div className="absolute inset-0 flex items-center justify-center z-20 text-red-400 text-[10px] font-mono">
+          <div className="absolute inset-0 flex items-center justify-center z-20 text-red-400 text-mini font-mono">
             {tr('chartError', 'Failed to load chart data')}
           </div>
         )}
         {!isLoading && !error && candles.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center text-white/20 text-[10px] font-mono uppercase tracking-widest">
+          <div className="absolute inset-0 flex items-center justify-center text-white/20 text-mini font-mono uppercase tracking-widest">
             {tr('chartNoData', 'No data available')}
           </div>
         )}
@@ -303,29 +304,34 @@ const tickMark: TickMarkFormatter = (time, type) => {
   return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 };
 
-const CHART_OPTIONS = {
+/** Everything themed comes from the tokens; re-applied whenever the theme flips */
+const chartOptions = (c: ChartColors) => ({
   autoSize: true,
   layout: {
     background: { type: ColorType.Solid as const, color: 'transparent' },
-    textColor: '#a1a1aa',
-    fontSize: 10,
-    fontFamily: 'ui-monospace, monospace',
+    textColor: c.neutral,
+    fontSize: 11,
+    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
     attributionLogo: false,
-    // Indicator panes: hairline separators, amber when grabbed to resize
-    panes: { separatorColor: 'rgba(255,255,255,0.08)', separatorHoverColor: 'rgba(251,191,36,0.3)', enableResize: true },
+    // Indicator panes: hairline separators, blue when grabbed to resize
+    panes: { separatorColor: c.border, separatorHoverColor: alpha(c.accent, 0.4), enableResize: true },
   },
   grid: {
-    vertLines: { color: 'rgba(63,63,70,0.1)' },
-    horzLines: { color: 'rgba(63,63,70,0.1)' },
+    vertLines: { color: alpha(c.border, 0.45) },
+    horzLines: { color: alpha(c.border, 0.45) },
   },
   crosshair: {
-    horzLine: { color: '#f59e0b', labelBackgroundColor: '#f59e0b' },
-    vertLine: { color: '#f59e0b', labelBackgroundColor: '#f59e0b' },
+    horzLine: { color: c.neutral, labelBackgroundColor: c.accent },
+    vertLine: { color: c.neutral, labelBackgroundColor: c.accent },
   },
-  rightPriceScale: { borderColor: 'rgba(63,63,70,0.3)', minimumWidth: 72 },
-  timeScale: { borderColor: 'rgba(63,63,70,0.3)', timeVisible: true, tickMarkFormatter: tickMark },
+  rightPriceScale: { borderColor: c.border, minimumWidth: 72 },
+  timeScale: { borderColor: c.border, timeVisible: true, tickMarkFormatter: tickMark },
   localization: { timeFormatter: (t: Time) => formatDate(t as number) },
-};
+});
+const candleColors = (c: ChartColors) => ({
+  upColor: c.bullish, downColor: c.bearish, borderUpColor: c.bullish, borderDownColor: c.bearish,
+  wickUpColor: alpha(c.bullish, 0.55), wickDownColor: alpha(c.bearish, 0.55),
+});
 
 /** Decimals the symbol quotes in (EURUSD 5, USDJPY 3, indices 2), from recent closes */
 function pricePrecision(candles: Candle[]): number {
@@ -377,6 +383,9 @@ function LwChart({
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const barCount = useRef(0);
   barCount.current = candles.length;
+  const colors = useChartColors();
+  const colorsRef = useRef(colors);
+  colorsRef.current = colors;
 
   // Right-click → Reset chart: the opening view (last INITIAL_BARS bars), price axes back on auto-scale, pane heights back to 3 : 1
   const resetView = useCallback(() => {
@@ -406,14 +415,12 @@ function LwChart({
 
   // One chart; indicators that need their own scale go in v5 panes below the price pane
   useEffect(() => {
-    const chart = createChart(mainEl.current!, CHART_OPTIONS);
+    const c = colorsRef.current;
+    const chart = createChart(mainEl.current!, chartOptions(c));
     const s: MainSeries = {
       volume: chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'volume', priceLineVisible: false, lastValueVisible: false }),
-      candle: chart.addSeries(CandlestickSeries, {
-        upColor: '#22c55e', downColor: '#ef4444', borderUpColor: '#22c55e', borderDownColor: '#ef4444',
-        wickUpColor: '#22c55e88', wickDownColor: '#ef444488',
-      }),
-      line: chart.addSeries(LineSeries, { color: '#f59e0b', lineWidth: 2, visible: false }),
+      candle: chart.addSeries(CandlestickSeries, candleColors(c)),
+      line: chart.addSeries(LineSeries, { color: c.accent, lineWidth: 2, visible: false }),
     };
     chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
     chart.panes()[0]?.setStretchFactor(3); // price pane 3 : 1 against each indicator pane
@@ -448,7 +455,7 @@ function LwChart({
     s.volume.setData(candles.map((c) => ({
       time: time(c),
       value: c.volume,
-      color: c.close >= c.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+      color: alpha(c.close >= c.open ? colors.bullish : colors.bearish, 0.3),
     })));
     timeIndex.current = new Map(candles.map((c, i) => [c.timestamp, i]));
 
@@ -461,7 +468,15 @@ function LwChart({
       ts.setVisibleLogicalRange(keepView(before, p.n, n, appended));
     }
     prev.current = { n, lastT: candles[n - 1].timestamp };
-  }, [candles, chartType, precision, volume]);
+  }, [candles, chartType, precision, volume, colors]);
+
+  // Theme flip: recolour in place (the chart, its view and its panes stay)
+  useEffect(() => {
+    if (!ready) return;
+    ready.chart.applyOptions(chartOptions(colors));
+    ready.s.candle.applyOptions(candleColors(colors));
+    ready.s.line.applyOptions({ color: colors.accent });
+  }, [ready, colors]);
 
   const series = ready ? (chartType === 'candle' ? ready.s.candle : ready.s.line) : null;
   useStudySeries(ready?.chart ?? null, series, outputs);
@@ -514,7 +529,7 @@ function LwChart({
         )}
 
         {/* OHLCV of the bar under the crosshair (the last bar otherwise), then the price-pane indicators */}
-        <div className="absolute top-1 left-2 z-10 pointer-events-none flex flex-col items-start gap-0.5 max-w-[calc(100%-16px)] text-[9px] font-mono">
+        <div className="absolute top-1 left-2 z-10 pointer-events-none flex flex-col items-start gap-0.5 max-w-[calc(100%-16px)] text-mini font-mono">
           {bar && (
             <div className="flex items-center gap-3 bg-black/80 px-2 py-0.5 border border-white/5">
               <span className="text-white/50">{formatDate(bar.timestamp)}</span>
@@ -554,7 +569,7 @@ function LwChart({
         )}
 
         <div className="absolute bottom-7 left-2 z-10 pointer-events-none flex flex-col items-start gap-1 font-mono">
-          {loadingOlder && <div className="text-[8px] text-amber-400/70 tracking-widest">LOADING HISTORY…</div>}
+          {loadingOlder && <div className="text-micro text-accent-ink/70 tracking-widest">LOADING HISTORY…</div>}
           <DrawHint api={draw} />
         </div>
       </div>

@@ -31,17 +31,17 @@ function InputField({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{label}</label>
+      <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">{label}</label>
       <div className="flex items-center bg-black/40 border border-border/50 focus-within:border-accent/50 transition-colors">
-        {prefix && <span className="text-[10px] font-mono text-neutral/40 pl-2">{prefix}</span>}
+        {prefix && <span className="text-mini font-mono text-neutral/40 pl-2">{prefix}</span>}
         <input
           type="number"
           step="any"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-transparent px-2 py-1 text-[11px] font-mono text-gray-200 outline-none w-full min-w-0"
+          className="flex-1 bg-transparent px-2 py-1 text-xs font-mono text-gray-200 outline-none w-full min-w-0"
         />
-        {suffix && <span className="text-[10px] font-mono text-neutral/40 pr-2">{suffix}</span>}
+        {suffix && <span className="text-mini font-mono text-neutral/40 pr-2">{suffix}</span>}
       </div>
     </div>
   );
@@ -50,8 +50,8 @@ function InputField({
 function ResultRow({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="flex items-center justify-between py-1 border-b border-border/10 last:border-0">
-      <span className="text-[9px] font-mono text-neutral/50 uppercase">{label}</span>
-      <span className={`text-[11px] font-mono font-bold ${accent ? 'text-accent' : 'text-gray-200'}`}>{value}</span>
+      <span className="text-mini font-mono text-neutral/50 uppercase">{label}</span>
+      <span className={`text-xs font-mono font-bold ${accent ? 'text-accent-ink' : 'text-gray-200'}`}>{value}</span>
     </div>
   );
 }
@@ -130,13 +130,13 @@ function RiskReward() {
           {/* Proportion bar */}
           <div className="flex h-4 rounded-sm overflow-hidden">
             <div
-              className="bg-bearish/60 flex items-center justify-center text-[8px] font-mono font-bold text-white"
+              className="bg-bearish/60 flex items-center justify-center text-micro font-mono font-bold text-white"
               style={{ width: `${riskWidth}%` }}
             >
               -{result.riskPct.toFixed(1)}%
             </div>
             <div
-              className="bg-bullish/60 flex items-center justify-center text-[8px] font-mono font-bold text-white"
+              className="bg-bullish/60 flex items-center justify-center text-micro font-mono font-bold text-white"
               style={{ width: `${100 - riskWidth}%` }}
             >
               +{result.rewardPct.toFixed(1)}%
@@ -185,24 +185,24 @@ function AtrStop() {
   return (
     <div className="p-3 space-y-2">
       {!selectedSymbol && (
-        <div className="text-[10px] font-mono text-neutral/40 uppercase text-center py-4">
+        <div className="text-mini font-mono text-neutral/40 uppercase text-center py-4">
           {t('selectSymbolFirst')}
         </div>
       )}
       {selectedSymbol && !atrResult && (
-        <div className="text-[10px] font-mono text-neutral/40 uppercase text-center py-4">
+        <div className="text-mini font-mono text-neutral/40 uppercase text-center py-4">
           {t('loadingAtrData')}
         </div>
       )}
       {selectedSymbol && atrResult && (
         <div className="border border-border/20 bg-black/20 p-2">
-          <div className="text-[9px] font-mono text-accent uppercase tracking-wider mb-2">{selectedSymbol}</div>
+          <div className="text-mini font-mono text-accent-ink uppercase tracking-wider mb-2">{selectedSymbol}</div>
           {/* Quote-currency prices at 7 significant digits — FX/JPY stops need more than 2 decimals, and no "$" */}
           <ResultRow label={t('rcAtr14')} value={String(+atrResult.atr.toPrecision(7))} accent />
           <ResultRow label={t('rcLastClose')} value={String(+atrResult.lastClose.toPrecision(7))} />
           <ResultRow label={t('rcLongStop')} value={String(+atrResult.stopLong.toPrecision(7))} />
           <ResultRow label={t('rcShortStop')} value={String(+atrResult.stopShort.toPrecision(7))} />
-          <div className="mt-2 text-[8px] font-mono text-neutral/40">
+          <div className="mt-2 text-micro font-mono text-neutral/40">
             {t('rcAtrSuggestion')}
           </div>
         </div>
@@ -230,7 +230,7 @@ function KellyCriterion() {
         <InputField label={t('rcWinRate')} value={winRate} onChange={setWinRate} suffix="%" />
         <InputField label={t('rcWinLossRatio')} value={winLossRatio} onChange={setWinLossRatio} />
       </div>
-      <div className="text-[8px] font-mono text-neutral/40 mt-1">
+      <div className="text-micro font-mono text-neutral/40 mt-1">
         f* = W - (1-W) / (W/L)
       </div>
       {result && (
@@ -245,7 +245,7 @@ function KellyCriterion() {
             value={`${(result.halfKelly * 100).toFixed(2)}%`}
           />
           {result.kelly < 0 && (
-            <div className="mt-1 text-[8px] font-mono text-bearish">
+            <div className="mt-1 text-micro font-mono text-bearish">
               {t('rcNegativeEdge')}
             </div>
           )}
@@ -292,14 +292,14 @@ function MaxDrawdown() {
   return (
     <div className="p-3 space-y-2">
       <div className="flex flex-col gap-0.5">
-        <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">
+        <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">
           {t('rcEquityCurveLabel')}
         </label>
         <textarea
           value={equityInput}
           onChange={(e) => setEquityInput(e.target.value)}
           rows={3}
-          className="w-full bg-black/40 border border-border/50 px-2 py-1 text-[10px] font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50 resize-none"
+          className="w-full bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50 resize-none"
           placeholder="10000, 10500, 9800, ..."
         />
       </div>
@@ -335,9 +335,9 @@ export function RiskCalculator() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 text-[9px] font-mono font-black uppercase tracking-wider whitespace-nowrap border-b-2 transition-all ${
+            className={`px-3 py-1.5 text-mini font-mono font-black uppercase tracking-wider whitespace-nowrap border-b-2 transition-all ${
               activeTab === tab
-                ? 'border-accent text-accent'
+                ? 'border-accent text-accent-ink'
                 : 'border-transparent text-neutral/50 hover:text-gray-300'
             }`}
           >

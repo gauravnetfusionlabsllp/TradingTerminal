@@ -5,7 +5,7 @@ import { Trash2 } from 'lucide-react';
 
 const TYPE_COLORS: Record<LogEntry['type'], string> = {
   info: 'text-neutral',
-  ws: 'text-accent',
+  ws: 'text-accent-ink',
   trade: 'text-orange',
   alert: 'text-bearish',
 };
@@ -32,7 +32,7 @@ export function TerminalLog() {
   return (
     <div className="h-full bg-black flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-4 py-1 border-b border-border/30 bg-black/40 shrink-0">
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-accent font-mono">
+        <span className="text-mini font-black uppercase tracking-[0.2em] text-accent-ink font-mono">
           {t('activityLog')}
         </span>
         <button
@@ -43,9 +43,9 @@ export function TerminalLog() {
           <Trash2 className="w-3 h-3" />
         </button>
       </div>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-1 font-mono text-[10px] leading-relaxed no-scrollbar">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-1 font-mono text-mini leading-relaxed no-scrollbar">
         {logEntries.length === 0 ? (
-          <div className="text-neutral/30 text-center py-4 uppercase tracking-widest text-[9px]">
+          <div className="text-neutral/30 text-center py-4 uppercase tracking-widest text-mini">
             {t('awaitingActivity')}
           </div>
         ) : (

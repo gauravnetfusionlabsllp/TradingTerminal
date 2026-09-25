@@ -1,101 +1,104 @@
-@import "tailwindcss";
+@import "tailwindcss" theme(static); /* every palette var exists: panels reference them as var(--color-emerald-400) */
 @import "flexlayout-react/style/dark.css";
 @import "./styles/flexlayout-theme.css";
+@import "./styles/light-palette.css";
 
-@theme {
-  /* Terminal theme */
-  --color-bg: #000000;
-  --color-panel: #000000;
-  --color-hover: #111111;
-  --color-border: #333333;
-  --color-accent: #ff9900; /* Amber/Orange */
-  --color-accent-glow: rgba(255, 153, 0, 0.4);
-  
-  --color-orange: #ff9900;
-  --color-bullish: #00ff00; /* Bright Green */
-  --color-bullish-glow: rgba(0, 255, 0, 0.2);
-  --color-bearish: #ff0000; /* Bright Red */
-  --color-bearish-glow: rgba(255, 0, 0, 0.2);
-  --color-neutral: #cccccc;
-  --color-ai: #00ffff; /* Cyan for AI */
-  --color-ai-glow: rgba(0, 255, 255, 0.3);
+/* SGFX: blue-ink surfaces taken from the logo's hue; the logo's blue marks action and "you are here".
+   These are the dark values; [data-theme="light"] below swaps every colour token.
+   `static` keeps every token emitted — the pre-paint theme switch and the charts read them by name. */
+@theme static {
+  --color-bg: #070b14;         /* canvas: the gutters between panels */
+  --color-panel: #0c1320;      /* panel surface */
+  --color-raised: #121b2c;     /* headers, inputs, menus */
+  --color-hover: #18233a;
+  --color-border: #1f2b42;
+  --color-fg: #e3e9f3;         /* primary text */
+  --color-neutral: #95a1b6;    /* secondary text */
+  --color-accent: #156ae4;     /* SGFX blue: fills, focus ring, corner flag */
+  --color-accent-ink: #5b9bff; /* blue text and icons on panels */
+  --color-on-accent: #ffffff;  /* text on blue / red fills */
+  --color-buy: #156ae4;
+  --color-sell: #d92d3a;
+  --color-bullish: #26c28a;
+  --color-bearish: #f3525a;
+  --color-orange: #f5a524;     /* pending orders, warnings */
+  --color-ai: #9b8afb;
 
-  /* Force monospace for a more terminal feel, or a very rigid sans */
-  --font-sans: 'JetBrains Mono', 'Consolas', monospace;
-  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  /* Panels were written for a black terminal: white means ink and black means surface, in both themes */
+  --color-white: var(--color-fg);
+  --color-black: var(--color-panel);
 
-  /* Remove all rounded corners for a boxy, professional look */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-full: 0px;
+  --font-sans: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  /* Type floor: nothing smaller than 10px. These two are the density knob */
+  --text-micro: 10px;
+  --text-micro--line-height: 14px;
+  --text-mini: 11px;
+  --text-mini--line-height: 16px;
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --tracking-widest: 0.08em;
+
+  /* Near-square, like the wordmark */
+  --radius: 2px;
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
 }
 
-/* Midnight theme overrides (Alternative Pro Theme) */
-[data-theme="midnight"] {
-  --color-bg: #000022;
-  --color-panel: #000033;
-  --color-hover: #000044;
-  --color-border: #444477;
-  --color-accent: #00ffff;
-  --color-accent-glow: rgba(0, 255, 255, 0.4);
+:root { color-scheme: dark; }
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #e6eaf0;
+  --color-panel: #ffffff;
+  --color-raised: #f4f6f9;
+  --color-hover: #ebeff5;
+  --color-border: #d5dce6;
+  --color-fg: #0c1626;
+  --color-neutral: #4f5b70;
+  --color-accent: #156ae4;
+  --color-accent-ink: #1159c4;
+  --color-on-accent: #ffffff;
+  --color-buy: #156ae4;
+  --color-sell: #d92d3a;
+  --color-bullish: #067f56;
+  --color-bearish: #cf2e44;
+  --color-orange: #b45309;
+  --color-ai: #6d4fe0;
 }
 
-[data-theme="midnight"] body {
-  background-image: none;
-}
-
-/* Terminal background */
 body {
   margin: 0;
   padding: 0;
   background-color: var(--color-bg);
-  /* Optional: subtle grid lines, typical of old CRT terminals */
-  background-image: 
-    linear-gradient(rgba(51, 51, 51, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(51, 51, 51, 0.3) 1px, transparent 1px);
-  background-size: 20px 20px; /* Tighter grid */
-  color: #ff9900; /* Default text color is amber */
+  color: var(--color-fg);
   font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
   height: 100vh;
-  /* Disable text selection by default for a more app-like feel */
+  /* App-like: no stray text selection */
   user-select: none;
 }
 
-/* Scrollbar styling (hidden or ultra-thin, solid color) */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) var(--color-bg);
+  scrollbar-color: var(--color-border) transparent;
 }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--color-border); border: 2px solid transparent; background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background-color: var(--color-neutral); }
 
-*::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-*::-webkit-scrollbar-track {
-  background: var(--color-bg);
-  border-left: 1px solid var(--color-border);
-}
-
-*::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 0;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 #root {
   height: 100vh;
@@ -104,58 +107,28 @@ body {
   flex-direction: column;
 }
 
-/* Terminal utilities */
 .glass {
   background: var(--color-panel);
-  /* Remove blur and transparency for solid terminal look */
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
   border: 1px solid var(--color-border);
 }
 
-.glass-hover:hover {
-  background: var(--color-hover);
-  border-color: var(--color-accent);
-}
-
-.terminal-border {
-  border: 1px solid var(--color-border);
-  /* Solid shadow instead of soft inner glow */
-  box-shadow: inset 0 0 0 1px #000;
-}
-
-.text-gradient-ai {
-  color: var(--color-ai);
-  text-shadow: 0 0 4px var(--color-ai-glow);
-}
-
-.text-gradient-bullish {
-  color: var(--color-bullish);
-  text-shadow: 0 0 2px var(--color-bullish-glow);
-}
-
-.text-gradient-bearish {
-  color: var(--color-bearish);
-  text-shadow: 0 0 2px var(--color-bearish-glow);
-}
-
-/* Text selections should be highlighted clearly */
-::selection {
+/* The corner flag: the logo's blue arrow, cut into a top-right corner. It only ever means "active / you are here" */
+.corner-flag { position: relative; }
+.corner-flag::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 7px;
+  height: 7px;
   background: var(--color-accent);
-  color: #000;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  pointer-events: none;
 }
 
-/* Data text helpers */
-.data-value {
-  font-family: var(--font-mono);
-  font-weight: bold;
-}
-
-.data-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--color-neutral);
-  letter-spacing: 0.05em;
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  color: var(--color-fg);
 }
 
 /* Animations */
@@ -163,70 +136,8 @@ body {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; filter: brightness(1); }
-  50% { opacity: 0.8; filter: brightness(1.2); }
-}
-
-.animate-ticker {
-  animation: ticker-scroll 80s linear infinite;
-}
-
-.ticker-container:hover .animate-ticker {
-  animation-play-state: paused;
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite linear;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 2s ease-in-out infinite;
-}
-
-/* Conflict map markers — crosshair style */
-.conflict-marker {
-  position: relative;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-/* Cross shape via two rotated bars */
-.conflict-marker::before,
-.conflict-marker::after {
-  content: '';
-  position: absolute;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 0.5px;
-  top: 50%;
-  left: 50%;
-}
-
-.conflict-marker::before {
-  width: 12px;
-  height: 1.5px;
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.conflict-marker::after {
-  width: 12px;
-  height: 1.5px;
-  transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-/* Size variants */
-.conflict-marker[data-size="md"]::before,
-.conflict-marker[data-size="md"]::after { width: 16px; height: 2px; }
-
-.conflict-marker[data-size="lg"]::before,
-.conflict-marker[data-size="lg"]::after { width: 20px; height: 2px; }
+.animate-ticker { animation: ticker-scroll 80s linear infinite; }
+.ticker-container:hover .animate-ticker { animation-play-state: paused; }
 
 /* Live price tick: text keeps last-tick direction colour, a soft tinted pill fades out on every tick */
 @keyframes tick-up {
@@ -239,40 +150,27 @@ body {
 }
 .tick-price[data-tick="up"]   { color: var(--color-bullish); animation: tick-up 650ms cubic-bezier(0.2, 0.8, 0.2, 1); }
 .tick-price[data-tick="down"] { color: var(--color-bearish); animation: tick-down 650ms cubic-bezier(0.2, 0.8, 0.2, 1); }
-@media (prefers-reduced-motion: reduce) {
-  .tick-price[data-tick] { animation: none; }
-}
 
-/* Panel Focus Glow */
-.panel-focused {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent);
+/* Focus: a blue ring for keyboard focus only, so a clicked toggle keeps its own selected border */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
 }
+input:focus { outline: none; border-color: var(--color-accent) !important; }
 
-[data-theme="midnight"] .panel-focused {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent);
-}
-
-/* Sharp focus states — buttons only for keyboard focus, so a clicked toggle keeps its own selected border */
-input:focus, button:focus-visible {
-  outline: none;
-  border-color: var(--color-accent) !important;
-  box-shadow: 0 0 0 1px var(--color-accent) !important;
-}
-
-/* Inputs styling */
 input {
-  background-color: #111;
-  color: #fff;
+  background-color: var(--color-raised);
+  color: var(--color-fg);
   border: 1px solid var(--color-border);
   padding: 4px 8px;
   font-family: var(--font-mono);
 }
+input::placeholder { color: color-mix(in srgb, var(--color-neutral) 70%, transparent); }
 
-input::placeholder {
-  color: #666;
-}
+/* No native spinner arrows on number inputs */
+input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* Global table styling for data density */
 table {
@@ -282,162 +180,57 @@ table {
 
 th {
   text-align: left;
-  font-size: 0.7rem;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--color-neutral);
   border-bottom: 1px solid var(--color-border);
-  padding: 4px;
+  padding: 5px 8px;
 }
 
 td {
-  padding: 4px;
-  border-bottom: 1px solid #1a1a1a;
+  padding: 5px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 12px;
 }
 
-tr:hover td {
-  background-color: var(--color-hover);
-}
+tr:hover td { background-color: var(--color-hover); }
 
 /* lightweight-charts lays its panes out in a <table>: keep the data-table look off it (hover grey, row borders) */
-.tv-lightweight-charts td { border-bottom: 0; }
+.tv-lightweight-charts td { border-bottom: 0; padding: 0; }
 .tv-lightweight-charts tr:hover td { background-color: transparent; }
 
 /* Order history: terminal-dense rows, sticky header (a box-shadow rule, since collapsed borders don't stick) */
-.deals th, .deals td { padding: 3px 8px; font-size: 10px; white-space: nowrap; }
+.deals th, .deals td { padding: 4px 8px; font-size: 11px; white-space: nowrap; }
 .deals :is(th, td):first-child { padding-left: 12px; }
 .deals th {
-  position: sticky; top: 0; z-index: 1; background: #000; border-bottom: 0;
-  font-size: 9px; font-weight: 400; color: color-mix(in srgb, var(--color-neutral) 45%, transparent);
+  position: sticky; top: 0; z-index: 1; background: var(--color-panel); border-bottom: 0;
+  font-size: 10px; font-weight: 500; color: var(--color-neutral);
   box-shadow: inset 0 -1px 0 var(--color-border);
 }
-.deals td { border-bottom-color: #141414; }
 .deals .r { text-align: right; }
-
-/* ── Premium Polish ── */
-
-/* Smooth scrolling for panels */
-.smooth-scroll {
-  scroll-behavior: smooth;
-}
-
-/* Skeleton loading animation */
-@keyframes skeleton-loading {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    #111 25%,
-    #1a1a1a 50%,
-    #111 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s ease-in-out infinite;
-}
-
-/* Subtle glow for active/highlighted elements */
-.glow-accent {
-  box-shadow: 0 0 8px var(--color-accent-glow), 0 0 2px var(--color-accent-glow);
-}
-
-.glow-bullish {
-  box-shadow: 0 0 8px var(--color-bullish-glow), 0 0 2px var(--color-bullish-glow);
-}
-
-.glow-bearish {
-  box-shadow: 0 0 8px var(--color-bearish-glow), 0 0 2px var(--color-bearish-glow);
-}
-
-/* Scanline effect for premium feel (subtle) */
-@keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
-}
-
-/* Status indicator pulse */
-@keyframes status-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-.status-live {
-  animation: status-pulse 2s ease-in-out infinite;
-}
-
-/* Fade-in for content */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
-}
-
-/* Improved focus visible for accessibility */
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
-}
-
-/* Better button interactions */
-button:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* Disabled state */
-button:disabled, input:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Allow text selection in article content areas */
-.select-text {
-  user-select: text;
-}
-
-/* Subtle entrance animation for list items */
-@keyframes slide-in {
-  from { opacity: 0; transform: translateX(-4px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.animate-slide-in {
-  animation: slide-in 0.2s ease-out;
-}
 
 /* Chart popovers, flyouts and bars: answer the click that opened them, nothing more */
 @keyframes pop-in {
   from { opacity: 0; transform: translateY(-2px); }
   to { opacity: 1; transform: none; }
 }
-.animate-pop {
-  animation: pop-in 120ms ease-out;
-}
+.animate-pop { animation: pop-in 120ms ease-out; }
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-pop { animation: none; }
+  .tick-price[data-tick], .animate-pop, .animate-ticker { animation: none; }
 }
 
 /* Drawing tools: crosshair while placing, move over the selected drawing (beats the chart canvas's own cursor) */
 [data-draw-cursor="crosshair"] * { cursor: crosshair !important; }
 [data-draw-cursor="move"] * { cursor: move !important; }
 
-/* Panel transition smoothness */
-.panel-transition {
-  transition: all 0.2s ease-out;
+button:disabled, input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-/* Better hover feedback for interactive items */
-.interactive-row {
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-.interactive-row:hover {
-  background-color: rgba(255, 255, 255, 0.03);
-}
-.interactive-row:active {
-  background-color: rgba(255, 255, 255, 0.06);
-}
+/* Allow text selection in article content areas */
+.select-text { user-select: text; }

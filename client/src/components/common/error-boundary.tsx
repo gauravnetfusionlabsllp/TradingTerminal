@@ -40,17 +40,17 @@ export class ErrorBoundary extends Component<Props, State> {
             <h2 className="text-sm font-bold text-white uppercase tracking-wider">
               System Error
             </h2>
-            <p className="text-[11px] font-mono text-neutral leading-relaxed">
+            <p className="text-xs font-mono text-neutral leading-relaxed">
               An unexpected error occurred. This has been logged.
             </p>
             {this.state.error && (
-              <pre className="text-[9px] font-mono text-bearish/70 bg-black border border-border p-3 text-left overflow-auto max-h-32">
+              <pre className="text-mini font-mono text-bearish/70 bg-black border border-border p-3 text-left overflow-auto max-h-32">
                 {this.state.error.message}
               </pre>
             )}
             <button
               onClick={this.handleReset}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-black text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-none"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-on-accent text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-none"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Recover
@@ -85,12 +85,12 @@ export class PanelErrorBoundary extends Component<Props, State> {
         <div className="h-full flex items-center justify-center bg-black/50 p-4">
           <div className="text-center space-y-2">
             <AlertTriangle className="w-5 h-5 text-bearish mx-auto" />
-            <p className="text-[10px] font-mono text-neutral uppercase tracking-wider">
+            <p className="text-mini font-mono text-neutral uppercase tracking-wider">
               Panel failed to load
             </p>
             <button
               onClick={() => this.setState({ hasError: false })}
-              className="text-[9px] font-mono text-accent hover:underline uppercase"
+              className="text-mini font-mono text-accent-ink hover:underline uppercase"
             >
               Retry
             </button>

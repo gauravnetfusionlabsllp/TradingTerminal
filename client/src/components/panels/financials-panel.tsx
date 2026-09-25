@@ -129,17 +129,17 @@ export function FinancialsPanel() {
       className="h-full"
       title={
         <span className="flex items-center gap-1.5">
-          <FileSpreadsheet size={13} className="text-accent" />
+          <FileSpreadsheet size={13} className="text-accent-ink" />
           <span>{t('panelFinancials')}</span>
           {symbol && (
-            <span className="text-white/70 ml-1 text-[10px]">{symbol}</span>
+            <span className="text-white/70 ml-1 text-mini">{symbol}</span>
           )}
         </span>
       }
       headerRight={
         <button
           onClick={handleRefresh}
-          className="text-neutral/50 hover:text-accent transition-colors p-0.5"
+          className="text-neutral/50 hover:text-accent-ink transition-colors p-0.5"
           title="Refresh"
         >
           <RefreshCw size={12} />
@@ -147,18 +147,18 @@ export function FinancialsPanel() {
       }
     >
       {!symbol ? (
-        <div className="flex items-center justify-center h-full text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+        <div className="flex items-center justify-center h-full text-neutral/30 text-mini font-mono uppercase tracking-widest">
           {t('finNoSymbol')}
         </div>
       ) : isLoading ? (
         <div className="flex flex-col items-center justify-center h-full gap-2">
           <div className="w-5 h-5 border-2 border-accent/30 border-t-accent animate-spin" />
-          <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('loading')}
           </span>
         </div>
       ) : isError || !data ? (
-        <div className="flex items-center justify-center h-full text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+        <div className="flex items-center justify-center h-full text-neutral/30 text-mini font-mono uppercase tracking-widest">
           {t('finNoData')}
         </div>
       ) : (
@@ -170,9 +170,9 @@ export function FinancialsPanel() {
                 <button
                   key={item.id}
                   onClick={() => setTab(item.id)}
-                  className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider transition-colors ${
+                  className={`px-2 py-0.5 text-mini font-mono uppercase tracking-wider transition-colors ${
                     tab === item.id
-                      ? 'bg-accent/20 text-accent border border-accent/40'
+                      ? 'bg-accent/20 text-accent-ink border border-accent/40'
                       : 'text-neutral/50 hover:text-neutral/80 border border-transparent'
                   }`}
                 >
@@ -185,7 +185,7 @@ export function FinancialsPanel() {
                 <button
                   key={item.id}
                   onClick={() => setPeriod(item.id)}
-                  className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider transition-colors ${
+                  className={`px-2 py-0.5 text-mini font-mono uppercase tracking-wider transition-colors ${
                     period === item.id
                       ? 'bg-white/10 text-white border border-white/20'
                       : 'text-neutral/40 hover:text-neutral/70 border border-transparent'
@@ -199,12 +199,12 @@ export function FinancialsPanel() {
 
           {/* Financial table */}
           {statements.length === 0 ? (
-            <div className="flex items-center justify-center flex-1 text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+            <div className="flex items-center justify-center flex-1 text-neutral/30 text-mini font-mono uppercase tracking-widest">
               {t('finNoData')}
             </div>
           ) : (
             <div className="flex-1 overflow-auto">
-              <table className="w-full text-[10px] font-mono border-collapse">
+              <table className="w-full text-mini font-mono border-collapse">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-black/60">
                     <th className="text-left text-neutral/50 px-2 py-1.5 font-normal uppercase tracking-wider border-b border-border whitespace-nowrap">
@@ -250,7 +250,7 @@ export function FinancialsPanel() {
                             <span>{text}</span>
                             {growth && (
                               <span
-                                className={`ml-1 text-[8px] ${
+                                className={`ml-1 text-micro ${
                                   growth.startsWith('+') ? 'text-emerald-400/70' : 'text-red-400/70'
                                 }`}
                               >

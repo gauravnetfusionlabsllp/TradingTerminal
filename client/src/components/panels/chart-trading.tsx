@@ -7,18 +7,21 @@ import {
 } from '../../api/hooks/use-mt5';
 import { useAppStore } from '../../stores/use-app-store';
 import { fmtPrice, liveProfit } from '../trading/mt5-trading';
-import { snap, pendingTypesAt, levelSide, levelsError } from '../../lib/chart-trading';
+import { snap, pendingTypesAt, levelSide, levelsError, shortTags } from '../../lib/chart-trading';
+import { useChartColors, alpha } from '../../lib/theme';
 
 type Side = 'BUY' | 'SELL';
 type Field = 'entry' | 'sl' | 'tp';
 
-/** One horizontal level drawn on the chart. Drafts (SL/TP for the next order) have neither `pos` nor `ord`. */
+/** One horizontal level drawn on the chart. Drafts (SL/TP for the next order) have neither `pos` nor `ord`.
+ *  `title` says what the line is ('SL', 'SELL 0.01', 'BUY LIMIT 0.1'); tag and P&L are added when it's drawn. */
 interface Level {
   id: string;
   price: number;
   field: Field;
   title: string;
-  color: string;
+  /** Theme token, resolved to a colour when the line is drawn */
+  color: LineColor;
   style: LineStyle;
   drag: boolean;
   pos?: Mt5Position;
@@ -65,7 +68,7 @@ export function ChartMenu({ at, items, bounds, onClose }: {
     <div
       ref={ref}
       role="menu"
-      className="absolute z-30 min-w-[180px] bg-black/95 border border-white/10 py-1 text-[10px] font-mono shadow-xl"
+      className="absolute z-30 min-w-[180px] bg-raised border border-border rounded-sm py-1 text-xs shadow-[0_12px_32px_rgb(0_0_0/0.3)]"
       style={{ left: Math.max(0, Math.min(at.x, bounds.clientWidth - 200)), top: Math.max(0, Math.min(at.y, bounds.clientHeight - items.length * 24 - 16)) }}
     >
       {items.map((it) => (
@@ -73,7 +76,7 @@ export function ChartMenu({ at, items, bounds, onClose }: {
           key={it.label}
           role="menuitem"
           onClick={() => { close.current(); it.onClick(); }}
-          className={`block w-full text-left px-3 py-1 hover:bg-white/10 ${it.danger ? 'text-red-400' : 'text-white/80'} ${it.divider ? 'mt-1 border-t border-white/10 pt-1.5' : ''}`}
+          className={`block w-full text-left px-3 py-1.5 hover:bg-hover ${it.danger ? 'text-bearish' : 'text-fg'} ${it.divider ? 'mt-1 border-t border-border pt-2' : ''}`}
         >
           {it.label}
         </button>
@@ -82,16 +85,17 @@ export function ChartMenu({ at, items, bounds, onClose }: {
   );
 }
 
-const WHITE = '#e4e4e7', AMBER = '#f59e0b', RED = '#ef4444', GREEN = '#22c55e';
+type LineColor = 'fg' | 'orange' | 'bearish' | 'bullish';
+const WHITE: LineColor = 'fg', AMBER: LineColor = 'orange', RED: LineColor = 'bearish', GREEN: LineColor = 'bullish';
 const HIT_PX = 5;
 const LEVEL_KEY = { entry: 'price', sl: 'stopLoss', tp: 'takeProfit' } as const;
 const sideOf = (o: Mt5Order): Side => (o.type.startsWith('BUY') ? 'BUY' : 'SELL');
 const errMsg = (err: unknown) => (err instanceof Error ? err.message : 'Failed');
-const signed = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
+const signed = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(2)}`;
 /** The price a position closes at: SL / TP must sit either side of it (BUY closes at bid, SELL at ask) */
 const closeRef = (p: Mt5Position, q?: Mt5Quote) => (q ? (p.side === 'BUY' ? q.bid : q.ask) : p.currentPrice);
-const stopLine = (owner: string, field: 'sl' | 'tp', price: number, drag: boolean, ref: Pick<Level, 'pos' | 'ord'>, tag: string): Level => ({
-  id: `${owner}:${field}`, price, field, title: `${field.toUpperCase()} ${tag}`,
+const stopLine = (owner: string, field: 'sl' | 'tp', price: number, drag: boolean, ref: Pick<Level, 'pos' | 'ord'>): Level => ({
+  id: `${owner}:${field}`, price, field, title: field.toUpperCase(),
   color: field === 'sl' ? RED : GREEN, style: LineStyle.Dashed, drag, ...ref,
 });
 /** Replace the level with the same id (or add it) */
@@ -106,6 +110,7 @@ const ownerOf = (l: Level) => l.id.split(':')[0];
  */
 export function ChartTrading({ chart, series, el, symbol, precision, readOnly, lots, setLots, oneClick = true, drawing = false, onReset }: Props) {
   const addLogEntry = useAppStore((s) => s.addLogEntry);
+  const colors = useChartColors();
   const focus = useAppStore((s) => s.tradeFocus);
   const { data: positions } = useMt5Positions();
   const { data: orders } = useMt5Orders();
@@ -137,24 +142,23 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
 
   const shown = useMemo(() => {
     let out: Level[] = [];
-    const stops = (id: string, sl: number, tp: number, drag: boolean, owner: Pick<Level, 'pos' | 'ord'>, tag: string) => {
-      if (sl) out.push(stopLine(id, 'sl', sl, drag, owner, tag));
-      if (tp) out.push(stopLine(id, 'tp', tp, drag, owner, tag));
+    const stops = (id: string, sl: number, tp: number, drag: boolean, owner: Pick<Level, 'pos' | 'ord'>) => {
+      if (sl) out.push(stopLine(id, 'sl', sl, drag, owner));
+      if (tp) out.push(stopLine(id, 'tp', tp, drag, owner));
     };
     for (const p of myPositions) {
-      const pnl = quote ? liveProfit(p, closeRef(p, quote)) : p.profit;
       out.push({
         id: `p${p.ticket}`, price: p.openPrice, field: 'entry', color: WHITE, style: LineStyle.Solid, drag: !readOnly, pos: p,
-        title: `#${p.ticket} ${p.side} ${p.volume} ${signed(pnl)}`,
+        title: `${p.side} ${p.volume}`,
       });
-      stops(`p${p.ticket}`, p.stopLoss, p.takeProfit, !readOnly, { pos: p }, `#${p.ticket}`);
+      stops(`p${p.ticket}`, p.stopLoss, p.takeProfit, !readOnly, { pos: p });
     }
     for (const o of myOrders) {
       out.push({
         id: `o${o.ticket}`, price: o.price, field: 'entry', color: AMBER, style: LineStyle.Solid, drag: !readOnly, ord: o,
-        title: `${o.type.replace('_', ' ')} ${o.volume} #${o.ticket}`,
+        title: `${o.type.replace('_', ' ')} ${o.volume}`,
       });
-      stops(`o${o.ticket}`, o.stopLoss, o.takeProfit, !readOnly, { ord: o }, `#${o.ticket}`);
+      stops(`o${o.ticket}`, o.stopLoss, o.takeProfit, !readOnly, { ord: o });
     }
     if (drafts.sl) out.push({ id: 'd:sl', price: drafts.sl, field: 'sl', title: 'SL next order', color: RED, style: LineStyle.Dotted, drag: true });
     if (drafts.tp) out.push({ id: 'd:tp', price: drafts.tp, field: 'tp', title: 'TP next order', color: GREEN, style: LineStyle.Dotted, drag: true });
@@ -164,30 +168,47 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
       const p = moving.pos;
       // Dragging a position's entry pulls out its SL (losing side) or TP (winning side), replacing any existing one
       out = put(out, p && moving.field === 'entry'
-        ? stopLine(moving.id, levelSide(p.side, closeRef(p, quote), drag.price), drag.price, true, { pos: p }, `#${p.ticket}`)
+        ? stopLine(moving.id, levelSide(p.side, closeRef(p, quote), drag.price), drag.price, true, { pos: p })
         : { ...moving, price: drag.price });
     }
     return out;
-  }, [myPositions, myOrders, quote, drafts, drag, held, readOnly]);
+  }, [myPositions, myOrders, drafts, drag, held, readOnly, quote]);
 
-  // Price lines sit on the visible main series (a hidden series draws none)
-  // One position / order focused (hovered here or in a panel): only its lines are drawn — and hit-tested, so a
-  // hidden line can't be grabbed. A focus with no line here (another symbol, a row closed while hovered) hides nothing.
-  const visible = useMemo(() => {
-    const mine = shown.filter((l) => ownerOf(l) === focus);
-    return mine.length ? mine : shown;
-  }, [shown, focus]);
-  const lit = visible !== shown;
+  // Shortest ticket ending that tells this symbol's trades apart (none with a single trade): pairs each SL / TP with
+  // its entry at a glance, without 9-digit tickets on every line
+  const tags = useMemo(() => shortTags([...myPositions, ...myOrders].map((t) => t.ticket)), [myPositions, myOrders]);
+
+  // Price lines sit on the visible main series (a hidden series draws none). The label says what a line is; hovering
+  // says whose. At rest: solid chips, 'SL ·597 −0.84'. One trade hovered (here or in a panel): its lines come forward —
+  // 2px, P&L, drawn on top — and every other line stays in place, quieter: half-strength, a bare 'SL' / 'TP' /
+  // 'SELL 0.01' on a ghost chip. A focus with no line here (another symbol, a row closed while hovered) changes nothing.
+  const lit = useMemo(() => shown.some((l) => ownerOf(l) === focus), [shown, focus]);
 
   useEffect(() => {
-    const lines = visible.map((l) => series.createPriceLine({
-      price: l.price, color: l.color, lineWidth: lit ? 2 : 1, lineStyle: l.style, axisLabelVisible: true,
-      // A position's SL / TP shows the P&L it would lock in — live while dragging
-      title: l.pos && l.field !== 'entry' ? `${l.title} ${signed(liveProfit(l.pos, l.price))}` : l.title,
-    }));
+    const front = (l: Level) => !lit || ownerOf(l) === focus;
+    const tag = (l: Level) => tags.get(l.pos?.ticket ?? l.ord?.ticket ?? NaN);
+    // A position's entry shows its floating P&L; its SL / TP the P&L they would lock in — live while dragging
+    const pnl = (l: Level) => !l.pos ? undefined
+      : signed(l.field !== 'entry' ? liveProfit(l.pos, l.price) : quote ? liveProfit(l.pos, closeRef(l.pos, quote)) : l.pos.profit);
+    const full = (l: Level) => [l.title, !lit && tag(l) && `·${tag(l)}`, pnl(l)].filter(Boolean).join(' ');
+    const ordered = lit ? [...shown].sort((a, b) => Number(front(a)) - Number(front(b))) : shown; // focused last = on top
+    const lines = ordered.map((l) => {
+      if (front(l)) {
+        return series.createPriceLine({
+          price: l.price, color: colors[l.color], lineWidth: lit ? 2 : 1, lineStyle: l.style, axisLabelVisible: true,
+          title: full(l),
+        });
+      }
+      // Ghost chip: surface fill with the line's own colour as text (both AA on raised, see check-theme)
+      return series.createPriceLine({
+        price: l.price, color: alpha(colors[l.color], 0.5), lineWidth: 1, lineStyle: l.style,
+        axisLabelVisible: true, axisLabelColor: colors.raised, axisLabelTextColor: colors[l.color],
+        title: l.title,
+      });
+    });
     // On unmount the parent may already have removed the chart
     return () => lines.forEach((pl) => { try { series.removePriceLine(pl); } catch { /* chart gone */ } });
-  }, [series, visible, lit]);
+  }, [series, shown, focus, lit, colors, tags, quote]);
 
   const run = async (desc: string, fn: () => Promise<unknown>) => {
     setError('');
@@ -254,14 +275,14 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
   const drop = (l: Level, price: number) => {
     if (l.pos) {
       const f = l.field === 'entry' ? levelSide(l.pos.side, closeRef(l.pos, quote), price) : l.field;
-      modify(l.pos, { [LEVEL_KEY[f]]: price }, stopLine(`p${l.pos.ticket}`, f, price, true, { pos: l.pos }, `#${l.pos.ticket}`));
+      modify(l.pos, { [LEVEL_KEY[f]]: price }, stopLine(`p${l.pos.ticket}`, f, price, true, { pos: l.pos }));
     } else if (l.ord) replace(l.ord, { [LEVEL_KEY[l.field]]: price }, { ...l, price });
     else if (l.field !== 'entry') setDrafts((d) => ({ ...d, [l.field]: price }));
   };
 
   // Mouse handlers live for the chart's lifetime; they read current state through this ref
-  const live = useRef({ shown: visible, blocked: busy || readOnly || drawing, precision, drop });
-  live.current = { shown: visible, blocked: busy || readOnly || drawing, precision, drop };
+  const live = useRef({ shown, focus, blocked: busy || readOnly || drawing, precision, drop });
+  live.current = { shown, focus, blocked: busy || readOnly || drawing, precision, drop };
 
   useEffect(() => {
     let grab = false;
@@ -280,7 +301,10 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
       let bestD = HIT_PX + 1;
       for (const l of live.current.shown) {
         const ly = series.priceToCoordinate(l.price);
-        if (ly != null && Math.abs(ly - y) < bestD) { best = l; bestD = Math.abs(ly - y); }
+        if (ly == null) continue;
+        // The focused trade wins near-ties, so overlapping lines don't flip the focus back and forth
+        const d = Math.abs(ly - y) - (ownerOf(l) === live.current.focus ? 2 : 0);
+        if (d < bestD) { best = l; bestD = d; }
       }
       return best;
     };
@@ -394,42 +418,42 @@ export function ChartTrading({ chart, series, el, symbol, precision, readOnly, l
   }
   if (menu && onReset) items.push({ label: 'Reset chart', onClick: onReset, divider: items.length > 0 });
 
-  const btn = 'px-2 py-0.5 font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed';
+  const btn = 'px-2.5 py-1 font-semibold text-on-accent tabular-nums disabled:opacity-40 disabled:cursor-not-allowed';
   return (
     <>
       {!readOnly && oneClick && (
         <div
-          className={`absolute top-1 z-20 flex items-stretch text-[10px] font-mono select-none shadow-lg transition-opacity duration-100 motion-reduce:transition-none ${
+          className={`absolute top-1.5 z-20 flex items-stretch text-mini select-none rounded-sm overflow-hidden shadow-[0_4px_16px_rgb(0_0_0/0.25)] transition-opacity duration-100 motion-reduce:transition-none ${
             drawing ? 'opacity-40 pointer-events-none' : ''
           }`}
           aria-disabled={drawing || undefined}
           style={{ right: chart.priceScale('right').width() + 8 }}
         >
-          <button onClick={() => market('SELL')} disabled={busy || !quote} className={`${btn} bg-red-600/80 hover:bg-red-600`}>
+          <button onClick={() => market('SELL')} disabled={busy || !quote} className={`${btn} bg-sell hover:bg-sell/90`}>
             SELL {quote ? fmtPrice(quote.bid) : '—'}
           </button>
           <input
             type="number" step="0.01" min="0.01" value={lots} onChange={(e) => setLots(e.target.value)} aria-label="Lots"
-            className="w-14 bg-black/85 border-y border-white/10 text-center text-white outline-none"
+            className="w-14 bg-raised border-0 border-y border-border text-center text-fg outline-none"
           />
-          <button onClick={() => market('BUY')} disabled={busy || !quote} className={`${btn} bg-emerald-600/80 hover:bg-emerald-600`}>
+          <button onClick={() => market('BUY')} disabled={busy || !quote} className={`${btn} bg-buy hover:bg-buy/90`}>
             BUY {quote ? fmtPrice(quote.ask) : '—'}
           </button>
         </div>
       )}
 
       {busy && (
-        <div className="absolute top-7 z-20 text-[9px] font-mono text-amber-400 tracking-widest pointer-events-none" style={{ right: chart.priceScale('right').width() + 8 }}>
-          SENDING…
+        <div className="absolute top-9 z-20 text-micro text-orange pointer-events-none" style={{ right: chart.priceScale('right').width() + 8 }}>
+          Sending…
         </div>
       )}
 
       {menu && items.length > 0 && <ChartMenu at={menu} items={items} bounds={el} onClose={() => setMenu(null)} />}
 
       {error && (
-        <div role="alert" className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 max-w-[90%] flex items-center gap-2 px-3 py-1 bg-red-950/90 border border-red-500/40 text-[10px] font-mono text-red-300">
+        <div role="alert" className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 max-w-[90%] flex items-center gap-2 px-3 py-1.5 rounded-sm bg-raised border border-bearish/50 text-mini text-bearish shadow-[0_4px_16px_rgb(0_0_0/0.25)]">
           <span>{error}</span>
-          <button onClick={() => setError('')} className="text-red-300/60 hover:text-red-300" aria-label="Dismiss">✕</button>
+          <button onClick={() => setError('')} className="text-bearish/60 hover:text-bearish" aria-label="Dismiss">✕</button>
         </div>
       )}
     </>

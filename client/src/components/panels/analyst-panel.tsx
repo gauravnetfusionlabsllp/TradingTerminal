@@ -79,13 +79,13 @@ function TargetRangeBar({ low, current, high }: { low: number; current: number; 
   return (
     <svg width="100%" height="12" viewBox="0 0 100 12" preserveAspectRatio="none" className="block">
       {/* Range bar */}
-      <rect x="2" y="4" width="96" height="4" rx="2" fill="rgba(255,255,255,0.06)" />
+      <rect x="2" y="4" width="96" height="4" rx="2" fill="color-mix(in srgb, var(--color-white) 6%, transparent)" />
       {/* Low marker */}
-      <rect x="2" y="2" width="1" height="8" fill="rgba(239,68,68,0.5)" />
+      <rect x="2" y="2" width="1" height="8" fill="color-mix(in srgb, var(--color-red-500) 50%, transparent)" />
       {/* High marker */}
-      <rect x="97" y="2" width="1" height="8" fill="rgba(34,197,94,0.5)" />
+      <rect x="97" y="2" width="1" height="8" fill="color-mix(in srgb, var(--color-green-500) 50%, transparent)" />
       {/* Current price marker */}
-      <circle cx={2 + pos * 96} cy="6" r="3" fill="#3b82f6" stroke="rgba(59,130,246,0.4)" strokeWidth="1" />
+      <circle cx={2 + pos * 96} cy="6" r="3" fill="var(--color-blue-500)" stroke="color-mix(in srgb, var(--color-blue-500) 40%, transparent)" strokeWidth="1" />
     </svg>
   );
 }
@@ -94,20 +94,20 @@ function DistributionBar({ strongBuy, buy, hold, sell, strongSell }: {
   strongBuy: number; buy: number; hold: number; sell: number; strongSell: number;
 }) {
   const total = strongBuy + buy + hold + sell + strongSell;
-  if (total === 0) return <span className="text-neutral/30 text-[9px]">-</span>;
+  if (total === 0) return <span className="text-neutral/30 text-mini">-</span>;
 
   const segments = [
-    { count: strongBuy, color: '#10b981' },  // emerald
-    { count: buy, color: '#22c55e' },          // green
-    { count: hold, color: '#eab308' },         // yellow
-    { count: sell, color: '#f97316' },          // orange
-    { count: strongSell, color: '#ef4444' },   // red
+    { count: strongBuy, color: 'var(--color-emerald-500)' },  // emerald
+    { count: buy, color: 'var(--color-green-500)' },          // green
+    { count: hold, color: 'var(--color-yellow-500)' },         // yellow
+    { count: sell, color: 'var(--color-orange-500)' },          // orange
+    { count: strongSell, color: 'var(--color-red-500)' },   // red
   ];
 
   let x = 0;
   return (
     <svg width="100%" height="10" viewBox="0 0 100 10" preserveAspectRatio="none" className="block">
-      <rect x="0" y="0" width="100" height="10" rx="2" fill="rgba(255,255,255,0.03)" />
+      <rect x="0" y="0" width="100" height="10" rx="2" fill="color-mix(in srgb, var(--color-white) 3%, transparent)" />
       {segments.map((seg, i) => {
         const w = (seg.count / total) * 100;
         const rx = x;
@@ -185,24 +185,24 @@ export function AnalystPanel() {
   ];
 
   return (
-    <GlassCard className="flex flex-col h-full text-[10px]">
+    <GlassCard className="flex flex-col h-full text-mini">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.04]">
         <div className="flex items-center gap-1.5">
-          <TrendingUp size={12} className="text-accent" />
-          <span className="text-[10px] font-mono font-bold tracking-widest text-neutral/80 uppercase">
+          <TrendingUp size={12} className="text-accent-ink" />
+          <span className="text-mini font-mono font-bold tracking-widest text-neutral/80 uppercase">
             {t('panelAnalyst')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {dataUpdatedAt > 0 && (
-            <span className="text-[9px] font-mono text-neutral/30">
+            <span className="text-mini font-mono text-neutral/30">
               {new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
           <button
             onClick={() => refetch()}
-            className="p-0.5 text-neutral/40 hover:text-accent transition-colors"
+            className="p-0.5 text-neutral/40 hover:text-accent-ink transition-colors"
             title="Refresh"
           >
             <RefreshCw size={10} className={isLoading ? 'animate-spin' : ''} />
@@ -216,9 +216,9 @@ export function AnalystPanel() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded transition-colors whitespace-nowrap ${
+            className={`px-2 py-0.5 text-mini font-mono uppercase tracking-wider rounded transition-colors whitespace-nowrap ${
               filter === f.key
-                ? 'bg-accent/20 text-accent border border-accent/30'
+                ? 'bg-accent/20 text-accent-ink border border-accent/30'
                 : 'text-neutral/40 hover:text-neutral/70 border border-transparent'
             }`}
           >
@@ -234,11 +234,11 @@ export function AnalystPanel() {
             <div className="w-4 h-4 border-2 border-accent/30 border-t-accent animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center h-full text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {t('analystNoData')}
           </div>
         ) : (
-          <table className="w-full text-[10px] font-mono">
+          <table className="w-full text-mini font-mono">
             <thead className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm">
               <tr className="border-b border-white/[0.06]">
                 <th
@@ -295,8 +295,8 @@ export function AnalystPanel() {
                   {/* Symbol + Name */}
                   <td className="px-2 py-1.5">
                     <div className="flex flex-col">
-                      <span className="text-white font-bold text-[10px]">{r.symbol}</span>
-                      <span className="text-neutral/30 text-[8px] truncate max-w-[80px]">{r.name}</span>
+                      <span className="text-white font-bold text-mini">{r.symbol}</span>
+                      <span className="text-neutral/30 text-micro truncate max-w-[80px]">{r.name}</span>
                     </div>
                   </td>
 
@@ -304,7 +304,7 @@ export function AnalystPanel() {
                   <td className="text-right px-2 py-1.5">
                     <div className="flex flex-col items-end">
                       <span className="text-neutral/80">${r.price.toFixed(2)}</span>
-                      <span className={`text-[9px] ${r.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}`}>
+                      <span className={`text-mini ${r.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}`}>
                         {r.changePercent >= 0 ? '+' : ''}{r.changePercent.toFixed(2)}%
                       </span>
                     </div>
@@ -313,7 +313,7 @@ export function AnalystPanel() {
                   {/* Rating badge */}
                   <td className="text-center px-2 py-1.5">
                     {r.recommendationKey ? (
-                      <span className={`inline-block px-1.5 py-0.5 text-[8px] uppercase font-bold tracking-wider rounded border ${ratingBgColor(r.recommendationKey)} ${ratingColor(r.recommendationKey)}`}>
+                      <span className={`inline-block px-1.5 py-0.5 text-micro uppercase font-bold tracking-wider rounded border ${ratingBgColor(r.recommendationKey)} ${ratingColor(r.recommendationKey)}`}>
                         {ratingLabel(r.recommendationKey, t)}
                       </span>
                     ) : (
@@ -333,7 +333,7 @@ export function AnalystPanel() {
                   {/* Upside */}
                   <td className="text-right px-2 py-1.5">
                     {r.upside != null ? (
-                      <span className={`text-[11px] font-bold ${r.upside >= 0 ? 'text-bullish' : 'text-bearish'}`}>
+                      <span className={`text-xs font-bold ${r.upside >= 0 ? 'text-bullish' : 'text-bearish'}`}>
                         {r.upside >= 0 ? '+' : ''}{r.upside.toFixed(1)}%
                       </span>
                     ) : (
@@ -346,7 +346,7 @@ export function AnalystPanel() {
                     {r.targetLow != null && r.targetHigh != null && r.price > 0 ? (
                       <div className="w-[70px]">
                         <TargetRangeBar low={r.targetLow} current={r.price} high={r.targetHigh} />
-                        <div className="flex justify-between text-[7px] text-neutral/25 mt-0.5">
+                        <div className="flex justify-between text-micro text-neutral/25 mt-0.5">
                           <span>${r.targetLow.toFixed(0)}</span>
                           <span>${r.targetHigh.toFixed(0)}</span>
                         </div>
@@ -381,7 +381,7 @@ export function AnalystPanel() {
       </div>
 
       {/* Status bar */}
-      <div className="flex items-center justify-between px-3 py-1 border-t border-white/[0.04] text-[9px] font-mono text-neutral/30">
+      <div className="flex items-center justify-between px-3 py-1 border-t border-white/[0.04] text-mini font-mono text-neutral/30">
         <span>{filtered.length} / {stats.total} stocks</span>
         <div className="flex items-center gap-3">
           <span>

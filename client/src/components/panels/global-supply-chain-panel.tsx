@@ -93,7 +93,7 @@ function SectionHeader({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-1.5 px-2 py-1 border-b border-lime-400/30">
       <div className="w-1 h-1 shrink-0 bg-lime-400" />
-      <span className="text-[7px] font-black font-mono uppercase tracking-widest text-lime-400">
+      <span className="text-micro font-black font-mono uppercase tracking-widest text-lime-400">
         {title}
       </span>
     </div>
@@ -105,7 +105,7 @@ function SectionHeader({ title }: { title: string }) {
 function ThCell({ label, align }: { label: string; align: 'left' | 'right' }) {
   return (
     <th
-      className={`px-1.5 py-1 text-[7px] font-mono font-bold uppercase tracking-wider text-neutral-500 whitespace-nowrap ${
+      className={`px-1.5 py-1 text-micro font-mono font-bold uppercase tracking-wider text-neutral-500 whitespace-nowrap ${
         align === 'right' ? 'text-right' : 'text-left'
       }`}
     >
@@ -122,34 +122,34 @@ function SummaryBar({ summary }: { summary: GlobalSupplyChainSummary }) {
   return (
     <div className="grid grid-cols-4 border-b border-lime-400/30 bg-black">
       <div className="px-2 py-1.5 border-r border-lime-400/10">
-        <div className="text-[7px] font-mono uppercase tracking-wider text-neutral-500">
+        <div className="text-micro font-mono uppercase tracking-wider text-neutral-500">
           Avg Shipping Rate
         </div>
-        <div className="text-[10px] font-mono font-bold text-lime-400">
+        <div className="text-mini font-mono font-bold text-lime-400">
           {fmtRate(summary.avgShippingRate)}/TEU
         </div>
       </div>
       <div className="px-2 py-1.5 border-r border-lime-400/10">
-        <div className="text-[7px] font-mono uppercase tracking-wider text-neutral-500">
+        <div className="text-micro font-mono uppercase tracking-wider text-neutral-500">
           Avg Port Wait
         </div>
-        <div className="text-[10px] font-mono font-bold text-neutral-300">
+        <div className="text-mini font-mono font-bold text-neutral-300">
           {summary.avgPortWait.toFixed(1)}d
         </div>
       </div>
       <div className="px-2 py-1.5 border-r border-lime-400/10">
-        <div className="text-[7px] font-mono uppercase tracking-wider text-neutral-500">
+        <div className="text-micro font-mono uppercase tracking-wider text-neutral-500">
           SC Stress
         </div>
-        <span className={`text-[9px] font-mono font-black uppercase px-1 py-0.5 ${stress.color} ${stress.bg}`}>
+        <span className={`text-mini font-mono font-black uppercase px-1 py-0.5 ${stress.color} ${stress.bg}`}>
           {summary.supplyChainStress}
         </span>
       </div>
       <div className="px-2 py-1.5">
-        <div className="text-[7px] font-mono uppercase tracking-wider text-neutral-500">
+        <div className="text-micro font-mono uppercase tracking-wider text-neutral-500">
           BDI Level
         </div>
-        <div className={`text-[10px] font-mono font-bold ${bdiColor(summary.bdiLevel)}`}>
+        <div className={`text-mini font-mono font-bold ${bdiColor(summary.bdiLevel)}`}>
           {summary.bdiLevel.toLocaleString('en-US')}
         </div>
       </div>
@@ -162,8 +162,8 @@ function SummaryBar({ summary }: { summary: GlobalSupplyChainSummary }) {
 function ShippingRatesTable({ rates }: { rates: ShippingRate[] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[9px] font-mono">
-        <thead className="sticky top-0 bg-[#080808] z-10">
+      <table className="w-full text-mini font-mono">
+        <thead className="sticky top-0 bg-raised z-10">
           <tr className="border-b border-border/20">
             <ThCell label="Route" align="left" />
             <ThCell label="Type" align="left" />
@@ -216,8 +216,8 @@ function PortCongestionTable({ ports }: { ports: PortCongestion[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[9px] font-mono">
-        <thead className="sticky top-0 bg-[#080808] z-10">
+      <table className="w-full text-mini font-mono">
+        <thead className="sticky top-0 bg-raised z-10">
           <tr className="border-b border-border/20">
             <ThCell label="Port" align="left" />
             <ThCell label="Avg Wait (days)" align="right" />
@@ -251,7 +251,7 @@ function PortCongestionTable({ ports }: { ports: PortCongestion[] }) {
                   {changeSign(p.change1m)}
                 </td>
                 <td className="px-1.5 py-1 whitespace-nowrap text-left">
-                  <span className={`text-[7px] font-bold px-1 py-0.5 uppercase ${badge.color} ${badge.bg}`}>
+                  <span className={`text-micro font-bold px-1 py-0.5 uppercase ${badge.color} ${badge.bg}`}>
                     {p.congestion}
                   </span>
                 </td>
@@ -268,7 +268,7 @@ function PortCongestionTable({ ports }: { ports: PortCongestion[] }) {
 
 function PercentileBar({ pct }: { pct: number }) {
   const color =
-    pct > 80 ? '#f87171' : pct > 60 ? '#fbbf24' : pct > 40 ? '#a3e635' : '#34d399';
+    pct > 80 ? 'var(--color-red-400)' : pct > 60 ? 'var(--color-amber-400)' : pct > 40 ? 'var(--color-lime-400)' : 'var(--color-emerald-400)';
 
   return (
     <div className="flex items-center gap-1">
@@ -278,7 +278,7 @@ function PercentileBar({ pct }: { pct: number }) {
           style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color, opacity: 0.7 }}
         />
       </div>
-      <span className="text-[8px] font-mono font-bold tabular-nums" style={{ color }}>
+      <span className="text-micro font-mono font-bold tabular-nums" style={{ color }}>
         {pct}
       </span>
     </div>
@@ -290,8 +290,8 @@ function PercentileBar({ pct }: { pct: number }) {
 function IndicatorsTable({ indicators }: { indicators: SupplyChainIndicator[] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[9px] font-mono">
-        <thead className="sticky top-0 bg-[#080808] z-10">
+      <table className="w-full text-mini font-mono">
+        <thead className="sticky top-0 bg-raised z-10">
           <tr className="border-b border-border/20">
             <ThCell label="Indicator" align="left" />
             <ThCell label="Value" align="right" />
@@ -321,7 +321,7 @@ function IndicatorsTable({ indicators }: { indicators: SupplyChainIndicator[] })
                   <PercentileBar pct={ind.percentile} />
                 </td>
                 <td className="px-1.5 py-1 whitespace-nowrap text-left">
-                  <span className={`text-[7px] font-bold px-1 py-0.5 uppercase ${badge.color} ${badge.bg}`}>
+                  <span className={`text-micro font-bold px-1 py-0.5 uppercase ${badge.color} ${badge.bg}`}>
                     {ind.signal}
                   </span>
                 </td>
@@ -345,16 +345,16 @@ export function GlobalSupplyChainPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-lime-400/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-lime-400/30 shrink-0">
         <div className="flex items-center gap-2">
           <Anchor className="w-4 h-4 text-lime-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-wider text-lime-400">
+          <span className="text-mini font-black font-mono uppercase tracking-wider text-lime-400">
             {tr(t, 'gscTitle', 'Global Supply Chain Monitor')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {scData?.summary && (
-            <span className="text-[8px] font-mono font-black tabular-nums text-lime-400">
+            <span className="text-micro font-mono font-black tabular-nums text-lime-400">
               BDI {scData.summary.bdiLevel.toLocaleString('en-US')}
             </span>
           )}
@@ -369,7 +369,7 @@ export function GlobalSupplyChainPanel() {
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-2">
             <div className="w-5 h-5 border-2 border-lime-400/30 border-t-lime-400 animate-spin" />
-            <span className="text-[9px] font-mono text-lime-400 uppercase tracking-wider animate-pulse">
+            <span className="text-mini font-mono text-lime-400 uppercase tracking-wider animate-pulse">
               LOADING...
             </span>
           </div>
@@ -379,7 +379,7 @@ export function GlobalSupplyChainPanel() {
       {/* No data */}
       {!scData && !isLoading && (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[9px] font-mono text-neutral-600 uppercase">
+          <span className="text-mini font-mono text-neutral-600 uppercase">
             {tr(t, 'noData', 'No data')}
           </span>
         </div>

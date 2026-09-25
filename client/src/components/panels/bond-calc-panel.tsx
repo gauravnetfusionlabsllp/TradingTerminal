@@ -186,17 +186,17 @@ function BondInput({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{label}</label>
+      <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">{label}</label>
       <div className="flex items-center bg-black/40 border border-border/50 focus-within:border-emerald-400/50 transition-colors">
-        {prefix && <span className="text-[10px] font-mono text-neutral/40 pl-2">{prefix}</span>}
+        {prefix && <span className="text-mini font-mono text-neutral/40 pl-2">{prefix}</span>}
         <input
           type={type}
           step={step ?? 'any'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-transparent px-2 py-1 text-[11px] font-mono text-gray-200 outline-none w-full min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="flex-1 bg-transparent px-2 py-1 text-xs font-mono text-gray-200 outline-none w-full min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
-        {suffix && <span className="text-[10px] font-mono text-neutral/40 pr-2">{suffix}</span>}
+        {suffix && <span className="text-mini font-mono text-neutral/40 pr-2">{suffix}</span>}
       </div>
     </div>
   );
@@ -270,49 +270,49 @@ function PriceSensitivityChart({
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
       {/* Grid lines */}
       {xTicks.map((v, i) => (
-        <line key={`xg${i}`} x1={scaleX(v)} y1={pad.top} x2={scaleX(v)} y2={pad.top + innerH} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+        <line key={`xg${i}`} x1={scaleX(v)} y1={pad.top} x2={scaleX(v)} y2={pad.top + innerH} stroke="color-mix(in srgb, var(--color-white) 6%, transparent)" strokeWidth="0.5" />
       ))}
       {yTicks.map((v, i) => (
-        <line key={`yg${i}`} x1={pad.left} y1={scaleY(v)} x2={pad.left + innerW} y2={scaleY(v)} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+        <line key={`yg${i}`} x1={pad.left} y1={scaleY(v)} x2={pad.left + innerW} y2={scaleY(v)} stroke="color-mix(in srgb, var(--color-white) 6%, transparent)" strokeWidth="0.5" />
       ))}
 
       {/* Fill under curve */}
-      <path d={fillPath} fill="rgba(16,185,129,0.08)" />
+      <path d={fillPath} fill="color-mix(in srgb, var(--color-emerald-500) 8%, transparent)" />
 
       {/* Price/yield curve */}
-      <path d={linePath} fill="none" stroke="rgb(16,185,129)" strokeWidth="1.5" />
+      <path d={linePath} fill="none" stroke="var(--color-emerald-500)" strokeWidth="1.5" />
 
       {/* Par value line */}
       {faceValue >= yMin && faceValue <= yMax && (
         <>
-          <line x1={pad.left} y1={scaleY(faceValue)} x2={pad.left + innerW} y2={scaleY(faceValue)} stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" strokeDasharray="3,3" />
-          <text x={pad.left + innerW + 2} y={scaleY(faceValue) + 3} fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="monospace">Par</text>
+          <line x1={pad.left} y1={scaleY(faceValue)} x2={pad.left + innerW} y2={scaleY(faceValue)} stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth="0.5" strokeDasharray="3,3" />
+          <text x={pad.left + innerW + 2} y={scaleY(faceValue) + 3} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="7" fontFamily="inherit">Par</text>
         </>
       )}
 
       {/* Current point */}
-      <circle cx={curX} cy={curY} r="3.5" fill="rgb(16,185,129)" stroke="rgb(0,0,0)" strokeWidth="1" />
-      <line x1={curX} y1={pad.top} x2={curX} y2={pad.top + innerH} stroke="rgba(16,185,129,0.3)" strokeWidth="0.5" strokeDasharray="2,2" />
-      <line x1={pad.left} y1={curY} x2={pad.left + innerW} y2={curY} stroke="rgba(16,185,129,0.3)" strokeWidth="0.5" strokeDasharray="2,2" />
+      <circle cx={curX} cy={curY} r="3.5" fill="var(--color-emerald-500)" stroke="rgb(0,0,0)" strokeWidth="1" />
+      <line x1={curX} y1={pad.top} x2={curX} y2={pad.top + innerH} stroke="color-mix(in srgb, var(--color-emerald-500) 30%, transparent)" strokeWidth="0.5" strokeDasharray="2,2" />
+      <line x1={pad.left} y1={curY} x2={pad.left + innerW} y2={curY} stroke="color-mix(in srgb, var(--color-emerald-500) 30%, transparent)" strokeWidth="0.5" strokeDasharray="2,2" />
 
       {/* X axis labels */}
       {xTicks.map((v, i) => (
-        <text key={`xl${i}`} x={scaleX(v)} y={height - pad.bottom + 14} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="7" fontFamily="monospace">
+        <text key={`xl${i}`} x={scaleX(v)} y={height - pad.bottom + 14} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 40%, transparent)" fontSize="7" fontFamily="inherit">
           {(v * 100).toFixed(1)}%
         </text>
       ))}
-      <text x={pad.left + innerW / 2} y={height - 2} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="monospace">Yield</text>
+      <text x={pad.left + innerW / 2} y={height - 2} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="7" fontFamily="inherit">Yield</text>
 
       {/* Y axis labels */}
       {yTicks.map((v, i) => (
-        <text key={`yl${i}`} x={pad.left - 4} y={scaleY(v) + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="7" fontFamily="monospace">
+        <text key={`yl${i}`} x={pad.left - 4} y={scaleY(v) + 3} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 40%, transparent)" fontSize="7" fontFamily="inherit">
           {v.toFixed(0)}
         </text>
       ))}
 
       {/* Axes */}
-      <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + innerH} stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-      <line x1={pad.left} y1={pad.top + innerH} x2={pad.left + innerW} y2={pad.top + innerH} stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+      <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + innerH} stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth="0.5" />
+      <line x1={pad.left} y1={pad.top + innerH} x2={pad.left + innerW} y2={pad.top + innerH} stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth="0.5" />
     </svg>
   );
 }
@@ -395,11 +395,11 @@ export function BondCalcPanel() {
 
             {/* Calculate Mode Toggle */}
             <div className="flex flex-col gap-0.5">
-              <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">Mode</label>
+              <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">Mode</label>
               <div className="flex border border-border/50 bg-black/40">
                 <button
                   onClick={() => setMode('price-to-ytm')}
-                  className={`flex-1 px-2 py-1.5 text-[9px] font-mono font-bold tracking-wider transition-colors ${
+                  className={`flex-1 px-2 py-1.5 text-mini font-mono font-bold tracking-wider transition-colors ${
                     mode === 'price-to-ytm'
                       ? 'bg-emerald-500/20 text-emerald-400 border-r border-border/50'
                       : 'text-neutral/40 hover:text-neutral/60 border-r border-border/50'
@@ -409,7 +409,7 @@ export function BondCalcPanel() {
                 </button>
                 <button
                   onClick={() => setMode('ytm-to-price')}
-                  className={`flex-1 px-2 py-1.5 text-[9px] font-mono font-bold tracking-wider transition-colors ${
+                  className={`flex-1 px-2 py-1.5 text-mini font-mono font-bold tracking-wider transition-colors ${
                     mode === 'ytm-to-price'
                       ? 'bg-emerald-500/20 text-emerald-400'
                       : 'text-neutral/40 hover:text-neutral/60'
@@ -446,13 +446,13 @@ export function BondCalcPanel() {
 
             {/* Frequency selector */}
             <div className="flex flex-col gap-0.5">
-              <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{t('bcFrequency')}</label>
+              <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">{t('bcFrequency')}</label>
               <div className="flex border border-border/50 bg-black/40">
                 {freqOptions.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => setFrequency(opt.value)}
-                    className={`flex-1 px-2 py-1.5 text-[9px] font-mono transition-colors ${
+                    className={`flex-1 px-2 py-1.5 text-mini font-mono transition-colors ${
                       frequency === opt.value
                         ? 'bg-emerald-400/20 text-emerald-400'
                         : 'text-neutral/40 hover:text-neutral/60'
@@ -469,22 +469,22 @@ export function BondCalcPanel() {
           <div className="space-y-3">
             {/* Yield Metrics */}
             <div className="bg-black/30 border border-border/30 p-3">
-              <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-2">Yield Metrics</div>
+              <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-2">Yield Metrics</div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <div className="text-[8px] font-mono text-neutral/50 uppercase">{t('bcYTM')}</div>
+                  <div className="text-micro font-mono text-neutral/50 uppercase">{t('bcYTM')}</div>
                   <div className="text-xl font-mono font-bold text-emerald-400">
                     {result ? `${(result.ytm * 100).toFixed(3)}%` : '\u2014'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[8px] font-mono text-neutral/50 uppercase">{t('bcCurrentYield')}</div>
+                  <div className="text-micro font-mono text-neutral/50 uppercase">{t('bcCurrentYield')}</div>
                   <div className="text-xl font-mono font-bold text-emerald-300">
                     {result ? `${(result.currentYield * 100).toFixed(3)}%` : '\u2014'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[8px] font-mono text-neutral/50 uppercase">{t('bcCouponRate')}</div>
+                  <div className="text-micro font-mono text-neutral/50 uppercase">{t('bcCouponRate')}</div>
                   <div className="text-xl font-mono font-bold text-emerald-200/70">
                     {couponRateStr ? `${parseFloat(couponRateStr).toFixed(3)}%` : '\u2014'}
                   </div>
@@ -492,7 +492,7 @@ export function BondCalcPanel() {
               </div>
               {mode === 'ytm-to-price' && result && (
                 <div className="mt-2 pt-2 border-t border-border/20">
-                  <div className="text-[8px] font-mono text-neutral/50 uppercase">{t('bcMarketPrice')}</div>
+                  <div className="text-micro font-mono text-neutral/50 uppercase">{t('bcMarketPrice')}</div>
                   <div className="text-lg font-mono font-bold text-emerald-400">
                     ${result.cleanPrice.toFixed(2)}
                   </div>
@@ -502,28 +502,28 @@ export function BondCalcPanel() {
 
             {/* Risk Metrics */}
             <div className="bg-black/30 border border-border/30 p-3">
-              <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-2">Risk Metrics</div>
+              <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-2">Risk Metrics</div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-[9px] font-mono text-neutral/50">{t('bcDuration')}</span>
+                  <span className="text-mini font-mono text-neutral/50">{t('bcDuration')}</span>
                   <span className="text-[12px] font-mono font-bold text-blue-400">
                     {result ? `${result.macaulayDuration.toFixed(4)} yrs` : '\u2014'}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-[9px] font-mono text-neutral/50">{t('bcModDuration')}</span>
+                  <span className="text-mini font-mono text-neutral/50">{t('bcModDuration')}</span>
                   <span className="text-[12px] font-mono font-bold text-purple-400">
                     {result ? result.modifiedDuration.toFixed(4) : '\u2014'}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-[9px] font-mono text-neutral/50">{t('bcConvexity')}</span>
+                  <span className="text-mini font-mono text-neutral/50">{t('bcConvexity')}</span>
                   <span className="text-[12px] font-mono font-bold text-cyan-400">
                     {result ? result.convexity.toFixed(4) : '\u2014'}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-[9px] font-mono text-neutral/50">{t('bcDV01')}</span>
+                  <span className="text-mini font-mono text-neutral/50">{t('bcDV01')}</span>
                   <span className="text-[12px] font-mono font-bold text-orange-400">
                     {result ? `$${result.dv01.toFixed(4)}` : '\u2014'}
                   </span>
@@ -534,7 +534,7 @@ export function BondCalcPanel() {
             {/* Price Sensitivity Chart */}
             {result && (
               <div className="bg-black/30 border border-border/30 p-2">
-                <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">{t('bcPriceSensitivity')}</div>
+                <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">{t('bcPriceSensitivity')}</div>
                 <PriceSensitivityChart
                   faceValue={parseFloat(faceValueStr) || 1000}
                   couponRate={parseFloat(couponRateStr) / 100 || 0}
@@ -551,9 +551,9 @@ export function BondCalcPanel() {
         {/* Cash Flow Table */}
         {result && result.cashFlows.length > 0 && (
           <div className="mt-3 bg-black/30 border border-border/30 p-2">
-            <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-2">{t('bcCashFlows')}</div>
+            <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-2">{t('bcCashFlows')}</div>
             <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
-              <table className="w-full text-[9px] font-mono border-collapse">
+              <table className="w-full text-mini font-mono border-collapse">
                 <thead className="sticky top-0 bg-black/80 z-10">
                   <tr>
                     <th className="text-neutral/40 text-left p-1 border-b border-border/20">#</th>

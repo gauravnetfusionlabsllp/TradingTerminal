@@ -228,21 +228,21 @@ function TimelineBar({ market, now, barWidth }: TimelineBarProps) {
 
   // Regular trading hours (green)
   if (closeUTC > openUTC) {
-    segments.push({ x: toX(openUTC), w: toX(closeUTC) - toX(openUTC), color: '#22c55e' });
+    segments.push({ x: toX(openUTC), w: toX(closeUTC) - toX(openUTC), color: 'var(--color-green-500)' });
   } else {
     // Wraps midnight
-    segments.push({ x: toX(openUTC), w: barWidth - toX(openUTC), color: '#22c55e' });
-    segments.push({ x: 0, w: toX(closeUTC), color: '#22c55e' });
+    segments.push({ x: toX(openUTC), w: barWidth - toX(openUTC), color: 'var(--color-green-500)' });
+    segments.push({ x: 0, w: toX(closeUTC), color: 'var(--color-green-500)' });
   }
 
   // Pre-market (yellow)
   if (market.preOpen) {
     const preUTC = localMinutesToUTCMinutes(parseHM(market.preOpen), market.tz, now);
     if (openUTC > preUTC) {
-      segments.push({ x: toX(preUTC), w: toX(openUTC) - toX(preUTC), color: '#eab308' });
+      segments.push({ x: toX(preUTC), w: toX(openUTC) - toX(preUTC), color: 'var(--color-yellow-500)' });
     } else {
-      segments.push({ x: toX(preUTC), w: barWidth - toX(preUTC), color: '#eab308' });
-      segments.push({ x: 0, w: toX(openUTC), color: '#eab308' });
+      segments.push({ x: toX(preUTC), w: barWidth - toX(preUTC), color: 'var(--color-yellow-500)' });
+      segments.push({ x: 0, w: toX(openUTC), color: 'var(--color-yellow-500)' });
     }
   }
 
@@ -250,10 +250,10 @@ function TimelineBar({ market, now, barWidth }: TimelineBarProps) {
   if (market.postClose) {
     const postUTC = localMinutesToUTCMinutes(parseHM(market.postClose), market.tz, now);
     if (postUTC > closeUTC) {
-      segments.push({ x: toX(closeUTC), w: toX(postUTC) - toX(closeUTC), color: '#eab308' });
+      segments.push({ x: toX(closeUTC), w: toX(postUTC) - toX(closeUTC), color: 'var(--color-yellow-500)' });
     } else {
-      segments.push({ x: toX(closeUTC), w: barWidth - toX(closeUTC), color: '#eab308' });
-      segments.push({ x: 0, w: toX(postUTC), color: '#eab308' });
+      segments.push({ x: toX(closeUTC), w: barWidth - toX(closeUTC), color: 'var(--color-yellow-500)' });
+      segments.push({ x: 0, w: toX(postUTC), color: 'var(--color-yellow-500)' });
     }
   }
 
@@ -277,14 +277,14 @@ function TimelineBar({ market, now, barWidth }: TimelineBarProps) {
   return (
     <svg width={barWidth} height={BAR_HEIGHT} className="shrink-0">
       {/* Background - closed */}
-      <rect x={0} y={0} width={barWidth} height={BAR_HEIGHT} rx={2} fill="#1a1a2e" />
+      <rect x={0} y={0} width={barWidth} height={BAR_HEIGHT} rx={2} fill="var(--color-gray-900)" />
       {/* Trading segments */}
       {segments.map((seg, i) => (
         <rect key={i} x={seg.x} y={0} width={Math.max(seg.w, 0.5)} height={BAR_HEIGHT} fill={seg.color} opacity={0.6} rx={0} />
       ))}
       {/* Lunch break (hatched overlay) */}
       {lunchSegments.map((seg, i) => (
-        <rect key={`lunch-${i}`} x={seg.x} y={0} width={Math.max(seg.w, 0.5)} height={BAR_HEIGHT} fill="#f97316" opacity={0.5} />
+        <rect key={`lunch-${i}`} x={seg.x} y={0} width={Math.max(seg.w, 0.5)} height={BAR_HEIGHT} fill="var(--color-orange-500)" opacity={0.5} />
       ))}
       {/* Current time line */}
       <line x1={nowX} y1={0} x2={nowX} y2={BAR_HEIGHT} stroke="white" strokeWidth={1.5} opacity={0.9} />
@@ -306,8 +306,8 @@ function HourLabels({ barWidth }: { barWidth: number }) {
             x={x}
             y={10}
             fontSize={9}
-            fill="#64748b"
-            fontFamily="monospace"
+            fill="var(--color-slate-500)"
+            fontFamily="inherit"
             textAnchor="middle"
           >
             {String(h).padStart(2, '0')}
@@ -387,14 +387,14 @@ export function MarketHoursPanel() {
         </span>
       }
       headerRight={
-        <span className="text-[10px] font-mono text-sky-400 tracking-wider">
+        <span className="text-mini font-mono text-sky-400 tracking-wider">
           {getUTCString(now)}
         </span>
       }
     >
       <div className="flex flex-col h-full overflow-hidden">
         {/* Summary bar */}
-        <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border text-[10px] font-mono shrink-0">
+        <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border text-mini font-mono shrink-0">
           <span className="text-emerald-400">{openCount} {t('mhOpen')}</span>
           <span className="text-neutral-500">|</span>
           <span className="text-red-400">{closedCount} {t('mhClosed')}</span>
@@ -408,7 +408,7 @@ export function MarketHoursPanel() {
             <button
               key={r}
               onClick={() => setRegionFilter(r)}
-              className={`px-2 py-0.5 text-[10px] font-mono tracking-wider uppercase transition-colors rounded-sm ${
+              className={`px-2 py-0.5 text-mini font-mono tracking-wider uppercase transition-colors rounded-sm ${
                 regionFilter === r
                   ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
                   : 'text-neutral-500 hover:text-neutral-300 border border-transparent'
@@ -427,7 +427,7 @@ export function MarketHoursPanel() {
               <div className="w-[200px] shrink-0" />
               <div className="w-[70px] shrink-0" />
               <HourLabels barWidth={BAR_W} />
-              <div className="text-[9px] font-mono text-neutral-600 ml-1 shrink-0">UTC</div>
+              <div className="text-mini font-mono text-neutral-600 ml-1 shrink-0">UTC</div>
             </div>
 
             {/* Market rows */}
@@ -445,21 +445,21 @@ export function MarketHoursPanel() {
                   {/* Market info */}
                   <div className="w-[200px] shrink-0 flex flex-col mr-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-mono font-bold text-neutral-200 truncate">
+                      <span className="text-mini font-mono font-bold text-neutral-200 truncate">
                         {market.name}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[9px] font-mono text-neutral-500">{localTime}</span>
+                      <span className="text-mini font-mono text-neutral-500">{localTime}</span>
                       {timeLabel && (
-                        <span className="text-[9px] font-mono text-neutral-600">{timeLabel}</span>
+                        <span className="text-mini font-mono text-neutral-600">{timeLabel}</span>
                       )}
                     </div>
                   </div>
 
                   {/* Status badge */}
                   <div className="w-[70px] shrink-0 flex justify-center">
-                    <span className={`px-1.5 py-0.5 text-[8px] font-mono font-bold tracking-wider uppercase rounded-sm ${statusColor.bg} ${statusColor.text}`}>
+                    <span className={`px-1.5 py-0.5 text-micro font-mono font-bold tracking-wider uppercase rounded-sm ${statusColor.bg} ${statusColor.text}`}>
                       {getStatusLabel(status)}
                     </span>
                   </div>
@@ -473,7 +473,7 @@ export function MarketHoursPanel() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 px-3 py-1.5 border-t border-border text-[9px] font-mono text-neutral-500 shrink-0 flex-wrap">
+        <div className="flex items-center gap-4 px-3 py-1.5 border-t border-border text-mini font-mono text-neutral-500 shrink-0 flex-wrap">
           <span className="flex items-center gap-1">
             <span className="inline-block w-3 h-2 rounded-sm bg-emerald-500/60" />
             {t('mhOpen')}

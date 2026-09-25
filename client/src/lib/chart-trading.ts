@@ -3,6 +3,19 @@ import type { Mt5PendingType } from '../api/hooks/use-mt5';
 
 type Side = 'BUY' | 'SELL';
 
+/**
+ * Chart-label tags: the shortest ticket ending (at least 3 digits) that still tells this symbol's trades apart.
+ * One trade needs no tag, so the map is empty. [234352597, 234352478] → 597 / 478.
+ */
+export function shortTags(tickets: number[]): Map<number, string> {
+  const ids = [...new Set(tickets)].map(String);
+  if (ids.length < 2) return new Map();
+  for (let n = 3; ; n++) { // ends at the longest ticket at the latest: whole tickets are unique
+    const ends = ids.map((t) => t.slice(-n));
+    if (new Set(ends).size === ids.length) return new Map(ids.map((t, i) => [+t, ends[i]]));
+  }
+}
+
 /** Round a clicked / dragged price to the symbol's decimals. */
 export const snap = (price: number, precision: number) => +price.toFixed(precision);
 

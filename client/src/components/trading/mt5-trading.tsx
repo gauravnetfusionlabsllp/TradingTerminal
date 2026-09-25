@@ -17,12 +17,12 @@ type Kind = 'MARKET' | 'LIMIT' | 'STOP';
 
 // Literal class strings — Tailwind can't see interpolated ones
 const SIDE_STYLE = {
-  BUY: { on: 'bg-bullish/15 border-bullish', off: 'border-border hover:border-bullish/60', text: 'text-bullish', submit: 'bg-bullish/15 border-bullish text-bullish hover:bg-bullish/25' },
-  SELL: { on: 'bg-bearish/15 border-bearish', off: 'border-border hover:border-bearish/60', text: 'text-bearish', submit: 'bg-bearish/15 border-bearish text-bearish hover:bg-bearish/25' },
+  BUY: { on: 'bg-buy border-buy text-on-accent', off: 'border-border hover:border-buy text-accent-ink', submit: 'bg-buy border-buy text-on-accent hover:bg-buy/90' },
+  SELL: { on: 'bg-sell border-sell text-on-accent', off: 'border-border hover:border-sell text-bearish', submit: 'bg-sell border-sell text-on-accent hover:bg-sell/90' },
 };
 const KINDS = [['MARKET', 'Market'], ['LIMIT', 'Limit'], ['STOP', 'Stop']] as const;
 const ROW = 'grid grid-cols-[4.5rem_1fr] items-center gap-2';
-const LABEL = 'text-[10px] text-neutral/60';
+const LABEL = 'text-mini text-neutral/60';
 const STEP = 'w-7 shrink-0 border border-border text-neutral/70 hover:text-white hover:bg-white/5';
 
 /** Bridge gives no symbol digits — trim float noise (1.3308200000000001 → 1.33082). */
@@ -58,7 +58,7 @@ function PipPrice({ value, digits }: { value?: number; digits: number }) {
     <>
       {s.slice(0, end - 2)}
       <span className="text-[22px]">{s.slice(end - 2, end)}</span>
-      {end < s.length && <sup className="text-[11px]">{s.slice(end)}</sup>}
+      {end < s.length && <sup className="text-xs">{s.slice(end)}</sup>}
     </>
   );
 }
@@ -82,7 +82,7 @@ function LoginPrompt() {
     <div className="h-full flex flex-col items-center justify-center p-6 gap-4 bg-black">
       <button
         onClick={() => setLoginModalOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 border border-accent text-accent text-[11px] font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-colors"
+        className="flex items-center gap-2 px-4 h-8 rounded-sm bg-accent text-on-accent text-xs font-semibold hover:bg-accent/90 transition-colors"
       >
         <LogIn className="w-4 h-4" />
         {t('loginWithMt5')}
@@ -96,7 +96,7 @@ function ErrorBar({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) {
   return (
     <div role="alert" className="px-3 py-2 bg-bearish/10 border-b border-bearish/30 flex items-center gap-2">
       <AlertTriangle className="w-3 h-3 text-bearish shrink-0" />
-      <span className="text-[10px] font-mono text-bearish flex-1">{msg}</span>
+      <span className="text-mini font-mono text-bearish flex-1">{msg}</span>
       {onDismiss && <button onClick={onDismiss} className="text-bearish/60 hover:text-bearish">✕</button>}
     </div>
   );
@@ -104,7 +104,7 @@ function ErrorBar({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) {
 
 const Empty = ({ label }: { label: string }) => (
   <div className="flex items-center justify-center h-32">
-    <span className="text-[10px] font-mono text-neutral uppercase">{label}</span>
+    <span className="text-mini font-mono text-neutral uppercase">{label}</span>
   </div>
 );
 
@@ -205,9 +205,9 @@ export function Mt5Ticket() {
     const st = SIDE_STYLE[s];
     return (
       <button type="button" onClick={() => disarm(setSide)(s)} aria-pressed={side === s}
-        className={`px-2.5 py-1.5 border ${s === 'BUY' ? 'text-right' : 'text-left'} ${side === s ? st.on : st.off}`}>
-        <div className={`text-[10px] opacity-80 ${st.text}`}>{t(s === 'BUY' ? 'buy' : 'sell')}</div>
-        <div className={`text-[14px] font-bold leading-tight tabular-nums ${st.text}`}>
+        className={`px-2.5 py-1.5 border rounded-sm transition-colors ${s === 'BUY' ? 'text-right' : 'text-left'} ${side === s ? st.on : st.off}`}>
+        <div className="text-mini opacity-80">{t(s === 'BUY' ? 'buy' : 'sell')}</div>
+        <div className="text-[15px] font-bold leading-tight tabular-nums">
           <PipPrice value={quote && (s === 'BUY' ? quote.ask : quote.bid)} digits={digits} />
         </div>
       </button>
@@ -227,14 +227,14 @@ export function Mt5Ticket() {
               onSelect={disarm(setSymbol)}
               placeholder={t('symbolPlaceholder')}
             />
-            <span className="shrink-0 flex items-center gap-1 text-[10px] text-neutral/50" title={user.name ?? undefined}>
-              {readOnly && <span title={t('investorReadOnly')}><Lock className="w-3 h-3 text-amber-400" /></span>}
+            <span className="shrink-0 flex items-center gap-1 text-mini text-neutral/50" title={user.name ?? undefined}>
+              {readOnly && <span title={t('investorReadOnly')}><Lock className="w-3 h-3 text-orange" /></span>}
               #{user.mt5Login}
             </span>
           </div>
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5">
             {sideButton('SELL')}
-            <span className="text-[10px] text-neutral/50 tabular-nums" title="Spread in points">{spread ?? ''}</span>
+            <span className="text-mini text-neutral/50 tabular-nums" title="Spread in points">{spread ?? ''}</span>
             {sideButton('BUY')}
           </div>
         </div>
@@ -246,7 +246,7 @@ export function Mt5Ticket() {
             <div role="group" aria-label="Order type" className="flex h-7 border border-border">
               {KINDS.map(([k, label]) => (
                 <button key={k} type="button" onClick={() => pickKind(k)} aria-pressed={kind === k}
-                  className={`flex-1 text-[11px] ${kind === k ? 'bg-white/10 text-white' : 'text-neutral/50 hover:text-neutral'}`}>
+                  className={`flex-1 text-xs ${kind === k ? 'bg-white/10 text-white' : 'text-neutral/50 hover:text-neutral'}`}>
                   {label}
                 </button>
               ))}
@@ -270,7 +270,7 @@ export function Mt5Ticket() {
 
           <div className="flex gap-1 mt-1">
             <button type="submit" disabled={readOnly || busy || !valid}
-              className={`flex-1 h-9 border text-[11px] font-bold uppercase tracking-wider ${SIDE_STYLE[side].submit} ${confirm ? 'animate-pulse' : ''}`}>
+              className={`flex-1 h-9 border rounded-sm text-xs font-semibold uppercase tracking-wide ${SIDE_STYLE[side].submit} ${confirm ? 'animate-pulse' : ''}`}>
               {readOnly ? t('investorReadOnly') : busy ? t('submitting') : confirm ? `Confirm ${action}` : action}
             </button>
             {confirm && (
@@ -282,11 +282,11 @@ export function Mt5Ticket() {
           </div>
 
           {result && (
-            <p role="status" className={`text-[10px] ${result.startsWith('Error') ? 'text-bearish' : 'text-bullish'}`}>{result}</p>
+            <p role="status" className={`text-mini ${result.startsWith('Error') ? 'text-bearish' : 'text-bullish'}`}>{result}</p>
           )}
         </div>
 
-        <p className="text-[9px] leading-snug text-neutral/40 @lg:col-span-2">{t('earlyAccessTrading')}</p>
+        <p className="text-mini leading-snug text-neutral/40 @lg:col-span-2">{t('earlyAccessTrading')}</p>
       </div>
     </form>
   );
@@ -339,10 +339,10 @@ function StopsEditor({ p, price, digits, onDone, onError }: {
             aria-describedby={invalid ? `${p.ticket}-stops-error` : undefined}
             className="flex-1 min-w-0 h-7 text-[12px] text-right" />
           <button type="button" onClick={() => set('')} disabled={!value} aria-label={`Remove ${label.toLowerCase()}`}
-            className={`${STEP} border-l-0 text-[10px]`}>✕</button>
+            className={`${STEP} border-l-0 text-mini`}>✕</button>
         </div>
         {/* An invalid level can't be hit — its readout dims instead of promising a P&L */}
-        <span className={`text-[10px] font-mono tabular-nums whitespace-nowrap ${invalid ? 'opacity-30' : ''}`}
+        <span className={`text-mini font-mono tabular-nums whitespace-nowrap ${invalid ? 'opacity-30' : ''}`}
           title="If hit: P&L at this level, distance from the closing price">
           {level ? (
             <>
@@ -360,13 +360,13 @@ function StopsEditor({ p, price, digits, onDone, onError }: {
       className="mt-2 pt-2 border-t border-border/30 flex flex-col gap-1.5">
       {field('sl', t('stopLoss'), sl, setSl, slN, true)}
       {field('tp', 'Take profit', tp, setTp, tpN)}
-      {bad && <p id={`${p.ticket}-stops-error`} role="alert" className="text-[10px] text-bearish">{bad}</p>}
+      {bad && <p id={`${p.ticket}-stops-error`} role="alert" className="text-mini text-bearish">{bad}</p>}
       <div className="flex justify-end gap-1 mt-0.5">
-        <button type="button" onClick={onDone} className="h-7 px-3 border border-border text-[10px] text-neutral hover:text-white">
+        <button type="button" onClick={onDone} className="h-7 px-3 border border-border text-mini text-neutral hover:text-white">
           {t('cancel')}
         </button>
         <button type="submit" disabled={!!bad || !dirty || modify.isPending}
-          className="h-7 px-3 border border-accent text-accent text-[10px] font-bold hover:bg-accent/15">
+          className="h-7 px-3 border border-accent text-accent-ink text-mini font-bold hover:bg-accent/15">
           {modify.isPending ? t('submitting') : 'Save SL/TP'}
         </button>
       </div>
@@ -416,10 +416,10 @@ export function Mt5Positions() {
   return (
     <div className="h-full flex flex-col overflow-hidden bg-black">
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/30 bg-black/40 shrink-0">
-        <span className="text-[10px] font-mono text-neutral uppercase">
+        <span className="text-mini font-mono text-neutral uppercase">
           {t('positions')} <span className="text-white font-bold">{positions.length}</span>
         </span>
-        <span className={`text-[10px] font-mono font-bold ${totalProfit >= 0 ? 'text-bullish' : 'text-bearish'}`}>
+        <span className={`text-mini font-mono font-bold ${totalProfit >= 0 ? 'text-bullish' : 'text-bearish'}`}>
           {t('unrealizedPl')} {totalProfit >= 0 ? '+' : ''}{fmtMoney(totalProfit)}
         </span>
       </div>
@@ -432,37 +432,37 @@ export function Mt5Positions() {
             className={`px-3 py-2 border-b border-l-2 border-b-border/30 group ${tradeFocus === `p${p.ticket}` ? 'bg-white/[0.05] border-l-accent' : 'border-l-transparent'}`}>
             <div className="flex items-center justify-between gap-2">
               <button onClick={() => setSelectedSymbol(p.symbol)} className="text-left min-w-0">
-                <span className={`text-[9px] font-black mr-1.5 ${p.side === 'BUY' ? 'text-bullish' : 'text-bearish'}`}>{p.side}</span>
-                <span className="text-[11px] font-mono font-bold text-white hover:text-accent">{p.symbol}</span>
-                <span className="text-[9px] font-mono text-neutral ml-2">{p.volume} @ {fmtPrice(p.openPrice)}</span>
+                <span className={`text-mini font-black mr-1.5 ${p.side === 'BUY' ? 'text-accent-ink' : 'text-bearish'}`}>{p.side}</span>
+                <span className="text-xs font-mono font-bold text-white hover:text-accent-ink">{p.symbol}</span>
+                <span className="text-mini font-mono text-neutral ml-2">{p.volume} @ {fmtPrice(p.openPrice)}</span>
               </button>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] font-mono text-white/70">{fmtPrice(p.price)}</span>
-                <span className={`text-[10px] font-mono font-bold ${p.pnl >= 0 ? 'text-bullish' : 'text-bearish'}`}>
+                <span className="text-mini font-mono text-white/70">{fmtPrice(p.price)}</span>
+                <span className={`text-mini font-mono font-bold ${p.pnl >= 0 ? 'text-bullish' : 'text-bearish'}`}>
                   {p.pnl >= 0 ? '+' : ''}{fmtMoney(p.pnl)}
                 </span>
                 {!readOnly && (
                   <div className={`flex items-center gap-1 transition-all ${editing === p.ticket ? '' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
                     <button onClick={() => { setError(''); setEditing(editing === p.ticket ? null : p.ticket); }}
                       aria-expanded={editing === p.ticket} aria-label={`Edit SL/TP #${p.ticket}`}
-                      className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 border ${
-                        editing === p.ticket ? 'border-accent text-accent' : 'border-border text-neutral hover:text-white hover:border-neutral/60'
+                      className={`text-micro font-black uppercase tracking-widest px-2 py-1 border ${
+                        editing === p.ticket ? 'border-accent text-accent-ink' : 'border-border text-neutral hover:text-white hover:border-neutral/60'
                       }`}>
                       SL/TP
                     </button>
                     <input type="number" step="0.01" min="0.01" max={p.volume} aria-label="Lots to close"
                       value={closeVolume[p.ticket] ?? ''} placeholder={String(p.volume)}
                       onChange={(e) => setCloseVolume((cv) => ({ ...cv, [p.ticket]: e.target.value }))}
-                      className="w-14 bg-black/60 border border-border/40 px-1 py-0.5 text-[9px] font-mono text-white" />
+                      className="w-14 bg-black/60 border border-border/40 px-1 py-0.5 text-mini font-mono text-white" />
                     <button onClick={() => handleClose(p.ticket, p.symbol)} disabled={closePosition.isPending}
-                      className="text-[8px] font-black uppercase tracking-widest px-2 py-1 border border-bearish/40 text-bearish hover:bg-bearish/20 disabled:opacity-30">
+                      className="text-micro font-black uppercase tracking-widest px-2 py-1 border border-bearish/40 text-bearish hover:bg-bearish/20 disabled:opacity-30">
                       {t('closePosition')}
                     </button>
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-3 mt-0.5 text-[8px] font-mono text-neutral/40">
+            <div className="flex items-center gap-3 mt-0.5 text-micro font-mono text-neutral/40">
               <span>#{p.ticket}</span>
               {p.stopLoss > 0 && <span>SL {fmtPrice(p.stopLoss)}</span>}
               {p.takeProfit > 0 && <span>TP {fmtPrice(p.takeProfit)}</span>}
@@ -513,21 +513,21 @@ export function Mt5Orders() {
             className={`px-3 py-2 border-b border-l-2 border-b-border/30 group ${tradeFocus === `o${o.ticket}` ? 'bg-white/[0.05] border-l-accent' : 'border-l-transparent'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 border ${
-                  o.type.startsWith('BUY') ? 'text-bullish border-bullish/30 bg-bullish/10' : 'text-bearish border-bearish/30 bg-bearish/10'
+                <span className={`text-mini font-black uppercase px-1.5 py-0.5 border ${
+                  o.type.startsWith('BUY') ? 'text-accent-ink border-buy/30 bg-buy/10' : 'text-bearish border-sell/30 bg-sell/10'
                 }`}>{o.type.replace('_', ' ')}</span>
-                <span className="text-[11px] font-mono font-bold text-white">{o.symbol}</span>
-                <span className="text-[9px] font-mono text-neutral">{o.volume} @ {fmtPrice(o.price)}</span>
+                <span className="text-xs font-mono font-bold text-white">{o.symbol}</span>
+                <span className="text-mini font-mono text-neutral">{o.volume} @ {fmtPrice(o.price)}</span>
               </div>
               {!readOnly && (
                 <button onClick={() => handleCancel(o.ticket, o.symbol)} disabled={cancelOrder.isPending}
                   aria-label={`${t('cancel')} #${o.ticket}`}
-                  className="opacity-0 group-hover:opacity-100 focus:opacity-100 text-[8px] font-black uppercase px-1.5 py-0.5 border border-bearish/40 text-bearish hover:bg-bearish/20 transition-all disabled:opacity-30">
+                  className="opacity-0 group-hover:opacity-100 focus:opacity-100 text-micro font-black uppercase px-1.5 py-0.5 border border-bearish/40 text-bearish hover:bg-bearish/20 transition-all disabled:opacity-30">
                   {t('cancel')}
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-3 mt-0.5 text-[8px] font-mono text-neutral/40">
+            <div className="flex items-center gap-3 mt-0.5 text-micro font-mono text-neutral/40">
               <span>#{o.ticket}</span>
               {o.stopLoss > 0 && <span>SL {fmtPrice(o.stopLoss)}</span>}
               {o.takeProfit > 0 && <span>TP {fmtPrice(o.takeProfit)}</span>}
@@ -563,12 +563,12 @@ export function Mt5History() {
         <div role="group" aria-label="Period" className="flex h-6 border border-border">
           {PERIODS.map(([d, label]) => (
             <button key={d} type="button" onClick={() => setDays(d)} aria-pressed={days === d}
-              className={`px-2 text-[10px] font-mono ${days === d ? 'bg-white/10 text-white' : 'text-neutral/50 hover:text-neutral'}`}>
+              className={`px-2 text-mini font-mono ${days === d ? 'bg-white/10 text-white' : 'text-neutral/50 hover:text-neutral'}`}>
               {label}
             </button>
           ))}
         </div>
-        <span className="text-[10px] font-mono text-neutral tabular-nums whitespace-nowrap"
+        <span className="text-mini font-mono text-neutral tabular-nums whitespace-nowrap"
           title={`Profit ${fmtMoney(sum('profit'))}\nCommission ${fmtMoney(sum('commission'))}\nSwap ${fmtMoney(sum('swap'))}\nFees ${fmtMoney(sum('fee'))}`}>
           {deals.length} {deals.length === 1 ? 'deal' : 'deals'}
           <span className="ml-3">Net </span>
@@ -580,7 +580,7 @@ export function Mt5History() {
         <ErrorBar msg={error ? errMsg(error) : ''} />
 
         {isLoading ? <Empty label={t('loading')} /> : rows.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 gap-1 text-[10px] font-mono">
+          <div className="flex flex-col items-center justify-center h-32 gap-1 text-mini font-mono">
             <span className="text-neutral">No deals in {period}</span>
             <span className="text-neutral/40">Trades you open or close show up here.</span>
           </div>
@@ -599,7 +599,7 @@ export function Mt5History() {
                   title={`Deal #${d.ticket}\nOrder #${d.orderTicket}\nPosition #${d.positionId}`}>
                   <td className="text-neutral/60">{fmtTime(d.time)}</td>
                   <td className="text-white font-bold">{d.symbol}</td>
-                  <td className={`font-bold ${d.action === 'BUY' ? 'text-bullish' : 'text-bearish'}`}>{d.action}</td>
+                  <td className={`font-bold ${d.action === 'BUY' ? 'text-accent-ink' : 'text-bearish'}`}>{d.action}</td>
                   <td className="text-neutral/70">{d.entry.replace('_', ' ').toLowerCase()}</td>
                   <td className="r text-white/80">{d.volume}</td>
                   <td className="r text-white/80">{fmtPrice(d.price)}</td>

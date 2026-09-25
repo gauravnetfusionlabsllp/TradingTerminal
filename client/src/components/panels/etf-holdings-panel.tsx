@@ -33,17 +33,17 @@ const PRESET_ETFS = ['SPY', 'QQQ', 'IWM', 'DIA', 'XLK', 'XLF', 'XLE'];
 // ── Sector Colors ──
 
 const SECTOR_COLORS: Record<string, string> = {
-  'Technology': '#2dd4bf',
-  'Healthcare': '#818cf8',
-  'Financial Services': '#f59e0b',
-  'Consumer Cyclical': '#f472b6',
-  'Communication Services': '#a78bfa',
-  'Industrials': '#60a5fa',
-  'Consumer Defensive': '#34d399',
-  'Energy': '#fb923c',
-  'Utilities': '#94a3b8',
-  'Real Estate': '#c084fc',
-  'Basic Materials': '#fbbf24',
+  'Technology': 'var(--color-teal-400)',
+  'Healthcare': 'var(--color-indigo-400)',
+  'Financial Services': 'var(--color-amber-500)',
+  'Consumer Cyclical': 'var(--color-pink-400)',
+  'Communication Services': 'var(--color-violet-400)',
+  'Industrials': 'var(--color-blue-400)',
+  'Consumer Defensive': 'var(--color-emerald-400)',
+  'Energy': 'var(--color-orange-400)',
+  'Utilities': 'var(--color-slate-400)',
+  'Real Estate': 'var(--color-purple-400)',
+  'Basic Materials': 'var(--color-amber-400)',
 };
 
 function getSectorColor(sector: string, index: number): string {
@@ -51,8 +51,8 @@ function getSectorColor(sector: string, index: number): string {
 }
 
 const FALLBACK_COLORS = [
-  '#2dd4bf', '#818cf8', '#f59e0b', '#f472b6', '#a78bfa',
-  '#60a5fa', '#34d399', '#fb923c', '#94a3b8', '#c084fc', '#fbbf24',
+  'var(--color-teal-400)', 'var(--color-indigo-400)', 'var(--color-amber-500)', 'var(--color-pink-400)', 'var(--color-violet-400)',
+  'var(--color-blue-400)', 'var(--color-emerald-400)', 'var(--color-orange-400)', 'var(--color-slate-400)', 'var(--color-purple-400)', 'var(--color-amber-400)',
 ];
 
 // ── Squarified Treemap Algorithm ──
@@ -207,7 +207,7 @@ function HoldingsTab({ holdings }: { holdings: ETFHolding[] }) {
   const top25 = holdings.slice(0, 25);
   if (top25.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+      <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
         No holdings data available
       </div>
     );
@@ -221,7 +221,7 @@ function HoldingsTab({ holdings }: { holdings: ETFHolding[] }) {
       {/* Top 10 concentration badge */}
       <div className="px-3 py-1.5 border-b border-white/[0.04] bg-black/20">
         <div className="flex items-center gap-2">
-          <span className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">Top 10 Concentration</span>
+          <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">Top 10 Concentration</span>
           <span className="text-[12px] font-mono font-bold text-teal-400">{top10Weight.toFixed(1)}%</span>
           <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
             <div
@@ -233,7 +233,7 @@ function HoldingsTab({ holdings }: { holdings: ETFHolding[] }) {
       </div>
 
       {/* Table header */}
-      <div className="sticky top-0 bg-black/80 backdrop-blur-sm z-10 grid grid-cols-[28px_60px_1fr_55px_1fr] text-[7px] font-mono text-neutral/40 uppercase tracking-wider px-3 py-1 border-b border-white/[0.04]">
+      <div className="sticky top-0 bg-black/80 backdrop-blur-sm z-10 grid grid-cols-[28px_60px_1fr_55px_1fr] text-micro font-mono text-neutral/40 uppercase tracking-wider px-3 py-1 border-b border-white/[0.04]">
         <span>#</span>
         <span>Symbol</span>
         <span>Name</span>
@@ -246,7 +246,7 @@ function HoldingsTab({ holdings }: { holdings: ETFHolding[] }) {
         return (
           <div
             key={h.symbol || i}
-            className="grid grid-cols-[28px_60px_1fr_55px_1fr] text-[9px] font-mono px-3 py-1 border-b border-white/[0.02] hover:bg-teal-500/[0.04] transition-colors items-center"
+            className="grid grid-cols-[28px_60px_1fr_55px_1fr] text-mini font-mono px-3 py-1 border-b border-white/[0.02] hover:bg-teal-500/[0.04] transition-colors items-center"
           >
             <span className="text-neutral/30">{i + 1}</span>
             <span className="text-teal-400 font-bold">{h.symbol}</span>
@@ -258,7 +258,7 @@ function HoldingsTab({ holdings }: { holdings: ETFHolding[] }) {
                   className="h-full rounded-sm"
                   style={{
                     width: `${barWidthPct}%`,
-                    background: `linear-gradient(90deg, rgba(45,212,191,0.7) 0%, rgba(45,212,191,0.15) 100%)`,
+                    background: `linear-gradient(90deg, color-mix(in srgb, var(--color-teal-400) 70%, transparent) 0%, color-mix(in srgb, var(--color-teal-400) 15%, transparent) 100%)`,
                   }}
                 />
               </div>
@@ -275,7 +275,7 @@ function HoldingsTab({ holdings }: { holdings: ETFHolding[] }) {
 function SectorsTab({ sectors }: { sectors: SectorWeight[] }) {
   if (sectors.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+      <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
         No sector data available
       </div>
     );
@@ -305,8 +305,8 @@ function SectorsTab({ sectors }: { sectors: SectorWeight[] }) {
                 x={labelWidth - 6}
                 y={y + barHeight / 2 + 1}
                 textAnchor="end"
-                className="text-[8px] font-mono"
-                fill="rgba(255,255,255,0.5)"
+                className="text-micro font-mono"
+                fill="color-mix(in srgb, var(--color-white) 50%, transparent)"
               >
                 {s.sector.length > 20 ? s.sector.slice(0, 20) + '...' : s.sector}
               </text>
@@ -327,7 +327,7 @@ function SectorsTab({ sectors }: { sectors: SectorWeight[] }) {
                 x={barStart + barW + 5}
                 y={y + barHeight / 2 + 1}
                 textAnchor="start"
-                className="text-[8px] font-mono font-bold"
+                className="text-micro font-mono font-bold"
                 fill={color}
               >
                 {s.weight.toFixed(1)}%
@@ -358,7 +358,7 @@ function TreemapTab({ holdings }: { holdings: ETFHolding[] }) {
 
   if (rects.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+      <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
         No holdings data for treemap
       </div>
     );
@@ -369,7 +369,7 @@ function TreemapTab({ holdings }: { holdings: ETFHolding[] }) {
       <svg viewBox="0 0 600 400" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="etfShadow">
-            <feDropShadow dx="0" dy="0" stdDeviation="1" floodColor="#000" floodOpacity="0.5" />
+            <feDropShadow dx="0" dy="0" stdDeviation="1" floodColor="var(--color-black)" floodOpacity="0.5" />
           </filter>
         </defs>
         {rects.map((rect, i) => {
@@ -418,7 +418,7 @@ function TreemapTab({ holdings }: { holdings: ETFHolding[] }) {
                   y={rect.y + rect.h / 2 + tickerSize * 0.7}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill="rgba(255,255,255,0.7)"
+                  fill="color-mix(in srgb, var(--color-white) 70%, transparent)"
                   fontFamily="ui-monospace, monospace"
                   fontWeight="normal"
                   fontSize={weightSize}
@@ -440,8 +440,8 @@ function TreemapTab({ holdings }: { holdings: ETFHolding[] }) {
 function StatsBadge({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="flex flex-col items-center px-2 py-1">
-      <span className="text-[6px] font-mono text-neutral/40 uppercase tracking-wider whitespace-nowrap">{label}</span>
-      <span className={`text-[10px] font-mono font-bold ${accent ? 'text-teal-400' : 'text-neutral/80'}`}>{value}</span>
+      <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider whitespace-nowrap">{label}</span>
+      <span className={`text-mini font-mono font-bold ${accent ? 'text-teal-400' : 'text-neutral/80'}`}>{value}</span>
     </div>
   );
 }
@@ -480,16 +480,16 @@ export function ETFHoldingsPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-teal-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-teal-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-teal-400">
             {tr(t, 'panelETFHoldings', 'ETF HOLDINGS / INDEX COMPOSITION')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {dataUpdatedAt > 0 && (
-            <span className="text-[8px] font-mono text-neutral/30">
+            <span className="text-micro font-mono text-neutral/30">
               {new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -512,12 +512,12 @@ export function ETFHoldingsPanel() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value.toUpperCase())}
             placeholder="ETF SYMBOL"
-            className="flex-1 bg-transparent border-none outline-none text-[10px] font-mono text-white placeholder:text-neutral/30 uppercase"
+            className="flex-1 bg-transparent border-none outline-none text-mini font-mono text-white placeholder:text-neutral/30 uppercase"
             maxLength={10}
           />
           <button
             type="submit"
-            className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-teal-500/20 text-teal-400 border border-teal-500/30 hover:bg-teal-500/30 transition-colors"
+            className="px-2 py-0.5 text-micro font-mono font-bold uppercase tracking-wider bg-teal-500/20 text-teal-400 border border-teal-500/30 hover:bg-teal-500/30 transition-colors"
           >
             Go
           </button>
@@ -529,7 +529,7 @@ export function ETFHoldingsPanel() {
             <button
               key={sym}
               onClick={() => handlePreset(sym)}
-              className={`px-1.5 py-0.5 text-[7px] font-mono font-bold uppercase tracking-wider transition-colors border ${
+              className={`px-1.5 py-0.5 text-micro font-mono font-bold uppercase tracking-wider transition-colors border ${
                 symbol === sym
                   ? 'bg-teal-500/20 text-teal-400 border-teal-500/30'
                   : 'text-neutral/40 border-white/[0.06] hover:text-teal-400 hover:border-teal-500/30'
@@ -544,14 +544,14 @@ export function ETFHoldingsPanel() {
       {/* ETF Info bar */}
       {data && (
         <div className="flex items-center gap-3 px-3 py-1 border-b border-white/[0.04] bg-black/20 shrink-0">
-          <span className="text-[11px] font-mono font-bold text-teal-400">{data.symbol}</span>
-          <span className="text-[9px] font-mono text-neutral/60 truncate flex-1">{data.name}</span>
-          <span className="text-[10px] font-mono font-bold text-white">${data.price.toFixed(2)}</span>
+          <span className="text-xs font-mono font-bold text-teal-400">{data.symbol}</span>
+          <span className="text-mini font-mono text-neutral/60 truncate flex-1">{data.name}</span>
+          <span className="text-mini font-mono font-bold text-white">${data.price.toFixed(2)}</span>
           {data.aum != null && (
-            <span className="text-[8px] font-mono text-neutral/40">AUM: {fmtDollar(data.aum)}</span>
+            <span className="text-micro font-mono text-neutral/40">AUM: {fmtDollar(data.aum)}</span>
           )}
           {data.expenseRatio != null && (
-            <span className="text-[8px] font-mono text-neutral/40">ER: {data.expenseRatio.toFixed(2)}%</span>
+            <span className="text-micro font-mono text-neutral/40">ER: {data.expenseRatio.toFixed(2)}%</span>
           )}
         </div>
       )}
@@ -560,14 +560,14 @@ export function ETFHoldingsPanel() {
       {isLoading && !data && (
         <div className="flex flex-col items-center justify-center flex-1 gap-2">
           <div className="w-4 h-4 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
-          <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {tr(t, 'loading', 'Loading...')}
           </span>
         </div>
       )}
 
       {!isLoading && !data && (
-        <div className="flex items-center justify-center flex-1 text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+        <div className="flex items-center justify-center flex-1 text-neutral/30 text-mini font-mono uppercase tracking-widest">
           {tr(t, 'etfHoldingsEmpty', 'Enter an ETF symbol to view holdings')}
         </div>
       )}
@@ -591,7 +591,7 @@ export function ETFHoldingsPanel() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-2.5 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider transition-all ${
+                className={`px-2.5 py-0.5 text-micro font-mono font-bold uppercase tracking-wider transition-all ${
                   activeTab === tab.id
                     ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
                     : 'text-neutral/50 hover:text-white border border-transparent'

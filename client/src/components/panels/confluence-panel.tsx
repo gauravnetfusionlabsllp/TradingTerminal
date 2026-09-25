@@ -150,10 +150,10 @@ export function ConfluencePanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Crosshair className="w-4 h-4 text-amber-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-amber-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-amber-400">
             {tr('panelConfluence', 'TECHNICAL CONFLUENCE')}
           </span>
         </div>
@@ -180,7 +180,7 @@ export function ConfluencePanel() {
             <button
               key={mode}
               onClick={() => setFilter(mode)}
-              className={`px-2 py-0.5 text-[7px] font-black uppercase tracking-wider border transition-colors ${
+              className={`px-2 py-0.5 text-micro font-black uppercase tracking-wider border transition-colors ${
                 filter === mode
                   ? mode === 'bullish'
                     ? 'border-bullish/40 text-bullish bg-bullish/10'
@@ -194,7 +194,7 @@ export function ConfluencePanel() {
             </button>
           ))}
         </div>
-        <div className="text-[8px] font-mono text-neutral/40">
+        <div className="text-micro font-mono text-neutral/40">
           <span className="text-bullish">{counts.bullish}</span>
           {' / '}
           <span className="text-neutral/50">{counts.neutral}</span>
@@ -207,10 +207,10 @@ export function ConfluencePanel() {
       {isLoading && results.length === 0 && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-amber-400 text-[9px] font-mono uppercase animate-pulse mb-1">
+            <div className="text-amber-400 text-mini font-mono uppercase animate-pulse mb-1">
               {tr('confluenceScanning', 'Scanning confluence signals...')}
             </div>
-            <div className="text-[7px] font-mono text-neutral/30">
+            <div className="text-micro font-mono text-neutral/30">
               {tr('confluenceScanDesc', 'Analyzing 8 technical indicators across 30 stocks')}
             </div>
           </div>
@@ -220,7 +220,7 @@ export function ConfluencePanel() {
       {/* Empty state */}
       {!isLoading && results.length === 0 && (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-neutral/30 text-mini font-mono uppercase">
             {tr('confluenceNoData', 'No confluence data available')}
           </div>
         </div>
@@ -249,14 +249,14 @@ export function ConfluencePanel() {
       )}
 
       {/* Signal Legend */}
-      <div className="px-3 py-1 border-t border-border/30 bg-[#050505] shrink-0">
+      <div className="px-3 py-1 border-t border-border/30 bg-raised shrink-0">
         <div className="flex flex-wrap gap-x-3 gap-y-0.5">
           {SIGNAL_KEYS.map(key => (
             <div key={key} className="flex items-center gap-1">
-              <span className="text-[7px] font-mono font-bold text-amber-400/60">
+              <span className="text-micro font-mono font-bold text-amber-400/60">
                 {SIGNAL_SHORT_LABELS[key]}
               </span>
-              <span className="text-[6px] font-mono text-neutral/30">
+              <span className="text-micro font-mono text-neutral/30">
                 {SIGNAL_FULL_LABELS[key]}
               </span>
             </div>
@@ -265,12 +265,12 @@ export function ConfluencePanel() {
       </div>
 
       {/* Status bar */}
-      <div className="px-3 py-0.5 border-t border-border/20 bg-[#050505] shrink-0 flex items-center justify-between">
-        <span className="text-[7px] font-mono text-neutral/30">
+      <div className="px-3 py-0.5 border-t border-border/20 bg-raised shrink-0 flex items-center justify-between">
+        <span className="text-micro font-mono text-neutral/30">
           {filtered.length} / {results.length} {tr('confluenceStocks', 'stocks')}
         </span>
         {data?.timestamp && (
-          <span className="text-[7px] font-mono text-neutral/20">
+          <span className="text-micro font-mono text-neutral/20">
             {new Date(data.timestamp).toLocaleTimeString()}
           </span>
         )}
@@ -303,13 +303,13 @@ function TableView({
   return (
     <>
       {/* Column headers */}
-      <div className="grid grid-cols-[1fr_0.45fr_0.4fr_0.35fr_repeat(8,0.2fr)] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider shrink-0 items-center">
+      <div className="grid grid-cols-[1fr_0.45fr_0.4fr_0.35fr_repeat(8,0.2fr)] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider shrink-0 items-center">
         <ColHeader label={tr('symbol', 'Symbol')} k="symbol" current={sortKey} asc={sortAsc} onClick={onSort} />
         <ColHeader label={tr('confluenceScore', 'Score')} k="score" current={sortKey} asc={sortAsc} onClick={onSort} className="text-center" />
         <ColHeader label={tr('moversChange', 'Chg%')} k="changePct" current={sortKey} asc={sortAsc} onClick={onSort} className="text-right" />
         <span className="text-center">{tr('confluenceDir', 'Dir')}</span>
         {SIGNAL_KEYS.map(key => (
-          <span key={key} className="text-center text-[6px]">{SIGNAL_SHORT_LABELS[key]}</span>
+          <span key={key} className="text-center text-micro">{SIGNAL_SHORT_LABELS[key]}</span>
         ))}
       </div>
 
@@ -326,10 +326,10 @@ function TableView({
                 className="min-w-0 cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); onSelectSymbol(item.symbol); }}
               >
-                <div className="text-[10px] font-mono font-bold text-white group-hover:text-amber-300 truncate">
+                <div className="text-mini font-mono font-bold text-white group-hover:text-amber-300 truncate">
                   {item.symbol}
                 </div>
-                <div className="text-[7px] font-mono text-neutral/30 truncate">
+                <div className="text-micro font-mono text-neutral/30 truncate">
                   ${item.price.toFixed(2)}
                 </div>
               </div>
@@ -340,7 +340,7 @@ function TableView({
               </div>
 
               {/* Change % */}
-              <span className={`text-[9px] font-mono font-bold text-right ${
+              <span className={`text-mini font-mono font-bold text-right ${
                 item.changePct >= 0 ? 'text-bullish' : 'text-bearish'
               }`}>
                 {item.changePct >= 0 ? '+' : ''}{item.changePct.toFixed(2)}%
@@ -348,7 +348,7 @@ function TableView({
 
               {/* Direction */}
               <div className="flex items-center justify-center">
-                <span className={`text-[9px] font-mono font-bold ${
+                <span className={`text-mini font-mono font-bold ${
                   item.direction === 'bullish' ? 'text-emerald-400' : item.direction === 'bearish' ? 'text-red-400' : 'text-neutral-500'
                 }`}>
                   {item.direction === 'bullish' ? '\u25B2' : item.direction === 'bearish' ? '\u25BC' : '\u25C6'}
@@ -386,7 +386,7 @@ function ScoreBar({ score }: { score: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className={`text-[8px] font-mono font-black min-w-[24px] text-right ${scoreTextColor(score)}`}>
+      <span className={`text-micro font-mono font-black min-w-[24px] text-right ${scoreTextColor(score)}`}>
         {score.toFixed(1)}
       </span>
     </div>
@@ -405,10 +405,10 @@ function ExpandedDetail({ item, tr }: { item: ConfluenceResult; tr: (key: string
           return (
             <div key={key} className="flex items-center gap-1.5">
               <div className={`w-1.5 h-1.5 shrink-0 ${directionColor(signal.direction)}`} />
-              <span className="text-[7px] font-mono text-neutral/50 min-w-[32px]">
+              <span className="text-micro font-mono text-neutral/50 min-w-[32px]">
                 {SIGNAL_SHORT_LABELS[key]}
               </span>
-              <span className={`text-[8px] font-mono font-bold ${directionTextColor(signal.direction)}`}>
+              <span className={`text-micro font-mono font-bold ${directionTextColor(signal.direction)}`}>
                 {formatSignalValue(key, signal)}
               </span>
             </div>
@@ -417,7 +417,7 @@ function ExpandedDetail({ item, tr }: { item: ConfluenceResult; tr: (key: string
       </div>
 
       {/* Summary row */}
-      <div className="flex items-center gap-4 text-[7px] font-mono text-neutral/40 border-t border-border/10 pt-1.5">
+      <div className="flex items-center gap-4 text-micro font-mono text-neutral/40 border-t border-border/10 pt-1.5">
         <span>
           {tr('confluenceName', 'Name')}: <span className="text-neutral/60">{item.name}</span>
         </span>
@@ -449,7 +449,7 @@ function HeatmapView({
   return (
     <>
       {/* Heatmap header */}
-      <div className="grid shrink-0 px-3 py-1 border-b border-border/20 text-[6px] font-black text-neutral/40 uppercase tracking-wider items-center"
+      <div className="grid shrink-0 px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider items-center"
         style={{ gridTemplateColumns: `60px 36px repeat(${SIGNAL_KEYS.length}, 1fr)` }}
       >
         <span>{tr('symbol', 'Symbol')}</span>
@@ -469,13 +469,13 @@ function HeatmapView({
             onClick={() => onSelectSymbol(item.symbol)}
           >
             {/* Symbol */}
-            <span className="text-[8px] font-mono font-bold text-white truncate">
+            <span className="text-micro font-mono font-bold text-white truncate">
               {item.symbol}
             </span>
 
             {/* Score badge */}
             <div className="flex justify-center">
-              <span className={`text-[7px] font-mono font-black px-1 ${scoreTextColor(item.confluenceScore)} bg-black`}>
+              <span className={`text-micro font-mono font-black px-1 ${scoreTextColor(item.confluenceScore)} bg-black`}>
                 {item.confluenceScore.toFixed(1)}
               </span>
             </div>
@@ -489,7 +489,7 @@ function HeatmapView({
                     className={`w-full h-[14px] ${heatmapCellColor(signal.direction)} flex items-center justify-center`}
                     title={`${SIGNAL_FULL_LABELS[key]}: ${formatSignalValue(key, signal)} (${signal.direction})`}
                   >
-                    <span className="text-[6px] font-mono font-bold text-white/70">
+                    <span className="text-micro font-mono font-bold text-white/70">
                       {formatSignalValue(key, signal)}
                     </span>
                   </div>

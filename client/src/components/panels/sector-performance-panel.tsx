@@ -23,13 +23,13 @@ const PERIOD_LABELS: Record<PeriodKey, string> = {
 
 /** Heatmap cell color based on return percentage */
 function getCellBg(value: number | null): string {
-  if (value == null) return 'rgba(63,63,70,0.2)';
-  if (value > 3) return 'rgba(22,163,74,0.85)';   // dark green
-  if (value > 1) return 'rgba(34,197,94,0.55)';    // light green
-  if (value > 0) return 'rgba(74,222,128,0.28)';   // pale green
-  if (value > -1) return 'rgba(248,113,113,0.28)';  // pale red
-  if (value > -3) return 'rgba(239,68,68,0.55)';    // light red
-  return 'rgba(220,38,38,0.85)';                     // dark red
+  if (value == null) return 'color-mix(in srgb, var(--color-zinc-700) 20%, transparent)';
+  if (value > 3) return 'color-mix(in srgb, var(--color-green-600) 85%, transparent)';   // dark green
+  if (value > 1) return 'color-mix(in srgb, var(--color-green-500) 55%, transparent)';    // light green
+  if (value > 0) return 'color-mix(in srgb, var(--color-green-400) 28%, transparent)';   // pale green
+  if (value > -1) return 'color-mix(in srgb, var(--color-red-400) 28%, transparent)';  // pale red
+  if (value > -3) return 'color-mix(in srgb, var(--color-red-500) 55%, transparent)';    // light red
+  return 'color-mix(in srgb, var(--color-red-600) 85%, transparent)';                     // dark red
 }
 
 function formatReturn(value: number | null): string {
@@ -99,10 +99,10 @@ function SummaryBar({
       {data.best && (
         <div className="flex items-center gap-1">
           <ArrowUpRight className="w-3 h-3 text-emerald-400" />
-          <span className="text-[8px] font-mono text-emerald-400 font-bold uppercase">
+          <span className="text-micro font-mono text-emerald-400 font-bold uppercase">
             {data.best.name}
           </span>
-          <span className="text-[8px] font-mono text-emerald-300">
+          <span className="text-micro font-mono text-emerald-300">
             {formatReturn(data.best.val)}%
           </span>
         </div>
@@ -110,20 +110,20 @@ function SummaryBar({
       {data.worst && (
         <div className="flex items-center gap-1">
           <ArrowDownRight className="w-3 h-3 text-red-400" />
-          <span className="text-[8px] font-mono text-red-400 font-bold uppercase">
+          <span className="text-micro font-mono text-red-400 font-bold uppercase">
             {data.worst.name}
           </span>
-          <span className="text-[8px] font-mono text-red-300">
+          <span className="text-micro font-mono text-red-300">
             {formatReturn(data.worst.val)}%
           </span>
         </div>
       )}
       {data.rotationFrom && data.rotationTo && data.rotationFrom !== data.rotationTo && (
         <div className="flex items-center gap-1 ml-auto">
-          <span className="text-[7px] font-mono text-neutral/40 uppercase">Rotation:</span>
-          <span className="text-[8px] font-mono text-red-400">{data.rotationFrom}</span>
-          <span className="text-[8px] font-mono text-neutral/30">&rarr;</span>
-          <span className="text-[8px] font-mono text-emerald-400">{data.rotationTo}</span>
+          <span className="text-micro font-mono text-neutral/40 uppercase">Rotation:</span>
+          <span className="text-micro font-mono text-red-400">{data.rotationFrom}</span>
+          <span className="text-micro font-mono text-neutral/30">&rarr;</span>
+          <span className="text-micro font-mono text-emerald-400">{data.rotationTo}</span>
         </div>
       )}
     </div>
@@ -180,7 +180,7 @@ function MiniBarChart({
           y1={0}
           x2={midX}
           y2={totalHeight}
-          stroke="rgba(161,161,170,0.2)"
+          stroke="color-mix(in srgb, var(--color-zinc-400) 20%, transparent)"
           strokeWidth={0.5}
         />
         {/* SPY reference line */}
@@ -190,7 +190,7 @@ function MiniBarChart({
             y1={0}
             x2={midX + (spyVal / maxAbs) * (chartWidth / 2)}
             y2={totalHeight}
-            stroke="rgba(251,191,36,0.5)"
+            stroke="color-mix(in srgb, var(--color-amber-400) 50%, transparent)"
             strokeWidth={0.8}
             strokeDasharray="2,2"
           />
@@ -201,7 +201,7 @@ function MiniBarChart({
           const barW = (Math.abs(val) / maxAbs) * (chartWidth / 2);
           const isPositive = val >= 0;
           const barX = isPositive ? midX : midX - barW;
-          const fill = isPositive ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)';
+          const fill = isPositive ? 'color-mix(in srgb, var(--color-green-500) 70%, transparent)' : 'color-mix(in srgb, var(--color-red-500) 70%, transparent)';
 
           return (
             <g key={item.name}>
@@ -210,9 +210,9 @@ function MiniBarChart({
                 x={labelWidth - 3}
                 y={y + barHeight / 2 + 3}
                 textAnchor="end"
-                fill="rgba(161,161,170,0.6)"
+                fill="color-mix(in srgb, var(--color-zinc-400) 60%, transparent)"
                 fontSize={7}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 {item.name}
@@ -231,9 +231,9 @@ function MiniBarChart({
                 x={labelWidth + chartWidth + 3}
                 y={y + barHeight / 2 + 3}
                 textAnchor="start"
-                fill={isPositive ? 'rgba(34,197,94,0.9)' : 'rgba(239,68,68,0.9)'}
+                fill={isPositive ? 'color-mix(in srgb, var(--color-green-500) 90%, transparent)' : 'color-mix(in srgb, var(--color-red-500) 90%, transparent)'}
                 fontSize={7}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 {formatReturn(val)}%
@@ -290,10 +290,10 @@ export function SectorPerformancePanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-orange-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-orange-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-orange-400">
             {tf('sectorPerformance', 'SECTOR PERFORMANCE')}
           </span>
         </div>
@@ -304,7 +304,7 @@ export function SectorPerformancePanel() {
               <button
                 key={v}
                 onClick={() => setMode(v)}
-                className={`px-2 py-0.5 text-[8px] font-mono font-black uppercase transition-all ${
+                className={`px-2 py-0.5 text-micro font-mono font-black uppercase transition-all ${
                   mode === v
                     ? 'bg-orange-400/20 text-orange-400'
                     : 'text-neutral/50 hover:text-white'
@@ -337,7 +337,7 @@ export function SectorPerformancePanel() {
       {isLoading && !data && (
         <div className="flex-1 flex flex-col items-center justify-center gap-2">
           <div className="w-5 h-5 border-2 border-orange-400/30 border-t-orange-400 animate-spin" />
-          <span className="text-[9px] font-mono text-neutral/40 uppercase tracking-widest">
+          <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('loading')}
           </span>
         </div>
@@ -346,7 +346,7 @@ export function SectorPerformancePanel() {
       {/* Empty state */}
       {!isLoading && !data && (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[9px] font-mono text-neutral/30 uppercase tracking-widest">
+          <span className="text-mini font-mono text-neutral/30 uppercase tracking-widest">
             {tf('noSectorData', 'No sector data')}
           </span>
         </div>
@@ -358,15 +358,15 @@ export function SectorPerformancePanel() {
           <div className="flex-1 overflow-auto no-scrollbar">
             <table className="w-full border-collapse min-w-[500px]">
               <thead>
-                <tr className="bg-[#0a0a0a] sticky top-0 z-10">
-                  <th className="text-left text-[8px] font-mono font-black text-neutral/50 uppercase tracking-wider px-2 py-1.5 border-b border-border/20 min-w-[100px]">
+                <tr className="bg-raised sticky top-0 z-10">
+                  <th className="text-left text-micro font-mono font-black text-neutral/50 uppercase tracking-wider px-2 py-1.5 border-b border-border/20 min-w-[100px]">
                     {tf('spSector', 'Sector')}
                   </th>
                   {PERIODS.map((p) => (
                     <th
                       key={p}
                       onClick={() => handleColumnClick(p)}
-                      className={`text-center text-[8px] font-mono font-black uppercase tracking-wider px-1 py-1.5 border-b border-border/20 cursor-pointer transition-colors select-none min-w-[48px] ${
+                      className={`text-center text-micro font-mono font-black uppercase tracking-wider px-1 py-1.5 border-b border-border/20 cursor-pointer transition-colors select-none min-w-[48px] ${
                         sortPeriod === p
                           ? 'text-orange-400 bg-orange-400/5'
                           : 'text-neutral/50 hover:text-white'
@@ -375,7 +375,7 @@ export function SectorPerformancePanel() {
                       <span className="flex items-center justify-center gap-0.5">
                         {PERIOD_LABELS[p]}
                         {sortPeriod === p && (
-                          <span className="text-[6px]">{sortDir === 'desc' ? '\u25BC' : '\u25B2'}</span>
+                          <span className="text-micro">{sortDir === 'desc' ? '\u25BC' : '\u25B2'}</span>
                         )}
                       </span>
                     </th>
@@ -387,10 +387,10 @@ export function SectorPerformancePanel() {
                   <tr key={sector.symbol} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-2 py-0.5 border-b border-border/10">
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-mono font-black text-white/80 uppercase tracking-wider leading-tight">
+                        <span className="text-micro font-mono font-black text-white/80 uppercase tracking-wider leading-tight">
                           {sector.name}
                         </span>
-                        <span className="text-[7px] font-mono text-neutral/30">
+                        <span className="text-micro font-mono text-neutral/30">
                           {sector.symbol}
                           {sector.price != null && (
                             <span className="ml-1">${sector.price.toFixed(2)}</span>
@@ -411,7 +411,7 @@ export function SectorPerformancePanel() {
                           }`}
                           style={{ backgroundColor: getCellBg(val) }}
                         >
-                          <span className="text-[9px] font-mono font-bold text-white leading-none">
+                          <span className="text-mini font-mono font-bold text-white leading-none">
                             {formatReturn(val)}
                           </span>
                         </td>
@@ -423,10 +423,10 @@ export function SectorPerformancePanel() {
                 <tr className="bg-white/[0.03] border-t border-border/30">
                   <td className="px-2 py-0.5 border-b border-border/10">
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-mono font-black text-orange-400/80 uppercase tracking-wider leading-tight">
+                      <span className="text-micro font-mono font-black text-orange-400/80 uppercase tracking-wider leading-tight">
                         S&P 500
                       </span>
-                      <span className="text-[7px] font-mono text-neutral/30">
+                      <span className="text-micro font-mono text-neutral/30">
                         SPY
                         {data.spy.price != null && (
                           <span className="ml-1">${data.spy.price.toFixed(2)}</span>
@@ -447,7 +447,7 @@ export function SectorPerformancePanel() {
                         }`}
                         style={{ backgroundColor: getCellBg(val) }}
                       >
-                        <span className="text-[9px] font-mono font-bold text-white leading-none">
+                        <span className="text-mini font-mono font-bold text-white leading-none">
                           {formatReturn(val)}
                         </span>
                       </td>

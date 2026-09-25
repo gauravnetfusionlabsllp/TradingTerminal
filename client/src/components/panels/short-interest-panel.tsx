@@ -150,7 +150,7 @@ export function ShortInterestPanel() {
   const SortHeader = ({ k, label, className = '' }: { k: SortKey; label: string; className?: string }) => (
     <button
       onClick={() => handleSort(k)}
-      className={`text-left text-[8px] uppercase tracking-wider font-medium transition-colors ${sortKey === k ? 'text-rose-400' : 'text-neutral/40 hover:text-neutral/60'} ${className}`}
+      className={`text-left text-micro uppercase tracking-wider font-medium transition-colors ${sortKey === k ? 'text-rose-400' : 'text-neutral/40 hover:text-neutral/60'} ${className}`}
     >
       {label} {sortKey === k ? (sortDir === 'desc' ? '\u25BE' : '\u25B4') : ''}
     </button>
@@ -162,7 +162,7 @@ export function ShortInterestPanel() {
       <div className="flex items-center justify-between px-3 py-2 border-b border-rose-500/10">
         <div className="flex items-center gap-2">
           <TrendingDown className="w-3.5 h-3.5 text-rose-400" />
-          <span className="text-[11px] font-mono font-bold text-rose-400 tracking-widest uppercase">
+          <span className="text-xs font-mono font-bold text-rose-400 tracking-widest uppercase">
             {t('panelShortInterest')}
           </span>
         </div>
@@ -177,7 +177,7 @@ export function ShortInterestPanel() {
 
       {/* Summary bar */}
       {summary && (
-        <div className="flex items-center gap-4 px-3 py-1.5 border-b border-border/5 text-[9px] font-mono bg-rose-500/[0.03]">
+        <div className="flex items-center gap-4 px-3 py-1.5 border-b border-border/5 text-mini font-mono bg-rose-500/[0.03]">
           <span className="text-neutral/50">
             &gt;20% Float: <span className="text-rose-400 font-bold">{summary.highShortCount}</span>
           </span>
@@ -205,7 +205,7 @@ export function ShortInterestPanel() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`px-2 py-0.5 text-[8px] font-mono uppercase tracking-wider rounded transition-colors ${
+            className={`px-2 py-0.5 text-micro font-mono uppercase tracking-wider rounded transition-colors ${
               filter === tab.key
                 ? 'bg-rose-500/20 text-rose-400 font-bold'
                 : 'text-neutral/40 hover:text-neutral/60 hover:bg-white/[0.02]'
@@ -223,15 +223,15 @@ export function ShortInterestPanel() {
             <div className="w-5 h-5 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin" />
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center h-32 text-[10px] font-mono text-bearish/60">
+          <div className="flex items-center justify-center h-32 text-mini font-mono text-bearish/60">
             Failed to load short interest data
           </div>
         ) : sorted.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-[10px] font-mono text-neutral/30">
+          <div className="flex items-center justify-center h-32 text-mini font-mono text-neutral/30">
             {t('siNoData')}
           </div>
         ) : (
-          <table className="w-full text-[9px] font-mono">
+          <table className="w-full text-mini font-mono">
             <thead className="sticky top-0 bg-black/95 z-10">
               <tr className="border-b border-border/10">
                 <th className="px-2 py-1.5 text-left"><SortHeader k="symbol" label="Symbol" /></th>
@@ -262,14 +262,14 @@ export function ShortInterestPanel() {
                     {/* Symbol + Name */}
                     <td className="px-2 py-1.5">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-black text-rose-400 text-[10px]">{stock.symbol}</span>
+                        <span className="font-black text-rose-400 text-mini">{stock.symbol}</span>
                         {squeeze && (
-                          <span className="px-1 py-px text-[7px] font-bold uppercase bg-yellow-500/20 text-yellow-400 rounded">
+                          <span className="px-1 py-px text-micro font-bold uppercase bg-yellow-500/20 text-yellow-400 rounded">
                             {t('siSqueezeAlert')}
                           </span>
                         )}
                       </div>
-                      <div className="text-[8px] text-neutral/30 truncate max-w-[120px]">{stock.name}</div>
+                      <div className="text-micro text-neutral/30 truncate max-w-[120px]">{stock.name}</div>
                     </td>
 
                     {/* Price */}
@@ -287,7 +287,7 @@ export function ShortInterestPanel() {
                     {/* Short % Float - key column */}
                     <td className="px-1 py-1.5 text-right">
                       <div className="flex flex-col items-end gap-0.5">
-                        <span className={`text-[11px] font-bold tabular-nums ${shortFloatColor(stock.shortPercentOfFloat)}`}>
+                        <span className={`text-xs font-bold tabular-nums ${shortFloatColor(stock.shortPercentOfFloat)}`}>
                           {formatPercent(stock.shortPercentOfFloat)}
                         </span>
                         <div className="w-14 h-1 bg-neutral/10 rounded-full overflow-hidden">
@@ -350,7 +350,7 @@ export function ShortInterestPanel() {
 
       {/* Status bar */}
       {summary && (
-        <div className="flex items-center gap-4 px-3 py-1 border-t border-border/5 text-[8px] font-mono text-neutral/30 bg-black/95">
+        <div className="flex items-center gap-4 px-3 py-1 border-t border-border/5 text-micro font-mono text-neutral/30 bg-black/95">
           <span>Total: {summary.total}</span>
           <span>Avg Short Float: {formatPercent(summary.avgShortFloat)}</span>
           {summary.squeezeCount > 0 && (

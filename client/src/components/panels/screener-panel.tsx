@@ -70,10 +70,10 @@ export function ScreenerPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-teal-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-teal-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-teal-400">
             {t('panelScreener')}
           </span>
         </div>
@@ -107,7 +107,7 @@ export function ScreenerPanel() {
       )}
 
       {/* Column headers */}
-      <div className="grid grid-cols-[1fr_0.7fr_0.6fr_0.7fr_0.7fr_0.5fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider shrink-0">
+      <div className="grid grid-cols-[1fr_0.7fr_0.6fr_0.7fr_0.7fr_0.5fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider shrink-0">
         <ColHeader label={t('symbol')} sortKey="symbol" current={sortKey} asc={sortAsc} onClick={handleSort} />
         <ColHeader label={t('price')} sortKey="price" current={sortKey} asc={sortAsc} onClick={handleSort} className="text-right" />
         <ColHeader label={t('moversChange')} sortKey="changePercent" current={sortKey} asc={sortAsc} onClick={handleSort} className="text-right" />
@@ -119,7 +119,7 @@ export function ScreenerPanel() {
       {/* Results */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !stocks && (
-          <div className="text-center py-8 text-teal-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-teal-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
@@ -131,22 +131,22 @@ export function ScreenerPanel() {
             className="w-full grid grid-cols-[1fr_0.7fr_0.6fr_0.7fr_0.7fr_0.5fr] px-3 py-1.5 border-b border-border/10 hover:bg-white/[0.02] transition-colors text-left"
           >
             <div className="min-w-0">
-              <div className="text-[10px] font-mono font-bold text-white truncate">{s.symbol}</div>
-              <div className="text-[7px] font-mono text-neutral/30 truncate">{s.name}</div>
+              <div className="text-mini font-mono font-bold text-white truncate">{s.symbol}</div>
+              <div className="text-micro font-mono text-neutral/30 truncate">{s.name}</div>
             </div>
-            <span className="text-[10px] font-mono text-white text-right self-center">${s.price.toFixed(2)}</span>
-            <span className={`text-[9px] font-mono font-bold text-right self-center ${s.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}`}>
+            <span className="text-mini font-mono text-white text-right self-center">${s.price.toFixed(2)}</span>
+            <span className={`text-mini font-mono font-bold text-right self-center ${s.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}`}>
               {s.changePercent >= 0 ? '+' : ''}{s.changePercent.toFixed(2)}%
             </span>
-            <span className="text-[9px] font-mono text-neutral/50 text-right self-center">{fmtVol(s.volume)}</span>
-            <span className="text-[9px] font-mono text-neutral/50 text-right self-center">{s.marketCap ? fmtMcap(s.marketCap) : '—'}</span>
-            <span className="text-[9px] font-mono text-neutral/50 text-right self-center">{s.pe != null && s.pe > 0 ? s.pe.toFixed(1) : '—'}</span>
+            <span className="text-mini font-mono text-neutral/50 text-right self-center">{fmtVol(s.volume)}</span>
+            <span className="text-mini font-mono text-neutral/50 text-right self-center">{s.marketCap ? fmtMcap(s.marketCap) : '—'}</span>
+            <span className="text-mini font-mono text-neutral/50 text-right self-center">{s.pe != null && s.pe > 0 ? s.pe.toFixed(1) : '—'}</span>
           </button>
         ))}
       </div>
 
       {/* Status */}
-      <div className="px-3 py-1 border-t border-border/30 bg-[#050505] shrink-0 text-[8px] font-mono text-neutral/30">
+      <div className="px-3 py-1 border-t border-border/30 bg-raised shrink-0 text-micro font-mono text-neutral/30">
         {filtered.length} / {stocks?.length ?? 0} {t('scrResults')}
       </div>
     </div>
@@ -158,16 +158,16 @@ function FilterInput({ label, value, placeholder, onChange, suffix }: {
 }) {
   return (
     <div>
-      <div className="text-[7px] font-mono text-neutral/40 mb-0.5">{label}</div>
+      <div className="text-micro font-mono text-neutral/40 mb-0.5">{label}</div>
       <div className="flex items-center">
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-black border border-border/30 px-1.5 py-0.5 text-[9px] font-mono text-white placeholder:text-neutral/20"
+          className="w-full bg-black border border-border/30 px-1.5 py-0.5 text-mini font-mono text-white placeholder:text-neutral/20"
         />
-        <span className="text-[7px] font-mono text-neutral/30 ml-0.5 shrink-0">{suffix}</span>
+        <span className="text-micro font-mono text-neutral/30 ml-0.5 shrink-0">{suffix}</span>
       </div>
     </div>
   );

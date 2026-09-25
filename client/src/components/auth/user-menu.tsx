@@ -29,7 +29,7 @@ export function UserMenu() {
     return (
       <button
         onClick={() => setLoginModalOpen(true)}
-        className="flex items-center gap-1.5 px-2 py-1 border border-accent bg-black text-accent text-[10px] font-bold font-mono uppercase tracking-widest hover:bg-accent hover:text-black transition-colors"
+        className="flex items-center h-7 px-3 rounded-sm bg-accent text-on-accent text-xs font-semibold hover:bg-accent/90 transition-colors"
       >
         {t('login')}
       </button>
@@ -40,20 +40,20 @@ export function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className="flex items-center gap-1.5 px-2 py-1 border border-border bg-black text-[10px] font-mono text-accent hover:border-accent"
+        className="flex items-center gap-1.5 h-7 px-2 rounded-sm border border-border bg-raised text-xs text-fg hover:border-neutral/50"
       >
-        <User className="w-3 h-3" />
+        <User className="w-3.5 h-3.5 text-neutral" />
         <span className="max-w-[100px] truncate">
           {user.name || `#${user.mt5Login}`}
         </span>
-        {user.readOnly && <span className="text-[8px] text-amber-400 uppercase">{t('readOnly')}</span>}
+        {user.readOnly && <span className="text-micro text-orange">{t('readOnly')}</span>}
       </button>
 
       {/* Dropdown */}
       {menuOpen && (
-        <div className="absolute right-0 top-full mt-1 w-48 bg-black border border-border z-50">
+        <div className="absolute right-0 top-full mt-1 w-52 bg-raised border border-border rounded-sm shadow-[0_12px_32px_rgb(0_0_0/0.3)] py-1 z-50">
           <div className="px-3 py-2 border-b border-border">
-            <p className="text-[10px] font-mono text-neutral truncate">MT5 #{user.mt5Login}{user.readOnly ? ` · ${t('readOnly')}` : ''}</p>
+            <p className="text-mini text-neutral truncate">MT5 #{user.mt5Login}{user.readOnly ? ` · ${t('readOnly')}` : ''}</p>
           </div>
 
           <button
@@ -71,9 +71,9 @@ export function UserMenu() {
                 URL.revokeObjectURL(url);
               } catch { /* ignore */ }
             }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-mono text-neutral hover:text-white hover:bg-white/5 text-left border-t border-border"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-fg hover:bg-hover text-left"
           >
-            <Download className="w-3 h-3" />
+            <Download className="w-3.5 h-3.5 text-neutral" />
             {t('exportData')}
           </button>
 
@@ -86,17 +86,17 @@ export function UserMenu() {
                 logout();
               } catch { /* ignore */ }
             }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-mono text-neutral hover:text-bearish hover:bg-bearish/5 text-left"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-fg hover:text-bearish hover:bg-bearish/10 text-left"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-3.5 h-3.5 text-neutral" />
             {t('deleteAccount')}
           </button>
 
           <button
             onClick={() => { logout(); setMenuOpen(false); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-mono text-neutral hover:text-bearish hover:bg-bearish/5 text-left border-t border-border"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-fg hover:text-bearish hover:bg-bearish/10 text-left border-t border-border"
           >
-            <LogOut className="w-3 h-3" />
+            <LogOut className="w-3.5 h-3.5 text-neutral" />
             {t('logout')}
           </button>
         </div>

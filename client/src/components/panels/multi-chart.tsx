@@ -3,11 +3,13 @@ import { createChart, CandlestickSeries, type IChartApi, ColorType } from 'light
 import { useStockDetail } from '../../api/hooks/use-stocks';
 import { useAppStore } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
+import { useChartColors } from '../../lib/theme';
 
 function MiniChart({ symbol, onRemove }: { symbol: string; onRemove: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const { data } = useStockDetail(symbol);
+  const c = useChartColors();
 
   useEffect(() => {
     if (!containerRef.current || !data?.history?.length) return;
@@ -19,15 +21,15 @@ function MiniChart({ symbol, onRemove }: { symbol: string; onRemove: () => void 
 
     const chart = createChart(containerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: '#000000' },
-        textColor: '#cccccc',
+        background: { type: ColorType.Solid, color: 'transparent' },
+        textColor: c.neutral,
         fontSize: 10,
-        fontFamily: 'JetBrains Mono',
+        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
         attributionLogo: false,
       },
       grid: {
-        vertLines: { color: '#1a1a1a' },
-        horzLines: { color: '#1a1a1a' },
+        vertLines: { color: c.border },
+        horzLines: { color: c.border },
       },
       width: containerRef.current.clientWidth,
       height: containerRef.current.clientHeight,
@@ -39,12 +41,12 @@ function MiniChart({ symbol, onRemove }: { symbol: string; onRemove: () => void 
     });
 
     const series = chart.addSeries(CandlestickSeries, {
-      upColor: '#00ff00',
-      downColor: '#ff0000',
-      borderUpColor: '#00ff00',
-      borderDownColor: '#ff0000',
-      wickUpColor: '#00ff00',
-      wickDownColor: '#ff0000',
+      upColor: c.bullish,
+      downColor: c.bearish,
+      borderUpColor: c.bullish,
+      borderDownColor: c.bearish,
+      wickUpColor: c.bullish,
+      wickDownColor: c.bearish,
     });
 
     series.setData(
@@ -75,20 +77,20 @@ function MiniChart({ symbol, onRemove }: { symbol: string; onRemove: () => void 
       chart.remove();
       chartRef.current = null;
     };
-  }, [data]);
+  }, [data, c]);
 
   const q = data?.quote;
   const isUp = q && q.changePercent !== null && q.changePercent >= 0;
 
   return (
     <div className="flex flex-col bg-black border border-border overflow-hidden min-h-0">
-      <div className="flex items-center justify-between px-2 py-1 border-b border-border shrink-0 bg-[#0a0a0a]">
+      <div className="flex items-center justify-between px-2 py-1 border-b border-border shrink-0 bg-raised">
         <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-accent text-[11px]">{symbol}</span>
+          <span className="font-mono font-bold text-accent-ink text-xs">{symbol}</span>
           {q && (
             <>
-              <span className="font-mono text-white text-[10px]">{q.price.toFixed(2)}</span>
-              <span className={`font-mono text-[10px] font-bold ${isUp ? 'text-bullish' : 'text-bearish'}`}>
+              <span className="font-mono text-white text-mini">{q.price.toFixed(2)}</span>
+              <span className={`font-mono text-mini font-bold ${isUp ? 'text-bullish' : 'text-bearish'}`}>
                 {isUp ? '▲' : '▼'} {Math.abs(q.changePercent || 0).toFixed(2)}%
               </span>
             </>
@@ -96,7 +98,7 @@ function MiniChart({ symbol, onRemove }: { symbol: string; onRemove: () => void 
         </div>
         <button
           onClick={onRemove}
-          className="text-neutral hover:text-bearish transition-colors p-0.5 font-mono text-[10px]"
+          className="text-neutral hover:text-bearish transition-colors p-0.5 font-mono text-mini"
         >
           [X]
         </button>
@@ -115,10 +117,10 @@ export function MultiChart() {
   if (compareSymbols.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-2 text-neutral bg-black">
-        <span className="text-[10px] font-mono uppercase tracking-widest font-bold">{t('noSymbolsPinned')}</span>
+        <span className="text-mini font-mono uppercase tracking-widest font-bold">{t('noSymbolsPinned')}</span>
         <button
           onClick={() => setStockPanelView('watchlist')}
-          className="text-accent text-[10px] font-mono hover:underline uppercase"
+          className="text-accent-ink text-mini font-mono hover:underline uppercase"
         >
           &lt; {t('backToWatchlist')}
         </button>

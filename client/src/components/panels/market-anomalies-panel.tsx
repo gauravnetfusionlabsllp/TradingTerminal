@@ -18,10 +18,10 @@ function makeTr(t: ReturnType<typeof useT>) {
 
 function strengthColor(s: AnomalyFinding['strength']): string {
   switch (s) {
-    case 'strong': return '#f59e0b';
-    case 'moderate': return '#d97706';
-    case 'weak': return '#92400e';
-    case 'none': return '#525252';
+    case 'strong': return 'var(--color-amber-500)';
+    case 'moderate': return 'var(--color-amber-600)';
+    case 'weak': return 'var(--color-amber-800)';
+    case 'none': return 'var(--color-neutral-600)';
   }
 }
 
@@ -66,15 +66,15 @@ function FindingsChart({ findings }: { findings: AnomalyFinding[] }) {
       {/* Zero line */}
       <line
         x1={PAD_L} y1={zeroY} x2={W - PAD_R} y2={zeroY}
-        stroke="rgba(255,255,255,0.12)" strokeWidth={0.5}
+        stroke="color-mix(in srgb, var(--color-white) 12%, transparent)" strokeWidth={0.5}
       />
 
       {findings.map((f, i) => {
         const x = PAD_L + i * barW;
         const barHeight = Math.abs(f.avgReturn) / (maxAbs * 2) * chartH;
         const y = f.avgReturn >= 0 ? zeroY - barHeight : zeroY;
-        const fillColor = f.avgReturn >= 0 ? 'rgba(52,211,153,0.55)' : 'rgba(248,113,113,0.55)';
-        const textColor = f.avgReturn >= 0 ? '#34d399' : '#f87171';
+        const fillColor = f.avgReturn >= 0 ? 'color-mix(in srgb, var(--color-emerald-400) 55%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 55%, transparent)';
+        const textColor = f.avgReturn >= 0 ? 'var(--color-emerald-400)' : 'var(--color-red-400)';
 
         // Truncate label to fit
         const displayLabel = f.label.length > 5 ? f.label.slice(0, 3) : f.label;
@@ -95,7 +95,7 @@ function FindingsChart({ findings }: { findings: AnomalyFinding[] }) {
               textAnchor="middle"
               fill={textColor}
               fontSize={count <= 5 ? 6 : 5}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {f.avgReturn >= 0 ? '+' : ''}{f.avgReturn.toFixed(3)}%
@@ -105,9 +105,9 @@ function FindingsChart({ findings }: { findings: AnomalyFinding[] }) {
               x={x + barW / 2}
               y={H - PAD_B + 9}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.35)"
+              fill="color-mix(in srgb, var(--color-white) 35%, transparent)"
               fontSize={count <= 5 ? 7 : 5}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {count > 5 ? displayLabel : f.label}
             </text>
@@ -116,9 +116,9 @@ function FindingsChart({ findings }: { findings: AnomalyFinding[] }) {
               x={x + barW / 2}
               y={H - PAD_B + 18}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.2)"
+              fill="color-mix(in srgb, var(--color-white) 20%, transparent)"
               fontSize={count <= 5 ? 5.5 : 4.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {f.winRate.toFixed(0)}%W
             </text>
@@ -138,21 +138,21 @@ function AnomalyCard({ anomaly }: { anomaly: Anomaly }) {
     <div className="border-b border-white/[0.04] px-3 py-2">
       {/* Card header */}
       <div className="flex items-center gap-1.5 mb-1">
-        <span className="text-[9px] font-mono font-black text-white uppercase tracking-tight">
+        <span className="text-mini font-mono font-black text-white uppercase tracking-tight">
           {anomaly.name}
         </span>
-        <span className={`text-[7px] font-mono font-bold px-1 py-px ${badge.color}`}>
+        <span className={`text-micro font-mono font-bold px-1 py-px ${badge.color}`}>
           {badge.label}
         </span>
         {anomaly.currentlyActive && (
-          <span className="text-[7px] font-mono font-bold px-1 py-px text-amber-400 bg-amber-400/10 animate-pulse">
+          <span className="text-micro font-mono font-bold px-1 py-px text-amber-400 bg-amber-400/10 animate-pulse">
             ACTIVE
           </span>
         )}
       </div>
 
       {/* Description */}
-      <div className="text-[8px] font-mono text-white/30 leading-tight mb-1.5">
+      <div className="text-micro font-mono text-white/30 leading-tight mb-1.5">
         {anomaly.description}
       </div>
 
@@ -161,7 +161,7 @@ function AnomalyCard({ anomaly }: { anomaly: Anomaly }) {
 
       {/* Findings detail table */}
       <div className="mt-1">
-        <div className="grid grid-cols-[1fr_55px_45px_35px_40px] gap-0 text-[6.5px] font-mono text-white/25 uppercase tracking-wider border-b border-white/[0.04] pb-0.5 mb-0.5">
+        <div className="grid grid-cols-[1fr_55px_45px_35px_40px] gap-0 text-micro font-mono text-white/25 uppercase tracking-wider border-b border-white/[0.04] pb-0.5 mb-0.5">
           <span>Label</span>
           <span className="text-right">Avg Ret</span>
           <span className="text-right">Win%</span>
@@ -173,18 +173,18 @@ function AnomalyCard({ anomaly }: { anomaly: Anomaly }) {
             key={f.label}
             className="grid grid-cols-[1fr_55px_45px_35px_40px] gap-0 py-px"
           >
-            <span className="text-[8px] font-mono text-white/60 truncate">{f.label}</span>
-            <span className={`text-[8px] font-mono text-right font-bold ${f.avgReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <span className="text-micro font-mono text-white/60 truncate">{f.label}</span>
+            <span className={`text-micro font-mono text-right font-bold ${f.avgReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {f.avgReturn >= 0 ? '+' : ''}{f.avgReturn.toFixed(3)}%
             </span>
-            <span className={`text-[8px] font-mono text-right ${f.winRate >= 50 ? 'text-emerald-400/60' : 'text-red-400/60'}`}>
+            <span className={`text-micro font-mono text-right ${f.winRate >= 50 ? 'text-emerald-400/60' : 'text-red-400/60'}`}>
               {f.winRate.toFixed(0)}%
             </span>
-            <span className="text-[8px] font-mono text-right text-white/30">
+            <span className="text-micro font-mono text-right text-white/30">
               {f.sampleSize}
             </span>
             <span
-              className="text-[7px] font-mono text-right font-bold"
+              className="text-micro font-mono text-right font-bold"
               style={{ color: strengthColor(f.strength) }}
             >
               {strengthLabel(f.strength)}
@@ -194,7 +194,7 @@ function AnomalyCard({ anomaly }: { anomaly: Anomaly }) {
       </div>
 
       {/* Insight */}
-      <div className="mt-1.5 text-[8px] font-mono text-amber-400/70 leading-tight">
+      <div className="mt-1.5 text-micro font-mono text-amber-400/70 leading-tight">
         {anomaly.insight}
       </div>
     </div>
@@ -214,14 +214,14 @@ export function MarketAnomaliesPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-white/[0.06] shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-white/[0.06] shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-amber-500" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-amber-500">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-amber-500">
             {tr('panelMarketAnomalies', 'Market Anomalies')}
           </span>
           {activeCount > 0 && (
-            <span className="text-[8px] font-mono font-bold px-1.5 py-px bg-amber-500/15 text-amber-400">
+            <span className="text-micro font-mono font-bold px-1.5 py-px bg-amber-500/15 text-amber-400">
               {activeCount} {tr('active', 'ACTIVE')}
             </span>
           )}
@@ -234,13 +234,13 @@ export function MarketAnomaliesPanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-amber-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-amber-400 text-mini font-mono uppercase animate-pulse">
             {tr('loading', 'Analyzing anomalies...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-white/20 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-white/20 text-mini font-mono uppercase">
             {tr('marketAnomaliesNoData', 'No anomaly data available')}
           </div>
         )}
@@ -250,14 +250,14 @@ export function MarketAnomaliesPanel() {
             {/* Active anomalies banner */}
             {data.activeNow.length > 0 && (
               <div className="px-3 py-2 border-b border-amber-500/20 bg-amber-500/[0.04]">
-                <div className="text-[7px] font-mono font-bold text-amber-500/60 uppercase tracking-widest mb-1">
+                <div className="text-micro font-mono font-bold text-amber-500/60 uppercase tracking-widest mb-1">
                   {tr('activeNow', 'Active Now')}
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {data.activeNow.map((name) => (
                     <span
                       key={name}
-                      className="text-[8px] font-mono font-bold px-1.5 py-0.5 text-amber-400 bg-amber-400/10 border border-amber-400/20"
+                      className="text-micro font-mono font-bold px-1.5 py-0.5 text-amber-400 bg-amber-400/10 border border-amber-400/20"
                     >
                       {name}
                     </span>
@@ -268,7 +268,7 @@ export function MarketAnomaliesPanel() {
 
             {/* Summary */}
             <div className="px-3 py-1.5 border-b border-white/[0.04]">
-              <div className="text-[8px] font-mono text-white/30 leading-tight">
+              <div className="text-micro font-mono text-white/30 leading-tight">
                 {data.summary}
               </div>
             </div>

@@ -21,7 +21,7 @@ function useTr() {
 
 // ── Constants ──
 
-const ACCENT = '#8b5cf6'; // violet-400
+const ACCENT = 'var(--color-violet-500)'; // violet-400
 type ViewMode = 'TABLE' | 'HEATMAP';
 type SortField =
   | 'symbol'
@@ -49,20 +49,20 @@ function ivRankColor(rank: number): string {
 }
 
 function ivRankBarGradient(rank: number): string {
-  if (rank >= 80) return '#ef4444';
-  if (rank >= 60) return '#f97316';
-  if (rank >= 40) return '#eab308';
-  if (rank >= 20) return '#22c55e';
-  return '#16a34a';
+  if (rank >= 80) return 'var(--color-red-500)';
+  if (rank >= 60) return 'var(--color-orange-500)';
+  if (rank >= 40) return 'var(--color-yellow-500)';
+  if (rank >= 20) return 'var(--color-green-500)';
+  return 'var(--color-green-600)';
 }
 
 function ivRankHeatColor(rank: number): string {
   // green (low) -> yellow (mid) -> red (high)
-  if (rank <= 20) return 'rgba(22,163,74,0.7)';
-  if (rank <= 40) return 'rgba(34,197,94,0.5)';
-  if (rank <= 60) return 'rgba(234,179,8,0.5)';
-  if (rank <= 80) return 'rgba(249,115,22,0.6)';
-  return 'rgba(239,68,68,0.7)';
+  if (rank <= 20) return 'color-mix(in srgb, var(--color-green-600) 70%, transparent)';
+  if (rank <= 40) return 'color-mix(in srgb, var(--color-green-500) 50%, transparent)';
+  if (rank <= 60) return 'color-mix(in srgb, var(--color-yellow-500) 50%, transparent)';
+  if (rank <= 80) return 'color-mix(in srgb, var(--color-orange-500) 60%, transparent)';
+  return 'color-mix(in srgb, var(--color-red-500) 70%, transparent)';
 }
 
 function spreadColor(spread: number): string {
@@ -115,7 +115,7 @@ function Sparkline({ data, width = 48, height = 16 }: { data: number[]; width?: 
 
   const lastVal = data[data.length - 1];
   const firstVal = data[0];
-  const color = lastVal >= firstVal ? '#8b5cf6' : '#ef4444';
+  const color = lastVal >= firstVal ? 'var(--color-violet-500)' : 'var(--color-red-500)';
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="inline-block">
@@ -209,10 +209,10 @@ export function IvRankPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-violet-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-violet-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-violet-400">
             {tr('panelIvRank', 'IV RANK / PERCENTILE')}
           </span>
         </div>
@@ -220,12 +220,12 @@ export function IvRankPanel() {
           {/* VIX badge */}
           {data && (
             <div className="flex items-center gap-1 px-1.5 py-0.5 bg-violet-500/10 border border-violet-500/20">
-              <span className="text-[7px] font-mono font-bold text-violet-300 uppercase tracking-wider">VIX</span>
-              <span className="text-[9px] font-mono font-black text-white">
+              <span className="text-micro font-mono font-bold text-violet-300 uppercase tracking-wider">VIX</span>
+              <span className="text-mini font-mono font-black text-white">
                 {data.marketIv.toFixed(2)}
               </span>
               <span
-                className={`text-[8px] font-mono font-bold ${
+                className={`text-micro font-mono font-bold ${
                   data.marketIvChange >= 0 ? 'text-red-400' : 'text-emerald-400'
                 }`}
               >
@@ -244,14 +244,14 @@ export function IvRankPanel() {
       </div>
 
       {/* Controls: view toggle + sector filter */}
-      <div className="flex items-center justify-between px-3 py-1 bg-[#030303] border-b border-border/20 shrink-0 gap-2">
+      <div className="flex items-center justify-between px-3 py-1 bg-raised border-b border-border/20 shrink-0 gap-2">
         {/* View toggle */}
         <div className="flex">
           {(['TABLE', 'HEATMAP'] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`px-2 py-0.5 text-[7px] font-mono font-bold uppercase tracking-wider border transition-colors ${
+              className={`px-2 py-0.5 text-micro font-mono font-bold uppercase tracking-wider border transition-colors ${
                 view === v
                   ? 'text-violet-400 bg-violet-500/10 border-violet-500/30'
                   : 'text-neutral-500 bg-transparent border-border/20 hover:text-neutral-300'
@@ -268,7 +268,7 @@ export function IvRankPanel() {
             <button
               key={s}
               onClick={() => setSector(s)}
-              className={`px-1.5 py-0.5 text-[7px] font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+              className={`px-1.5 py-0.5 text-micro font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
                 sector === s
                   ? 'text-violet-400 bg-violet-500/10'
                   : 'text-neutral-500 hover:text-neutral-300'
@@ -283,13 +283,13 @@ export function IvRankPanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-violet-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-violet-400 text-mini font-mono uppercase animate-pulse">
             {tr('loading', 'Loading...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral-500 text-mini font-mono uppercase">
             {tr('ivRankNoData', 'No IV data available')}
           </div>
         )}
@@ -333,7 +333,7 @@ function SortHeader({
   return (
     <button
       onClick={() => onSort(field)}
-      className={`text-[7px] font-black font-mono uppercase tracking-wider text-left cursor-pointer select-none transition-colors ${
+      className={`text-micro font-black font-mono uppercase tracking-wider text-left cursor-pointer select-none transition-colors ${
         isActive ? 'text-violet-400' : 'text-neutral-500'
       } hover:text-violet-300 ${className}`}
     >
@@ -366,7 +366,7 @@ function TableView({
         <SortHeader label="IV" field="currentIv" current={sortField} asc={sortAsc} onSort={onSort} className="text-right" />
         <SortHeader label={tr('ivRankRank', 'IV RANK')} field="ivRank" current={sortField} asc={sortAsc} onSort={onSort} className="text-right" />
         <SortHeader label={tr('ivRankPctile', 'IV %ILE')} field="ivPercentile" current={sortField} asc={sortAsc} onSort={onSort} className="text-right" />
-        <span className="text-[7px] font-black font-mono uppercase tracking-wider text-neutral-500 text-center">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500 text-center">
           {tr('ivRank52W', '52W RANGE')}
         </span>
         <SortHeader label="HV" field="hvCurrent" current={sortField} asc={sortAsc} onSort={onSort} className="text-right" />
@@ -375,7 +375,7 @@ function TableView({
         <SortHeader label={tr('ivRankTerm', 'TERM')} field="termStructure" current={sortField} asc={sortAsc} onSort={onSort} className="text-center" />
         <SortHeader label="P/C" field="putCallRatio" current={sortField} asc={sortAsc} onSort={onSort} className="text-right" />
         <SortHeader label={tr('ivRankSignal', 'SIGNAL')} field="signal" current={sortField} asc={sortAsc} onSort={onSort} className="text-center" />
-        <span className="text-[7px] font-black font-mono uppercase tracking-wider text-neutral-500 text-center">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500 text-center">
           {tr('ivRankSpark', 'SPARK')}
         </span>
       </div>
@@ -386,7 +386,7 @@ function TableView({
       ))}
 
       {entries.length === 0 && (
-        <div className="text-center py-6 text-neutral-500 text-[9px] font-mono uppercase">
+        <div className="text-center py-6 text-neutral-500 text-mini font-mono uppercase">
           {tr('ivRankNoResults', 'No entries match filter')}
         </div>
       )}
@@ -408,12 +408,12 @@ function TableRow({ entry: e }: { entry: IvRankEntry }) {
     <div className="grid grid-cols-[minmax(80px,1fr)_60px_70px_70px_90px_50px_55px_50px_60px_45px_52px_52px] px-2 py-1 border-b border-border/10 hover:bg-violet-400/[0.02] transition-colors items-center">
       {/* Symbol + Name */}
       <div className="min-w-0">
-        <div className="text-[9px] font-mono font-bold text-white truncate">{e.symbol}</div>
-        <div className="text-[7px] font-mono text-neutral-500 truncate">{e.name}</div>
+        <div className="text-mini font-mono font-bold text-white truncate">{e.symbol}</div>
+        <div className="text-micro font-mono text-neutral-500 truncate">{e.name}</div>
       </div>
 
       {/* IV */}
-      <div className={`text-[9px] font-mono font-bold text-right ${ivRankColor(e.ivRank)}`}>
+      <div className={`text-mini font-mono font-bold text-right ${ivRankColor(e.ivRank)}`}>
         {(e.currentIv * 100).toFixed(1)}%
       </div>
 
@@ -429,7 +429,7 @@ function TableRow({ entry: e }: { entry: IvRankEntry }) {
               }}
             />
           </div>
-          <span className={`text-[9px] font-mono font-black ${ivRankColor(e.ivRank)}`}>
+          <span className={`text-mini font-mono font-black ${ivRankColor(e.ivRank)}`}>
             {e.ivRank}
           </span>
         </div>
@@ -447,7 +447,7 @@ function TableRow({ entry: e }: { entry: IvRankEntry }) {
               }}
             />
           </div>
-          <span className={`text-[9px] font-mono font-black ${ivRankColor(e.ivPercentile)}`}>
+          <span className={`text-mini font-mono font-black ${ivRankColor(e.ivPercentile)}`}>
             {e.ivPercentile}
           </span>
         </div>
@@ -455,7 +455,7 @@ function TableRow({ entry: e }: { entry: IvRankEntry }) {
 
       {/* 52W Range */}
       <div className="flex items-center gap-1 px-1">
-        <span className="text-[7px] font-mono text-neutral-600">
+        <span className="text-micro font-mono text-neutral-600">
           {(e.iv52Low * 100).toFixed(0)}
         </span>
         <div className="flex-1 h-[5px] bg-white/[0.04] relative">
@@ -464,38 +464,38 @@ function TableRow({ entry: e }: { entry: IvRankEntry }) {
             style={{ left: `calc(${Math.min(Math.max(pos52, 2), 98)}% - 1.5px)` }}
           />
         </div>
-        <span className="text-[7px] font-mono text-neutral-600">
+        <span className="text-micro font-mono text-neutral-600">
           {(e.iv52High * 100).toFixed(0)}
         </span>
       </div>
 
       {/* HV */}
-      <div className="text-[9px] font-mono text-neutral-400 text-right">
+      <div className="text-mini font-mono text-neutral-400 text-right">
         {(e.hvCurrent * 100).toFixed(1)}%
       </div>
 
       {/* IV-HV Spread */}
-      <div className={`text-[9px] font-mono font-bold text-right ${spreadColor(e.ivHvSpread)}`}>
+      <div className={`text-mini font-mono font-bold text-right ${spreadColor(e.ivHvSpread)}`}>
         {e.ivHvSpread >= 0 ? '+' : ''}
         {(e.ivHvSpread * 100).toFixed(1)}
       </div>
 
       {/* Skew */}
-      <div className="text-[9px] font-mono text-neutral-400 text-right">
+      <div className="text-mini font-mono text-neutral-400 text-right">
         {e.skew.toFixed(2)}
       </div>
 
       {/* Term Structure */}
       <div className="flex justify-center">
         <span
-          className={`px-1 py-0 text-[6px] font-mono font-bold uppercase tracking-wider border ${term.cls}`}
+          className={`px-1 py-0 text-micro font-mono font-bold uppercase tracking-wider border ${term.cls}`}
         >
           {term.text}
         </span>
       </div>
 
       {/* P/C Ratio */}
-      <div className="text-[9px] font-mono text-neutral-400 text-right">
+      <div className="text-mini font-mono text-neutral-400 text-right">
         {e.putCallRatio.toFixed(2)}
       </div>
 
@@ -503,12 +503,12 @@ function TableRow({ entry: e }: { entry: IvRankEntry }) {
       <div className="flex justify-center">
         {sig ? (
           <span
-            className={`px-1 py-0 text-[6px] font-mono font-bold uppercase tracking-wider border ${sig.cls}`}
+            className={`px-1 py-0 text-micro font-mono font-bold uppercase tracking-wider border ${sig.cls}`}
           >
             {sig.text}
           </span>
         ) : (
-          <span className="text-[7px] font-mono text-neutral-600">--</span>
+          <span className="text-micro font-mono text-neutral-600">--</span>
         )}
       </div>
 
@@ -531,7 +531,7 @@ function HeatmapView({
 }) {
   if (entries.length === 0) {
     return (
-      <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
+      <div className="text-center py-8 text-neutral-500 text-mini font-mono uppercase">
         {tr('ivRankNoResults', 'No entries match filter')}
       </div>
     );
@@ -555,13 +555,13 @@ function HeatmapView({
                 backgroundColor: ivRankHeatColor(e.ivRank),
               }}
             >
-              <span className="text-[9px] font-mono font-black text-white leading-none">
+              <span className="text-mini font-mono font-black text-white leading-none">
                 {e.symbol}
               </span>
-              <span className="text-[11px] font-mono font-black text-white leading-tight">
+              <span className="text-xs font-mono font-black text-white leading-tight">
                 {e.ivRank}
               </span>
-              <span className="text-[7px] font-mono text-white/60 leading-none">
+              <span className="text-micro font-mono text-white/60 leading-none">
                 {(e.currentIv * 100).toFixed(1)}%
               </span>
             </div>
@@ -571,7 +571,7 @@ function HeatmapView({
 
       {/* Legend */}
       <div className="flex items-center justify-center gap-1 mt-3">
-        <span className="text-[7px] font-mono text-neutral-500">
+        <span className="text-micro font-mono text-neutral-500">
           {tr('ivRankLow', 'Low IV Rank')}
         </span>
         <div className="flex">
@@ -583,7 +583,7 @@ function HeatmapView({
             />
           ))}
         </div>
-        <span className="text-[7px] font-mono text-neutral-500">
+        <span className="text-micro font-mono text-neutral-500">
           {tr('ivRankHigh', 'High IV Rank')}
         </span>
       </div>

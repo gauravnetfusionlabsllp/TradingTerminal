@@ -115,15 +115,15 @@ function getLevelBgColor(type: string, tier: number): string {
 }
 
 function getSvgColor(type: string, tier: number): string {
-  if (type === 'pivot') return '#a5b4fc'; // indigo-300
+  if (type === 'pivot') return 'var(--color-indigo-300)'; // indigo-300
   if (type === 'resistance') {
-    if (tier >= 3) return '#f87171'; // red-400
-    if (tier === 2) return '#fca5a5'; // red-300
-    return '#fecaca'; // red-200
+    if (tier >= 3) return 'var(--color-red-400)'; // red-400
+    if (tier === 2) return 'var(--color-red-300)'; // red-300
+    return 'var(--color-red-200)'; // red-200
   }
-  if (tier >= 3) return '#34d399'; // emerald-400
-  if (tier === 2) return '#6ee7b7'; // emerald-300
-  return '#a7f3d0'; // emerald-200
+  if (tier >= 3) return 'var(--color-emerald-400)'; // emerald-400
+  if (tier === 2) return 'var(--color-emerald-300)'; // emerald-300
+  return 'var(--color-emerald-200)'; // emerald-200
 }
 
 const METHOD_TABS: { key: MethodKey; labelKey: 'ppClassic' | 'ppFibonacci' | 'ppCamarilla' | 'ppWoodie' | 'ppDeMark' }[] = [
@@ -196,7 +196,7 @@ function PriceLadder({ levels, currentPrice }: { levels: LevelRow[]; currentPric
               textAnchor="end"
               fill={color}
               fontSize="9"
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight={level.type === 'pivot' ? 'bold' : 'normal'}
             >
               {level.label}
@@ -207,7 +207,7 @@ function PriceLadder({ levels, currentPrice }: { levels: LevelRow[]; currentPric
               textAnchor="start"
               fill={color}
               fontSize="8.5"
-              fontFamily="monospace"
+              fontFamily="inherit"
               opacity={0.9}
             >
               {formatPrice(level.price)}
@@ -222,22 +222,22 @@ function PriceLadder({ levels, currentPrice }: { levels: LevelRow[]; currentPric
         y1={currentY}
         x2={lineEnd}
         y2={currentY}
-        stroke="#818cf8"
+        stroke="var(--color-indigo-400)"
         strokeWidth={2}
         opacity={0.9}
       />
       {/* Arrow marker */}
       <polygon
         points={`${lineStart - 2},${currentY - 5} ${lineStart + 6},${currentY} ${lineStart - 2},${currentY + 5}`}
-        fill="#818cf8"
+        fill="var(--color-indigo-400)"
       />
       <text
         x={lineEnd + 4}
         y={currentY + 3}
         textAnchor="start"
-        fill="#818cf8"
+        fill="var(--color-indigo-400)"
         fontSize="9"
-        fontFamily="monospace"
+        fontFamily="inherit"
         fontWeight="bold"
       >
         {formatPrice(currentPrice)}
@@ -277,7 +277,7 @@ function ComparisonTable({ data, t }: { data: PivotPointsData; t: (k: any) => st
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[10px] font-mono">
+      <table className="w-full text-mini font-mono">
         <thead>
           <tr className="border-b border-white/5">
             <th className="text-left py-1 px-1.5 text-neutral-500 font-normal">Level</th>
@@ -334,12 +334,12 @@ export function PivotPointsPanel() {
       <div className="flex flex-col h-full bg-black">
         <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
           <Crosshair className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="text-[11px] font-mono font-semibold tracking-widest text-neutral-300 uppercase">
+          <span className="text-xs font-mono font-semibold tracking-widest text-neutral-300 uppercase">
             {t('panelPivotPoints')}
           </span>
         </div>
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+          <span className="text-mini font-mono text-neutral-500 uppercase tracking-widest">
             {t('ppNoSymbol')}
           </span>
         </div>
@@ -353,10 +353,10 @@ export function PivotPointsPanel() {
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 shrink-0">
         <div className="flex items-center gap-2">
           <Crosshair className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="text-[11px] font-mono font-semibold tracking-widest text-neutral-300 uppercase">
+          <span className="text-xs font-mono font-semibold tracking-widest text-neutral-300 uppercase">
             {t('panelPivotPoints')}
           </span>
-          <span className="text-[10px] font-mono text-indigo-400">{symbol}</span>
+          <span className="text-mini font-mono text-indigo-400">{symbol}</span>
         </div>
         <button
           onClick={handleRefresh}
@@ -375,7 +375,7 @@ export function PivotPointsPanel() {
       )}
       {isError && !isLoading && (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[10px] font-mono text-red-400/70 uppercase tracking-widest">{t('ppNoData')}</span>
+          <span className="text-mini font-mono text-red-400/70 uppercase tracking-widest">{t('ppNoData')}</span>
         </div>
       )}
 
@@ -386,9 +386,9 @@ export function PivotPointsPanel() {
           <div className="px-3 py-2 border-b border-white/5">
             <div className="flex items-baseline gap-3 mb-1.5">
               <span className="text-lg font-mono font-bold text-white">{formatPrice(data.currentPrice)}</span>
-              <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider">Current</span>
+              <span className="text-mini font-mono text-neutral-500 uppercase tracking-wider">Current</span>
             </div>
-            <div className="flex items-center gap-1 text-[9px] font-mono text-neutral-500 uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-1 text-mini font-mono text-neutral-500 uppercase tracking-wider mb-1">
               {t('ppPrevOHLC')}
             </div>
             <div className="grid grid-cols-4 gap-2">
@@ -399,8 +399,8 @@ export function PivotPointsPanel() {
                 { label: 'C', value: data.previousClose },
               ].map(({ label, value }) => (
                 <div key={label} className="flex flex-col items-center py-1 rounded bg-white/[0.03]">
-                  <span className="text-[8px] font-mono text-neutral-500">{label}</span>
-                  <span className="text-[10px] font-mono text-neutral-300">{formatPrice(value)}</span>
+                  <span className="text-micro font-mono text-neutral-500">{label}</span>
+                  <span className="text-mini font-mono text-neutral-300">{formatPrice(value)}</span>
                 </div>
               ))}
             </div>
@@ -412,7 +412,7 @@ export function PivotPointsPanel() {
               <button
                 key={tab.key}
                 onClick={() => setActiveMethod(tab.key)}
-                className={`flex-1 min-w-0 px-2 py-1.5 text-[9px] font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
+                className={`flex-1 min-w-0 px-2 py-1.5 text-mini font-mono uppercase tracking-wider transition-colors whitespace-nowrap ${
                   activeMethod === tab.key
                     ? 'text-indigo-400 border-b border-indigo-400 bg-indigo-400/5'
                     : 'text-neutral-500 hover:text-neutral-300'
@@ -425,7 +425,7 @@ export function PivotPointsPanel() {
 
           {/* Levels Table */}
           <div className="px-2 py-1.5">
-            <table className="w-full text-[10px] font-mono">
+            <table className="w-full text-mini font-mono">
               <thead>
                 <tr className="text-neutral-500">
                   <th className="text-left py-0.5 px-1.5 font-normal">Level</th>
@@ -470,7 +470,7 @@ export function PivotPointsPanel() {
 
           {/* Visual Price Ladder */}
           <div className="px-3 py-2 border-t border-white/5">
-            <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider mb-1">Price Ladder</div>
+            <div className="text-mini font-mono text-neutral-500 uppercase tracking-wider mb-1">Price Ladder</div>
             <div className="bg-white/[0.02] rounded border border-white/5 p-1">
               <PriceLadder levels={levels} currentPrice={data.currentPrice} />
             </div>
@@ -478,7 +478,7 @@ export function PivotPointsPanel() {
 
           {/* All Methods Comparison */}
           <div className="px-3 py-2 border-t border-white/5">
-            <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider mb-1.5">All Methods</div>
+            <div className="text-mini font-mono text-neutral-500 uppercase tracking-wider mb-1.5">All Methods</div>
             <div className="bg-white/[0.02] rounded border border-white/5 p-1.5">
               <ComparisonTable data={data} t={t} />
             </div>

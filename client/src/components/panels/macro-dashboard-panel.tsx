@@ -87,9 +87,9 @@ function TrendArrow({ positive }: { positive: boolean }) {
   return (
     <svg width="6" height="5" viewBox="0 0 6 5" className="shrink-0 inline-block">
       {positive ? (
-        <path d="M3 0 L6 5 L0 5 Z" fill="#22c55e" />
+        <path d="M3 0 L6 5 L0 5 Z" fill="var(--color-green-500)" />
       ) : (
-        <path d="M3 5 L6 0 L0 0 Z" fill="#ef4444" />
+        <path d="M3 5 L6 0 L0 0 Z" fill="var(--color-red-500)" />
       )}
     </svg>
   );
@@ -102,7 +102,7 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
     <div className="flex items-center gap-1.5 px-2 py-1 border-b border-border/15">
       <div className="w-1 h-1 shrink-0" style={{ backgroundColor: color }} />
       <span
-        className="text-[7px] font-black font-mono uppercase tracking-widest"
+        className="text-micro font-black font-mono uppercase tracking-widest"
         style={{ color }}
       >
         {title}
@@ -125,7 +125,7 @@ function IndexCard({ item }: { item: MacroQuoteItem }) {
       />
       <div className="relative z-10">
         <div className="flex items-center justify-between">
-          <span className="text-[7px] font-mono font-black text-neutral-500 uppercase tracking-tight truncate">
+          <span className="text-micro font-mono font-black text-neutral-500 uppercase tracking-tight truncate">
             {item.name}
           </span>
           <TrendArrow positive={isUp} />
@@ -134,10 +134,10 @@ function IndexCard({ item }: { item: MacroQuoteItem }) {
           {fmtPrice(item.price)}
         </div>
         <div className="flex items-center gap-1.5">
-          <span className={`text-[8px] font-mono font-bold tabular-nums ${pctColor(item.changePct)}`}>
+          <span className={`text-micro font-mono font-bold tabular-nums ${pctColor(item.changePct)}`}>
             {fmtPct(item.changePct)}
           </span>
-          <span className="text-[7px] font-mono text-neutral-600 tabular-nums">
+          <span className="text-micro font-mono text-neutral-600 tabular-nums">
             {fmtChange(item.change)}
           </span>
         </div>
@@ -160,13 +160,13 @@ function YieldRow({ item }: { item: MacroQuoteItem }) {
   return (
     <div className="flex items-center justify-between px-2 py-1 border-b border-border/10 hover:bg-white/[0.02]">
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-[8px] font-mono font-bold text-blue-300 truncate">{item.name}</span>
+        <span className="text-micro font-mono font-bold text-blue-300 truncate">{item.name}</span>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <span className="text-[9px] font-mono font-bold text-white tabular-nums">
+        <span className="text-mini font-mono font-bold text-white tabular-nums">
           {isYield ? fmtYield(item.price) : fmtPrice(item.price)}
         </span>
-        <span className={`text-[8px] font-mono font-bold tabular-nums w-[52px] text-right ${colorClass}`}>
+        <span className={`text-micro font-mono font-bold tabular-nums w-[52px] text-right ${colorClass}`}>
           {isYield ? fmtBps(item.change) : fmtPct(item.changePct)}
         </span>
       </div>
@@ -186,10 +186,10 @@ function CommodityRow({ item }: { item: MacroQuoteItem }) {
         className={`absolute inset-0 ${isUp ? 'bg-emerald-500' : 'bg-red-500'}`}
         style={{ opacity: heat * 0.04 }}
       />
-      <span className="text-[8px] font-mono font-bold text-blue-300 relative z-10 truncate">{item.name}</span>
+      <span className="text-micro font-mono font-bold text-blue-300 relative z-10 truncate">{item.name}</span>
       <div className="flex items-center gap-2 shrink-0 relative z-10">
-        <span className="text-[9px] font-mono font-bold text-white tabular-nums">{fmtPrice(item.price)}</span>
-        <span className={`text-[8px] font-mono font-bold tabular-nums w-[48px] text-right ${pctColor(item.changePct)}`}>
+        <span className="text-mini font-mono font-bold text-white tabular-nums">{fmtPrice(item.price)}</span>
+        <span className={`text-micro font-mono font-bold tabular-nums w-[48px] text-right ${pctColor(item.changePct)}`}>
           {fmtPct(item.changePct)}
         </span>
       </div>
@@ -202,10 +202,10 @@ function CommodityRow({ item }: { item: MacroQuoteItem }) {
 function FxRow({ item }: { item: MacroQuoteItem }) {
   return (
     <div className="flex items-center justify-between px-2 py-1 border-b border-border/10 hover:bg-white/[0.02]">
-      <span className="text-[8px] font-mono font-bold text-blue-300 truncate">{item.name}</span>
+      <span className="text-micro font-mono font-bold text-blue-300 truncate">{item.name}</span>
       <div className="flex items-center gap-2 shrink-0">
-        <span className="text-[9px] font-mono font-bold text-white tabular-nums">{fmtPrice(item.price)}</span>
-        <span className={`text-[8px] font-mono font-bold tabular-nums w-[48px] text-right ${pctColor(item.changePct)}`}>
+        <span className="text-mini font-mono font-bold text-white tabular-nums">{fmtPrice(item.price)}</span>
+        <span className={`text-micro font-mono font-bold tabular-nums w-[48px] text-right ${pctColor(item.changePct)}`}>
           {fmtPct(item.changePct)}
         </span>
       </div>
@@ -222,18 +222,18 @@ function VixGauge({ vix, percentile }: { vix: number; percentile: number }) {
   const fillW = (percentile / 100) * (W - 4);
 
   // Color stops
-  const fillColor = vix < 15 ? '#22c55e' : vix <= 25 ? '#eab308' : '#ef4444';
+  const fillColor = vix < 15 ? 'var(--color-green-500)' : vix <= 25 ? 'var(--color-yellow-500)' : 'var(--color-red-500)';
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 14 }}>
       {/* Track */}
-      <rect x="0" y="2" width={W} height={H - 4} fill="rgba(255,255,255,0.04)" />
+      <rect x="0" y="2" width={W} height={H - 4} fill="color-mix(in srgb, var(--color-white) 4%, transparent)" />
       {/* Fill */}
       <rect x="2" y="3" width={Math.max(fillW, 2)} height={H - 6} fill={fillColor} opacity={0.7} />
       {/* Zone markers */}
-      <line x1={W * 0.2} y1="0" x2={W * 0.2} y2={H} stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-      <line x1={W * 0.5} y1="0" x2={W * 0.5} y2={H} stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-      <line x1={W * 0.8} y1="0" x2={W * 0.8} y2={H} stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+      <line x1={W * 0.2} y1="0" x2={W * 0.2} y2={H} stroke="color-mix(in srgb, var(--color-white) 8%, transparent)" strokeWidth="0.5" />
+      <line x1={W * 0.5} y1="0" x2={W * 0.5} y2={H} stroke="color-mix(in srgb, var(--color-white) 8%, transparent)" strokeWidth="0.5" />
+      <line x1={W * 0.8} y1="0" x2={W * 0.8} y2={H} stroke="color-mix(in srgb, var(--color-white) 8%, transparent)" strokeWidth="0.5" />
     </svg>
   );
 }
@@ -250,50 +250,50 @@ function DerivedMetrics({ data }: { data: MacroDashboardData }) {
       <div className="grid grid-cols-2 gap-x-3 gap-y-1">
         {/* Yield Spread */}
         <div className="flex items-center justify-between">
-          <span className="text-[7px] font-mono text-neutral-500 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral-500 uppercase tracking-wider">
             {tr(t, 'mdYieldSpread', '2Y/10Y Spread')}
           </span>
-          <span className={`text-[8px] font-mono font-bold tabular-nums ${curveColor(derived.yieldCurveStatus)}`}>
+          <span className={`text-micro font-mono font-bold tabular-nums ${curveColor(derived.yieldCurveStatus)}`}>
             {derived.yieldSpread != null ? `${derived.yieldSpread > 0 ? '+' : ''}${derived.yieldSpread.toFixed(2)}%` : '--'}
           </span>
         </div>
 
         {/* Yield Curve Status */}
         <div className="flex items-center justify-between">
-          <span className="text-[7px] font-mono text-neutral-500 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral-500 uppercase tracking-wider">
             {tr(t, 'mdCurveStatus', 'Yield Curve')}
           </span>
-          <span className={`text-[7px] font-mono font-black uppercase ${curveColor(derived.yieldCurveStatus)}`}>
+          <span className={`text-micro font-mono font-black uppercase ${curveColor(derived.yieldCurveStatus)}`}>
             {derived.yieldCurveStatus}
           </span>
         </div>
 
         {/* Gold/Oil Ratio */}
         <div className="flex items-center justify-between">
-          <span className="text-[7px] font-mono text-neutral-500 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral-500 uppercase tracking-wider">
             {tr(t, 'mdGoldOil', 'Gold/Oil')}
           </span>
-          <span className="text-[8px] font-mono font-bold text-blue-300 tabular-nums">
+          <span className="text-micro font-mono font-bold text-blue-300 tabular-nums">
             {derived.goldOilRatio != null ? derived.goldOilRatio.toFixed(1) : '--'}
           </span>
         </div>
 
         {/* Copper/Gold Ratio */}
         <div className="flex items-center justify-between">
-          <span className="text-[7px] font-mono text-neutral-500 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral-500 uppercase tracking-wider">
             {tr(t, 'mdCopperGold', 'Cu/Au')}
           </span>
-          <span className="text-[8px] font-mono font-bold text-blue-300 tabular-nums">
+          <span className="text-micro font-mono font-bold text-blue-300 tabular-nums">
             {derived.copperGoldRatio != null ? derived.copperGoldRatio.toFixed(5) : '--'}
           </span>
         </div>
 
         {/* Real Yield */}
         <div className="flex items-center justify-between">
-          <span className="text-[7px] font-mono text-neutral-500 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral-500 uppercase tracking-wider">
             {tr(t, 'mdRealYield', 'Real Yield Est')}
           </span>
-          <span className={`text-[8px] font-mono font-bold tabular-nums ${
+          <span className={`text-micro font-mono font-bold tabular-nums ${
             derived.realYieldEstimate != null && derived.realYieldEstimate > 0 ? 'text-emerald-400' : 'text-red-400'
           }`}>
             {derived.realYieldEstimate != null ? `${derived.realYieldEstimate > 0 ? '+' : ''}${derived.realYieldEstimate.toFixed(2)}%` : '--'}
@@ -302,10 +302,10 @@ function DerivedMetrics({ data }: { data: MacroDashboardData }) {
 
         {/* Dollar Index */}
         <div className="flex items-center justify-between">
-          <span className="text-[7px] font-mono text-neutral-500 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral-500 uppercase tracking-wider">
             {tr(t, 'mdDollarIdx', 'DXY')}
           </span>
-          <span className="text-[8px] font-mono font-bold text-white tabular-nums">
+          <span className="text-micro font-mono font-bold text-white tabular-nums">
             {derived.dollarIndex != null ? derived.dollarIndex.toFixed(2) : '--'}
           </span>
         </div>
@@ -328,35 +328,35 @@ function RiskGauges({ data }: { data: MacroDashboardData }) {
       {/* VIX */}
       <div className="mb-1.5">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="text-[7px] font-mono font-black text-neutral-500 uppercase tracking-widest">
+          <span className="text-micro font-mono font-black text-neutral-500 uppercase tracking-widest">
             {tr(t, 'mdVix', 'VIX')}
           </span>
           <div className="flex items-center gap-1.5">
-            <span className={`text-[11px] font-mono font-black tabular-nums ${vixColor(volatility.vix)}`}>
+            <span className={`text-xs font-mono font-black tabular-nums ${vixColor(volatility.vix)}`}>
               {volatility.vix.toFixed(1)}
             </span>
-            <span className={`text-[8px] font-mono font-bold tabular-nums ${pctColor(-volatility.changePct)}`}>
+            <span className={`text-micro font-mono font-bold tabular-nums ${pctColor(-volatility.changePct)}`}>
               {fmtPct(volatility.changePct)}
             </span>
           </div>
         </div>
         <VixGauge vix={volatility.vix} percentile={volatility.percentile} />
         <div className="flex items-center justify-between mt-0.5">
-          <span className="text-[6px] font-mono text-emerald-600">LOW</span>
-          <span className="text-[6px] font-mono text-neutral-600 tabular-nums">
+          <span className="text-micro font-mono text-emerald-600">LOW</span>
+          <span className="text-micro font-mono text-neutral-600 tabular-nums">
             {tr(t, 'mdPercentile', 'Pctl')}: {volatility.percentile}
           </span>
-          <span className="text-[6px] font-mono text-red-600">HIGH</span>
+          <span className="text-micro font-mono text-red-600">HIGH</span>
         </div>
       </div>
 
       {/* Risk Appetite Badge */}
       <div className={`flex items-center gap-2 px-2 py-1 border border-border/20 ${risk.bg} mb-1.5`}>
         <div className={`w-1.5 h-1.5 shrink-0 animate-pulse ${risk.dot}`} />
-        <span className={`text-[9px] font-mono font-black uppercase tracking-tight ${risk.text}`}>
+        <span className={`text-mini font-mono font-black uppercase tracking-tight ${risk.text}`}>
           {derived.riskAppetite}
         </span>
-        <span className="text-[7px] font-mono text-neutral-600 ml-auto uppercase">
+        <span className="text-micro font-mono text-neutral-600 ml-auto uppercase">
           {tr(t, 'mdRiskAppetite', 'Risk Appetite')}
         </span>
       </div>
@@ -365,24 +365,24 @@ function RiskGauges({ data }: { data: MacroDashboardData }) {
       <div className="grid grid-cols-2 gap-1">
         {btc && (
           <div className="flex flex-col px-2 py-1 border border-border/20 bg-black/40">
-            <span className="text-[6px] font-mono text-neutral-600 uppercase tracking-wider">BTC</span>
-            <span className="text-[10px] font-mono font-bold text-white tabular-nums leading-tight">
+            <span className="text-micro font-mono text-neutral-600 uppercase tracking-wider">BTC</span>
+            <span className="text-mini font-mono font-bold text-white tabular-nums leading-tight">
               {fmtPrice(btc.price)}
             </span>
-            <span className={`text-[8px] font-mono font-bold tabular-nums ${pctColor(btc.changePct)}`}>
+            <span className={`text-micro font-mono font-bold tabular-nums ${pctColor(btc.changePct)}`}>
               {fmtPct(btc.changePct)}
             </span>
           </div>
         )}
         {vnq && (
           <div className="flex flex-col px-2 py-1 border border-border/20 bg-black/40">
-            <span className="text-[6px] font-mono text-neutral-600 uppercase tracking-wider">
+            <span className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
               {tr(t, 'mdReit', 'REIT')}
             </span>
-            <span className="text-[10px] font-mono font-bold text-white tabular-nums leading-tight">
+            <span className="text-mini font-mono font-bold text-white tabular-nums leading-tight">
               {fmtPrice(vnq.price)}
             </span>
-            <span className={`text-[8px] font-mono font-bold tabular-nums ${pctColor(vnq.changePct)}`}>
+            <span className={`text-micro font-mono font-bold tabular-nums ${pctColor(vnq.changePct)}`}>
               {fmtPct(vnq.changePct)}
             </span>
           </div>
@@ -409,11 +409,11 @@ function SummaryBar({ data }: { data: MacroDashboardData }) {
   const risk = riskColor(data.derived.riskAppetite);
 
   return (
-    <div className="flex items-center gap-2 px-2 py-1 border-b border-border/30 bg-[#050505] overflow-x-auto no-scrollbar shrink-0">
+    <div className="flex items-center gap-2 px-2 py-1 border-b border-border/30 bg-raised overflow-x-auto no-scrollbar shrink-0">
       {/* Risk badge */}
       <div className={`flex items-center gap-1 px-1.5 py-0.5 shrink-0 border border-border/20 ${risk.bg}`}>
         <div className={`w-1 h-1 shrink-0 animate-pulse ${risk.dot}`} />
-        <span className={`text-[8px] font-mono font-black tracking-tight ${risk.text}`}>
+        <span className={`text-micro font-mono font-black tracking-tight ${risk.text}`}>
           {data.derived.riskAppetite.toUpperCase()}
         </span>
       </div>
@@ -422,8 +422,8 @@ function SummaryBar({ data }: { data: MacroDashboardData }) {
 
       {/* VIX */}
       <div className="flex items-center gap-1 shrink-0">
-        <span className="text-[7px] font-mono text-neutral-600">VIX</span>
-        <span className={`text-[8px] font-mono font-bold ${vixColor(data.volatility.vix)}`}>
+        <span className="text-micro font-mono text-neutral-600">VIX</span>
+        <span className={`text-micro font-mono font-bold ${vixColor(data.volatility.vix)}`}>
           {data.volatility.vix.toFixed(1)}
         </span>
       </div>
@@ -432,16 +432,16 @@ function SummaryBar({ data }: { data: MacroDashboardData }) {
 
       {/* Breadth */}
       <div className="flex items-center gap-1.5 shrink-0">
-        <span className="text-[8px] font-mono text-bullish font-bold">{up}A</span>
-        <span className="text-[8px] font-mono text-bearish font-bold">{down}D</span>
+        <span className="text-micro font-mono text-bullish font-bold">{up}A</span>
+        <span className="text-micro font-mono text-bearish font-bold">{down}D</span>
       </div>
 
       <div className="w-px h-3 bg-border/30 shrink-0" />
 
       {/* Yield curve */}
       <div className="flex items-center gap-1 shrink-0">
-        <span className="text-[7px] font-mono text-neutral-600">CURVE</span>
-        <span className={`text-[7px] font-mono font-black ${curveColor(data.derived.yieldCurveStatus)}`}>
+        <span className="text-micro font-mono text-neutral-600">CURVE</span>
+        <span className={`text-micro font-mono font-black ${curveColor(data.derived.yieldCurveStatus)}`}>
           {data.derived.yieldCurveStatus.toUpperCase()}
         </span>
       </div>
@@ -451,8 +451,8 @@ function SummaryBar({ data }: { data: MacroDashboardData }) {
         <>
           <div className="w-px h-3 bg-border/30 shrink-0" />
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-[7px] font-mono text-neutral-600">DXY</span>
-            <span className="text-[8px] font-mono font-bold text-white">{data.derived.dollarIndex.toFixed(1)}</span>
+            <span className="text-micro font-mono text-neutral-600">DXY</span>
+            <span className="text-micro font-mono font-bold text-white">{data.derived.dollarIndex.toFixed(1)}</span>
           </div>
         </>
       )}
@@ -503,11 +503,11 @@ function YieldCurveMini({ bonds }: { bonds: MacroQuoteItem[] }) {
   return (
     <div className="px-2 py-1 border-b border-border/15">
       <div className="flex items-center justify-between mb-0.5">
-        <span className="text-[7px] font-mono font-black text-neutral-500 uppercase tracking-widest">
+        <span className="text-micro font-mono font-black text-neutral-500 uppercase tracking-widest">
           {tr(t, 'mdYieldCurve', 'Yield Curve')}
         </span>
         {isInverted && (
-          <span className="text-[6px] font-mono font-black text-red-400 uppercase tracking-wider px-1 py-0.5 bg-red-500/10 border border-red-500/20">
+          <span className="text-micro font-mono font-black text-red-400 uppercase tracking-wider px-1 py-0.5 bg-red-500/10 border border-red-500/20">
             {tr(t, 'mdInverted', 'INVERTED')}
           </span>
         )}
@@ -521,22 +521,22 @@ function YieldCurveMini({ bonds }: { bonds: MacroQuoteItem[] }) {
             y1={H - PAD - pct * (H - PAD * 2)}
             x2={W - PAD}
             y2={H - PAD - pct * (H - PAD * 2)}
-            stroke="rgba(255,255,255,0.04)"
+            stroke="color-mix(in srgb, var(--color-white) 4%, transparent)"
             strokeWidth="0.5"
           />
         ))}
 
         {/* Curve line */}
-        <path d={pathD} fill="none" stroke={isInverted ? '#ef4444' : '#60a5fa'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={pathD} fill="none" stroke={isInverted ? 'var(--color-red-500)' : 'var(--color-blue-400)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 
         {/* Points + labels */}
         {svgPoints.map((p) => (
           <g key={p.label}>
-            <circle cx={p.x} cy={p.y} r="2.5" fill={isInverted ? '#ef4444' : '#60a5fa'} />
-            <text x={p.x} y={H - 1} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="5.5" fontFamily="monospace">
+            <circle cx={p.x} cy={p.y} r="2.5" fill={isInverted ? 'var(--color-red-500)' : 'var(--color-blue-400)'} />
+            <text x={p.x} y={H - 1} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="5.5" fontFamily="inherit">
               {p.label}
             </text>
-            <text x={p.x} y={p.y - 5} textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="5.5" fontFamily="monospace" fontWeight="bold">
+            <text x={p.x} y={p.y - 5} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 60%, transparent)" fontSize="5.5" fontFamily="inherit" fontWeight="bold">
               {p.value.toFixed(2)}
             </text>
           </g>
@@ -555,21 +555,21 @@ export function MacroDashboardPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <svg width="14" height="14" viewBox="0 0 14 14" className="shrink-0">
-            <rect x="0" y="4" width="3" height="10" fill="#60a5fa" opacity="0.9" />
-            <rect x="4" y="2" width="3" height="12" fill="#60a5fa" opacity="0.7" />
-            <rect x="8" y="6" width="3" height="8" fill="#60a5fa" opacity="0.5" />
-            <rect x="12" y="0" width="2" height="14" fill="#60a5fa" opacity="0.3" />
+            <rect x="0" y="4" width="3" height="10" fill="var(--color-blue-400)" opacity="0.9" />
+            <rect x="4" y="2" width="3" height="12" fill="var(--color-blue-400)" opacity="0.7" />
+            <rect x="8" y="6" width="3" height="8" fill="var(--color-blue-400)" opacity="0.5" />
+            <rect x="12" y="0" width="2" height="14" fill="var(--color-blue-400)" opacity="0.3" />
           </svg>
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-blue-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-blue-400">
             {tr(t, 'mdTitle', 'Macro Dashboard')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {data?.timestamp && (
-            <span className="text-[7px] font-mono text-neutral-600">
+            <span className="text-micro font-mono text-neutral-600">
               {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -585,7 +585,7 @@ export function MacroDashboardPanel() {
       {/* Loading */}
       {isLoading && !data && (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[9px] font-mono text-blue-400 uppercase animate-pulse">
+          <span className="text-mini font-mono text-blue-400 uppercase animate-pulse">
             {tr(t, 'loading', 'Loading...')}
           </span>
         </div>
@@ -594,7 +594,7 @@ export function MacroDashboardPanel() {
       {/* No data */}
       {!data && !isLoading && (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[9px] font-mono text-neutral-600 uppercase">
+          <span className="text-mini font-mono text-neutral-600 uppercase">
             {tr(t, 'noData', 'No data')}
           </span>
         </div>
@@ -604,7 +604,7 @@ export function MacroDashboardPanel() {
       {data && (
         <div className="flex-1 overflow-auto no-scrollbar">
           {/* Section 1: Market Indices */}
-          <SectionHeader title={tr(t, 'mdIndices', 'Market Indices')} color="#60a5fa" />
+          <SectionHeader title={tr(t, 'mdIndices', 'Market Indices')} color="var(--color-blue-400)" />
           <div className="flex flex-wrap gap-1 px-1.5 py-1">
             {data.indices.map((item) => (
               <IndexCard key={item.symbol} item={item} />
@@ -612,45 +612,45 @@ export function MacroDashboardPanel() {
           </div>
 
           {/* Section 2: Rates & Bonds */}
-          <SectionHeader title={tr(t, 'mdBonds', 'Rates & Bonds')} color="#8b5cf6" />
+          <SectionHeader title={tr(t, 'mdBonds', 'Rates & Bonds')} color="var(--color-violet-500)" />
           <YieldCurveMini bonds={data.bonds} />
           {data.bonds.map((item) => (
             <YieldRow key={item.symbol} item={item} />
           ))}
 
           {/* Section 3: Commodities */}
-          <SectionHeader title={tr(t, 'mdCommodities', 'Commodities')} color="#f59e0b" />
+          <SectionHeader title={tr(t, 'mdCommodities', 'Commodities')} color="var(--color-amber-500)" />
           {data.commodities.map((item) => (
             <CommodityRow key={item.symbol} item={item} />
           ))}
           {/* Derived commodity ratios */}
           <div className="flex items-center gap-3 px-2 py-1 border-b border-border/10 bg-black/40">
             <div className="flex items-center gap-1">
-              <span className="text-[6px] font-mono text-neutral-600 uppercase">Au/Oil</span>
-              <span className="text-[8px] font-mono font-bold text-amber-400 tabular-nums">
+              <span className="text-micro font-mono text-neutral-600 uppercase">Au/Oil</span>
+              <span className="text-micro font-mono font-bold text-amber-400 tabular-nums">
                 {data.derived.goldOilRatio != null ? data.derived.goldOilRatio.toFixed(1) : '--'}
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-[6px] font-mono text-neutral-600 uppercase">Cu/Au</span>
-              <span className="text-[8px] font-mono font-bold text-cyan-400 tabular-nums">
+              <span className="text-micro font-mono text-neutral-600 uppercase">Cu/Au</span>
+              <span className="text-micro font-mono font-bold text-cyan-400 tabular-nums">
                 {data.derived.copperGoldRatio != null ? data.derived.copperGoldRatio.toFixed(5) : '--'}
               </span>
             </div>
           </div>
 
           {/* Section 4: FX */}
-          <SectionHeader title={tr(t, 'mdFx', 'Foreign Exchange')} color="#06b6d4" />
+          <SectionHeader title={tr(t, 'mdFx', 'Foreign Exchange')} color="var(--color-cyan-500)" />
           {data.fx.map((item) => (
             <FxRow key={item.symbol} item={item} />
           ))}
 
           {/* Section 5: Risk Gauges */}
-          <SectionHeader title={tr(t, 'mdRisk', 'Risk Gauges')} color="#a855f7" />
+          <SectionHeader title={tr(t, 'mdRisk', 'Risk Gauges')} color="var(--color-purple-500)" />
           <RiskGauges data={data} />
 
           {/* Section 6: Derived Metrics */}
-          <SectionHeader title={tr(t, 'mdDerived', 'Derived Metrics')} color="#64748b" />
+          <SectionHeader title={tr(t, 'mdDerived', 'Derived Metrics')} color="var(--color-slate-500)" />
           <DerivedMetrics data={data} />
 
           {/* Bottom padding */}

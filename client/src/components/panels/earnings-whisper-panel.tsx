@@ -133,8 +133,8 @@ function SeasonStatsBar({ stats }: { stats: SeasonStats }) {
     <div className="grid grid-cols-7 gap-px bg-yellow-400/[0.05]">
       {items.map((item) => (
         <div key={item.label} className="bg-black px-1.5 py-1">
-          <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider truncate">{item.label}</div>
-          <div className={`text-[10px] font-mono font-bold ${item.color}`}>{item.value}</div>
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider truncate">{item.label}</div>
+          <div className={`text-mini font-mono font-bold ${item.color}`}>{item.value}</div>
         </div>
       ))}
     </div>
@@ -151,7 +151,7 @@ function UpcomingTable({ upcoming }: { upcoming: UpcomingEarning[] }) {
 
   if (sorted.length === 0) {
     return (
-      <div className="text-center text-neutral/30 text-[9px] font-mono py-4 uppercase tracking-wider">
+      <div className="text-center text-neutral/30 text-mini font-mono py-4 uppercase tracking-wider">
         NO UPCOMING EARNINGS
       </div>
     );
@@ -161,7 +161,7 @@ function UpcomingTable({ upcoming }: { upcoming: UpcomingEarning[] }) {
 
   return (
     <div className="border border-yellow-400/10 overflow-x-auto">
-      <table className="w-full text-[9px] font-mono">
+      <table className="w-full text-mini font-mono">
         <thead>
           <tr className="border-b border-yellow-400/20 bg-yellow-400/[0.03]">
             <th className="text-left px-1.5 py-1 text-yellow-400/60 uppercase tracking-wider font-medium whitespace-nowrap">Ticker</th>
@@ -243,7 +243,7 @@ function GuidanceBadge({ guidance }: { guidance: string | null }) {
   }
 
   return (
-    <span className={`px-1 py-0 text-[8px] font-mono uppercase tracking-wider border ${cls}`}>
+    <span className={`px-1 py-0 text-micro font-mono uppercase tracking-wider border ${cls}`}>
       {guidance}
     </span>
   );
@@ -252,7 +252,7 @@ function GuidanceBadge({ guidance }: { guidance: string | null }) {
 function RecentResultsTable({ results }: { results: RecentResult[] }) {
   if (results.length === 0) {
     return (
-      <div className="text-center text-neutral/30 text-[9px] font-mono py-4 uppercase tracking-wider">
+      <div className="text-center text-neutral/30 text-mini font-mono py-4 uppercase tracking-wider">
         NO RECENT RESULTS
       </div>
     );
@@ -260,7 +260,7 @@ function RecentResultsTable({ results }: { results: RecentResult[] }) {
 
   return (
     <div className="border border-yellow-400/10 overflow-x-auto">
-      <table className="w-full text-[9px] font-mono">
+      <table className="w-full text-mini font-mono">
         <thead>
           <tr className="border-b border-yellow-400/20 bg-yellow-400/[0.03]">
             <th className="text-left px-1.5 py-1 text-yellow-400/60 uppercase tracking-wider font-medium whitespace-nowrap">Ticker</th>
@@ -320,15 +320,15 @@ export function EarningsWhisperPanel() {
   const whisperData = data as EarningsWhisperData | undefined;
 
   return (
-    <GlassCard className="flex flex-col h-full bg-black text-[9px] font-mono">
+    <GlassCard className="flex flex-col h-full bg-black text-mini font-mono">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-yellow-400/30">
-        <span className="text-[10px] font-mono font-bold tracking-widest text-yellow-400 uppercase">
+        <span className="text-mini font-mono font-bold tracking-widest text-yellow-400 uppercase">
           {tr(t, 'panelEarningsWhisper', 'EARNINGS WHISPER')}
         </span>
         <div className="flex items-center gap-2">
           {dataUpdatedAt > 0 && (
-            <span className="text-[8px] font-mono text-neutral/30">
+            <span className="text-micro font-mono text-neutral/30">
               {new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -346,12 +346,12 @@ export function EarningsWhisperPanel() {
       <div className="flex-1 overflow-auto min-h-0">
         {isLoading && !whisperData ? (
           <div className="flex items-center justify-center h-full">
-            <span className="text-[9px] font-mono text-yellow-400/60 uppercase tracking-widest">
+            <span className="text-mini font-mono text-yellow-400/60 uppercase tracking-widest">
               LOADING...
             </span>
           </div>
         ) : !whisperData ? (
-          <div className="flex items-center justify-center h-full text-neutral/30 text-[9px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center h-full text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {tr(t, 'ewNoData', 'NO DATA AVAILABLE')}
           </div>
         ) : (
@@ -384,7 +384,7 @@ export function EarningsWhisperPanel() {
 
             {/* ── Upcoming Earnings ── */}
             <div className="px-3 pt-2 pb-1">
-              <div className="text-[8px] font-mono text-yellow-400/50 uppercase tracking-widest mb-1">
+              <div className="text-micro font-mono text-yellow-400/50 uppercase tracking-widest mb-1">
                 {tr(t, 'ewUpcoming', 'UPCOMING EARNINGS')}
               </div>
             </div>
@@ -394,7 +394,7 @@ export function EarningsWhisperPanel() {
 
             {/* ── Recent Results ── */}
             <div className="px-3 pt-1 pb-1">
-              <div className="text-[8px] font-mono text-yellow-400/50 uppercase tracking-widest mb-1">
+              <div className="text-micro font-mono text-yellow-400/50 uppercase tracking-widest mb-1">
                 {tr(t, 'ewRecent', 'RECENT RESULTS')}
               </div>
             </div>
@@ -406,7 +406,7 @@ export function EarningsWhisperPanel() {
       </div>
 
       {/* ── Footer ── */}
-      <div className="flex items-center justify-between px-3 py-1 border-t border-yellow-400/20 text-[8px] font-mono text-neutral/30">
+      <div className="flex items-center justify-between px-3 py-1 border-t border-yellow-400/20 text-micro font-mono text-neutral/30">
         <span>
           {whisperData?.upcoming.length ?? 0} {tr(t, 'ewUpcomingLabel', 'upcoming')} / {whisperData?.recentResults.length ?? 0} {tr(t, 'ewReportedLabel', 'reported')}
         </span>

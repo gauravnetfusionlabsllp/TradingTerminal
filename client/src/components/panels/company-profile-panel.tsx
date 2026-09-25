@@ -53,7 +53,7 @@ function LocationText({ profile }: { profile: CompanyProfile }) {
   const parts = [profile.city, profile.state, profile.country].filter(Boolean);
   if (parts.length === 0) return null;
   return (
-    <div className="flex items-center gap-1 text-neutral/50 text-[9px]">
+    <div className="flex items-center gap-1 text-neutral/50 text-mini">
       <MapPin size={9} className="text-neutral/30 shrink-0" />
       <span>{parts.join(', ')}</span>
     </div>
@@ -63,9 +63,9 @@ function LocationText({ profile }: { profile: CompanyProfile }) {
 function MetricCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="bg-white/[0.02] border border-white/[0.04] px-2 py-1.5 rounded">
-      <div className="text-[8px] text-neutral/40 uppercase tracking-wider font-mono mb-0.5">{label}</div>
-      <div className="text-[11px] text-neutral/90 font-mono font-bold">{value}</div>
-      {sub && <div className="text-[8px] text-neutral/40 mt-0.5">{sub}</div>}
+      <div className="text-micro text-neutral/40 uppercase tracking-wider font-mono mb-0.5">{label}</div>
+      <div className="text-xs text-neutral/90 font-mono font-bold">{value}</div>
+      {sub && <div className="text-micro text-neutral/40 mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -85,12 +85,12 @@ function ProfileContent({ profile }: { profile: CompanyProfile }) {
             </h2>
             <div className="flex flex-wrap items-center gap-1.5 mt-1">
               {profile.industry && (
-                <span className="inline-block px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 rounded">
+                <span className="inline-block px-1.5 py-0.5 text-micro font-mono uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 rounded">
                   {profile.industry}
                 </span>
               )}
               {profile.sector && (
-                <span className="inline-block px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30 rounded">
+                <span className="inline-block px-1.5 py-0.5 text-micro font-mono uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30 rounded">
                   {profile.sector}
                 </span>
               )}
@@ -98,7 +98,7 @@ function ProfileContent({ profile }: { profile: CompanyProfile }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-[9px]">
+        <div className="flex flex-wrap items-center gap-3 text-mini">
           <LocationText profile={profile} />
           {profile.fullTimeEmployees != null && (
             <div className="flex items-center gap-1 text-neutral/50">
@@ -126,15 +126,15 @@ function ProfileContent({ profile }: { profile: CompanyProfile }) {
       {/* Business Summary */}
       {profile.longBusinessSummary && (
         <div className="space-y-1">
-          <div className="text-[9px] font-mono text-neutral/40 uppercase tracking-wider">{t('cpSummary')}</div>
+          <div className="text-mini font-mono text-neutral/40 uppercase tracking-wider">{t('cpSummary')}</div>
           <div className="relative">
-            <p className={`text-[10px] text-neutral/60 leading-relaxed ${!expanded ? 'line-clamp-3' : ''}`}>
+            <p className={`text-mini text-neutral/60 leading-relaxed ${!expanded ? 'line-clamp-3' : ''}`}>
               {profile.longBusinessSummary}
             </p>
             {profile.longBusinessSummary.length > 200 && (
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-[9px] text-blue-400/80 hover:text-blue-400 font-mono mt-0.5 transition-colors"
+                className="text-mini text-blue-400/80 hover:text-blue-400 font-mono mt-0.5 transition-colors"
               >
                 {expanded ? t('cpShowLess') : t('cpShowMore')}
               </button>
@@ -145,7 +145,7 @@ function ProfileContent({ profile }: { profile: CompanyProfile }) {
 
       {/* Key Metrics Grid */}
       <div className="space-y-1">
-        <div className="text-[9px] font-mono text-neutral/40 uppercase tracking-wider">{t('cpMetrics')}</div>
+        <div className="text-mini font-mono text-neutral/40 uppercase tracking-wider">{t('cpMetrics')}</div>
         <div className="grid grid-cols-2 xl:grid-cols-3 gap-1.5">
           <MetricCard
             label="Revenue"
@@ -172,8 +172,8 @@ function ProfileContent({ profile }: { profile: CompanyProfile }) {
         {/* Recommendation Badge */}
         {profile.recommendationKey && (
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[8px] text-neutral/40 font-mono uppercase">Consensus:</span>
-            <span className={`inline-block px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded border ${ratingColor(profile.recommendationKey)}`}>
+            <span className="text-micro text-neutral/40 font-mono uppercase">Consensus:</span>
+            <span className={`inline-block px-2 py-0.5 text-mini font-mono font-bold uppercase tracking-wider rounded border ${ratingColor(profile.recommendationKey)}`}>
               {ratingLabel(profile.recommendationKey)}
             </span>
           </div>
@@ -183,9 +183,9 @@ function ProfileContent({ profile }: { profile: CompanyProfile }) {
       {/* Key Officers Table */}
       {profile.officers.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] font-mono text-neutral/40 uppercase tracking-wider">{t('cpOfficers')}</div>
+          <div className="text-mini font-mono text-neutral/40 uppercase tracking-wider">{t('cpOfficers')}</div>
           <div className="border border-white/[0.04] rounded overflow-hidden">
-            <table className="w-full text-[9px] font-mono">
+            <table className="w-full text-mini font-mono">
               <thead>
                 <tr className="bg-white/[0.02] border-b border-white/[0.04]">
                   <th className="text-left px-2 py-1 text-neutral/40 font-medium uppercase tracking-wider">Name</th>
@@ -218,23 +218,23 @@ export function CompanyProfilePanel() {
   const { data, isLoading, refetch, dataUpdatedAt } = useCompanyProfile();
 
   return (
-    <GlassCard className="flex flex-col h-full text-[10px]">
+    <GlassCard className="flex flex-col h-full text-mini">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.04]">
         <div className="flex items-center gap-1.5">
           <Building2 size={12} className="text-blue-400" />
-          <span className="text-[10px] font-mono font-bold tracking-widest text-neutral/80 uppercase">
+          <span className="text-mini font-mono font-bold tracking-widest text-neutral/80 uppercase">
             {t('panelCompanyProfile')}
           </span>
           {symbol && (
-            <span className="text-[10px] font-mono font-bold text-blue-400 ml-1">
+            <span className="text-mini font-mono font-bold text-blue-400 ml-1">
               {symbol}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
           {dataUpdatedAt > 0 && (
-            <span className="text-[9px] font-mono text-neutral/30">
+            <span className="text-mini font-mono text-neutral/30">
               {new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -250,7 +250,7 @@ export function CompanyProfilePanel() {
 
       {/* Body */}
       {!symbol ? (
-        <div className="flex items-center justify-center h-full text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+        <div className="flex items-center justify-center h-full text-neutral/30 text-mini font-mono uppercase tracking-widest">
           {t('cpNoSymbol')}
         </div>
       ) : isLoading && !data ? (
@@ -258,7 +258,7 @@ export function CompanyProfilePanel() {
           <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 animate-spin" />
         </div>
       ) : !data ? (
-        <div className="flex items-center justify-center h-full text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+        <div className="flex items-center justify-center h-full text-neutral/30 text-mini font-mono uppercase tracking-widest">
           {t('cpNoData')}
         </div>
       ) : (

@@ -72,10 +72,10 @@ export function ETFPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-cyan-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-cyan-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
             {t('panelETF')}
           </span>
         </div>
@@ -90,7 +90,7 @@ export function ETFPanel() {
           <button
             key={cat}
             onClick={() => setCategory(cat)}
-            className={`shrink-0 px-2 py-1.5 text-[7px] font-black uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${
+            className={`shrink-0 px-2 py-1.5 text-micro font-black uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${
               category === cat
                 ? 'border-cyan-400 text-cyan-400'
                 : 'border-transparent text-neutral/40 hover:text-neutral'
@@ -110,7 +110,7 @@ export function ETFPanel() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('etfSearch')}
-            className="flex-1 bg-transparent text-[9px] font-mono text-white placeholder-neutral/30 outline-none"
+            className="flex-1 bg-transparent text-mini font-mono text-white placeholder-neutral/30 outline-none"
           />
         </div>
       </div>
@@ -128,13 +128,13 @@ export function ETFPanel() {
       {/* List */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !etfs && (
-          <div className="text-center py-8 text-cyan-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-cyan-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
 
         {!isLoading && filtered.length === 0 && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {t('noResults')}
           </div>
         )}
@@ -145,7 +145,7 @@ export function ETFPanel() {
       </div>
 
       {/* Status bar */}
-      <div className="px-3 py-1.5 border-t border-border/30 bg-[#050505] shrink-0 flex items-center gap-3 text-[8px] font-mono">
+      <div className="px-3 py-1.5 border-t border-border/30 bg-raised shrink-0 flex items-center gap-3 text-micro font-mono">
         <span className="text-neutral/40">
           {filtered.length}/{totalCount} {t('etfResults')}
         </span>
@@ -183,7 +183,7 @@ function SortableHeader({
   return (
     <button
       onClick={() => onSort(field)}
-      className={`flex items-center gap-0.5 text-[7px] font-black uppercase tracking-wider transition-colors ${
+      className={`flex items-center gap-0.5 text-micro font-black uppercase tracking-wider transition-colors ${
         align === 'right' ? 'justify-end' : ''
       } ${isActive ? 'text-cyan-400' : 'text-neutral/40 hover:text-neutral/60'}`}
     >
@@ -216,39 +216,39 @@ function ETFRow({ etf, onClick }: { etf: ETFData; onClick: () => void }) {
       />
 
       {/* Symbol */}
-      <span className="text-[10px] font-mono font-bold text-white relative z-10 self-center">
+      <span className="text-mini font-mono font-bold text-white relative z-10 self-center">
         {etf.symbol}
       </span>
 
       {/* Name (truncated) */}
-      <span className="text-[9px] font-mono text-neutral/50 relative z-10 self-center truncate pr-2">
+      <span className="text-mini font-mono text-neutral/50 relative z-10 self-center truncate pr-2">
         {etf.name}
       </span>
 
       {/* Price */}
-      <span className="text-[10px] font-mono text-white text-right relative z-10 self-center">
+      <span className="text-mini font-mono text-white text-right relative z-10 self-center">
         {fmtPrice(etf.price)}
       </span>
 
       {/* Change% */}
-      <span className={`text-[10px] font-mono font-bold text-right relative z-10 self-center ${
+      <span className={`text-mini font-mono font-bold text-right relative z-10 self-center ${
         isPositive ? 'text-bullish' : 'text-bearish'
       }`}>
         {isPositive ? '+' : ''}{etf.changePercent.toFixed(2)}%
       </span>
 
       {/* Volume */}
-      <span className="text-[9px] font-mono text-neutral/50 text-right relative z-10 self-center">
+      <span className="text-mini font-mono text-neutral/50 text-right relative z-10 self-center">
         {fmtVolume(etf.volume)}
       </span>
 
       {/* Avg Vol with ratio indicator */}
       <div className="flex items-center justify-end gap-1 relative z-10 self-center">
-        <span className="text-[9px] font-mono text-neutral/40">
+        <span className="text-mini font-mono text-neutral/40">
           {etf.avgVolume ? fmtVolume(etf.avgVolume) : '-'}
         </span>
         {volRatio != null && (
-          <span className={`text-[7px] font-mono font-bold ${
+          <span className={`text-micro font-mono font-bold ${
             volRatio > 1.5 ? 'text-yellow-400' : volRatio > 1 ? 'text-neutral/40' : 'text-neutral/25'
           }`}>
             {volRatio.toFixed(1)}x

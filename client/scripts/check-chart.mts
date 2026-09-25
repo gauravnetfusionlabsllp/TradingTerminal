@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { tickBucket, foldTick, mergeLive, type Bar } from '../src/lib/live-candles.ts';
 import { keepView } from '../src/lib/chart-view.ts';
-import { snap, pendingTypesAt, levelSide, levelsError } from '../src/lib/chart-trading.ts';
+import { snap, pendingTypesAt, levelSide, levelsError, shortTags } from '../src/lib/chart-trading.ts';
 
 const bar = (timestamp: number, close: number): Bar => ({ timestamp, open: close, high: close, low: close, close, volume: 5 });
 const M5 = 300;
@@ -80,6 +80,12 @@ assert.match(levelsError('BUY', 1.1, 1.101, 0)!, /SL must be below/);
 // Dragging that position's entry line (1.08) out: anywhere under the bid becomes the SL, even above the open
 assert.equal(levelSide('BUY', 1.1, 1.085), 'sl');
 assert.equal(levelSide('SELL', 1.1, 1.095), 'tp');
+
+// Chart-label tags: none for one trade, 3 digits when they differ, longer only when the endings collide
+assert.equal(shortTags([234352597]).size, 0);
+assert.deepEqual([...shortTags([234352597, 234352478])], [[234352597, '597'], [234352478, '478']]);
+assert.deepEqual([...shortTags([234352597, 234353597])].map(([, t]) => t), ['2597', '3597']);
+assert.deepEqual([...shortTags([12, 912])].map(([, t]) => t), ['12', '912']); // a short ticket ends the search
 
 assert.equal(snap(1.0850049, 5), 1.085);
 assert.equal(snap(151.2346, 3), 151.235);

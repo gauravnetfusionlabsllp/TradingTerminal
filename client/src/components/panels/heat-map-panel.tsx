@@ -35,14 +35,14 @@ function SectorBlock({ sector }: { sector: SectorData }) {
   const maxCap = Math.max(...sector.stocks.map((s) => s.marketCap ?? 0), 1);
 
   return (
-    <div className="border border-border/20 bg-[#050505]">
+    <div className="border border-border/20 bg-raised">
       {/* Sector header */}
       <div className="flex items-center justify-between px-2 py-1 border-b border-border/20 bg-black/60">
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral/60 truncate">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral/60 truncate">
           {sector.sector}
         </span>
         <span
-          className={`text-[9px] font-mono font-bold ${
+          className={`text-mini font-mono font-bold ${
             sector.sectorChange >= 0 ? 'text-emerald-400' : 'text-red-400'
           }`}
         >
@@ -63,11 +63,11 @@ function SectorBlock({ sector }: { sector: SectorData }) {
               className={`${sizeClass} flex flex-col items-center justify-center p-1 transition-opacity hover:opacity-80 cursor-pointer min-h-[32px]`}
               style={{ backgroundColor: getTileColor(stock.changePercent) }}
             >
-              <span className="text-[9px] font-mono font-bold text-white leading-tight truncate max-w-full">
+              <span className="text-mini font-mono font-bold text-white leading-tight truncate max-w-full">
                 {stock.symbol}
               </span>
               <span
-                className={`text-[8px] font-mono leading-tight ${
+                className={`text-micro font-mono leading-tight ${
                   stock.changePercent >= 0 ? 'text-emerald-200' : 'text-red-200'
                 }`}
               >
@@ -96,13 +96,13 @@ export function HeatMapPanel() {
       {/* Summary bar */}
       {sectors.length > 0 && (
         <div className="flex items-center gap-3 px-3 py-1 border-b border-border/20 bg-black/40 shrink-0">
-          <span className="text-[8px] font-mono text-emerald-400">
+          <span className="text-micro font-mono text-emerald-400">
             {sectorsUp} {t('hmSectorsUp')}
           </span>
-          <span className="text-[8px] font-mono text-red-400">
+          <span className="text-micro font-mono text-red-400">
             {sectorsDown} {t('hmSectorsDown')}
           </span>
-          <span className="text-[8px] font-mono text-neutral/30 ml-auto">
+          <span className="text-micro font-mono text-neutral/30 ml-auto">
             {sectors.reduce((acc, s) => acc + s.stocks.length, 0)} stocks
           </span>
         </div>
@@ -113,7 +113,7 @@ export function HeatMapPanel() {
         {isLoading && !data && (
           <div className="flex flex-col items-center justify-center h-full gap-2">
             <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 animate-spin" />
-            <span className="text-[9px] font-mono text-neutral/40 uppercase tracking-widest">
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
               {t('loading')}
             </span>
           </div>
@@ -121,7 +121,7 @@ export function HeatMapPanel() {
 
         {!isLoading && sectors.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <span className="text-[9px] font-mono text-neutral/30 uppercase tracking-widest">
+            <span className="text-mini font-mono text-neutral/30 uppercase tracking-widest">
               {t('hmNoData')}
             </span>
           </div>

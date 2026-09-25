@@ -58,10 +58,10 @@ export function ScannerPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <ScanLine className="w-4 h-4 text-violet-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-violet-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-violet-400">
             {t('panelScanner')}
           </span>
         </div>
@@ -77,7 +77,7 @@ export function ScannerPanel() {
             <button
               key={mode}
               onClick={() => setFilter(mode)}
-              className={`px-2 py-0.5 text-[7px] font-black uppercase tracking-wider border transition-colors ${
+              className={`px-2 py-0.5 text-micro font-black uppercase tracking-wider border transition-colors ${
                 filter === mode
                   ? mode === 'bullish'
                     ? 'border-bullish/40 text-bullish bg-bullish/10'
@@ -91,7 +91,7 @@ export function ScannerPanel() {
             </button>
           ))}
         </div>
-        <div className="text-[8px] font-mono text-neutral/40">
+        <div className="text-micro font-mono text-neutral/40">
           <span className="text-bullish">{counts.bullish}</span>
           {' / '}
           <span className="text-bearish">{counts.bearish}</span>
@@ -103,17 +103,17 @@ export function ScannerPanel() {
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !signals && (
           <div className="text-center py-8">
-            <div className="text-violet-400 text-[9px] font-mono uppercase animate-pulse mb-1">
+            <div className="text-violet-400 text-mini font-mono uppercase animate-pulse mb-1">
               {t('scannerScanning')}
             </div>
-            <div className="text-[7px] font-mono text-neutral/30">
+            <div className="text-micro font-mono text-neutral/30">
               {t('scannerScanDesc')}
             </div>
           </div>
         )}
 
         {!isLoading && filtered.length === 0 && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {t('scannerNoSignals')}
           </div>
         )}
@@ -126,20 +126,20 @@ export function ScannerPanel() {
           >
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold text-white group-hover:text-violet-300">
+                <span className="text-mini font-mono font-bold text-white group-hover:text-violet-300">
                   {sig.symbol}
                 </span>
-                <span className={`text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 border ${SIGNAL_COLORS[sig.signal]}`}>
+                <span className={`text-micro font-black uppercase tracking-wider px-1.5 py-0.5 border ${SIGNAL_COLORS[sig.signal]}`}>
                   {SIGNAL_LABELS[sig.signal]}
                 </span>
               </div>
-              <span className={`text-[9px] font-mono font-bold ${sig.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}`}>
+              <span className={`text-mini font-mono font-bold ${sig.changePercent >= 0 ? 'text-bullish' : 'text-bearish'}`}>
                 {sig.changePercent >= 0 ? '+' : ''}{sig.changePercent.toFixed(2)}%
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[8px] font-mono text-neutral/40">{sig.description}</span>
-              <span className="text-[9px] font-mono text-neutral/50">${sig.price.toFixed(2)}</span>
+              <span className="text-micro font-mono text-neutral/40">{sig.description}</span>
+              <span className="text-mini font-mono text-neutral/50">${sig.price.toFixed(2)}</span>
             </div>
           </button>
         ))}

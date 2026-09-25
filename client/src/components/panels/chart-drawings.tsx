@@ -9,12 +9,17 @@ import {
 import { Eye, EyeOff, Lock, LockOpen, MousePointer2, Pencil, Ruler, Shapes, Trash2, Type } from 'lucide-react';
 import { usePersisted } from '../../hooks/use-persisted';
 import { SWATCHES, snapAnchors, sentenceCase, tint, textOf, setTextOf } from '../../lib/chart-tools';
+import { useChartColors, alpha as withAlpha, type ChartColors } from '../../lib/theme';
 
 const registry = getToolRegistry();
 type Tool = NonNullable<ReturnType<typeof registry.get>>;
 
 const PREVIEW = '__preview__';
+// Default-ink drawings follow the theme: the old default and both themes' fg all mean "ink" (SWATCHES[0] too)
 const INK = '#e4e4e7';
+const INKS = new Set([INK, '#e3e9f3', '#0c1626']);
+const reink = (style: Partial<DrawingStyle>, ink: string) =>
+  Object.fromEntries(Object.entries(style).map(([k, v]) => [k, typeof v === 'string' && INKS.has(v.toLowerCase()) ? ink : v])) as Partial<DrawingStyle>;
 const FONT_FAMILY = '"JetBrains Mono", Consolas, monospace';
 
 const TEXT_TOOLS = new Set(['text-annotation', 'callout', 'anchored-text', 'note', 'price-note', 'flag-mark', 'pin', 'comment', 'signpost']);
@@ -30,12 +35,12 @@ const SHORTCUTS: Record<string, string> = {
 };
 const SHORTCUT_OF = Object.fromEntries(Object.entries(SHORTCUTS).map(([code, t]) => [t, `Alt+${code.slice(3)}`]));
 
-const styleFor = (type: string): Partial<DrawingStyle> =>
+const styleFor = (type: string, ink: string): Partial<DrawingStyle> =>
   OWN_COLORS.has(type)
-    ? { labelFont: `10px ${FONT_FAMILY}`, labelColor: INK }
-    : { lineColor: INK, lineWidth: 1, fillColor: tint(INK, 0.06), labelColor: INK, labelFont: `10px ${FONT_FAMILY}` };
-// The library's text boxes default to a white fill; ours match the dark surfaces
-const TEXT_OPTIONS = { fontSize: 11, fontFamily: FONT_FAMILY, backgroundColor: 'rgba(24,24,27,0.92)', borderColor: 'rgba(255,255,255,0.14)', textColor: INK, padding: 6 };
+    ? { labelFont: `11px ${FONT_FAMILY}`, labelColor: ink }
+    : { lineColor: ink, lineWidth: 1, fillColor: tint(ink, 0.06), labelColor: ink, labelFont: `11px ${FONT_FAMILY}` };
+// The library's text boxes default to a white fill; ours match the theme's raised surface
+const textOptions = (c: ChartColors) => ({ fontSize: 11, fontFamily: FONT_FAMILY, backgroundColor: withAlpha(c.raised, 0.95), borderColor: c.border, textColor: c.fg, padding: 6 });
 // The library prints prices as "$1.10" (two decimals): right for gold and indices, wrong for FX. On finer symbols its
 // price text is off; levels keep their percentages and the axis shows the price.
 const PRICE_TEXT_OFF: Record<string, Record<string, boolean>> = {
@@ -47,9 +52,9 @@ const PRICE_TEXT_OFF: Record<string, Record<string, boolean>> = {
   projection: { showPrices: false }, forecast: { showPrices: false }, 'price-note': { showPrice: false },
 };
 /** Tool options aren't serialized by the library, so these are reapplied on every load */
-const optionsFor = (type: string, precision: number, saved?: Partial<DrawingOptions>) => ({
+const optionsFor = (type: string, precision: number, c: ChartColors, saved?: Partial<DrawingOptions>) => ({
   ...saved,
-  ...(TEXT_TOOLS.has(type) ? TEXT_OPTIONS : {}),
+  ...(TEXT_TOOLS.has(type) ? textOptions(c) : {}),
   ...(precision > 2 ? PRICE_TEXT_OFF[type] : {}),
   ...(type === 'price-label' ? { decimals: precision } : {}),
 }) as Partial<DrawingOptions>;
@@ -101,6 +106,9 @@ export function useDrawings({ chart, series, el, symbol, times, precision }: Arg
   timesRef.current = times;
   const digits = useRef(precision);
   digits.current = precision;
+  const theme = useChartColors();
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
   const live = useRef({ tool, keep, hidden });
   live.current = { tool, keep, hidden };
 
@@ -156,7 +164,7 @@ export function useDrawings({ chart, series, el, symbol, times, precision }: Arg
       loaded.current = true;
       for (const s of loadSaved(symbol)) {
         const shown = snapAnchors(s.anchors as (Anchor & { time: number })[], timesRef.current) ?? s.anchors;
-        const d = registry.createDrawing(s.type, s.id, shown, s.style, optionsFor(s.type, digits.current, s.options));
+        const d = registry.createDrawing(s.type, s.id, shown, reink(s.style, themeRef.current.fg), optionsFor(s.type, digits.current, themeRef.current, s.options));
         if (!d) continue;
         if (s.text != null) setTextOf(d, s.text);
         if (shown !== s.anchors) snapped.current.set(s.id, { saved: s.anchors, shown });
@@ -170,6 +178,14 @@ export function useDrawings({ chart, series, el, symbol, times, precision }: Arg
       try { dm.detach(); } catch { /* on unmount the chart is removed first */ }
     };
   }, [dm, chart, series, el, symbol]);
+
+  // Theme flip: ink-coloured drawings and text boxes recolour in place (saved styles are re-inked on load anyway)
+  useEffect(() => {
+    for (const d of dm.getAllDrawings()) {
+      d.updateStyle(reink(d.style, theme.fg));
+      if (TEXT_TOOLS.has(d.type)) d.updateOptions(textOptions(theme) as Partial<DrawingOptions>); // text-tool options aren't in the typed set
+    }
+  }, [dm, theme]);
 
   useEffect(() => {
     const offs = [
@@ -273,7 +289,7 @@ export function useDrawings({ chart, series, el, symbol, times, precision }: Arg
         else {
           const fill = [...pending.current];
           while (fill.length < need) fill.push({ ...a });
-          const d = registry.createDrawing(t, PREVIEW, fill, styleFor(t), optionsFor(t, digits.current));
+          const d = registry.createDrawing(t, PREVIEW, fill, styleFor(t, themeRef.current.fg), optionsFor(t, digits.current, themeRef.current));
           if (d) dm.addDrawing(d);
         }
         setPlaced(pending.current.length);
@@ -281,7 +297,7 @@ export function useDrawings({ chart, series, el, symbol, times, precision }: Arg
       }
       const anchors = pending.current;
       cancelPlacement();
-      const d = registry.createDrawing(t, `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, anchors, styleFor(t), optionsFor(t, digits.current));
+      const d = registry.createDrawing(t, `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, anchors, styleFor(t, themeRef.current.fg), optionsFor(t, digits.current, themeRef.current));
       if (!d) return;
       dm.addDrawing(d);
       if (TEXT_TOOLS.has(t)) openEditor(d);
@@ -401,9 +417,9 @@ const groupOf = (type: string | null) => GROUPS.find((g) => g.sections.some((s) 
 
 const railButton = (on: boolean) =>
   `relative flex items-center justify-center h-8 transition-colors duration-100 motion-reduce:transition-none ${
-    on ? 'text-amber-400 bg-amber-400/15' : 'text-white/55 hover:text-white hover:bg-white/[0.06]'
+    on ? 'text-accent-ink bg-accent/15' : 'text-white/55 hover:text-white hover:bg-white/[0.06]'
   }`;
-const ActiveBar = () => <span className="absolute left-0 top-1 bottom-1 w-0.5 bg-amber-400" aria-hidden />;
+const ActiveBar = () => <span className="absolute left-0 top-1 bottom-1 w-0.5 bg-accent" aria-hidden />;
 
 export function DrawRail({ api }: { api: Drawings }) {
   const [last, setLast] = usePersisted<Record<string, string>>('sgfx.drawings.lastTool', {}, (v) => !!v && typeof v === 'object');
@@ -474,7 +490,7 @@ export function DrawRail({ api }: { api: Drawings }) {
               aria-expanded={open?.key === g.key}
               aria-label={`All ${g.label.toLowerCase()}`}
               title={`All ${g.label.toLowerCase()}`}
-              className={`absolute right-0 top-0 bottom-0 w-2.5 flex items-end justify-center pb-1 ${open?.key === g.key ? 'text-amber-400' : 'text-white/25 hover:text-white'}`}
+              className={`absolute right-0 top-0 bottom-0 w-2.5 flex items-end justify-center pb-1 ${open?.key === g.key ? 'text-accent-ink' : 'text-white/25 hover:text-white'}`}
             >
               <svg width="5" height="5" viewBox="0 0 5 5" aria-hidden><path d="M5 0v5H0z" fill="currentColor" /></svg>
             </button>
@@ -517,7 +533,7 @@ export function DrawRail({ api }: { api: Drawings }) {
           <Trash2 size={15} />
         </button>
         {confirming && (
-          <span role="status" className="absolute left-full ml-1 top-1/2 -translate-y-1/2 z-40 whitespace-nowrap px-2 py-1 text-[10px] text-red-200 bg-red-950 border border-red-500/40 animate-pop">
+          <span role="status" className="absolute left-full ml-1 top-1/2 -translate-y-1/2 z-40 whitespace-nowrap px-2 py-1 text-mini text-red-200 bg-red-950 border border-red-500/40 animate-pop">
             Click again to remove all drawings
           </span>
         )}
@@ -542,7 +558,7 @@ export function DrawRail({ api }: { api: Drawings }) {
                     role="menuitemradio"
                     aria-checked={on}
                     onClick={() => choose(menu, t.type)}
-                    className={`w-full flex items-center justify-between gap-3 h-7 px-3 text-left text-[10px] ${on ? 'text-amber-400 bg-amber-400/10' : 'text-white/75 hover:text-white hover:bg-white/[0.06]'}`}
+                    className={`w-full flex items-center justify-between gap-3 h-7 px-3 text-left text-mini ${on ? 'text-accent-ink bg-accent/10' : 'text-white/75 hover:text-white hover:bg-white/[0.06]'}`}
                   >
                     <span className="truncate">{toolName(t.type)}</span>
                     {SHORTCUT_OF[t.type] && <span className="shrink-0 text-white/30">{SHORTCUT_OF[t.type]}</span>}
@@ -569,11 +585,12 @@ const FILLS = [0, 0.08, 0.2];
 const alphaOf = (fill?: string) => Number(/,\s*([\d.]+)\)$/.exec(fill ?? '')?.[1] ?? 0.06);
 
 const barButton = (on = false) =>
-  `h-7 min-w-7 px-1.5 flex items-center justify-center ${on ? 'text-amber-400 bg-amber-400/15' : 'text-white/60 hover:text-white hover:bg-white/[0.06]'}`;
+  `h-7 min-w-7 px-1.5 flex items-center justify-center ${on ? 'text-accent-ink bg-accent/15' : 'text-white/60 hover:text-white hover:bg-white/[0.06]'}`;
 const Divider = () => <span className="w-px h-4 bg-white/10 mx-0.5" aria-hidden />;
 
 export function DrawingBar({ api }: { api: Drawings }) {
   const [colors, setColors] = useState(false);
+  const ink = useChartColors().fg;
   const d = api.selected;
   useEffect(() => setColors(false), [d]);
   if (!d || api.tool) return null;
@@ -587,7 +604,7 @@ export function DrawingBar({ api }: { api: Drawings }) {
 
   return (
     <div role="toolbar" aria-label={`${toolName(d.type)} style`} className="absolute top-1.5 left-1/2 -translate-x-1/2 z-20 flex items-center h-7 max-w-[calc(100%-16px)] bg-zinc-900 border border-white/10 shadow-xl animate-pop">
-      <span className="px-2.5 max-w-[10rem] truncate text-[10px] text-white/45">{toolName(d.type)}</span>
+      <span className="px-2.5 max-w-[10rem] truncate text-mini text-white/45">{toolName(d.type)}</span>
       <Divider />
       <div className="relative">
         <button type="button" onClick={() => setColors((v) => !v)} aria-label="Color" aria-expanded={colors} title="Color" className={barButton(colors)}>
@@ -595,13 +612,13 @@ export function DrawingBar({ api }: { api: Drawings }) {
         </button>
         {colors && (
           <div className="absolute top-full left-0 mt-1 grid grid-cols-5 gap-1 p-1.5 bg-zinc-900 border border-white/10 shadow-xl animate-pop">
-            {SWATCHES.map((c) => (
+            {SWATCHES.map((sw) => (sw === INK ? ink : sw)).map((c) => (
               <button
                 key={c}
                 type="button"
                 aria-label={c}
                 onClick={() => { api.restyle({ lineColor: c, labelColor: c, fillColor: tint(c, alpha) }); setColors(false); }}
-                className={`w-5 h-5 border ${c === s.lineColor ? 'border-amber-400' : 'border-transparent hover:border-white/50'}`}
+                className={`w-5 h-5 border ${c === s.lineColor ? 'border-accent' : 'border-transparent hover:border-neutral'}`}
                 style={{ background: c }}
               />
             ))}
@@ -627,7 +644,7 @@ export function DrawingBar({ api }: { api: Drawings }) {
             <button
               key={a}
               type="button"
-              onClick={() => api.restyle({ fillColor: tint(s.lineColor.startsWith('#') ? s.lineColor : INK, a) })}
+              onClick={() => api.restyle({ fillColor: tint(s.lineColor.startsWith('#') ? s.lineColor : ink, a) })}
               aria-pressed={Math.abs(alpha - a) < 0.01}
               aria-label={a ? `Fill ${Math.round(a * 100)}%` : 'No fill'}
               title={a ? `Fill ${Math.round(a * 100)}%` : 'No fill'}
@@ -662,7 +679,7 @@ export function DrawHint({ api }: { api: Drawings }) {
   const need = registry.get(api.tool)?.requiredAnchors ?? 2;
   const text = need === 1 ? `${name}: click to place it.` : api.placed ? `${name}: ${api.placed} of ${need} points placed.` : `${name}: click ${need} points.`;
   return (
-    <div role="status" className="px-2 py-0.5 text-[9px] text-white/60 bg-black/80 border border-white/[0.06]">
+    <div role="status" className="px-2 py-0.5 text-mini text-white/60 bg-black/80 border border-white/[0.06]">
       {text} Esc cancels.
     </div>
   );
@@ -683,7 +700,7 @@ export function DrawTextEditor({ api, width }: { api: Drawings; width: number })
       onBlur={(ev) => api.commitText(ev.currentTarget.value)}
       aria-label="Drawing text"
       placeholder="Type, then Enter"
-      className="absolute z-30 w-52 h-7 text-[11px] text-white !bg-zinc-900 !border-amber-400/60 !py-0 !px-2 shadow-xl"
+      className="absolute z-30 w-52 h-7 text-xs text-white !bg-zinc-900 !border-accent/60 !py-0 !px-2 shadow-xl"
       style={{ left: Math.max(4, Math.min(e.x, width - 212)), top: Math.max(4, e.y - 14) }}
     />
   );

@@ -71,10 +71,10 @@ export function CreditSpreadsPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-red-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-red-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-red-400">
             {tr(t, 'csCreditSpreadMonitor', 'Credit Spread Monitor')}
           </span>
         </div>
@@ -92,13 +92,13 @@ export function CreditSpreadsPanel() {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-red-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-red-400 text-mini font-mono uppercase animate-pulse">
             {tr(t, 'loading', 'Loading...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral-500 text-mini font-mono uppercase">
             {tr(t, 'csNoData', 'No data available')}
           </div>
         )}
@@ -127,7 +127,7 @@ function SentimentBadge({
 }) {
   const style = sentimentStyle(sentiment);
   return (
-    <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider ${style.text} ${style.bg}`}>
+    <span className={`px-1.5 py-0.5 text-micro font-black font-mono uppercase tracking-wider ${style.text} ${style.bg}`}>
       {sentiment === 'Risk On'
         ? tr(t, 'csRiskOn', 'Risk On')
         : sentiment === 'Risk Off'
@@ -147,7 +147,7 @@ function YieldCurveBadge({
   const inverted = yieldCurve.inverted;
   return (
     <span
-      className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider ${
+      className={`px-1.5 py-0.5 text-micro font-black font-mono uppercase tracking-wider ${
         inverted
           ? 'text-red-400 bg-red-500/10 border border-red-500/30'
           : 'text-green-400 bg-green-500/10 border border-green-500/30'
@@ -179,7 +179,7 @@ function BondEtfDashboard({
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'csBondEtfDashboard', 'Bond ETF Dashboard')}
         </span>
       </div>
@@ -199,21 +199,21 @@ function BondEtfCard({ instrument }: { instrument: CreditInstrument }) {
   return (
     <div className={`px-2 py-1.5 bg-black ${isHY ? 'border-l-2 border-l-red-500/30' : ''}`}>
       <div className="flex items-center justify-between">
-        <span className="text-[8px] font-mono font-bold text-white">{instrument.symbol}</span>
+        <span className="text-micro font-mono font-bold text-white">{instrument.symbol}</span>
         {instrument.yield != null && instrument.yield > 0 && (
-          <span className="text-[7px] font-mono text-red-400/70">
+          <span className="text-micro font-mono text-red-400/70">
             {instrument.yield.toFixed(1)}%
           </span>
         )}
       </div>
-      <div className="text-[7px] font-mono text-neutral-600 truncate leading-tight">
+      <div className="text-micro font-mono text-neutral-600 truncate leading-tight">
         {instrument.name}
       </div>
       <div className="flex items-baseline gap-1 mt-0.5">
-        <span className="text-[10px] font-mono font-bold text-white">
+        <span className="text-mini font-mono font-bold text-white">
           ${fmtPrice(instrument.price)}
         </span>
-        <span className={`text-[8px] font-mono font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`}>
+        <span className={`text-micro font-mono font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`}>
           {fmtPct(instrument.changePct)}
         </span>
       </div>
@@ -233,7 +233,7 @@ function SpreadChartsSection({
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'csSpreadTrends', 'Credit Spread Trends (6M)')}
         </span>
       </div>
@@ -298,30 +298,30 @@ function SpreadChart({
     return { linePath, fillPath, lastX: scaleX(values.length - 1), lastY: scaleY(values[values.length - 1]) };
   }, [history]);
 
-  const lineColor = trend === 'tightening' ? '#4ade80' : trend === 'widening' ? '#f87171' : '#facc15';
+  const lineColor = trend === 'tightening' ? 'var(--color-green-400)' : trend === 'widening' ? 'var(--color-red-400)' : 'var(--color-amber-300)';
   const fillColor = trend === 'tightening'
-    ? 'rgba(74,222,128,0.08)'
+    ? 'color-mix(in srgb, var(--color-green-400) 8%, transparent)'
     : trend === 'widening'
-      ? 'rgba(248,113,113,0.08)'
-      : 'rgba(250,204,21,0.08)';
+      ? 'color-mix(in srgb, var(--color-red-400) 8%, transparent)'
+      : 'color-mix(in srgb, var(--color-amber-300) 8%, transparent)';
 
   return (
     <div className="bg-black px-2 py-1.5">
       <div className="flex items-center justify-between mb-0.5">
         <div>
-          <span className="text-[8px] font-mono font-bold text-white">{label}</span>
-          <span className="text-[7px] font-mono text-neutral-600 ml-1">{sublabel}</span>
+          <span className="text-micro font-mono font-bold text-white">{label}</span>
+          <span className="text-micro font-mono text-neutral-600 ml-1">{sublabel}</span>
         </div>
         <span
-          className={`text-[7px] font-mono font-bold px-1 py-px ${trendBg(trend)} ${trendColor(trend)}`}
+          className={`text-micro font-mono font-bold px-1 py-px ${trendBg(trend)} ${trendColor(trend)}`}
         >
           {trend.toUpperCase()}
         </span>
       </div>
 
       <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-[10px] font-mono font-bold text-white">{fmtSpread(current)}</span>
-        <span className={`text-[8px] font-mono font-bold ${changeColor(change5d)}`}>
+        <span className="text-mini font-mono font-bold text-white">{fmtSpread(current)}</span>
+        <span className={`text-micro font-mono font-bold ${changeColor(change5d)}`}>
           {fmtChange(change5d)} 5D
         </span>
       </div>
@@ -335,7 +335,7 @@ function SpreadChart({
       )}
 
       {!chartPath && (
-        <div className="h-12 flex items-center justify-center text-[7px] font-mono text-neutral-600">
+        <div className="h-12 flex items-center justify-center text-micro font-mono text-neutral-600">
           NO HISTORY
         </div>
       )}
@@ -381,12 +381,12 @@ function YieldCurveSection({
     .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.cy}`)
     .join(' ');
 
-  const curveColor = inverted ? '#f87171' : '#4ade80';
+  const curveColor = inverted ? 'var(--color-red-400)' : 'var(--color-green-400)';
 
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'csYieldCurve', 'Yield Curve Snapshot')}
         </span>
       </div>
@@ -403,7 +403,7 @@ function YieldCurveSection({
                   y1={scaleY(v)}
                   x2={170}
                   y2={scaleY(v)}
-                  stroke="rgba(255,255,255,0.04)"
+                  stroke="color-mix(in srgb, var(--color-white) 4%, transparent)"
                   strokeDasharray="2,3"
                 />
               ))}
@@ -421,7 +421,7 @@ function YieldCurveSection({
                     textAnchor="middle"
                     fill="white"
                     fontSize={7}
-                    fontFamily="monospace"
+                    fontFamily="inherit"
                     fontWeight="bold"
                   >
                     {p.value.toFixed(2)}%
@@ -430,9 +430,9 @@ function YieldCurveSection({
                     x={p.x}
                     y={H - 1}
                     textAnchor="middle"
-                    fill="rgba(255,255,255,0.3)"
+                    fill="color-mix(in srgb, var(--color-white) 30%, transparent)"
                     fontSize={7}
-                    fontFamily="monospace"
+                    fontFamily="inherit"
                   >
                     {p.label}
                   </text>
@@ -444,31 +444,31 @@ function YieldCurveSection({
           {/* Yield curve metrics */}
           <div className="w-28 flex flex-col gap-1.5">
             <div>
-              <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+              <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
                 {tr(t, 'cs3mYield', '3M Yield')}
               </div>
-              <div className="text-[10px] font-mono font-bold text-white">{fmtYield(threeMonth)}</div>
+              <div className="text-mini font-mono font-bold text-white">{fmtYield(threeMonth)}</div>
             </div>
             <div>
-              <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+              <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
                 {tr(t, 'cs10yYield', '10Y Yield')}
               </div>
-              <div className="text-[10px] font-mono font-bold text-white">{fmtYield(tenYear)}</div>
+              <div className="text-mini font-mono font-bold text-white">{fmtYield(tenYear)}</div>
             </div>
             <div>
-              <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+              <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
                 {tr(t, 'cs30yYield', '30Y Yield')}
               </div>
-              <div className="text-[10px] font-mono font-bold text-white">{fmtYield(thirtyYear)}</div>
+              <div className="text-mini font-mono font-bold text-white">{fmtYield(thirtyYear)}</div>
             </div>
             <div>
-              <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+              <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
                 {tr(t, 'cs3m10sSpread', '3M/10Y Spread')}
               </div>
-              <div className={`text-[10px] font-mono font-bold ${inverted ? 'text-red-400' : 'text-green-400'}`}>
+              <div className={`text-mini font-mono font-bold ${inverted ? 'text-red-400' : 'text-green-400'}`}>
                 {spread2s10s >= 0 ? '+' : ''}{spread2s10s.toFixed(2)}%
                 {inverted && (
-                  <span className="text-[7px] text-red-400/70 ml-1">
+                  <span className="text-micro text-red-400/70 ml-1">
                     {tr(t, 'csInvertedLabel', 'INVERTED')}
                   </span>
                 )}
@@ -528,11 +528,11 @@ function SummaryMetrics({
   return (
     <div className="px-3 py-2">
       <div className="flex items-center gap-2 mb-1.5">
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'csSummary', 'Summary')}
         </span>
         {flightToQuality && (
-          <span className="text-[7px] font-mono font-bold px-1 py-px bg-red-500/10 border border-red-500/30 text-red-400 uppercase">
+          <span className="text-micro font-mono font-bold px-1 py-px bg-red-500/10 border border-red-500/30 text-red-400 uppercase">
             {tr(t, 'csFlightToQuality', 'Flight to Quality')}
           </span>
         )}
@@ -540,18 +540,18 @@ function SummaryMetrics({
       <div className="grid grid-cols-4 gap-2">
         {metrics.map((m) => (
           <div key={m.label}>
-            <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+            <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
               {m.label}
             </div>
-            <div className={`text-[9px] font-mono font-bold ${m.color}`}>{m.value}</div>
-            <div className="text-[7px] font-mono text-neutral-600">{m.detail}</div>
+            <div className={`text-mini font-mono font-bold ${m.color}`}>{m.value}</div>
+            <div className="text-micro font-mono text-neutral-600">{m.detail}</div>
           </div>
         ))}
       </div>
 
       {/* Timestamp */}
       <div className="mt-2 pt-1 border-t border-border/10">
-        <span className="text-[7px] font-mono text-neutral-700">
+        <span className="text-micro font-mono text-neutral-700">
           {tr(t, 'csLastUpdate', 'Last update')}: {new Date(data.timestamp).toLocaleTimeString()}
         </span>
       </div>

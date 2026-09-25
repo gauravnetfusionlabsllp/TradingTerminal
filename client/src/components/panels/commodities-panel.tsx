@@ -19,10 +19,10 @@ export function CommoditiesPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Flame className="w-4 h-4 text-orange-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-orange-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-orange-400">
             {t('panelCommodities')}
           </span>
         </div>
@@ -37,7 +37,7 @@ export function CommoditiesPanel() {
           <button
             key={cat}
             onClick={() => setCategory(cat)}
-            className={`flex-1 py-1.5 text-[8px] font-black uppercase tracking-widest border-b-2 transition-colors ${
+            className={`flex-1 py-1.5 text-micro font-black uppercase tracking-widest border-b-2 transition-colors ${
               category === cat
                 ? 'border-orange-400 text-orange-400'
                 : 'border-transparent text-neutral/40 hover:text-neutral'
@@ -49,7 +49,7 @@ export function CommoditiesPanel() {
       </div>
 
       {/* Column header */}
-      <div className="grid grid-cols-[1.2fr_0.8fr_0.6fr_0.6fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+      <div className="grid grid-cols-[1.2fr_0.8fr_0.6fr_0.6fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider">
         <span>{t('cmdName')}</span>
         <span className="text-right">{t('price')}</span>
         <span className="text-right">{t('moversChange')}</span>
@@ -59,13 +59,13 @@ export function CommoditiesPanel() {
       {/* List */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !commodities && (
-          <div className="text-center py-8 text-orange-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-orange-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
 
         {!isLoading && filtered.length === 0 && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {t('noData')}
           </div>
         )}
@@ -99,18 +99,18 @@ function CommodityRow({ commodity: c }: { commodity: CommodityQuote }) {
         style={{ opacity: heat * 0.06 }}
       />
       <div className="relative z-10">
-        <div className="text-[10px] font-mono font-bold text-white">{c.name}</div>
-        <div className="text-[7px] font-mono text-neutral/30">{c.symbol.replace('=F', '')}</div>
+        <div className="text-mini font-mono font-bold text-white">{c.name}</div>
+        <div className="text-micro font-mono text-neutral/30">{c.symbol.replace('=F', '')}</div>
       </div>
-      <span className="text-[10px] font-mono text-white text-right self-center relative z-10">
+      <span className="text-mini font-mono text-white text-right self-center relative z-10">
         {fmtPrice(c.price)}
       </span>
-      <span className={`text-[10px] font-mono font-bold text-right self-center relative z-10 ${
+      <span className={`text-mini font-mono font-bold text-right self-center relative z-10 ${
         isPositive ? 'text-bullish' : 'text-bearish'
       }`}>
         {isPositive ? '+' : ''}{c.changePercent.toFixed(2)}%
       </span>
-      <span className="text-[8px] font-mono text-neutral/40 text-right self-center relative z-10">
+      <span className="text-micro font-mono text-neutral/40 text-right self-center relative z-10">
         {c.unit}
       </span>
     </div>
@@ -123,7 +123,7 @@ function SummaryBar({ commodities }: { commodities: CommodityQuote[] }) {
   const flat = commodities.length - up - down;
 
   return (
-    <div className="px-3 py-1.5 border-t border-border/30 bg-[#050505] shrink-0 flex items-center gap-3 text-[8px] font-mono">
+    <div className="px-3 py-1.5 border-t border-border/30 bg-raised shrink-0 flex items-center gap-3 text-micro font-mono">
       <span className="text-bullish">{up} up</span>
       <span className="text-bearish">{down} down</span>
       {flat > 0 && <span className="text-neutral/30">{flat} flat</span>}

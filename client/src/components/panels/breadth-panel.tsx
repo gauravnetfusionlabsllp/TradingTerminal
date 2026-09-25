@@ -16,7 +16,7 @@ function fmtVol(n: number): string {
 function StatBox({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="flex flex-col items-center px-2 py-1">
-      <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">{label}</span>
+      <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">{label}</span>
       <span className={`text-sm font-black font-mono ${color || 'text-neutral/80'}`}>{value}</span>
     </div>
   );
@@ -35,8 +35,8 @@ function ADBar({ advancers, decliners, unchanged, label, formatNum }: {
   return (
     <div className="px-3 py-1">
       <div className="flex items-center justify-between mb-0.5">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase">{label}</span>
-        <div className="flex items-center gap-2 text-[8px] font-mono">
+        <span className="text-micro font-mono text-neutral/40 uppercase">{label}</span>
+        <div className="flex items-center gap-2 text-micro font-mono">
           <span className="text-emerald-400">{f(advancers)}</span>
           {unchanged > 0 && <span className="text-neutral/30">{f(unchanged)}</span>}
           <span className="text-red-400">{f(decliners)}</span>
@@ -69,14 +69,14 @@ function DistributionBar({ label, count, maxCount, color }: {
   const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
   return (
     <div className="flex items-center gap-1.5 h-4">
-      <span className="text-[8px] font-mono text-neutral/50 w-10 text-right shrink-0">{label}</span>
+      <span className="text-micro font-mono text-neutral/50 w-10 text-right shrink-0">{label}</span>
       <div className="flex-1 h-2.5 bg-white/[0.03] rounded-sm overflow-hidden">
         <div
           className="h-full rounded-sm transition-all"
           style={{ width: `${Math.max(pct, 1)}%`, backgroundColor: color }}
         />
       </div>
-      <span className="text-[9px] font-mono text-neutral/60 w-5 text-right shrink-0">{count}</span>
+      <span className="text-mini font-mono text-neutral/60 w-5 text-right shrink-0">{count}</span>
     </div>
   );
 }
@@ -85,8 +85,8 @@ function SMABar({ label, value, color }: { label: string; value: number; color: 
   return (
     <div className="px-3 py-0.5">
       <div className="flex items-center justify-between mb-0.5">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase">{label}</span>
-        <span className="text-[9px] font-mono font-bold" style={{ color }}>{fmt(value)}%</span>
+        <span className="text-micro font-mono text-neutral/40 uppercase">{label}</span>
+        <span className="text-mini font-mono font-bold" style={{ color }}>{fmt(value)}%</span>
       </div>
       <div className="h-2 bg-white/[0.03] rounded-sm overflow-hidden">
         <div
@@ -102,10 +102,10 @@ function MoverRow({ mover }: { mover: BreadthMover }) {
   const isPositive = mover.changePercent >= 0;
   return (
     <div className="flex items-center justify-between px-1 py-0.5">
-      <span className="text-[9px] font-mono font-bold text-neutral/70">{mover.symbol}</span>
+      <span className="text-mini font-mono font-bold text-neutral/70">{mover.symbol}</span>
       <div className="flex items-center gap-2">
-        <span className="text-[8px] font-mono text-neutral/40">${fmt(mover.price)}</span>
-        <span className={`text-[9px] font-mono font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+        <span className="text-micro font-mono text-neutral/40">${fmt(mover.price)}</span>
+        <span className={`text-mini font-mono font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
           {isPositive ? '+' : ''}{fmt(mover.changePercent)}%
         </span>
       </div>
@@ -161,19 +161,19 @@ function BreadthContent({ data }: { data: BreadthData }) {
       />
 
       {/* SMA Breadth */}
-      <SMABar label={t('breadthAboveSMA50')} value={data.aboveSMA50} color="#34d399" />
-      <SMABar label={t('breadthAboveSMA200')} value={data.aboveSMA200} color="#60a5fa" />
+      <SMABar label={t('breadthAboveSMA50')} value={data.aboveSMA50} color="var(--color-emerald-400)" />
+      <SMABar label={t('breadthAboveSMA200')} value={data.aboveSMA200} color="var(--color-blue-400)" />
 
       {/* Change Distribution */}
       <div className="px-3 py-1">
-        <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">{t('breadthDistribution')}</span>
+        <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">{t('breadthDistribution')}</span>
         <div className="flex flex-col gap-0.5 mt-1">
-          <DistributionBar label=">+5%" count={data.upMore5} maxCount={distMax} color="rgba(16,185,129,0.9)" />
-          <DistributionBar label="+2-5%" count={data.up2to5} maxCount={distMax} color="rgba(16,185,129,0.6)" />
-          <DistributionBar label="+0-2%" count={data.up0to2} maxCount={distMax} color="rgba(16,185,129,0.35)" />
-          <DistributionBar label="0-2%" count={data.down0to2} maxCount={distMax} color="rgba(239,68,68,0.35)" />
-          <DistributionBar label="2-5%" count={data.down2to5} maxCount={distMax} color="rgba(239,68,68,0.6)" />
-          <DistributionBar label=">5%" count={data.downMore5} maxCount={distMax} color="rgba(239,68,68,0.9)" />
+          <DistributionBar label=">+5%" count={data.upMore5} maxCount={distMax} color="color-mix(in srgb, var(--color-emerald-500) 90%, transparent)" />
+          <DistributionBar label="+2-5%" count={data.up2to5} maxCount={distMax} color="color-mix(in srgb, var(--color-emerald-500) 60%, transparent)" />
+          <DistributionBar label="+0-2%" count={data.up0to2} maxCount={distMax} color="color-mix(in srgb, var(--color-emerald-500) 35%, transparent)" />
+          <DistributionBar label="0-2%" count={data.down0to2} maxCount={distMax} color="color-mix(in srgb, var(--color-red-500) 35%, transparent)" />
+          <DistributionBar label="2-5%" count={data.down2to5} maxCount={distMax} color="color-mix(in srgb, var(--color-red-500) 60%, transparent)" />
+          <DistributionBar label=">5%" count={data.downMore5} maxCount={distMax} color="color-mix(in srgb, var(--color-red-500) 90%, transparent)" />
         </div>
       </div>
 
@@ -183,7 +183,7 @@ function BreadthContent({ data }: { data: BreadthData }) {
         <div className="flex-1">
           <div className="flex items-center gap-1 mb-0.5">
             <TrendingUp className="w-2.5 h-2.5 text-emerald-400" />
-            <span className="text-[8px] font-mono text-emerald-400/70 uppercase">{t('breadthTopGainers')}</span>
+            <span className="text-micro font-mono text-emerald-400/70 uppercase">{t('breadthTopGainers')}</span>
           </div>
           <div className="flex flex-col">
             {data.topGainers.map((m) => (
@@ -196,7 +196,7 @@ function BreadthContent({ data }: { data: BreadthData }) {
         <div className="flex-1">
           <div className="flex items-center gap-1 mb-0.5">
             <TrendingDown className="w-2.5 h-2.5 text-red-400" />
-            <span className="text-[8px] font-mono text-red-400/70 uppercase">{t('breadthTopLosers')}</span>
+            <span className="text-micro font-mono text-red-400/70 uppercase">{t('breadthTopLosers')}</span>
           </div>
           <div className="flex flex-col">
             {data.topLosers.map((m) => (
@@ -208,7 +208,7 @@ function BreadthContent({ data }: { data: BreadthData }) {
 
       {/* Footer stats */}
       <div className="flex items-center justify-center gap-3 px-3 py-1 border-t border-border/20">
-        <span className="text-[8px] font-mono text-neutral/30">
+        <span className="text-micro font-mono text-neutral/30">
           {data.totalStocks} stocks | Median: {data.medianChange > 0 ? '+' : ''}{fmt(data.medianChange)}% | Vol Ratio: {fmt(data.volumeRatio)}
         </span>
       </div>
@@ -223,10 +223,10 @@ export function BreadthPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-cyan-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-cyan-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
             {t('panelBreadth')}
           </span>
         </div>
@@ -244,7 +244,7 @@ export function BreadthPanel() {
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-2">
               <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 animate-spin" />
-              <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+              <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
                 {t('loading')}
               </span>
             </div>
@@ -252,7 +252,7 @@ export function BreadthPanel() {
         ) : data ? (
           <BreadthContent data={data} />
         ) : (
-          <div className="flex items-center justify-center h-full text-[10px] font-mono text-neutral/40 uppercase">
+          <div className="flex items-center justify-center h-full text-mini font-mono text-neutral/40 uppercase">
             {t('breadthNoData')}
           </div>
         )}

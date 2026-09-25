@@ -71,10 +71,10 @@ export function FuturesCurvePanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-orange-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-orange-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-orange-400">
             {tr('panelFuturesCurve', 'FUTURES CURVE')}
           </span>
         </div>
@@ -87,11 +87,11 @@ export function FuturesCurvePanel() {
       </div>
 
       {/* Commodity selector + badges */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border/20 bg-[#030303] shrink-0 flex-wrap">
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border/20 bg-raised shrink-0 flex-wrap">
         <select
           value={commodity}
           onChange={(e) => setCommodity(e.target.value as CommodityKey)}
-          className="bg-black border border-border/30 text-[9px] font-mono text-white px-2 py-1 focus:outline-none focus:border-orange-400/50"
+          className="bg-black border border-border/30 text-mini font-mono text-white px-2 py-1 focus:outline-none focus:border-orange-400/50"
         >
           {COMMODITIES.map((c) => (
             <option key={c.key} value={c.key}>{c.label}</option>
@@ -101,14 +101,14 @@ export function FuturesCurvePanel() {
         {/* Spot price badge */}
         {data?.spotPrice != null && (
           <div className="flex items-center gap-1 bg-orange-500/10 border border-orange-500/30 px-2 py-0.5">
-            <span className="text-[8px] font-mono text-orange-400/60 uppercase">
+            <span className="text-micro font-mono text-orange-400/60 uppercase">
               {tr('futuresCurveSpot', 'Spot')}
             </span>
-            <span className="text-[10px] font-mono font-bold text-orange-300">
+            <span className="text-mini font-mono font-bold text-orange-300">
               {data.spotPrice.toFixed(2)}
             </span>
             {data.spotChangePct != null && (
-              <span className={`text-[8px] font-mono ${data.spotChangePct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              <span className={`text-micro font-mono ${data.spotChangePct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {data.spotChangePct >= 0 ? '+' : ''}{data.spotChangePct.toFixed(2)}%
               </span>
             )}
@@ -119,7 +119,7 @@ export function FuturesCurvePanel() {
         {data && (
           <div className={`flex items-center gap-1 ${shapeBgColor} border border-border/20 px-2 py-0.5`}>
             <span className={shapeColor}>{shapeIcon}</span>
-            <span className={`text-[8px] font-mono font-bold uppercase ${shapeColor}`}>
+            <span className={`text-micro font-mono font-bold uppercase ${shapeColor}`}>
               {data.shape}
             </span>
           </div>
@@ -128,10 +128,10 @@ export function FuturesCurvePanel() {
         {/* Front-back spread */}
         {data?.frontBackSpread != null && (
           <div className="flex items-center gap-1 bg-white/[0.02] border border-border/20 px-2 py-0.5">
-            <span className="text-[7px] font-mono text-neutral/40 uppercase">
+            <span className="text-micro font-mono text-neutral/40 uppercase">
               {tr('futuresCurveSpread', 'F/B Spread')}
             </span>
-            <span className={`text-[9px] font-mono font-bold ${data.frontBackSpread >= 0 ? 'text-orange-300' : 'text-emerald-300'}`}>
+            <span className={`text-mini font-mono font-bold ${data.frontBackSpread >= 0 ? 'text-orange-300' : 'text-emerald-300'}`}>
               {data.frontBackSpread >= 0 ? '+' : ''}{data.frontBackSpread.toFixed(2)}
             </span>
           </div>
@@ -141,13 +141,13 @@ export function FuturesCurvePanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-orange-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-orange-400 text-mini font-mono uppercase animate-pulse">
             {tr('loading', 'Loading...')}
           </div>
         )}
 
         {data && data.curve.length === 0 && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {tr('noData', 'No curve data available')}
           </div>
         )}
@@ -166,7 +166,7 @@ export function FuturesCurvePanel() {
             {/* Spread Bar Chart */}
             {data.spreads.length > 0 && (
               <div className="px-3 pt-2 pb-1 border-b border-border/20">
-                <div className="text-[7px] font-black uppercase tracking-widest text-neutral/40 mb-1">
+                <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-1">
                   {tr('futuresCurveMoMSpread', 'Month-to-Month Spreads')}
                 </div>
                 <SpreadChart spreads={data.spreads} />
@@ -175,7 +175,7 @@ export function FuturesCurvePanel() {
 
             {/* Contract Table */}
             <div>
-              <div className="grid grid-cols-[1.2fr_1.1fr_0.8fr_0.7fr_0.8fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+              <div className="grid grid-cols-[1.2fr_1.1fr_0.8fr_0.7fr_0.8fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider">
                 <span>{tr('futuresCurveMonth', 'Month')}</span>
                 <span className="text-right">{tr('futuresCurvePrice', 'Price')}</span>
                 <span className="text-right">{tr('futuresCurveChange', 'Chg%')}</span>
@@ -199,34 +199,34 @@ export function FuturesCurvePanel() {
                     }`}
                   >
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-mono font-bold text-white">{pt.month}</span>
-                      <span className="text-[7px] font-mono text-neutral/30">{pt.symbol}</span>
+                      <span className="text-mini font-mono font-bold text-white">{pt.month}</span>
+                      <span className="text-micro font-mono text-neutral/30">{pt.symbol}</span>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-orange-300 text-right self-center">
+                    <span className="text-mini font-mono font-bold text-orange-300 text-right self-center">
                       {pt.price.toFixed(2)}
                     </span>
-                    <span className={`text-[9px] font-mono text-right self-center ${
+                    <span className={`text-mini font-mono text-right self-center ${
                       pt.changePct != null
                         ? pt.changePct >= 0 ? 'text-emerald-400' : 'text-red-400'
                         : 'text-neutral/30'
                     }`}>
                       {pt.changePct != null ? `${pt.changePct >= 0 ? '+' : ''}${pt.changePct.toFixed(2)}%` : '-'}
                     </span>
-                    <span className="text-[9px] font-mono text-neutral/50 text-right self-center">
+                    <span className="text-mini font-mono text-neutral/50 text-right self-center">
                       {pt.daysToExpiry}d
                     </span>
                     <div className="text-right self-center">
                       {vsSpot != null && vsSpotPct != null ? (
                         <div className="flex flex-col items-end">
-                          <span className={`text-[9px] font-mono font-bold ${vsSpot >= 0 ? 'text-orange-300/70' : 'text-emerald-300/70'}`}>
+                          <span className={`text-mini font-mono font-bold ${vsSpot >= 0 ? 'text-orange-300/70' : 'text-emerald-300/70'}`}>
                             {vsSpot >= 0 ? '+' : ''}{vsSpot.toFixed(2)}
                           </span>
-                          <span className={`text-[7px] font-mono ${vsSpotPct >= 0 ? 'text-orange-400/40' : 'text-emerald-400/40'}`}>
+                          <span className={`text-micro font-mono ${vsSpotPct >= 0 ? 'text-orange-400/40' : 'text-emerald-400/40'}`}>
                             {vsSpotPct >= 0 ? '+' : ''}{vsSpotPct.toFixed(2)}%
                           </span>
                         </div>
                       ) : (
-                        <span className="text-[9px] font-mono text-neutral/30">-</span>
+                        <span className="text-mini font-mono text-neutral/30">-</span>
                       )}
                     </div>
                   </div>
@@ -235,7 +235,7 @@ export function FuturesCurvePanel() {
             </div>
 
             {/* Updated timestamp */}
-            <div className="px-3 py-1.5 text-[7px] font-mono text-neutral/25 text-right">
+            <div className="px-3 py-1.5 text-micro font-mono text-neutral/25 text-right">
               {new Date(data.updatedAt).toLocaleTimeString()}
             </div>
           </>
@@ -366,17 +366,17 @@ function TermStructureChart({
     >
       <defs>
         <linearGradient id="fc-fill-orange" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f97316" stopOpacity={0.2} />
-          <stop offset="100%" stopColor="#f97316" stopOpacity={0.02} />
+          <stop offset="0%" stopColor="var(--color-orange-500)" stopOpacity={0.2} />
+          <stop offset="100%" stopColor="var(--color-orange-500)" stopOpacity={0.02} />
         </linearGradient>
         <linearGradient id="fc-fill-green" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
-          <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+          <stop offset="0%" stopColor="var(--color-emerald-500)" stopOpacity={0.2} />
+          <stop offset="100%" stopColor="var(--color-emerald-500)" stopOpacity={0.02} />
         </linearGradient>
         <linearGradient id="fc-line-grad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#fb923c" />
-          <stop offset="50%" stopColor="#f97316" />
-          <stop offset="100%" stopColor="#ea580c" />
+          <stop offset="0%" stopColor="var(--color-orange-400)" />
+          <stop offset="50%" stopColor="var(--color-orange-500)" />
+          <stop offset="100%" stopColor="var(--color-orange-600)" />
         </linearGradient>
       </defs>
 
@@ -388,16 +388,16 @@ function TermStructureChart({
             y1={scaleY(v)}
             x2={W - PAD_R}
             y2={scaleY(v)}
-            stroke="rgba(255,255,255,0.04)"
+            stroke="color-mix(in srgb, var(--color-white) 4%, transparent)"
             strokeDasharray="2,3"
           />
           <text
             x={PAD_L - 4}
             y={scaleY(v) + 3}
             textAnchor="end"
-            fill="rgba(255,255,255,0.25)"
+            fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
             fontSize={7}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {v.toFixed(2)}
           </text>
@@ -410,7 +410,7 @@ function TermStructureChart({
         y1={H - PAD_B}
         x2={W - PAD_R}
         y2={H - PAD_B}
-        stroke="rgba(255,255,255,0.08)"
+        stroke="color-mix(in srgb, var(--color-white) 8%, transparent)"
       />
 
       {/* Spot price reference line */}
@@ -421,15 +421,15 @@ function TermStructureChart({
             y1={spotY}
             x2={W - PAD_R}
             y2={spotY}
-            stroke="rgba(249,115,22,0.3)"
+            stroke="color-mix(in srgb, var(--color-orange-500) 30%, transparent)"
             strokeDasharray="4,3"
           />
           <text
             x={W - PAD_R + 2}
             y={spotY + 3}
-            fill="rgba(249,115,22,0.5)"
+            fill="color-mix(in srgb, var(--color-orange-500) 50%, transparent)"
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             SPOT
           </text>
@@ -452,9 +452,9 @@ function TermStructureChart({
               x={p.x}
               y={H - PAD_B + 12}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.3)"
+              fill="color-mix(in srgb, var(--color-white) 30%, transparent)"
               fontSize={6.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {label}
             </text>
@@ -465,7 +465,7 @@ function TermStructureChart({
               y1={H - PAD_B}
               x2={p.x}
               y2={H - PAD_B + 3}
-              stroke="rgba(255,255,255,0.15)"
+              stroke="color-mix(in srgb, var(--color-white) 15%, transparent)"
             />
 
             {/* Data point dot */}
@@ -473,8 +473,8 @@ function TermStructureChart({
               cx={p.x}
               cy={p.y}
               r={hovered === i ? 4 : 2.5}
-              fill={hovered === i ? '#fb923c' : '#f97316'}
-              stroke={hovered === i ? '#fff' : 'none'}
+              fill={hovered === i ? 'var(--color-orange-400)' : 'var(--color-orange-500)'}
+              stroke={hovered === i ? 'var(--color-white)' : 'none'}
               strokeWidth={1}
             />
 
@@ -484,9 +484,9 @@ function TermStructureChart({
                 x={p.x}
                 y={p.y - 7}
                 textAnchor="middle"
-                fill="rgba(251,146,60,0.6)"
+                fill="color-mix(in srgb, var(--color-orange-400) 60%, transparent)"
                 fontSize={7}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 {p.data.price.toFixed(2)}
@@ -505,7 +505,7 @@ function TermStructureChart({
             y1={PAD_T}
             x2={points[hovered].x}
             y2={H - PAD_B}
-            stroke="rgba(249,115,22,0.3)"
+            stroke="color-mix(in srgb, var(--color-orange-500) 30%, transparent)"
             strokeDasharray="3,3"
           />
 
@@ -516,7 +516,7 @@ function TermStructureChart({
             width={72}
             height={24}
             fill="rgba(0,0,0,0.9)"
-            stroke="rgba(249,115,22,0.5)"
+            stroke="color-mix(in srgb, var(--color-orange-500) 50%, transparent)"
             strokeWidth={0.5}
           />
           {/* Tooltip text */}
@@ -524,9 +524,9 @@ function TermStructureChart({
             x={Math.min(points[hovered].x, W - PAD_R - 40)}
             y={Math.max(points[hovered].y - 15, PAD_T + 11)}
             textAnchor="middle"
-            fill="#fb923c"
+            fill="var(--color-orange-400)"
             fontSize={8}
-            fontFamily="monospace"
+            fontFamily="inherit"
             fontWeight="bold"
           >
             {points[hovered].data.month}
@@ -535,9 +535,9 @@ function TermStructureChart({
             x={Math.min(points[hovered].x, W - PAD_R - 40)}
             y={Math.max(points[hovered].y - 6, PAD_T + 20)}
             textAnchor="middle"
-            fill="#fdba74"
+            fill="var(--color-orange-300)"
             fontSize={9}
-            fontFamily="monospace"
+            fontFamily="inherit"
             fontWeight="bold"
           >
             {points[hovered].data.price.toFixed(2)}
@@ -595,7 +595,7 @@ function SpreadChart({ spreads }: { spreads: SpreadEntry[] }) {
         y1={zeroY}
         x2={W - PAD_R}
         y2={zeroY}
-        stroke="rgba(255,255,255,0.1)"
+        stroke="color-mix(in srgb, var(--color-white) 10%, transparent)"
       />
 
       {/* Bars */}
@@ -606,16 +606,16 @@ function SpreadChart({ spreads }: { spreads: SpreadEntry[] }) {
             y={bar.y}
             width={bar.w}
             height={Math.max(bar.h, 1)}
-            fill={bar.isPositive ? 'rgba(249,115,22,0.6)' : 'rgba(239,68,68,0.6)'}
+            fill={bar.isPositive ? 'color-mix(in srgb, var(--color-orange-500) 60%, transparent)' : 'color-mix(in srgb, var(--color-red-500) 60%, transparent)'}
           />
           {/* Label */}
           <text
             x={bar.x + bar.w / 2}
             y={H - PAD_B + 12}
             textAnchor="middle"
-            fill="rgba(255,255,255,0.25)"
+            fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
             fontSize={5.5}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {bar.data.pair.length > 7 ? bar.data.pair.slice(0, 7) : bar.data.pair}
           </text>
@@ -624,9 +624,9 @@ function SpreadChart({ spreads }: { spreads: SpreadEntry[] }) {
             x={bar.x + bar.w / 2}
             y={bar.isPositive ? bar.y - 2 : bar.y + bar.h + 8}
             textAnchor="middle"
-            fill={bar.isPositive ? 'rgba(251,146,60,0.7)' : 'rgba(239,68,68,0.7)'}
+            fill={bar.isPositive ? 'color-mix(in srgb, var(--color-orange-400) 70%, transparent)' : 'color-mix(in srgb, var(--color-red-500) 70%, transparent)'}
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {bar.data.spread >= 0 ? '+' : ''}{bar.data.spread.toFixed(2)}
           </text>
@@ -634,10 +634,10 @@ function SpreadChart({ spreads }: { spreads: SpreadEntry[] }) {
       ))}
 
       {/* Legend labels */}
-      <text x={PAD_L - 4} y={zeroY - 4} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace">
+      <text x={PAD_L - 4} y={zeroY - 4} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit">
         +
       </text>
-      <text x={PAD_L - 4} y={zeroY + 10} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace">
+      <text x={PAD_L - 4} y={zeroY + 10} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit">
         -
       </text>
     </svg>

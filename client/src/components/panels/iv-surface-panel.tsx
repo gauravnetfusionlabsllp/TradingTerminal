@@ -21,10 +21,10 @@ function useTr() {
 
 // ── Color helpers ──
 
-const EXPIRY_COLORS = ['#22d3ee', '#a78bfa', '#fb923c', '#34d399', '#f87171', '#fbbf24'];
+const EXPIRY_COLORS = ['var(--color-cyan-400)', 'var(--color-violet-400)', 'var(--color-orange-400)', 'var(--color-emerald-400)', 'var(--color-red-400)', 'var(--color-amber-400)'];
 
 function ivToColor(iv: number, minIV: number, maxIV: number): string {
-  if (maxIV <= minIV) return 'rgba(34,211,238,0.3)';
+  if (maxIV <= minIV) return 'color-mix(in srgb, var(--color-cyan-400) 30%, transparent)';
   const t = Math.min(1, Math.max(0, (iv - minIV) / (maxIV - minIV)));
   // cold cyan -> warm orange -> hot red
   if (t < 0.5) {
@@ -72,10 +72,10 @@ export function IVSurfacePanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-cyan-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-cyan-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
             {tr('panelIVSurface', 'IV SURFACE')}
           </span>
         </div>
@@ -91,12 +91,12 @@ export function IVSurfacePanel() {
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value.toUpperCase())}
-              className="w-16 bg-white/[0.04] border border-border/20 px-1.5 py-0.5 text-[9px] font-mono text-white uppercase outline-none focus:border-cyan-500/40"
+              className="w-16 bg-white/[0.04] border border-border/20 px-1.5 py-0.5 text-mini font-mono text-white uppercase outline-none focus:border-cyan-500/40"
               placeholder="SYMBOL"
             />
             <button
               type="submit"
-              className="px-1.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[8px] font-mono font-bold text-cyan-400 uppercase tracking-wider hover:bg-cyan-500/20 transition-colors"
+              className="px-1.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-micro font-mono font-bold text-cyan-400 uppercase tracking-wider hover:bg-cyan-500/20 transition-colors"
             >
               GO
             </button>
@@ -125,7 +125,7 @@ export function IVSurfacePanel() {
           <button
             key={key}
             onClick={() => setActiveTab(key as 'surface' | 'skew' | 'term')}
-            className={`flex-1 py-1.5 text-[8px] font-mono font-bold uppercase tracking-wider transition-colors ${
+            className={`flex-1 py-1.5 text-micro font-mono font-bold uppercase tracking-wider transition-colors ${
               activeTab === key
                 ? 'text-cyan-400 border-b border-cyan-400 bg-cyan-500/5'
                 : 'text-neutral/40 hover:text-neutral/60'
@@ -139,13 +139,13 @@ export function IVSurfacePanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-cyan-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-cyan-400 text-mini font-mono uppercase animate-pulse">
             {tr('loading', 'Loading...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {tr('ivNoData', 'No IV data available')}
           </div>
         )}
@@ -213,7 +213,7 @@ function SummaryRow({
       {/* Top row: symbol and main badges */}
       <div className="px-3 py-2 flex items-center gap-3 flex-wrap">
         <div>
-          <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
             {tr('ivSpotPrice', 'Spot')}
           </div>
           <div className="text-[14px] font-black font-mono text-white leading-none">
@@ -224,17 +224,17 @@ function SummaryRow({
 
         {/* ATM IV badge */}
         <div className="px-2 py-1 bg-cyan-500/10 border border-cyan-500/20">
-          <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
             ATM IV
           </div>
-          <div className="text-[11px] font-mono font-black text-cyan-400">
+          <div className="text-xs font-mono font-black text-cyan-400">
             {atmDisplay}
           </div>
         </div>
 
         {/* IV Percentile badge */}
         <div className="px-2 py-1 bg-white/[0.02] border border-border/20">
-          <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
             {tr('ivPercentile', 'IV Percentile')}
           </div>
           <div className="flex items-center gap-1.5">
@@ -244,7 +244,7 @@ function SummaryRow({
                 style={{ width: `${data.ivPercentile}%` }}
               />
             </div>
-            <span className={`text-[10px] font-mono font-black ${pctColor(data.ivPercentile)}`}>
+            <span className={`text-mini font-mono font-black ${pctColor(data.ivPercentile)}`}>
               {data.ivPercentile}
             </span>
           </div>
@@ -260,10 +260,10 @@ function SummaryRow({
           { label: 'HV', value: hvDisplay },
         ].map((m) => (
           <div key={m.label} className="flex items-center gap-1">
-            <span className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">
+            <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
               {m.label}
             </span>
-            <span className="text-[9px] font-mono font-bold text-white">{m.value}</span>
+            <span className="text-mini font-mono font-bold text-white">{m.value}</span>
           </div>
         ))}
       </div>
@@ -327,7 +327,7 @@ function VolSurface({
 
   if (data.expirations.length === 0 || moneynessSteps.length === 0) {
     return (
-      <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+      <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
         {tr('ivNoData', 'No IV data available')}
       </div>
     );
@@ -355,7 +355,7 @@ function VolSurface({
 
   return (
     <div className="px-3 py-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr('ivVolSurface', 'Implied Volatility Surface')}
       </div>
       <div className="relative">
@@ -405,7 +405,7 @@ function VolSurface({
                 y1={PAD_T}
                 x2={x}
                 y2={PAD_T + plotH}
-                stroke="rgba(255,255,255,0.3)"
+                stroke="color-mix(in srgb, var(--color-white) 30%, transparent)"
                 strokeWidth={1}
                 strokeDasharray="3,2"
               />
@@ -419,9 +419,9 @@ function VolSurface({
               x={PAD_L - 4}
               y={PAD_T + i * cellH + cellH / 2 + 3}
               textAnchor="end"
-              fill="rgba(255,255,255,0.35)"
+              fill="color-mix(in srgb, var(--color-white) 35%, transparent)"
               fontSize={7}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {exp.daysToExpiry}d
             </text>
@@ -436,9 +436,9 @@ function VolSurface({
                 x={PAD_L + i * cellW + cellW / 2}
                 y={H - 8}
                 textAnchor="middle"
-                fill="rgba(255,255,255,0.35)"
+                fill="color-mix(in srgb, var(--color-white) 35%, transparent)"
                 fontSize={6.5}
-                fontFamily="monospace"
+                fontFamily="inherit"
               >
                 {m.toFixed(2)}
               </text>
@@ -450,9 +450,9 @@ function VolSurface({
             x={PAD_L - 4}
             y={8}
             textAnchor="end"
-            fill="rgba(255,255,255,0.25)"
+            fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             DTE
           </text>
@@ -460,9 +460,9 @@ function VolSurface({
             x={W / 2}
             y={H - 1}
             textAnchor="middle"
-            fill="rgba(255,255,255,0.25)"
+            fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {tr('ivMoneyness', 'MONEYNESS (K/S)')}
           </text>
@@ -476,15 +476,15 @@ function VolSurface({
                 width={75}
                 height={24}
                 fill="rgba(0,0,0,0.9)"
-                stroke="rgba(34,211,238,0.4)"
+                stroke="color-mix(in srgb, var(--color-cyan-400) 40%, transparent)"
                 strokeWidth={0.5}
               />
               <text
                 x={Math.min(hover.x, W - 80) + 4}
                 y={Math.max(hover.y - 28, 2) + 10}
-                fill="#22d3ee"
+                fill="var(--color-cyan-400)"
                 fontSize={7}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 IV: {(hover.iv * 100).toFixed(1)}%
@@ -492,9 +492,9 @@ function VolSurface({
               <text
                 x={Math.min(hover.x, W - 80) + 4}
                 y={Math.max(hover.y - 28, 2) + 20}
-                fill="rgba(255,255,255,0.5)"
+                fill="color-mix(in srgb, var(--color-white) 50%, transparent)"
                 fontSize={6}
-                fontFamily="monospace"
+                fontFamily="inherit"
               >
                 K=${hover.strike} {hover.dte}d
               </text>
@@ -504,7 +504,7 @@ function VolSurface({
 
         {/* Color legend */}
         <div className="flex items-center gap-1 mt-1.5 justify-center">
-          <span className="text-[7px] font-mono text-neutral/30">
+          <span className="text-micro font-mono text-neutral/30">
             {(minIV * 100).toFixed(0)}%
           </span>
           <div
@@ -513,7 +513,7 @@ function VolSurface({
               background: `linear-gradient(to right, ${ivToColor(minIV, minIV, maxIV)}, ${ivToColor((minIV + maxIV) / 2, minIV, maxIV)}, ${ivToColor(maxIV, minIV, maxIV)})`,
             }}
           />
-          <span className="text-[7px] font-mono text-neutral/30">
+          <span className="text-micro font-mono text-neutral/30">
             {(maxIV * 100).toFixed(0)}%
           </span>
         </div>
@@ -576,7 +576,7 @@ function SkewCurves({
 
   if (allPoints.every((p) => p.length === 0)) {
     return (
-      <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+      <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
         {tr('ivNoData', 'No IV data available')}
       </div>
     );
@@ -610,7 +610,7 @@ function SkewCurves({
 
   return (
     <div className="px-3 py-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr('ivSkewCurves', 'IV Skew Curves by Expiration')}
       </div>
       <svg
@@ -626,16 +626,16 @@ function SkewCurves({
               y1={scaleY(v)}
               x2={W - PAD_R}
               y2={scaleY(v)}
-              stroke="rgba(255,255,255,0.04)"
+              stroke="color-mix(in srgb, var(--color-white) 4%, transparent)"
               strokeDasharray="2,2"
             />
             <text
               x={PAD_L - 4}
               y={scaleY(v) + 3}
               textAnchor="end"
-              fill="rgba(255,255,255,0.25)"
+              fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
               fontSize={6.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {(v * 100).toFixed(0)}%
             </text>
@@ -648,16 +648,16 @@ function SkewCurves({
               y1={PAD_T}
               x2={scaleX(v)}
               y2={H - PAD_B}
-              stroke="rgba(255,255,255,0.04)"
+              stroke="color-mix(in srgb, var(--color-white) 4%, transparent)"
               strokeDasharray="2,2"
             />
             <text
               x={scaleX(v)}
               y={H - 8}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.25)"
+              fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
               fontSize={6.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {v.toFixed(2)}
             </text>
@@ -670,7 +670,7 @@ function SkewCurves({
           y1={PAD_T}
           x2={scaleX(1.0)}
           y2={H - PAD_B}
-          stroke="rgba(255,255,255,0.15)"
+          stroke="color-mix(in srgb, var(--color-white) 15%, transparent)"
           strokeWidth={1}
           strokeDasharray="4,2"
         />
@@ -678,9 +678,9 @@ function SkewCurves({
           x={scaleX(1.0)}
           y={PAD_T - 4}
           textAnchor="middle"
-          fill="rgba(255,255,255,0.3)"
+          fill="color-mix(in srgb, var(--color-white) 30%, transparent)"
           fontSize={6}
-          fontFamily="monospace"
+          fontFamily="inherit"
         >
           ATM
         </text>
@@ -734,7 +734,7 @@ function SkewCurves({
               className="w-2.5 h-1"
               style={{ backgroundColor: EXPIRY_COLORS[i % EXPIRY_COLORS.length] }}
             />
-            <span className="text-[7px] font-mono text-neutral/50">
+            <span className="text-micro font-mono text-neutral/50">
               {exp.date} ({exp.daysToExpiry}d)
             </span>
           </button>
@@ -757,7 +757,7 @@ function TermStructureChart({
 
   if (termStructure.length < 2) {
     return (
-      <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+      <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
         {tr('ivNoTermData', 'Insufficient term structure data')}
       </div>
     );
@@ -801,8 +801,8 @@ function TermStructureChart({
     termStructure.length >= 2 &&
     termStructure[termStructure.length - 1].atmIV >
       termStructure[0].atmIV;
-  const lineColor = isContango ? '#22d3ee' : '#f87171';
-  const areaFill = isContango ? 'rgba(34,211,238,0.08)' : 'rgba(248,113,113,0.08)';
+  const lineColor = isContango ? 'var(--color-cyan-400)' : 'var(--color-red-400)';
+  const areaFill = isContango ? 'color-mix(in srgb, var(--color-cyan-400) 8%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 8%, transparent)';
 
   // Y ticks
   const yStep = (maxY - minY) > 0.1 ? 0.05 : 0.02;
@@ -814,11 +814,11 @@ function TermStructureChart({
   return (
     <div className="px-3 py-3">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40">
           {tr('ivATMTermStructure', 'ATM IV Term Structure')}
         </div>
         <span
-          className={`text-[8px] font-mono font-bold px-1.5 py-0.5 border ${
+          className={`text-micro font-mono font-bold px-1.5 py-0.5 border ${
             isContango
               ? 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20'
               : 'text-red-400 bg-red-500/10 border-red-500/20'
@@ -843,16 +843,16 @@ function TermStructureChart({
               y1={scaleY(v)}
               x2={W - PAD_R}
               y2={scaleY(v)}
-              stroke="rgba(255,255,255,0.04)"
+              stroke="color-mix(in srgb, var(--color-white) 4%, transparent)"
               strokeDasharray="2,2"
             />
             <text
               x={PAD_L - 4}
               y={scaleY(v) + 3}
               textAnchor="end"
-              fill="rgba(255,255,255,0.25)"
+              fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
               fontSize={6.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {(v * 100).toFixed(0)}%
             </text>
@@ -873,7 +873,7 @@ function TermStructureChart({
               y1={scaleY(historicalVol / 100)}
               x2={W - PAD_R}
               y2={scaleY(historicalVol / 100)}
-              stroke="#a78bfa"
+              stroke="var(--color-violet-400)"
               strokeWidth={1}
               strokeDasharray="4,3"
               opacity={0.6}
@@ -881,9 +881,9 @@ function TermStructureChart({
             <text
               x={W - PAD_R + 2}
               y={scaleY(historicalVol / 100) + 3}
-              fill="#a78bfa"
+              fill="var(--color-violet-400)"
               fontSize={6}
-              fontFamily="monospace"
+              fontFamily="inherit"
               opacity={0.7}
             >
               HV
@@ -895,15 +895,15 @@ function TermStructureChart({
         {points.map((p, i) => (
           <g key={i}>
             <circle cx={p.x} cy={p.y} r={3.5} fill={lineColor} />
-            <circle cx={p.x} cy={p.y} r={2} fill="#000" />
+            <circle cx={p.x} cy={p.y} r={2} fill="var(--color-black)" />
             {/* Value label */}
             <text
               x={p.x}
               y={p.y - 7}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.7)"
+              fill="color-mix(in srgb, var(--color-white) 70%, transparent)"
               fontSize={7}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {(p.atmIV * 100).toFixed(1)}%
@@ -913,9 +913,9 @@ function TermStructureChart({
               x={p.x}
               y={H - 10}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.35)"
+              fill="color-mix(in srgb, var(--color-white) 35%, transparent)"
               fontSize={7}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {p.daysToExpiry}d
             </text>
@@ -925,7 +925,7 @@ function TermStructureChart({
 
       {/* Annotation */}
       <div className="mt-2 px-1">
-        <div className="text-[7px] font-mono text-neutral/30">
+        <div className="text-micro font-mono text-neutral/30">
           {isContango
             ? tr(
                 'ivContangoNote',
@@ -940,10 +940,10 @@ function TermStructureChart({
 
       {/* Expiration details table */}
       <div className="mt-3">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-1">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-1">
           {tr('ivExpirationDetails', 'Expiration Details')}
         </div>
-        <div className="grid grid-cols-[1fr_0.6fr_0.8fr_0.8fr] px-0 py-0.5 border-b border-border/10 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+        <div className="grid grid-cols-[1fr_0.6fr_0.8fr_0.8fr] px-0 py-0.5 border-b border-border/10 text-micro font-black text-neutral/40 uppercase tracking-wider">
           <span>{tr('ivDate', 'Date')}</span>
           <span className="text-right">DTE</span>
           <span className="text-right">ATM IV</span>
@@ -954,14 +954,14 @@ function TermStructureChart({
             key={i}
             className="grid grid-cols-[1fr_0.6fr_0.8fr_0.8fr] px-0 py-1 border-b border-border/10 hover:bg-white/[0.02] transition-colors"
           >
-            <span className="text-[9px] font-mono text-white">{exp.date}</span>
-            <span className="text-[9px] font-mono text-neutral/50 text-right">
+            <span className="text-mini font-mono text-white">{exp.date}</span>
+            <span className="text-mini font-mono text-neutral/50 text-right">
               {exp.daysToExpiry}
             </span>
-            <span className="text-[9px] font-mono font-bold text-cyan-400 text-right">
+            <span className="text-mini font-mono font-bold text-cyan-400 text-right">
               {exp.atmIV !== null ? (exp.atmIV * 100).toFixed(1) + '%' : '--'}
             </span>
-            <span className="text-[9px] font-mono text-neutral/50 text-right">
+            <span className="text-mini font-mono text-neutral/50 text-right">
               {exp.skew.length}
             </span>
           </div>

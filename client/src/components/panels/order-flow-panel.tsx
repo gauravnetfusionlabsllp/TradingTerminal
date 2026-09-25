@@ -36,12 +36,12 @@ function fmtPrice(n: number): string {
 
 // ── Color constants ──
 
-const BUY_COLOR = '#38bdf8';   // sky-400
-const SELL_COLOR = '#f87171';   // red-400
-const POC_COLOR = '#fbbf24';    // amber-400
-const VA_COLOR = 'rgba(56,189,248,0.08)';
-const DELTA_POS = '#38bdf8';
-const DELTA_NEG = '#f87171';
+const BUY_COLOR = 'var(--color-sky-400)';   // sky-400
+const SELL_COLOR = 'var(--color-red-400)';   // red-400
+const POC_COLOR = 'var(--color-amber-400)';    // amber-400
+const VA_COLOR = 'color-mix(in srgb, var(--color-sky-400) 8%, transparent)';
+const DELTA_POS = 'var(--color-sky-400)';
+const DELTA_NEG = 'var(--color-red-400)';
 
 // ── Volume Profile SVG ──
 
@@ -100,16 +100,16 @@ function VolumeProfileChart({
       />
 
       {/* VA labels */}
-      <text x={LABEL_W - 2} y={vaTopY - 2} textAnchor="end" fill="rgba(56,189,248,0.4)" fontSize={6} fontFamily="monospace">
+      <text x={LABEL_W - 2} y={vaTopY - 2} textAnchor="end" fill="color-mix(in srgb, var(--color-sky-400) 40%, transparent)" fontSize={6} fontFamily="inherit">
         VAH
       </text>
-      <text x={LABEL_W - 2} y={vaBotY + 8} textAnchor="end" fill="rgba(56,189,248,0.4)" fontSize={6} fontFamily="monospace">
+      <text x={LABEL_W - 2} y={vaBotY + 8} textAnchor="end" fill="color-mix(in srgb, var(--color-sky-400) 40%, transparent)" fontSize={6} fontFamily="inherit">
         VAL
       </text>
 
       {/* VA boundary lines */}
-      <line x1={LABEL_W} y1={vaTopY} x2={W} y2={vaTopY} stroke="rgba(56,189,248,0.15)" strokeWidth={0.5} strokeDasharray="3,3" />
-      <line x1={LABEL_W} y1={vaBotY} x2={W} y2={vaBotY} stroke="rgba(56,189,248,0.15)" strokeWidth={0.5} strokeDasharray="3,3" />
+      <line x1={LABEL_W} y1={vaTopY} x2={W} y2={vaTopY} stroke="color-mix(in srgb, var(--color-sky-400) 15%, transparent)" strokeWidth={0.5} strokeDasharray="3,3" />
+      <line x1={LABEL_W} y1={vaBotY} x2={W} y2={vaBotY} stroke="color-mix(in srgb, var(--color-sky-400) 15%, transparent)" strokeWidth={0.5} strokeDasharray="3,3" />
 
       {/* Volume bars */}
       {profile.map((bin, i) => {
@@ -129,7 +129,7 @@ function VolumeProfileChart({
                 y={y - 1}
                 width={BAR_AREA_W}
                 height={barH + 2}
-                fill={bin.imbalance > 0 ? 'rgba(56,189,248,0.04)' : 'rgba(248,113,113,0.04)'}
+                fill={bin.imbalance > 0 ? 'color-mix(in srgb, var(--color-sky-400) 4%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 4%, transparent)'}
               />
             )}
 
@@ -159,9 +159,9 @@ function VolumeProfileChart({
                 x={LABEL_W - 4}
                 y={y + barH / 2 + 3}
                 textAnchor="end"
-                fill={isPoc ? POC_COLOR : 'rgba(255,255,255,0.35)'}
+                fill={isPoc ? POC_COLOR : 'color-mix(in srgb, var(--color-white) 35%, transparent)'}
                 fontSize={isPoc ? 7.5 : 7}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight={isPoc ? 'bold' : 'normal'}
               >
                 {fmtPrice(bin.priceLevel)}
@@ -192,7 +192,7 @@ function VolumeProfileChart({
         strokeWidth={1}
         strokeDasharray="4,2"
       />
-      <text x={W - 2} y={pocY - 3} textAnchor="end" fill={POC_COLOR} fontSize={7} fontFamily="monospace" fontWeight="bold">
+      <text x={W - 2} y={pocY - 3} textAnchor="end" fill={POC_COLOR} fontSize={7} fontFamily="inherit" fontWeight="bold">
         POC {fmtPrice(poc)}
       </text>
 
@@ -204,11 +204,11 @@ function VolumeProfileChart({
             y1={curY}
             x2={W}
             y2={curY}
-            stroke="rgba(255,255,255,0.5)"
+            stroke="color-mix(in srgb, var(--color-white) 50%, transparent)"
             strokeWidth={0.8}
           />
-          <rect x={W - 50} y={curY - 7} width={48} height={14} fill="rgba(255,255,255,0.1)" />
-          <text x={W - 4} y={curY + 3} textAnchor="end" fill="rgba(255,255,255,0.8)" fontSize={7.5} fontFamily="monospace" fontWeight="bold">
+          <rect x={W - 50} y={curY - 7} width={48} height={14} fill="color-mix(in srgb, var(--color-white) 10%, transparent)" />
+          <text x={W - 4} y={curY + 3} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 80%, transparent)" fontSize={7.5} fontFamily="inherit" fontWeight="bold">
             {fmtPrice(currentPrice)}
           </text>
         </>
@@ -277,7 +277,7 @@ function CumulativeDeltaChart({ data }: { data: DeltaPoint[] }) {
   // Determine overall delta direction for coloring
   const finalDelta = filtered[filtered.length - 1].delta;
   const deltaColor = finalDelta >= 0 ? DELTA_POS : DELTA_NEG;
-  const deltaFillColor = finalDelta >= 0 ? 'rgba(56,189,248,0.08)' : 'rgba(248,113,113,0.08)';
+  const deltaFillColor = finalDelta >= 0 ? 'color-mix(in srgb, var(--color-sky-400) 8%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 8%, transparent)';
 
   // Zero line
   const showZeroLine = deltaMin < 0 && deltaMax > 0;
@@ -291,7 +291,7 @@ function CumulativeDeltaChart({ data }: { data: DeltaPoint[] }) {
           y1={zeroY}
           x2={W - PAD_R}
           y2={zeroY}
-          stroke="rgba(255,255,255,0.08)"
+          stroke="color-mix(in srgb, var(--color-white) 8%, transparent)"
           strokeWidth={0.5}
           strokeDasharray="2,2"
         />
@@ -301,20 +301,20 @@ function CumulativeDeltaChart({ data }: { data: DeltaPoint[] }) {
       <path d={deltaFillPath} fill={deltaFillColor} />
 
       {/* Price line (secondary) */}
-      <path d={pricePath} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={0.8} />
+      <path d={pricePath} fill="none" stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth={0.8} />
 
       {/* Delta line (primary) */}
       <path d={deltaPath} fill="none" stroke={deltaColor} strokeWidth={1.2} />
 
       {/* Y-axis labels (delta) */}
-      <text x={PAD_L - 4} y={PAD_T + 4} textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize={6} fontFamily="monospace">
+      <text x={PAD_L - 4} y={PAD_T + 4} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 25%, transparent)" fontSize={6} fontFamily="inherit">
         {fmtVol(deltaMax)}
       </text>
-      <text x={PAD_L - 4} y={H - PAD_B + 2} textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize={6} fontFamily="monospace">
+      <text x={PAD_L - 4} y={H - PAD_B + 2} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 25%, transparent)" fontSize={6} fontFamily="inherit">
         {fmtVol(deltaMin)}
       </text>
       {showZeroLine && (
-        <text x={PAD_L - 4} y={zeroY + 3} textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace">
+        <text x={PAD_L - 4} y={zeroY + 3} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit">
           0
         </text>
       )}
@@ -329,11 +329,11 @@ function CumulativeDeltaChart({ data }: { data: DeltaPoint[] }) {
 
       {/* Legend */}
       <rect x={PAD_L + 4} y={2} width={4} height={4} fill={deltaColor} />
-      <text x={PAD_L + 11} y={6} fill="rgba(255,255,255,0.3)" fontSize={6} fontFamily="monospace">
+      <text x={PAD_L + 11} y={6} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize={6} fontFamily="inherit">
         DELTA
       </text>
-      <rect x={PAD_L + 48} y={2} width={4} height={4} fill="rgba(255,255,255,0.15)" />
-      <text x={PAD_L + 55} y={6} fill="rgba(255,255,255,0.3)" fontSize={6} fontFamily="monospace">
+      <rect x={PAD_L + 48} y={2} width={4} height={4} fill="color-mix(in srgb, var(--color-white) 15%, transparent)" />
+      <text x={PAD_L + 55} y={6} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize={6} fontFamily="inherit">
         PRICE
       </text>
 
@@ -350,9 +350,9 @@ function CumulativeDeltaChart({ data }: { data: DeltaPoint[] }) {
             x={xPos(idx)}
             y={H - 2}
             textAnchor={idx === 0 ? 'start' : idx === filtered.length - 1 ? 'end' : 'middle'}
-            fill="rgba(255,255,255,0.2)"
+            fill="color-mix(in srgb, var(--color-white) 20%, transparent)"
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {label}
           </text>
@@ -369,10 +369,10 @@ function BuySellBar({ buyPct }: { buyPct: number }) {
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex items-center justify-between">
-        <span className="text-[7px] font-mono font-bold" style={{ color: BUY_COLOR }}>
+        <span className="text-micro font-mono font-bold" style={{ color: BUY_COLOR }}>
           BUY {buyPct.toFixed(1)}%
         </span>
-        <span className="text-[7px] font-mono font-bold" style={{ color: SELL_COLOR }}>
+        <span className="text-micro font-mono font-bold" style={{ color: SELL_COLOR }}>
           SELL {sellPct.toFixed(1)}%
         </span>
       </div>
@@ -399,7 +399,7 @@ function ImbalanceZones({ profile }: { profile: ProfileBin[] }) {
 
   return (
     <div className="px-3 py-1.5 border-t border-border/20">
-      <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+      <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
         {tr(t, 'ofImbalanceZones', 'Imbalance Zones')}
       </span>
       <div className="mt-1 flex flex-col gap-0.5">
@@ -413,24 +413,24 @@ function ImbalanceZones({ profile }: { profile: ProfileBin[] }) {
           return (
             <div key={i} className="flex items-center justify-between py-0.5">
               <div className="flex items-center gap-2">
-                <span className="text-[8px] font-mono font-bold text-neutral/60">
+                <span className="text-micro font-mono font-bold text-neutral/60">
                   {fmtPrice(z.priceLevel)}
                 </span>
                 <span
-                  className="text-[7px] font-mono font-black px-1 py-0.5"
+                  className="text-micro font-mono font-black px-1 py-0.5"
                   style={{
                     color: isBuyDom ? BUY_COLOR : SELL_COLOR,
-                    backgroundColor: isBuyDom ? 'rgba(56,189,248,0.1)' : 'rgba(248,113,113,0.1)',
+                    backgroundColor: isBuyDom ? 'color-mix(in srgb, var(--color-sky-400) 10%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 10%, transparent)',
                   }}
                 >
                   {isBuyDom ? 'BUY DOM' : 'SELL DOM'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[7px] font-mono text-neutral/30">
+                <span className="text-micro font-mono text-neutral/30">
                   {ratio.toFixed(1)}:1
                 </span>
-                <span className="text-[8px] font-mono font-bold text-neutral/50">
+                <span className="text-micro font-mono font-bold text-neutral/50">
                   {fmtVol(z.totalVol)}
                 </span>
               </div>
@@ -470,34 +470,34 @@ function SummaryFooter({
       {/* Stats grid */}
       <div className="grid grid-cols-4 gap-2 mt-1">
         <div className="flex flex-col">
-          <span className="text-[6px] font-mono text-neutral/30 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral/30 uppercase tracking-wider">
             {tr(t, 'ofNetDelta', 'Net Delta')}
           </span>
-          <span className="text-[9px] font-mono font-bold" style={{ color: deltaColor }}>
+          <span className="text-mini font-mono font-bold" style={{ color: deltaColor }}>
             {fmtVolSigned(summary.netDelta)}
           </span>
         </div>
         <div className="flex flex-col">
-          <span className="text-[6px] font-mono text-neutral/30 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral/30 uppercase tracking-wider">
             {tr(t, 'ofVwap', 'VWAP')}
           </span>
-          <span className="text-[9px] font-mono font-bold text-sky-400">
+          <span className="text-mini font-mono font-bold text-sky-400">
             {fmtPrice(summary.vwap)}
           </span>
         </div>
         <div className="flex flex-col">
-          <span className="text-[6px] font-mono text-neutral/30 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral/30 uppercase tracking-wider">
             {tr(t, 'ofPoc', 'POC')}
           </span>
-          <span className="text-[9px] font-mono font-bold" style={{ color: POC_COLOR }}>
+          <span className="text-mini font-mono font-bold" style={{ color: POC_COLOR }}>
             {fmtPrice(poc)}
           </span>
         </div>
         <div className="flex flex-col">
-          <span className="text-[6px] font-mono text-neutral/30 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral/30 uppercase tracking-wider">
             {tr(t, 'ofValueArea', 'Value Area')}
           </span>
-          <span className="text-[9px] font-mono font-bold text-neutral/50">
+          <span className="text-mini font-mono font-bold text-neutral/50">
             {fmtPrice(valueArea.low)}-{fmtPrice(valueArea.high)}
           </span>
         </div>
@@ -507,15 +507,15 @@ function SummaryFooter({
       <div className="flex items-center gap-3 mt-0.5">
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5" style={{ backgroundColor: BUY_COLOR }} />
-          <span className="text-[7px] font-mono text-neutral/30">BUY VOL</span>
-          <span className="text-[8px] font-mono font-bold" style={{ color: BUY_COLOR }}>
+          <span className="text-micro font-mono text-neutral/30">BUY VOL</span>
+          <span className="text-micro font-mono font-bold" style={{ color: BUY_COLOR }}>
             {fmtVol(summary.totalBuyVol)}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5" style={{ backgroundColor: SELL_COLOR }} />
-          <span className="text-[7px] font-mono text-neutral/30">SELL VOL</span>
-          <span className="text-[8px] font-mono font-bold" style={{ color: SELL_COLOR }}>
+          <span className="text-micro font-mono text-neutral/30">SELL VOL</span>
+          <span className="text-micro font-mono font-bold" style={{ color: SELL_COLOR }}>
             {fmtVol(summary.totalSellVol)}
           </span>
         </div>
@@ -553,15 +553,15 @@ export function OrderFlowPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           {/* Icon */}
           <svg viewBox="0 0 16 16" className="w-4 h-4">
-            <rect x="2" y="8" width="3" height="6" fill="#38bdf8" opacity="0.7" />
-            <rect x="6" y="4" width="3" height="10" fill="#38bdf8" opacity="0.9" />
-            <rect x="10" y="6" width="3" height="8" fill="#f87171" opacity="0.7" />
+            <rect x="2" y="8" width="3" height="6" fill="var(--color-sky-400)" opacity="0.7" />
+            <rect x="6" y="4" width="3" height="10" fill="var(--color-sky-400)" opacity="0.9" />
+            <rect x="10" y="6" width="3" height="8" fill="var(--color-red-400)" opacity="0.7" />
           </svg>
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-sky-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-sky-400">
             {tr(t, 'ofTitle', 'Order Flow')}
           </span>
         </div>
@@ -573,7 +573,7 @@ export function OrderFlowPanel() {
             onChange={e => setInputValue(e.target.value.toUpperCase())}
             onKeyDown={handleKeyDown}
             onBlur={handleSymbolSubmit}
-            className="w-16 bg-white/[0.03] border border-border/20 px-1.5 py-0.5 text-[9px] font-mono font-bold text-neutral/80 outline-none focus:border-sky-500/40 uppercase"
+            className="w-16 bg-white/[0.03] border border-border/20 px-1.5 py-0.5 text-mini font-mono font-bold text-neutral/80 outline-none focus:border-sky-500/40 uppercase"
             spellCheck={false}
           />
           {/* Refresh */}
@@ -590,7 +590,7 @@ export function OrderFlowPanel() {
             <button
               key={opt.key}
               onClick={() => setRange(opt.key)}
-              className={`px-2 py-0.5 text-[8px] font-black font-mono uppercase tracking-wider transition-colors ${
+              className={`px-2 py-0.5 text-micro font-black font-mono uppercase tracking-wider transition-colors ${
                 range === opt.key
                   ? 'text-sky-400 bg-sky-500/10'
                   : 'text-neutral/30 hover:text-neutral/60'
@@ -603,13 +603,13 @@ export function OrderFlowPanel() {
         {data && (
           <div className="flex items-center gap-2">
             {/* VWAP badge */}
-            <span className="text-[7px] font-mono text-neutral/30">VWAP</span>
-            <span className="text-[8px] font-mono font-bold text-sky-400">
+            <span className="text-micro font-mono text-neutral/30">VWAP</span>
+            <span className="text-micro font-mono font-bold text-sky-400">
               {fmtPrice(data.summary.vwap)}
             </span>
             {/* Net Delta badge */}
-            <span className="text-[7px] font-mono text-neutral/30">DELTA</span>
-            <span className="text-[8px] font-mono font-bold" style={{ color: deltaColor }}>
+            <span className="text-micro font-mono text-neutral/30">DELTA</span>
+            <span className="text-micro font-mono font-bold" style={{ color: deltaColor }}>
               {fmtVolSigned(data.summary.netDelta)}
             </span>
           </div>
@@ -622,7 +622,7 @@ export function OrderFlowPanel() {
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-2">
               <div className="w-5 h-5 border-2 border-sky-400/30 border-t-sky-400 rounded-full animate-spin" />
-              <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+              <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
                 {tr(t, 'loading', 'Loading...')}
               </span>
             </div>
@@ -632,21 +632,21 @@ export function OrderFlowPanel() {
             {/* Volume Profile Chart */}
             <div className="px-2 pt-2">
               <div className="flex items-center justify-between px-1 mb-1">
-                <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+                <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
                   {tr(t, 'ofVolumeProfile', 'Volume Profile')}
                 </span>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-1.5" style={{ backgroundColor: BUY_COLOR, opacity: 0.6 }} />
-                    <span className="text-[6px] font-mono text-neutral/25">BUY</span>
+                    <span className="text-micro font-mono text-neutral/25">BUY</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-1.5" style={{ backgroundColor: SELL_COLOR, opacity: 0.5 }} />
-                    <span className="text-[6px] font-mono text-neutral/25">SELL</span>
+                    <span className="text-micro font-mono text-neutral/25">SELL</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-0.5" style={{ backgroundColor: POC_COLOR }} />
-                    <span className="text-[6px] font-mono text-neutral/25">POC</span>
+                    <span className="text-micro font-mono text-neutral/25">POC</span>
                   </div>
                 </div>
               </div>
@@ -662,10 +662,10 @@ export function OrderFlowPanel() {
             {data.cumulativeDelta.length > 1 && (
               <div className="px-2 pt-1">
                 <div className="flex items-center justify-between px-1 mb-1">
-                  <span className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">
+                  <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
                     {tr(t, 'ofCumDelta', 'Cumulative Delta')}
                   </span>
-                  <span className="text-[7px] font-mono text-neutral/25">
+                  <span className="text-micro font-mono text-neutral/25">
                     {tr(t, 'ofDeltaHint', 'Rising = buying pressure')}
                   </span>
                 </div>
@@ -684,7 +684,7 @@ export function OrderFlowPanel() {
             />
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-[10px] font-mono text-neutral/40 uppercase">
+          <div className="flex items-center justify-center h-full text-mini font-mono text-neutral/40 uppercase">
             {tr(t, 'ofNoData', 'No data available')}
           </div>
         )}

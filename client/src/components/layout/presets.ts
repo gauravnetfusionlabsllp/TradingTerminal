@@ -13,7 +13,7 @@ export const GLOBAL: IJsonModel['global'] = {
   tabEnableRename: false,
   tabSetEnableMaximize: true,
   tabSetEnableClose: false,
-  splitterSize: 2,
+  splitterSize: 4, // the canvas gutter between panels
   splitterExtra: 6,
   tabSetMinHeight: 80,
   tabSetMinWidth: 80,

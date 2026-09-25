@@ -58,7 +58,7 @@ function EpsOverviewCard({ eps, pe }: {
         { label: 'P/E (FWD)', value: pe.forward != null ? pe.forward.toFixed(1) : '-', color: 'text-neutral/70' },
       ].map((item) => (
         <div key={item.label} className="px-2 py-1.5 bg-black/40">
-          <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">{item.label}</div>
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">{item.label}</div>
           <div className={`text-[12px] font-mono font-bold ${item.color}`}>{item.value}</div>
         </div>
       ))}
@@ -84,7 +84,7 @@ function ConsensusTable({ estimates }: {
 
   return (
     <div className="border border-white/[0.06] rounded overflow-hidden">
-      <table className="w-full text-[9px] font-mono">
+      <table className="w-full text-mini font-mono">
         <thead>
           <tr className="bg-white/[0.03] border-b border-white/[0.06]">
             <th className="text-left px-2 py-1 text-neutral/40 uppercase tracking-wider font-medium">Period</th>
@@ -119,7 +119,7 @@ function EarningsSurpriseChart({ history }: { history: EarningsHistoryEntry[] })
   const data = useMemo(() => [...history].reverse().slice(-8), [history]);
 
   if (data.length === 0) {
-    return <div className="text-center text-neutral/30 text-[9px] font-mono py-4 uppercase">No history data</div>;
+    return <div className="text-center text-neutral/30 text-mini font-mono py-4 uppercase">No history data</div>;
   }
 
   // Calculate scale
@@ -156,7 +156,7 @@ function EarningsSurpriseChart({ history }: { history: EarningsHistoryEntry[] })
       {/* Zero line */}
       {minVal < 0 && (
         <line x1={padding.left} x2={chartW - padding.right} y1={zeroY} y2={zeroY}
-          stroke="rgba(255,255,255,0.08)" strokeWidth="0.3" strokeDasharray="1,1" />
+          stroke="color-mix(in srgb, var(--color-white) 8%, transparent)" strokeWidth="0.3" strokeDasharray="1,1" />
       )}
 
       {data.map((d, i) => {
@@ -174,7 +174,7 @@ function EarningsSurpriseChart({ history }: { history: EarningsHistoryEntry[] })
                 y={est >= 0 ? yScale(est) : zeroY}
                 width={barWidth}
                 height={Math.abs(yScale(est) - zeroY) || 0.5}
-                fill="rgba(148,163,184,0.4)"
+                fill="color-mix(in srgb, var(--color-slate-400) 40%, transparent)"
                 rx="0.5"
               />
             )}
@@ -185,7 +185,7 @@ function EarningsSurpriseChart({ history }: { history: EarningsHistoryEntry[] })
                 y={act >= 0 ? yScale(act) : zeroY}
                 width={barWidth}
                 height={Math.abs(yScale(act) - zeroY) || 0.5}
-                fill={beat ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'}
+                fill={beat ? 'color-mix(in srgb, var(--color-green-400) 70%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 70%, transparent)'}
                 rx="0.5"
               />
             )}
@@ -195,9 +195,9 @@ function EarningsSurpriseChart({ history }: { history: EarningsHistoryEntry[] })
                 x={x + barWidth + gap / 2}
                 y={padding.top - 2}
                 textAnchor="middle"
-                fill={d.surprisePct >= 0 ? '#4ade80' : '#f87171'}
+                fill={d.surprisePct >= 0 ? 'var(--color-green-400)' : 'var(--color-red-400)'}
                 fontSize="2.8"
-                fontFamily="monospace"
+                fontFamily="inherit"
               >
                 {d.surprisePct >= 0 ? '+' : ''}{d.surprisePct.toFixed(1)}%
               </text>
@@ -207,9 +207,9 @@ function EarningsSurpriseChart({ history }: { history: EarningsHistoryEntry[] })
               x={x + barWidth}
               y={chartH - 2}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.3)"
+              fill="color-mix(in srgb, var(--color-white) 30%, transparent)"
               fontSize="2.8"
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {d.quarter}
             </text>
@@ -218,10 +218,10 @@ function EarningsSurpriseChart({ history }: { history: EarningsHistoryEntry[] })
       })}
 
       {/* Legend */}
-      <rect x={chartW - 22} y={1} width={3} height={2} fill="rgba(148,163,184,0.4)" rx="0.3" />
-      <text x={chartW - 18} y={2.8} fill="rgba(255,255,255,0.3)" fontSize="2.5" fontFamily="monospace">Est</text>
-      <rect x={chartW - 11} y={1} width={3} height={2} fill="rgba(74,222,128,0.7)" rx="0.3" />
-      <text x={chartW - 7} y={2.8} fill="rgba(255,255,255,0.3)" fontSize="2.5" fontFamily="monospace">Act</text>
+      <rect x={chartW - 22} y={1} width={3} height={2} fill="color-mix(in srgb, var(--color-slate-400) 40%, transparent)" rx="0.3" />
+      <text x={chartW - 18} y={2.8} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="2.5" fontFamily="inherit">Est</text>
+      <rect x={chartW - 11} y={1} width={3} height={2} fill="color-mix(in srgb, var(--color-green-400) 70%, transparent)" rx="0.3" />
+      <text x={chartW - 7} y={2.8} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="2.5" fontFamily="inherit">Act</text>
     </svg>
   );
 }
@@ -232,7 +232,7 @@ function HistoryTable({ history }: { history: EarningsHistoryEntry[] }) {
 
   return (
     <div className="border border-white/[0.06] rounded overflow-hidden">
-      <table className="w-full text-[9px] font-mono">
+      <table className="w-full text-mini font-mono">
         <thead>
           <tr className="bg-white/[0.03] border-b border-white/[0.06]">
             <th className="text-left px-2 py-1 text-neutral/40 uppercase tracking-wider font-medium">Quarter</th>
@@ -286,7 +286,7 @@ function RevisionsTab({ revisions }: {
 
   const hasAnyData = rows.some(r => r.data != null);
   if (!hasAnyData) {
-    return <div className="text-center text-neutral/30 text-[9px] font-mono py-8 uppercase">No revision data available</div>;
+    return <div className="text-center text-neutral/30 text-mini font-mono py-8 uppercase">No revision data available</div>;
   }
 
   function arrow(current: number | null, prev: number | null): string {
@@ -305,7 +305,7 @@ function RevisionsTab({ revisions }: {
 
   return (
     <div className="border border-white/[0.06] rounded overflow-hidden">
-      <table className="w-full text-[9px] font-mono">
+      <table className="w-full text-mini font-mono">
         <thead>
           <tr className="bg-white/[0.03] border-b border-white/[0.06]">
             <th className="text-left px-2 py-1 text-neutral/40 uppercase tracking-wider font-medium">Period</th>
@@ -379,18 +379,18 @@ export function EarningsEstimatesPanel() {
   ];
 
   return (
-    <GlassCard className="flex flex-col h-full text-[10px]">
+    <GlassCard className="flex flex-col h-full text-mini">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.04]">
         <div className="flex items-center gap-1.5">
           <BarChart3 size={12} className="text-blue-400" />
-          <span className="text-[10px] font-mono font-bold tracking-widest text-neutral/80 uppercase">
+          <span className="text-mini font-mono font-bold tracking-widest text-neutral/80 uppercase">
             {tr(t, 'panelEarningsEstimates', 'EARNINGS ESTIMATES')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {dataUpdatedAt > 0 && (
-            <span className="text-[9px] font-mono text-neutral/30">
+            <span className="text-mini font-mono text-neutral/30">
               {new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -413,19 +413,19 @@ export function EarningsEstimatesPanel() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value.toUpperCase())}
             placeholder="SYMBOL"
-            className="bg-white/[0.04] border border-white/[0.08] rounded px-2 py-0.5 text-[10px] font-mono text-white w-20 outline-none focus:border-blue-400/50 uppercase"
+            className="bg-white/[0.04] border border-white/[0.08] rounded px-2 py-0.5 text-mini font-mono text-white w-20 outline-none focus:border-blue-400/50 uppercase"
           />
           <button
             type="submit"
-            className="px-2 py-0.5 text-[9px] font-mono uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30 rounded hover:bg-blue-500/30 transition-colors"
+            className="px-2 py-0.5 text-mini font-mono uppercase bg-blue-500/20 text-blue-400 border border-blue-400/30 rounded hover:bg-blue-500/30 transition-colors"
           >
             Go
           </button>
         </form>
         {data && (
           <div className="flex items-center gap-2 ml-auto">
-            <span className="text-[10px] font-mono text-neutral/60 truncate max-w-[120px]">{data.companyName}</span>
-            <span className="text-[11px] font-mono font-bold text-white">${data.currentPrice.toFixed(2)}</span>
+            <span className="text-mini font-mono text-neutral/60 truncate max-w-[120px]">{data.companyName}</span>
+            <span className="text-xs font-mono font-bold text-white">${data.currentPrice.toFixed(2)}</span>
           </div>
         )}
       </div>
@@ -436,7 +436,7 @@ export function EarningsEstimatesPanel() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded transition-colors whitespace-nowrap ${
+            className={`px-2 py-0.5 text-mini font-mono uppercase tracking-wider rounded transition-colors whitespace-nowrap ${
               activeTab === tab.key
                 ? 'bg-blue-500/20 text-blue-400 border border-blue-400/30'
                 : 'text-neutral/40 hover:text-neutral/70 border border-transparent'
@@ -454,7 +454,7 @@ export function EarningsEstimatesPanel() {
             <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 animate-spin rounded-full" />
           </div>
         ) : !data ? (
-          <div className="flex items-center justify-center h-full text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center h-full text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {tr(t, 'eeNoData', 'No data available')}
           </div>
         ) : (
@@ -463,25 +463,25 @@ export function EarningsEstimatesPanel() {
               <div className="flex flex-col gap-3">
                 {/* EPS Overview */}
                 <div>
-                  <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">EPS Overview</div>
+                  <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">EPS Overview</div>
                   <EpsOverviewCard eps={data.eps} pe={data.pe} />
                 </div>
 
                 {/* Consensus Estimates */}
                 <div>
-                  <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">Consensus Estimates</div>
+                  <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">Consensus Estimates</div>
                   <ConsensusTable estimates={data.estimates} />
                 </div>
 
                 {/* Revenue */}
                 <div className="grid grid-cols-2 gap-px bg-white/[0.04] border border-white/[0.06] rounded">
                   <div className="px-2 py-1.5 bg-black/40">
-                    <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">Revenue (TTM)</div>
-                    <div className="text-[11px] font-mono font-bold text-blue-400">{formatLargeNumber(data.revenue.ttm)}</div>
+                    <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">Revenue (TTM)</div>
+                    <div className="text-xs font-mono font-bold text-blue-400">{formatLargeNumber(data.revenue.ttm)}</div>
                   </div>
                   <div className="px-2 py-1.5 bg-black/40">
-                    <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">Revenue Growth</div>
-                    <div className={`text-[11px] font-mono font-bold ${pctColor(data.revenue.growth)}`}>
+                    <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">Revenue Growth</div>
+                    <div className={`text-xs font-mono font-bold ${pctColor(data.revenue.growth)}`}>
                       {formatPct(data.revenue.growth)}
                     </div>
                   </div>
@@ -493,7 +493,7 @@ export function EarningsEstimatesPanel() {
               <div className="flex flex-col gap-3">
                 {/* Surprise Chart */}
                 <div>
-                  <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">Earnings Surprise</div>
+                  <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">Earnings Surprise</div>
                   <div className="bg-white/[0.02] border border-white/[0.06] rounded p-2">
                     <EarningsSurpriseChart history={data.earningsHistory} />
                   </div>
@@ -501,7 +501,7 @@ export function EarningsEstimatesPanel() {
 
                 {/* History Table */}
                 <div>
-                  <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">Earnings History</div>
+                  <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">Earnings History</div>
                   <HistoryTable history={data.earningsHistory} />
                 </div>
               </div>
@@ -510,7 +510,7 @@ export function EarningsEstimatesPanel() {
             {activeTab === 'revisions' && (
               <div className="flex flex-col gap-3">
                 <div>
-                  <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">Estimate Revisions (EPS Trend)</div>
+                  <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">Estimate Revisions (EPS Trend)</div>
                   <RevisionsTab revisions={data.revisions} />
                 </div>
               </div>
@@ -520,7 +520,7 @@ export function EarningsEstimatesPanel() {
       </div>
 
       {/* Key Stats Summary Bar */}
-      <div className="flex items-center justify-between px-3 py-1 border-t border-white/[0.04] text-[9px] font-mono text-neutral/30">
+      <div className="flex items-center justify-between px-3 py-1 border-t border-white/[0.04] text-mini font-mono text-neutral/30">
         <div className="flex items-center gap-3">
           {data?.nextEarningsDate && (
             <span>

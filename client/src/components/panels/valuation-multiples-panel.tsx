@@ -47,20 +47,20 @@ export function ValuationMultiplesPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-teal-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-teal-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-teal-400">
             {tr(t, 'panelValuationMultiples', 'Valuation Multiples')}
           </span>
           {data?.stocks && (
-            <span className="text-[7px] font-mono text-neutral-500">{filtered.length} stocks</span>
+            <span className="text-micro font-mono text-neutral-500">{filtered.length} stocks</span>
           )}
         </div>
         <div className="flex items-center gap-1.5">
           {VIEWS.map(v => (
             <button key={v} onClick={() => setView(v)}
-              className={`px-1.5 py-0.5 text-[7px] font-mono font-bold uppercase tracking-wider transition-colors ${view === v ? 'text-teal-400 bg-teal-400/10' : 'text-neutral-600 hover:text-neutral-400'}`}
+              className={`px-1.5 py-0.5 text-micro font-mono font-bold uppercase tracking-wider transition-colors ${view === v ? 'text-teal-400 bg-teal-400/10' : 'text-neutral-600 hover:text-neutral-400'}`}
             >{v}</button>
           ))}
           <button onClick={() => refetch()} className="p-1 text-neutral-500 hover:text-teal-400 transition-colors">
@@ -74,7 +74,7 @@ export function ValuationMultiplesPanel() {
         <div className="flex items-center gap-1 px-3 py-1 border-b border-border/20 shrink-0 overflow-x-auto no-scrollbar">
           {sectors.map(s => (
             <button key={s as string} onClick={() => setSectorFilter(s as string)}
-              className={`px-1.5 py-0.5 text-[7px] font-mono font-bold uppercase whitespace-nowrap transition-colors ${sectorFilter === s ? 'text-teal-400 bg-teal-400/10' : 'text-neutral-600 hover:text-neutral-400'}`}
+              className={`px-1.5 py-0.5 text-micro font-mono font-bold uppercase whitespace-nowrap transition-colors ${sectorFilter === s ? 'text-teal-400 bg-teal-400/10' : 'text-neutral-600 hover:text-neutral-400'}`}
             >{s as string}</button>
           ))}
         </div>
@@ -82,7 +82,7 @@ export function ValuationMultiplesPanel() {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-teal-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-teal-400 text-mini font-mono uppercase animate-pulse">
             {tr(t, 'loading', 'Loading...')}
           </div>
         )}
@@ -119,10 +119,10 @@ function CompsView({ stocks, onSort, sortKey, sortAsc, pctileColor, premColor, o
 
   return (
     <div>
-      <div className="flex items-center px-2 py-0.5 border-b border-border/10 bg-[#030303]">
+      <div className="flex items-center px-2 py-0.5 border-b border-border/10 bg-raised">
         {cols.map(c => (
           <button key={c.key} onClick={() => onSort(c.key)}
-            className={`${c.w} text-[7px] font-mono uppercase text-right pr-1.5 ${sortKey === c.key ? 'text-teal-400' : 'text-neutral-600'} hover:text-teal-300`}
+            className={`${c.w} text-micro font-mono uppercase text-right pr-1.5 ${sortKey === c.key ? 'text-teal-400' : 'text-neutral-600'} hover:text-teal-300`}
           >{c.label}{sortKey === c.key ? (sortAsc ? ' ↑' : ' ↓') : ''}</button>
         ))}
       </div>
@@ -133,15 +133,15 @@ function CompsView({ stocks, onSort, sortKey, sortAsc, pctileColor, premColor, o
         return (
           <div key={s.ticker as string} onClick={() => onSelect(s.ticker as string)}
             className="flex items-center px-2 py-[3px] border-b border-border/5 hover:bg-teal-400/[0.02] transition-colors cursor-pointer">
-            <span className="w-[52px] text-[8px] font-mono font-bold text-white pr-1.5">{s.ticker as string}</span>
-            <span className="w-[40px] text-[8px] font-mono text-right pr-1.5 text-neutral-300">{m.peTrailing.toFixed(1)}</span>
-            <span className="w-[44px] text-[8px] font-mono text-right pr-1.5 text-neutral-300">{m.peForward.toFixed(1)}</span>
-            <span className="w-[52px] text-[8px] font-mono text-right pr-1.5 text-neutral-300">{m.evEbitda.toFixed(1)}</span>
-            <span className="w-[36px] text-[8px] font-mono text-right pr-1.5 text-neutral-300">{m.pSales.toFixed(1)}</span>
-            <span className="w-[36px] text-[8px] font-mono text-right pr-1.5 text-neutral-300">{m.pBook.toFixed(1)}</span>
-            <span className="w-[36px] text-[8px] font-mono text-right pr-1.5 text-neutral-300">{m.pegRatio.toFixed(2)}</span>
-            <span className={`w-[44px] text-[8px] font-mono text-right pr-1.5 font-bold ${pctileColor(p.pe5YPctile)}`}>{p.pe5YPctile}</span>
-            <span className={`w-[48px] text-[8px] font-mono text-right pr-1.5 font-bold ${premColor(pr.vsSector)}`}>{pr.vsSector > 0 ? '+' : ''}{pr.vsSector.toFixed(1)}%</span>
+            <span className="w-[52px] text-micro font-mono font-bold text-white pr-1.5">{s.ticker as string}</span>
+            <span className="w-[40px] text-micro font-mono text-right pr-1.5 text-neutral-300">{m.peTrailing.toFixed(1)}</span>
+            <span className="w-[44px] text-micro font-mono text-right pr-1.5 text-neutral-300">{m.peForward.toFixed(1)}</span>
+            <span className="w-[52px] text-micro font-mono text-right pr-1.5 text-neutral-300">{m.evEbitda.toFixed(1)}</span>
+            <span className="w-[36px] text-micro font-mono text-right pr-1.5 text-neutral-300">{m.pSales.toFixed(1)}</span>
+            <span className="w-[36px] text-micro font-mono text-right pr-1.5 text-neutral-300">{m.pBook.toFixed(1)}</span>
+            <span className="w-[36px] text-micro font-mono text-right pr-1.5 text-neutral-300">{m.pegRatio.toFixed(2)}</span>
+            <span className={`w-[44px] text-micro font-mono text-right pr-1.5 font-bold ${pctileColor(p.pe5YPctile)}`}>{p.pe5YPctile}</span>
+            <span className={`w-[48px] text-micro font-mono text-right pr-1.5 font-bold ${premColor(pr.vsSector)}`}>{pr.vsSector > 0 ? '+' : ''}{pr.vsSector.toFixed(1)}%</span>
           </div>
         );
       })}
@@ -154,26 +154,26 @@ function SectorsView({ sectors }: { sectors: Record<string, unknown>[] }) {
   const maxPE = Math.max(...sectors.map((s: Record<string, unknown>) => s.avgPE as number), 1);
   return (
     <div className="p-2">
-      <div className="flex items-center px-2 py-0.5 border-b border-border/10 bg-[#030303] mb-1">
-        <span className="w-[100px] text-[7px] font-mono text-neutral-600 uppercase">Sector</span>
-        <span className="w-[48px] text-[7px] font-mono text-neutral-600 uppercase text-right">AVG P/E</span>
-        <span className="w-[56px] text-[7px] font-mono text-neutral-600 uppercase text-right">EV/EBITDA</span>
-        <span className="w-[40px] text-[7px] font-mono text-neutral-600 uppercase text-right">P/S</span>
-        <span className="w-[48px] text-[7px] font-mono text-neutral-600 uppercase text-right">MED P/E</span>
-        <span className="flex-1 text-[7px] font-mono text-neutral-600 uppercase text-right pr-1">#</span>
+      <div className="flex items-center px-2 py-0.5 border-b border-border/10 bg-raised mb-1">
+        <span className="w-[100px] text-micro font-mono text-neutral-600 uppercase">Sector</span>
+        <span className="w-[48px] text-micro font-mono text-neutral-600 uppercase text-right">AVG P/E</span>
+        <span className="w-[56px] text-micro font-mono text-neutral-600 uppercase text-right">EV/EBITDA</span>
+        <span className="w-[40px] text-micro font-mono text-neutral-600 uppercase text-right">P/S</span>
+        <span className="w-[48px] text-micro font-mono text-neutral-600 uppercase text-right">MED P/E</span>
+        <span className="flex-1 text-micro font-mono text-neutral-600 uppercase text-right pr-1">#</span>
       </div>
       {sectors.map((s: Record<string, unknown>) => (
         <div key={s.sector as string} className="flex items-center px-2 py-1.5 border-b border-border/5 hover:bg-teal-400/[0.02] transition-colors">
-          <span className="w-[100px] text-[8px] font-mono font-bold text-white truncate">{s.sector as string}</span>
-          <span className="w-[48px] text-[8px] font-mono text-right text-neutral-300">{(s.avgPE as number).toFixed(1)}</span>
-          <span className="w-[56px] text-[8px] font-mono text-right text-neutral-300">{(s.avgEVEBITDA as number).toFixed(1)}</span>
-          <span className="w-[40px] text-[8px] font-mono text-right text-neutral-300">{(s.avgPS as number).toFixed(1)}</span>
-          <span className="w-[48px] text-[8px] font-mono text-right text-neutral-300">{(s.medianPE as number).toFixed(1)}</span>
+          <span className="w-[100px] text-micro font-mono font-bold text-white truncate">{s.sector as string}</span>
+          <span className="w-[48px] text-micro font-mono text-right text-neutral-300">{(s.avgPE as number).toFixed(1)}</span>
+          <span className="w-[56px] text-micro font-mono text-right text-neutral-300">{(s.avgEVEBITDA as number).toFixed(1)}</span>
+          <span className="w-[40px] text-micro font-mono text-right text-neutral-300">{(s.avgPS as number).toFixed(1)}</span>
+          <span className="w-[48px] text-micro font-mono text-right text-neutral-300">{(s.medianPE as number).toFixed(1)}</span>
           <div className="flex-1 flex items-center justify-end gap-1 pr-1">
             <div className="w-16 h-1.5 bg-neutral-900 relative">
               <div className="absolute left-0 top-0 h-full bg-teal-400/40" style={{ width: `${((s.avgPE as number) / maxPE) * 100}%` }} />
             </div>
-            <span className="text-[7px] font-mono text-neutral-500">{s.stockCount as number}</span>
+            <span className="text-micro font-mono text-neutral-500">{s.stockCount as number}</span>
           </div>
         </div>
       ))}
@@ -192,32 +192,32 @@ function HistoryView({ stocks, selected, onSelect }: { stocks: Record<string, un
     <div className="p-2">
       <div className="flex items-center gap-2 mb-2">
         <select value={selected} onChange={e => onSelect(e.target.value)}
-          className="bg-black border border-border/30 text-[8px] font-mono text-white px-1.5 py-0.5 outline-none">
+          className="bg-black border border-border/30 text-micro font-mono text-white px-1.5 py-0.5 outline-none">
           {stocks.map((s: Record<string, unknown>) => <option key={s.ticker as string} value={s.ticker as string}>{s.ticker as string} - {s.name as string}</option>)}
         </select>
-        {stock && <span className="text-[7px] font-mono text-neutral-500">{(stock as Record<string, unknown>).sector as string}</span>}
+        {stock && <span className="text-micro font-mono text-neutral-500">{(stock as Record<string, unknown>).sector as string}</span>}
       </div>
 
       {history.length > 0 && (
         <>
-          <div className="text-[7px] font-mono text-neutral-600 uppercase mb-1 tracking-wider">Quarterly P/E Trend</div>
+          <div className="text-micro font-mono text-neutral-600 uppercase mb-1 tracking-wider">Quarterly P/E Trend</div>
           {history.map((h, i) => (
             <div key={i} className="flex items-center gap-2 py-1 border-b border-border/5">
-              <span className="w-[60px] text-[7px] font-mono text-neutral-500">{h.date.slice(0, 7)}</span>
+              <span className="w-[60px] text-micro font-mono text-neutral-500">{h.date.slice(0, 7)}</span>
               <div className="flex-1 h-2 bg-neutral-900 relative">
                 <div className="absolute left-0 top-0 h-full bg-teal-400/50" style={{ width: `${(h.pe / maxPE) * 100}%` }} />
                 {sectorAvg && (
                   <div className="absolute top-0 h-full w-px bg-yellow-400/60" style={{ left: `${(sectorAvg.peAvg / maxPE) * 100}%` }} />
                 )}
               </div>
-              <span className="w-[32px] text-[8px] font-mono text-right text-white font-bold">{h.pe.toFixed(1)}</span>
-              <span className="w-[40px] text-[7px] font-mono text-right text-neutral-500">EV {h.evEbitda.toFixed(1)}</span>
+              <span className="w-[32px] text-micro font-mono text-right text-white font-bold">{h.pe.toFixed(1)}</span>
+              <span className="w-[40px] text-micro font-mono text-right text-neutral-500">EV {h.evEbitda.toFixed(1)}</span>
             </div>
           ))}
           {sectorAvg && (
             <div className="flex items-center gap-1 mt-1">
               <div className="w-2 h-px bg-yellow-400/60" />
-              <span className="text-[7px] font-mono text-neutral-500">Sector avg: {sectorAvg.peAvg.toFixed(1)}x</span>
+              <span className="text-micro font-mono text-neutral-500">Sector avg: {sectorAvg.peAvg.toFixed(1)}x</span>
             </div>
           )}
         </>

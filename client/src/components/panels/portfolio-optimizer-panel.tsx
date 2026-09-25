@@ -36,21 +36,21 @@ const TAB_LABELS: Record<Tab, string> = {
 };
 
 const ASSET_COLORS = [
-  '#22d3ee', // cyan
-  '#a78bfa', // purple
-  '#fb923c', // orange
-  '#34d399', // emerald
-  '#f87171', // red
-  '#fbbf24', // amber
-  '#818cf8', // indigo
-  '#f472b6', // pink
-  '#2dd4bf', // teal
-  '#a3e635', // lime
-  '#e879f9', // fuchsia
-  '#60a5fa', // blue
-  '#facc15', // yellow
-  '#c084fc', // violet
-  '#38bdf8', // sky
+  'var(--color-cyan-400)', // cyan
+  'var(--color-violet-400)', // purple
+  'var(--color-orange-400)', // orange
+  'var(--color-emerald-400)', // emerald
+  'var(--color-red-400)', // red
+  'var(--color-amber-400)', // amber
+  'var(--color-indigo-400)', // indigo
+  'var(--color-pink-400)', // pink
+  'var(--color-teal-400)', // teal
+  'var(--color-lime-400)', // lime
+  'var(--color-fuchsia-400)', // fuchsia
+  'var(--color-blue-400)', // blue
+  'var(--color-amber-300)', // yellow
+  'var(--color-purple-400)', // violet
+  'var(--color-sky-400)', // sky
 ];
 
 const STRATEGY_LABELS: Record<string, string> = {
@@ -61,10 +61,10 @@ const STRATEGY_LABELS: Record<string, string> = {
 };
 
 const STRATEGY_COLORS: Record<string, string> = {
-  minVariance: '#3b82f6',
-  maxSharpe: '#f59e0b',
-  equalWeight: '#ffffff',
-  riskParity: '#22c55e',
+  minVariance: 'var(--color-blue-500)',
+  maxSharpe: 'var(--color-amber-500)',
+  equalWeight: 'var(--color-white)',
+  riskParity: 'var(--color-green-500)',
 };
 
 const DEFAULT_SYMBOLS = 'AAPL,MSFT,GOOGL,AMZN,NVDA';
@@ -102,10 +102,10 @@ export function PortfolioOptimizerPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-amber-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-amber-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-amber-400">
             {tr('panelPortfolioOptimizer', 'PORTFOLIO OPTIMIZER')}
           </span>
         </div>
@@ -123,7 +123,7 @@ export function PortfolioOptimizerPanel() {
         className="flex items-center gap-2 px-3 py-2 border-b border-border/20 shrink-0 flex-wrap"
       >
         <div className="flex items-center gap-1">
-          <span className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
             {tr('poSymbols', 'Symbols')}:
           </span>
           <input
@@ -131,11 +131,11 @@ export function PortfolioOptimizerPanel() {
             value={inputValue}
             onChange={e => setInputValue(e.target.value.toUpperCase())}
             placeholder="AAPL,MSFT,GOOGL"
-            className="w-48 px-1.5 py-1 bg-white/[0.03] border border-border/20 text-[9px] font-mono text-white placeholder:text-neutral/30 focus:outline-none focus:border-amber-400/40"
+            className="w-48 px-1.5 py-1 bg-white/[0.03] border border-border/20 text-mini font-mono text-white placeholder:text-neutral/30 focus:outline-none focus:border-amber-400/40"
           />
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
             {tr('poRiskFree', 'Rf%')}:
           </span>
           <input
@@ -143,12 +143,12 @@ export function PortfolioOptimizerPanel() {
             value={riskFreeInput}
             onChange={e => setRiskFreeInput(e.target.value)}
             placeholder="5"
-            className="w-10 px-1.5 py-1 bg-white/[0.03] border border-border/20 text-[9px] font-mono text-white placeholder:text-neutral/30 focus:outline-none focus:border-amber-400/40 text-center"
+            className="w-10 px-1.5 py-1 bg-white/[0.03] border border-border/20 text-mini font-mono text-white placeholder:text-neutral/30 focus:outline-none focus:border-amber-400/40 text-center"
           />
         </div>
         <button
           type="submit"
-          className="px-2 py-1 bg-amber-500/10 border border-amber-500/20 text-[8px] font-black font-mono uppercase text-amber-400 hover:bg-amber-500/20 transition-colors"
+          className="px-2 py-1 bg-amber-500/10 border border-amber-500/20 text-micro font-black font-mono uppercase text-amber-400 hover:bg-amber-500/20 transition-colors"
         >
           {tr('poOptimize', 'OPTIMIZE')}
         </button>
@@ -160,7 +160,7 @@ export function PortfolioOptimizerPanel() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 text-[8px] font-black font-mono uppercase tracking-wider transition-colors border-b-2 ${
+            className={`px-3 py-1.5 text-micro font-black font-mono uppercase tracking-wider transition-colors border-b-2 ${
               activeTab === tab
                 ? 'border-amber-400 text-amber-400'
                 : 'border-transparent text-neutral/40 hover:text-neutral/60'
@@ -176,7 +176,7 @@ export function PortfolioOptimizerPanel() {
         {isLoading && !data && (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
             <div className="w-4 h-4 border-2 border-amber-400/30 border-t-amber-400 animate-spin" />
-            <span className="text-[9px] font-mono text-neutral/40 uppercase tracking-widest">
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">
               {tr('loading', 'Loading...')}
             </span>
           </div>
@@ -184,7 +184,7 @@ export function PortfolioOptimizerPanel() {
 
         {!data && !isLoading && (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
-            <span className="text-[9px] font-mono text-neutral/30 uppercase tracking-wider">
+            <span className="text-mini font-mono text-neutral/30 uppercase tracking-wider">
               {tr('poNoData', 'Enter at least 2 symbols and click Optimize')}
             </span>
           </div>
@@ -322,7 +322,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
 
   return (
     <div className="px-3 py-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr('poFrontierTitle', 'Efficient Frontier & Optimal Portfolios')}
       </div>
 
@@ -338,16 +338,16 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
                   y1={y}
                   x2={W - PAD_R}
                   y2={y}
-                  stroke="rgba(255,255,255,0.05)"
+                  stroke="color-mix(in srgb, var(--color-white) 5%, transparent)"
                   strokeDasharray="3,3"
                 />
                 <text
                   x={PAD_L - 6}
                   y={y + 3}
                   textAnchor="end"
-                  fill="rgba(255,255,255,0.25)"
+                  fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
                   fontSize={7}
-                  fontFamily="monospace"
+                  fontFamily="inherit"
                 >
                   {(v * 100).toFixed(0)}%
                 </text>
@@ -364,16 +364,16 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
                   y1={PAD_T}
                   x2={x}
                   y2={H - PAD_B}
-                  stroke="rgba(255,255,255,0.05)"
+                  stroke="color-mix(in srgb, var(--color-white) 5%, transparent)"
                   strokeDasharray="3,3"
                 />
                 <text
                   x={x}
                   y={H - PAD_B + 14}
                   textAnchor="middle"
-                  fill="rgba(255,255,255,0.25)"
+                  fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
                   fontSize={7}
-                  fontFamily="monospace"
+                  fontFamily="inherit"
                 >
                   {(v * 100).toFixed(0)}%
                 </text>
@@ -386,9 +386,9 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
             x={W / 2}
             y={H - 4}
             textAnchor="middle"
-            fill="rgba(255,255,255,0.3)"
+            fill="color-mix(in srgb, var(--color-white) 30%, transparent)"
             fontSize={8}
-            fontFamily="monospace"
+            fontFamily="inherit"
             fontWeight="bold"
           >
             {tr('poVolatility', 'VOLATILITY (RISK)')}
@@ -397,9 +397,9 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
             x={12}
             y={H / 2}
             textAnchor="middle"
-            fill="rgba(255,255,255,0.3)"
+            fill="color-mix(in srgb, var(--color-white) 30%, transparent)"
             fontSize={8}
-            fontFamily="monospace"
+            fontFamily="inherit"
             fontWeight="bold"
             transform={`rotate(-90, 12, ${H / 2})`}
           >
@@ -413,7 +413,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
               y1={cmlLine.y1}
               x2={cmlLine.x2}
               y2={cmlLine.y2}
-              stroke="rgba(245,158,11,0.3)"
+              stroke="color-mix(in srgb, var(--color-amber-500) 30%, transparent)"
               strokeWidth={1}
               strokeDasharray="6,3"
             />
@@ -426,7 +426,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
               cx={scaleX(p.volatility)}
               cy={scaleY(p.return)}
               r={2}
-              fill="rgba(161,161,170,0.2)"
+              fill="color-mix(in srgb, var(--color-zinc-400) 20%, transparent)"
               onMouseEnter={() => handlePointHover(p, scaleX(p.volatility), scaleY(p.return))}
               onMouseLeave={handlePointLeave}
               className="cursor-pointer"
@@ -438,7 +438,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
             <path
               d={frontierPath}
               fill="none"
-              stroke="#f59e0b"
+              stroke="var(--color-amber-500)"
               strokeWidth={1.5}
               opacity={0.7}
             />
@@ -449,16 +449,16 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
             cx={scaleX(0)}
             cy={scaleY(data.riskFreeRate)}
             r={3}
-            fill="#6b7280"
-            stroke="#9ca3af"
+            fill="var(--color-gray-500)"
+            stroke="var(--color-gray-400)"
             strokeWidth={1}
           />
           <text
             x={scaleX(0) + 6}
             y={scaleY(data.riskFreeRate) + 3}
-            fill="#9ca3af"
+            fill="var(--color-gray-400)"
             fontSize={7}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             Rf
           </text>
@@ -483,7 +483,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
                   y={y + 3}
                   fill={color}
                   fontSize={7}
-                  fontFamily="monospace"
+                  fontFamily="inherit"
                   fontWeight="bold"
                 >
                   {asset.symbol}
@@ -497,7 +497,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
             scaleX(data.optimal.minVariance.volatility),
             scaleY(data.optimal.minVariance.return),
             'circle',
-            '#3b82f6',
+            'var(--color-blue-500)',
             handlePointHover,
             handlePointLeave,
             data.optimal.minVariance,
@@ -507,7 +507,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
           {renderStar(
             scaleX(data.optimal.maxSharpe.volatility),
             scaleY(data.optimal.maxSharpe.return),
-            '#f59e0b',
+            'var(--color-amber-500)',
             handlePointHover,
             handlePointLeave,
             data.optimal.maxSharpe,
@@ -517,7 +517,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
           {renderTriangle(
             scaleX(data.optimal.equalWeight.volatility),
             scaleY(data.optimal.equalWeight.return),
-            '#ffffff',
+            'var(--color-white)',
             handlePointHover,
             handlePointLeave,
             data.optimal.equalWeight,
@@ -527,7 +527,7 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
           {renderDiamond(
             scaleX(data.optimal.riskParity.volatility),
             scaleY(data.optimal.riskParity.return),
-            '#22c55e',
+            'var(--color-green-500)',
             handlePointHover,
             handlePointLeave,
             data.optimal.riskParity,
@@ -542,15 +542,15 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
                 width={130}
                 height={hoveredPoint.weights.length > 0 ? 14 + hoveredPoint.weights.length * 10 + 6 : 40}
                 fill="rgba(0,0,0,0.9)"
-                stroke="rgba(245,158,11,0.4)"
+                stroke="color-mix(in srgb, var(--color-amber-500) 40%, transparent)"
                 strokeWidth={0.5}
               />
               <text
                 x={Math.min(tooltipPos.x + 14, W - 134)}
                 y={Math.max(tooltipPos.y - 38, PAD_T + 12)}
-                fill="#f59e0b"
+                fill="var(--color-amber-500)"
                 fontSize={7}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 {`Ret: ${(hoveredPoint.return * 100).toFixed(1)}% | Vol: ${(hoveredPoint.volatility * 100).toFixed(1)}% | SR: ${hoveredPoint.sharpe.toFixed(2)}`}
@@ -561,9 +561,9 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
                     key={i}
                     x={Math.min(tooltipPos.x + 14, W - 134)}
                     y={Math.max(tooltipPos.y - 26, PAD_T + 24) + i * 10}
-                    fill="rgba(255,255,255,0.7)"
+                    fill="color-mix(in srgb, var(--color-white) 70%, transparent)"
                     fontSize={7}
-                    fontFamily="monospace"
+                    fontFamily="inherit"
                   >
                     {data.symbols[i] ?? `Asset${i}`}: {(w * 100).toFixed(1)}%
                   </text>
@@ -575,30 +575,30 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-        <LegendItem shape="circle" color="#3b82f6" label={tr('poMinVar', 'Min Variance')} />
-        <LegendItem shape="star" color="#f59e0b" label={tr('poMaxSharpe', 'Max Sharpe')} />
-        <LegendItem shape="triangle" color="#ffffff" label={tr('poEqualWeight', 'Equal Weight')} />
-        <LegendItem shape="diamond" color="#22c55e" label={tr('poRiskParity', 'Risk Parity')} />
-        <LegendItem shape="square" color="#a1a1aa" label={tr('poAssets', 'Individual Assets')} />
-        <LegendItem shape="line" color="rgba(245,158,11,0.5)" label={tr('poCML', 'Capital Mkt Line')} />
+        <LegendItem shape="circle" color="var(--color-blue-500)" label={tr('poMinVar', 'Min Variance')} />
+        <LegendItem shape="star" color="var(--color-amber-500)" label={tr('poMaxSharpe', 'Max Sharpe')} />
+        <LegendItem shape="triangle" color="var(--color-white)" label={tr('poEqualWeight', 'Equal Weight')} />
+        <LegendItem shape="diamond" color="var(--color-green-500)" label={tr('poRiskParity', 'Risk Parity')} />
+        <LegendItem shape="square" color="var(--color-zinc-400)" label={tr('poAssets', 'Individual Assets')} />
+        <LegendItem shape="line" color="color-mix(in srgb, var(--color-amber-500) 50%, transparent)" label={tr('poCML', 'Capital Mkt Line')} />
       </div>
 
       {/* Asset stats table */}
       <div className="mt-3">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-1">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-1">
           {tr('poAssetStats', 'Individual Asset Statistics')}
         </div>
         <div className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr] gap-1 px-1 py-1 border-b border-border/15">
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider">
             {tr('poSymbol', 'Symbol')}
           </span>
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
             {tr('poAnnReturn', 'Ann. Return')}
           </span>
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
             {tr('poAnnVol', 'Ann. Vol')}
           </span>
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
             {tr('poSharpe', 'Sharpe')}
           </span>
         </div>
@@ -607,26 +607,26 @@ function FrontierTab({ data }: { data: PortfolioOptimizerData }) {
             key={asset.symbol}
             className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr] gap-1 px-1 py-1 border-b border-border/8 hover:bg-white/[0.02] transition-colors"
           >
-            <span className="text-[9px] font-mono font-bold flex items-center gap-1">
+            <span className="text-mini font-mono font-bold flex items-center gap-1">
               <span
                 className="inline-block w-2 h-2"
                 style={{ backgroundColor: ASSET_COLORS[i % ASSET_COLORS.length] }}
               />
               <span style={{ color: ASSET_COLORS[i % ASSET_COLORS.length] }}>{asset.symbol}</span>
-              <span className="text-neutral/40 text-[7px] truncate">{asset.name}</span>
+              <span className="text-neutral/40 text-micro truncate">{asset.name}</span>
             </span>
             <span
-              className={`text-[9px] font-mono font-bold text-right ${
+              className={`text-mini font-mono font-bold text-right ${
                 asset.annReturn >= 0 ? 'text-emerald-400' : 'text-rose-400'
               }`}
             >
               {(asset.annReturn * 100).toFixed(1)}%
             </span>
-            <span className="text-[9px] font-mono text-neutral/60 text-right">
+            <span className="text-mini font-mono text-neutral/60 text-right">
               {(asset.annVol * 100).toFixed(1)}%
             </span>
             <span
-              className={`text-[9px] font-mono font-bold text-right ${
+              className={`text-mini font-mono font-bold text-right ${
                 asset.sharpe >= 1 ? 'text-emerald-400' : asset.sharpe >= 0 ? 'text-amber-400' : 'text-rose-400'
               }`}
             >
@@ -656,7 +656,7 @@ function AllocationsTab({ data }: { data: PortfolioOptimizerData }) {
 
   return (
     <div className="px-3 py-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-3">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-3">
         {tr('poAllocTitle', 'Allocation Strategies Comparison')}
       </div>
 
@@ -665,12 +665,12 @@ function AllocationsTab({ data }: { data: PortfolioOptimizerData }) {
         <div key={key} className="mb-4">
           <div className="flex items-center justify-between mb-1">
             <span
-              className="text-[9px] font-black font-mono uppercase tracking-wider"
+              className="text-mini font-black font-mono uppercase tracking-wider"
               style={{ color: STRATEGY_COLORS[key] }}
             >
               {tr(`poStrat_${key}`, STRATEGY_LABELS[key])}
             </span>
-            <span className="text-[7px] font-mono text-neutral/40">
+            <span className="text-micro font-mono text-neutral/40">
               SR: {portfolio.sharpe.toFixed(2)}
             </span>
           </div>
@@ -692,7 +692,7 @@ function AllocationsTab({ data }: { data: PortfolioOptimizerData }) {
                   title={`${data.symbols[i]}: ${pct.toFixed(1)}%`}
                 >
                   {pct > 8 && (
-                    <span className="text-[7px] font-mono font-black text-black leading-none">
+                    <span className="text-micro font-mono font-black text-black leading-none">
                       {data.symbols[i]}
                     </span>
                   )}
@@ -707,7 +707,7 @@ function AllocationsTab({ data }: { data: PortfolioOptimizerData }) {
               const pct = w * 100;
               if (pct < 0.5) return null;
               return (
-                <span key={i} className="text-[7px] font-mono text-neutral/50">
+                <span key={i} className="text-micro font-mono text-neutral/50">
                   <span
                     className="inline-block w-1.5 h-1.5 mr-0.5"
                     style={{ backgroundColor: ASSET_COLORS[i % ASSET_COLORS.length] }}
@@ -722,20 +722,20 @@ function AllocationsTab({ data }: { data: PortfolioOptimizerData }) {
 
       {/* Comparison table */}
       <div className="mt-4 border-t border-border/20 pt-3">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
           {tr('poCompare', 'Strategy Comparison')}
         </div>
         <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] gap-1 px-1 py-1 border-b border-border/15">
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider">
             {tr('poStrategy', 'Strategy')}
           </span>
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
             {tr('poReturn', 'Return')}
           </span>
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
             {tr('poRisk', 'Risk')}
           </span>
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider text-right">
             {tr('poSharpe', 'Sharpe')}
           </span>
         </div>
@@ -745,23 +745,23 @@ function AllocationsTab({ data }: { data: PortfolioOptimizerData }) {
             className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] gap-1 px-1 py-1.5 border-b border-border/8 hover:bg-white/[0.02] transition-colors"
           >
             <span
-              className="text-[9px] font-mono font-bold"
+              className="text-mini font-mono font-bold"
               style={{ color: STRATEGY_COLORS[key] }}
             >
               {STRATEGY_LABELS[key]}
             </span>
             <span
-              className={`text-[9px] font-mono font-bold text-right ${
+              className={`text-mini font-mono font-bold text-right ${
                 portfolio.return >= 0 ? 'text-emerald-400' : 'text-rose-400'
               }`}
             >
               {(portfolio.return * 100).toFixed(1)}%
             </span>
-            <span className="text-[9px] font-mono text-neutral/60 text-right">
+            <span className="text-mini font-mono text-neutral/60 text-right">
               {(portfolio.volatility * 100).toFixed(1)}%
             </span>
             <span
-              className={`text-[9px] font-mono font-bold text-right ${
+              className={`text-mini font-mono font-bold text-right ${
                 portfolio.sharpe >= 1
                   ? 'text-emerald-400'
                   : portfolio.sharpe >= 0
@@ -777,20 +777,20 @@ function AllocationsTab({ data }: { data: PortfolioOptimizerData }) {
 
       {/* Detailed weights table */}
       <div className="mt-4 border-t border-border/20 pt-3">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
           {tr('poWeightDetail', 'Detailed Weight Allocations (%)')}
         </div>
         <div
           className="grid gap-1 px-1 py-1 border-b border-border/15"
           style={{ gridTemplateColumns: `1.2fr ${data.symbols.map(() => '0.6fr').join(' ')}` }}
         >
-          <span className="text-[7px] font-black font-mono text-neutral/40 uppercase tracking-wider">
+          <span className="text-micro font-black font-mono text-neutral/40 uppercase tracking-wider">
             {tr('poStrategy', 'Strategy')}
           </span>
           {data.symbols.map((sym, i) => (
             <span
               key={sym}
-              className="text-[7px] font-black font-mono uppercase tracking-wider text-right"
+              className="text-micro font-black font-mono uppercase tracking-wider text-right"
               style={{ color: ASSET_COLORS[i % ASSET_COLORS.length] }}
             >
               {sym}
@@ -804,13 +804,13 @@ function AllocationsTab({ data }: { data: PortfolioOptimizerData }) {
             style={{ gridTemplateColumns: `1.2fr ${data.symbols.map(() => '0.6fr').join(' ')}` }}
           >
             <span
-              className="text-[8px] font-mono font-bold"
+              className="text-micro font-mono font-bold"
               style={{ color: STRATEGY_COLORS[key] }}
             >
               {STRATEGY_LABELS[key]}
             </span>
             {portfolio.weights.map((w, i) => (
-              <span key={i} className="text-[8px] font-mono text-neutral/60 text-right">
+              <span key={i} className="text-micro font-mono text-neutral/60 text-right">
                 {(w * 100).toFixed(1)}
               </span>
             ))}
@@ -828,7 +828,7 @@ function CorrelationTab({ data }: { data: PortfolioOptimizerData }) {
 
   return (
     <div className="px-3 py-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr('poCorrTitle', 'Asset Correlation Matrix')}
       </div>
 
@@ -836,11 +836,11 @@ function CorrelationTab({ data }: { data: PortfolioOptimizerData }) {
         <table className="border-collapse w-full">
           <thead>
             <tr>
-              <th className="p-1 text-[8px] font-mono text-neutral/30 w-12" />
+              <th className="p-1 text-micro font-mono text-neutral/30 w-12" />
               {data.symbols.map((sym, i) => (
                 <th
                   key={sym}
-                  className="p-1 text-[8px] font-mono font-bold uppercase tracking-wider whitespace-nowrap"
+                  className="p-1 text-micro font-mono font-bold uppercase tracking-wider whitespace-nowrap"
                   style={{ color: ASSET_COLORS[i % ASSET_COLORS.length] }}
                 >
                   {sym}
@@ -852,7 +852,7 @@ function CorrelationTab({ data }: { data: PortfolioOptimizerData }) {
             {data.correlation.map((row, i) => (
               <tr key={data.symbols[i]}>
                 <td
-                  className="p-1 text-[8px] font-mono font-bold uppercase tracking-wider whitespace-nowrap"
+                  className="p-1 text-micro font-mono font-bold uppercase tracking-wider whitespace-nowrap"
                   style={{ color: ASSET_COLORS[i % ASSET_COLORS.length] }}
                 >
                   {data.symbols[i]}
@@ -866,8 +866,8 @@ function CorrelationTab({ data }: { data: PortfolioOptimizerData }) {
                       style={{ backgroundColor: getCorrColor(val, isDiagonal) }}
                     >
                       <span
-                        className="text-[9px] font-mono font-bold"
-                        style={{ color: isDiagonal ? '#71717a' : getCorrTextColor(val) }}
+                        className="text-mini font-mono font-bold"
+                        style={{ color: isDiagonal ? 'var(--color-zinc-500)' : getCorrTextColor(val) }}
                       >
                         {val.toFixed(2)}
                       </span>
@@ -883,20 +883,20 @@ function CorrelationTab({ data }: { data: PortfolioOptimizerData }) {
       {/* Legend */}
       <div className="flex items-center justify-center gap-4 mt-3">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'rgba(239,68,68,0.5)' }} />
-          <span className="text-[7px] font-mono text-neutral/40">
+          <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'color-mix(in srgb, var(--color-red-500) 50%, transparent)' }} />
+          <span className="text-micro font-mono text-neutral/40">
             {tr('poHighCorr', 'High +Corr')}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 bg-transparent border border-border/20" />
-          <span className="text-[7px] font-mono text-neutral/40">
+          <span className="text-micro font-mono text-neutral/40">
             {tr('poNoCorr', 'None')}
           </span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'rgba(34,197,94,0.5)' }} />
-          <span className="text-[7px] font-mono text-neutral/40">
+          <div className="w-3 h-3 border border-border/20" style={{ backgroundColor: 'color-mix(in srgb, var(--color-green-500) 50%, transparent)' }} />
+          <span className="text-micro font-mono text-neutral/40">
             {tr('poNegCorr', 'Negative')}
           </span>
         </div>
@@ -915,51 +915,51 @@ function SummaryBar({ data }: { data: PortfolioOptimizerData }) {
 
   return (
     <div className="px-3 py-3 border-t border-border/20 bg-amber-500/[0.02]">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {tr('poSummary', 'Optimization Summary')}
       </div>
       <div className="grid grid-cols-4 gap-3">
         <div>
-          <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
             {tr('poBestSharpe', 'Best Sharpe')}
           </div>
           <div className="text-[13px] font-black font-mono text-amber-400">
             {ms.sharpe.toFixed(2)}
           </div>
-          <div className="text-[7px] font-mono text-neutral/30">
+          <div className="text-micro font-mono text-neutral/30">
             {(ms.return * 100).toFixed(1)}% ret / {(ms.volatility * 100).toFixed(1)}% vol
           </div>
         </div>
         <div>
-          <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
             {tr('poMinRisk', 'Min Risk')}
           </div>
           <div className="text-[13px] font-black font-mono text-blue-400">
             {(mv.volatility * 100).toFixed(1)}%
           </div>
-          <div className="text-[7px] font-mono text-neutral/30">
+          <div className="text-micro font-mono text-neutral/30">
             {(mv.return * 100).toFixed(1)}% ret / SR: {mv.sharpe.toFixed(2)}
           </div>
         </div>
         <div>
-          <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
             {tr('poAssetCount', 'Assets')}
           </div>
           <div className="text-[13px] font-black font-mono text-white">
             {data.symbols.length}
           </div>
-          <div className="text-[7px] font-mono text-neutral/30">
+          <div className="text-micro font-mono text-neutral/30">
             {data.symbols.join(', ')}
           </div>
         </div>
         <div>
-          <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-0.5">
             {tr('poRiskFreeLabel', 'Risk-Free Rate')}
           </div>
           <div className="text-[13px] font-black font-mono text-neutral/60">
             {(data.riskFreeRate * 100).toFixed(1)}%
           </div>
-          <div className="text-[7px] font-mono text-neutral/30">
+          <div className="text-micro font-mono text-neutral/30">
             {tr('poTreasury', 'Treasury yield')}
           </div>
         </div>
@@ -983,7 +983,7 @@ function renderSpecialMarker(
     <g className="cursor-pointer" onMouseEnter={() => onHover(point, x, y)} onMouseLeave={onLeave}>
       <circle cx={x} cy={y} r={6} fill={color} opacity={0.3} />
       <circle cx={x} cy={y} r={4} fill={color} opacity={0.8} />
-      <circle cx={x} cy={y} r={2} fill="#000" />
+      <circle cx={x} cy={y} r={2} fill="var(--color-black)" />
     </g>
   );
 }
@@ -1094,7 +1094,7 @@ function LegendItem({
           <line x1={0} y1={5} x2={10} y2={5} stroke={color} strokeWidth={1.5} strokeDasharray="2,1" />
         )}
       </svg>
-      <span className="text-[7px] font-mono text-neutral/50">{label}</span>
+      <span className="text-micro font-mono text-neutral/50">{label}</span>
     </div>
   );
 }
@@ -1102,21 +1102,21 @@ function LegendItem({
 // ── Correlation color helpers ──
 
 function getCorrColor(value: number, isDiagonal: boolean): string {
-  if (isDiagonal) return 'rgba(63,63,70,0.3)';
+  if (isDiagonal) return 'color-mix(in srgb, var(--color-zinc-700) 30%, transparent)';
   if (value > 0) {
     const intensity = Math.min(value, 1);
-    return `rgba(239,68,68,${intensity * 0.5})`;
+    return `color-mix(in srgb, var(--color-red-500) calc((${intensity * 0.5}) * 100%), transparent)`;
   }
   if (value < 0) {
     const intensity = Math.min(Math.abs(value), 1);
-    return `rgba(34,197,94,${intensity * 0.5})`;
+    return `color-mix(in srgb, var(--color-green-500) calc((${intensity * 0.5}) * 100%), transparent)`;
   }
   return 'transparent';
 }
 
 function getCorrTextColor(value: number): string {
   const abs = Math.abs(value);
-  if (abs > 0.7) return '#ffffff';
-  if (abs > 0.4) return '#e4e4e7';
-  return '#a1a1aa';
+  if (abs > 0.7) return 'var(--color-white)';
+  if (abs > 0.4) return 'var(--color-zinc-200)';
+  return 'var(--color-zinc-400)';
 }

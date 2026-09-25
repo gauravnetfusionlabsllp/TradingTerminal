@@ -264,16 +264,16 @@ export function RelativeValuationPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-violet-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-violet-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-violet-400">
             {tr(t, 'panelRelativeValuation', 'RELATIVE VALUATION')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {data?.target.sector && (
-            <span className="text-[7px] font-mono uppercase tracking-wider px-1.5 py-0.5 bg-violet-500/10 text-violet-400 border border-violet-500/30">
+            <span className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 bg-violet-500/10 text-violet-400 border border-violet-500/30">
               {data.target.sector}
             </span>
           )}
@@ -286,19 +286,19 @@ export function RelativeValuationPanel() {
       {/* Symbol input */}
       <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border/20 bg-black/60 shrink-0">
         <form onSubmit={handleSubmit} className="flex items-center gap-1">
-          <span className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">
+          <span className="text-micro font-mono text-neutral/40 uppercase tracking-wider">
             {tr(t, 'rvSymbol', 'SYMBOL')}
           </span>
           <input
             type="text"
             value={inputSymbol}
             onChange={(e) => setInputSymbol(e.target.value.toUpperCase())}
-            className="w-16 bg-black border border-border/30 text-[9px] font-mono font-bold text-white px-1.5 py-0.5 focus:outline-none focus:border-violet-500/50"
+            className="w-16 bg-black border border-border/30 text-mini font-mono font-bold text-white px-1.5 py-0.5 focus:outline-none focus:border-violet-500/50"
             placeholder="AAPL"
           />
           <button
             type="submit"
-            className="px-2 py-0.5 text-[7px] font-black uppercase tracking-wider border border-violet-500/30 text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition-colors"
+            className="px-2 py-0.5 text-micro font-black uppercase tracking-wider border border-violet-500/30 text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition-colors"
           >
             {tr(t, 'rvGo', 'GO')}
           </button>
@@ -306,21 +306,21 @@ export function RelativeValuationPanel() {
 
         {/* Axis selectors */}
         <div className="flex items-center gap-1 ml-auto">
-          <span className="text-[7px] font-mono text-neutral/30 uppercase">X:</span>
+          <span className="text-micro font-mono text-neutral/30 uppercase">X:</span>
           <select
             value={xAxis}
             onChange={(e) => setXAxis(e.target.value as MetricKey)}
-            className="bg-black border border-border/20 text-[8px] font-mono text-neutral/60 px-1 py-0.5 focus:outline-none"
+            className="bg-black border border-border/20 text-micro font-mono text-neutral/60 px-1 py-0.5 focus:outline-none"
           >
             {AXIS_OPTIONS.map((o) => (
               <option key={o.key} value={o.key}>{o.label}</option>
             ))}
           </select>
-          <span className="text-[7px] font-mono text-neutral/30 uppercase">Y:</span>
+          <span className="text-micro font-mono text-neutral/30 uppercase">Y:</span>
           <select
             value={yAxis}
             onChange={(e) => setYAxis(e.target.value as MetricKey)}
-            className="bg-black border border-border/20 text-[8px] font-mono text-neutral/60 px-1 py-0.5 focus:outline-none"
+            className="bg-black border border-border/20 text-micro font-mono text-neutral/60 px-1 py-0.5 focus:outline-none"
           >
             {AXIS_OPTIONS.map((o) => (
               <option key={o.key} value={o.key}>{o.label}</option>
@@ -332,7 +332,7 @@ export function RelativeValuationPanel() {
       {/* Content area */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-12 text-violet-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-12 text-violet-400 text-mini font-mono uppercase animate-pulse">
             {tr(t, 'rvLoading', 'LOADING PEER COMPARISON...')}
           </div>
         )}
@@ -341,7 +341,7 @@ export function RelativeValuationPanel() {
           <>
             {/* Scatter Plot */}
             <div className="relative px-3 py-2">
-              <div className="text-[7px] font-mono text-neutral/30 uppercase tracking-wider mb-1">
+              <div className="text-micro font-mono text-neutral/30 uppercase tracking-wider mb-1">
                 {tr(t, 'rvScatter', 'PEER SCATTER')} &mdash;{' '}
                 {AXIS_OPTIONS.find((o) => o.key === xAxis)?.label} vs {AXIS_OPTIONS.find((o) => o.key === yAxis)?.label}
                 {' '}({tr(t, 'rvBubbleSize', 'bubble size = market cap')})
@@ -362,7 +362,7 @@ export function RelativeValuationPanel() {
                     y1={PAD.top}
                     x2={scaleX(tick)}
                     y2={CHART_H - PAD.bottom}
-                    stroke="#333"
+                    stroke="var(--color-zinc-800)"
                     strokeWidth={0.5}
                   />
                 ))}
@@ -373,7 +373,7 @@ export function RelativeValuationPanel() {
                     y1={scaleY(tick)}
                     x2={CHART_W - PAD.right}
                     y2={scaleY(tick)}
-                    stroke="#333"
+                    stroke="var(--color-zinc-800)"
                     strokeWidth={0.5}
                   />
                 ))}
@@ -385,7 +385,7 @@ export function RelativeValuationPanel() {
                     y1={PAD.top}
                     x2={scaleX(xMedian)}
                     y2={CHART_H - PAD.bottom}
-                    stroke="#8b5cf6"
+                    stroke="var(--color-violet-500)"
                     strokeWidth={1}
                     strokeDasharray="4 3"
                     opacity={0.5}
@@ -397,7 +397,7 @@ export function RelativeValuationPanel() {
                     y1={scaleY(yMedian)}
                     x2={CHART_W - PAD.right}
                     y2={scaleY(yMedian)}
-                    stroke="#8b5cf6"
+                    stroke="var(--color-violet-500)"
                     strokeWidth={1}
                     strokeDasharray="4 3"
                     opacity={0.5}
@@ -412,7 +412,7 @@ export function RelativeValuationPanel() {
                     y={CHART_H - 5}
                     textAnchor="middle"
                     className="fill-neutral/40"
-                    style={{ fontSize: 8, fontFamily: 'monospace' }}
+                    style={{ fontSize: 8, fontFamily: 'inherit' }}
                   >
                     {formatXTick(tick)}
                   </text>
@@ -426,7 +426,7 @@ export function RelativeValuationPanel() {
                     y={scaleY(tick) + 3}
                     textAnchor="end"
                     className="fill-neutral/40"
-                    style={{ fontSize: 8, fontFamily: 'monospace' }}
+                    style={{ fontSize: 8, fontFamily: 'inherit' }}
                   >
                     {formatYTick(tick)}
                   </text>
@@ -438,7 +438,7 @@ export function RelativeValuationPanel() {
                   y={CHART_H}
                   textAnchor="middle"
                   className="fill-neutral/50"
-                  style={{ fontSize: 9, fontFamily: 'monospace', fontWeight: 'bold', textTransform: 'uppercase' }}
+                  style={{ fontSize: 9, fontFamily: 'inherit', fontWeight: 'bold', textTransform: 'uppercase' }}
                 >
                   {AXIS_OPTIONS.find((o) => o.key === xAxis)?.label}
                 </text>
@@ -447,7 +447,7 @@ export function RelativeValuationPanel() {
                   y={CHART_H / 2}
                   textAnchor="middle"
                   className="fill-neutral/50"
-                  style={{ fontSize: 9, fontFamily: 'monospace', fontWeight: 'bold', textTransform: 'uppercase' }}
+                  style={{ fontSize: 9, fontFamily: 'inherit', fontWeight: 'bold', textTransform: 'uppercase' }}
                   transform={`rotate(-90, 12, ${CHART_H / 2})`}
                 >
                   {AXIS_OPTIONS.find((o) => o.key === yAxis)?.label}
@@ -462,9 +462,9 @@ export function RelativeValuationPanel() {
                         cx={scaleX(p.x)}
                         cy={scaleY(p.y)}
                         r={p.r}
-                        fill={hoveredSymbol === p.symbol ? '#8b5cf6' : '#6d28d9'}
+                        fill={hoveredSymbol === p.symbol ? 'var(--color-violet-500)' : 'var(--color-violet-700)'}
                         fillOpacity={hoveredSymbol === p.symbol ? 0.7 : 0.3}
-                        stroke={hoveredSymbol === p.symbol ? '#a78bfa' : '#7c3aed'}
+                        stroke={hoveredSymbol === p.symbol ? 'var(--color-violet-400)' : 'var(--color-violet-600)'}
                         strokeWidth={hoveredSymbol === p.symbol ? 1.5 : 0.8}
                       />
                       <text
@@ -472,7 +472,7 @@ export function RelativeValuationPanel() {
                         y={scaleY(p.y) - p.r - 3}
                         textAnchor="middle"
                         className="fill-neutral/50"
-                        style={{ fontSize: 7, fontFamily: 'monospace' }}
+                        style={{ fontSize: 7, fontFamily: 'inherit' }}
                       >
                         {p.symbol}
                       </text>
@@ -486,9 +486,9 @@ export function RelativeValuationPanel() {
                         cx={scaleX(p.x)}
                         cy={scaleY(p.y)}
                         r={p.r}
-                        fill="#06b6d4"
+                        fill="var(--color-cyan-500)"
                         fillOpacity={0.6}
-                        stroke="#22d3ee"
+                        stroke="var(--color-cyan-400)"
                         strokeWidth={2}
                       />
                       <text
@@ -496,7 +496,7 @@ export function RelativeValuationPanel() {
                         y={scaleY(p.y) - p.r - 3}
                         textAnchor="middle"
                         className="fill-cyan-400"
-                        style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 'bold' }}
+                        style={{ fontSize: 8, fontFamily: 'inherit', fontWeight: 'bold' }}
                       >
                         {p.symbol}
                       </text>
@@ -513,14 +513,14 @@ export function RelativeValuationPanel() {
                     top: tooltipPos.y - 10,
                   }}
                 >
-                  <div className="text-[9px] font-mono font-bold text-white">
+                  <div className="text-mini font-mono font-bold text-white">
                     {hoveredEntry.symbol}
                   </div>
-                  <div className="text-[7px] font-mono text-neutral/50 mb-1 max-w-[160px] truncate">
+                  <div className="text-micro font-mono text-neutral/50 mb-1 max-w-[160px] truncate">
                     {hoveredEntry.name}
                   </div>
                   {METRIC_DEFS.map((def) => (
-                    <div key={def.key} className="flex justify-between gap-3 text-[7px] font-mono">
+                    <div key={def.key} className="flex justify-between gap-3 text-micro font-mono">
                       <span className="text-neutral/40">{def.short}</span>
                       <span className="text-neutral/70">{def.format(hoveredEntry.metrics[def.key])}</span>
                     </div>
@@ -532,22 +532,22 @@ export function RelativeValuationPanel() {
               <div className="flex items-center gap-4 mt-1">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-cyan-400/60 border border-cyan-400" />
-                  <span className="text-[7px] font-mono text-neutral/40">{tr(t, 'rvTarget', 'TARGET')}</span>
+                  <span className="text-micro font-mono text-neutral/40">{tr(t, 'rvTarget', 'TARGET')}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-violet-600/30 border border-violet-500" />
-                  <span className="text-[7px] font-mono text-neutral/40">{tr(t, 'rvPeers', 'PEERS')}</span>
+                  <span className="text-micro font-mono text-neutral/40">{tr(t, 'rvPeers', 'PEERS')}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 border-t border-dashed border-violet-500/50" />
-                  <span className="text-[7px] font-mono text-neutral/40">{tr(t, 'rvMedian', 'SECTOR MEDIAN')}</span>
+                  <span className="text-micro font-mono text-neutral/40">{tr(t, 'rvMedian', 'SECTOR MEDIAN')}</span>
                 </div>
               </div>
             </div>
 
             {/* Metrics Table */}
             <div className="px-3 pb-2">
-              <div className="text-[7px] font-mono text-neutral/30 uppercase tracking-wider mb-1">
+              <div className="text-micro font-mono text-neutral/30 uppercase tracking-wider mb-1">
                 {tr(t, 'rvComparison', 'VALUATION COMPARISON')}
               </div>
               <div className="overflow-x-auto no-scrollbar">
@@ -580,11 +580,11 @@ export function RelativeValuationPanel() {
                   <tbody>
                     {/* Sector Median row */}
                     <tr className="border-b border-violet-500/20 bg-violet-500/5">
-                      <td className="text-[8px] font-mono font-bold text-violet-400 pr-2 py-1 uppercase">
+                      <td className="text-micro font-mono font-bold text-violet-400 pr-2 py-1 uppercase">
                         {tr(t, 'rvSectorMedian', 'MEDIAN')}
                       </td>
                       {METRIC_DEFS.map((def) => (
-                        <td key={def.key} className="text-right text-[8px] font-mono text-violet-400/70 px-1 py-1">
+                        <td key={def.key} className="text-right text-micro font-mono text-violet-400/70 px-1 py-1">
                           {def.format(data.sectorMedians[def.key])}
                         </td>
                       ))}
@@ -602,10 +602,10 @@ export function RelativeValuationPanel() {
                           }`}
                         >
                           <td className="pr-2 py-1">
-                            <div className={`text-[9px] font-mono font-bold ${isTarget ? 'text-cyan-400' : 'text-white'}`}>
+                            <div className={`text-mini font-mono font-bold ${isTarget ? 'text-cyan-400' : 'text-white'}`}>
                               {entry.symbol}
                             </div>
-                            <div className="text-[6px] font-mono text-neutral/30 max-w-[100px] truncate">
+                            <div className="text-micro font-mono text-neutral/30 max-w-[100px] truncate">
                               {entry.name}
                             </div>
                           </td>
@@ -616,7 +616,7 @@ export function RelativeValuationPanel() {
                               ? cellColor(value, medianVal, def.inverted)
                               : 'text-neutral/60';
                             return (
-                              <td key={def.key} className={`text-right text-[8px] font-mono px-1 py-1 ${color}`}>
+                              <td key={def.key} className={`text-right text-micro font-mono px-1 py-1 ${color}`}>
                                 {def.format(value)}
                               </td>
                             );
@@ -632,18 +632,18 @@ export function RelativeValuationPanel() {
         )}
 
         {!isLoading && !data && (
-          <div className="text-center py-12 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-12 text-neutral/30 text-mini font-mono uppercase">
             {tr(t, 'rvNoData', 'ENTER A SYMBOL TO VIEW PEER COMPARISON')}
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-3 py-1 border-t border-border/30 bg-[#050505] shrink-0 flex items-center justify-between">
-        <span className="text-[8px] font-mono text-neutral/30">
+      <div className="px-3 py-1 border-t border-border/30 bg-raised shrink-0 flex items-center justify-between">
+        <span className="text-micro font-mono text-neutral/30">
           {data ? `${data.peers.length + 1} ${tr(t, 'rvCompanies', 'companies')}` : ''}
         </span>
-        <span className="text-[7px] font-mono text-neutral/20 uppercase">
+        <span className="text-micro font-mono text-neutral/20 uppercase">
           {tr(t, 'rvSource', 'SOURCE: YAHOO FINANCE')}
         </span>
       </div>
@@ -665,7 +665,7 @@ function TableSortHeader({ label, k, current, asc, onClick, align }: {
   return (
     <button
       onClick={() => onClick(k)}
-      className={`text-[7px] font-black font-mono uppercase tracking-wider whitespace-nowrap ${
+      className={`text-micro font-black font-mono uppercase tracking-wider whitespace-nowrap ${
         align === 'right' ? 'text-right w-full inline-block' : ''
       } ${active ? 'text-violet-400' : 'text-neutral/40 hover:text-neutral/60'}`}
     >

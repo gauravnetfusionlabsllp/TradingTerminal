@@ -11,32 +11,32 @@ import { RefreshCw } from 'lucide-react';
 
 // ── Color Helpers ──
 
-const ACCENT = '#84cc16'; // lime-400
+const ACCENT = 'var(--color-lime-500)'; // lime-400
 
 function getSignalColor(signal: FactorSignal): { bg: string; text: string; label: string } {
   switch (signal) {
-    case 'strong_buy': return { bg: 'rgba(34,197,94,0.2)', text: '#22c55e', label: 'STR BUY' };
-    case 'buy': return { bg: 'rgba(132,204,22,0.2)', text: '#84cc16', label: 'BUY' };
-    case 'neutral': return { bg: 'rgba(161,161,170,0.15)', text: '#a1a1aa', label: 'NEUTRAL' };
-    case 'sell': return { bg: 'rgba(249,115,22,0.2)', text: '#f97316', label: 'SELL' };
-    case 'strong_sell': return { bg: 'rgba(239,68,68,0.2)', text: '#ef4444', label: 'STR SELL' };
+    case 'strong_buy': return { bg: 'color-mix(in srgb, var(--color-green-500) 20%, transparent)', text: 'var(--color-green-500)', label: 'STR BUY' };
+    case 'buy': return { bg: 'color-mix(in srgb, var(--color-lime-500) 20%, transparent)', text: 'var(--color-lime-500)', label: 'BUY' };
+    case 'neutral': return { bg: 'color-mix(in srgb, var(--color-zinc-400) 15%, transparent)', text: 'var(--color-zinc-400)', label: 'NEUTRAL' };
+    case 'sell': return { bg: 'color-mix(in srgb, var(--color-orange-500) 20%, transparent)', text: 'var(--color-orange-500)', label: 'SELL' };
+    case 'strong_sell': return { bg: 'color-mix(in srgb, var(--color-red-500) 20%, transparent)', text: 'var(--color-red-500)', label: 'STR SELL' };
   }
 }
 
 function getStyleColor(style: RegimeStyle): { bg: string; text: string } {
   switch (style) {
-    case 'value': return { bg: 'rgba(59,130,246,0.2)', text: '#60a5fa' };
-    case 'growth': return { bg: 'rgba(168,85,247,0.2)', text: '#c084fc' };
-    case 'quality': return { bg: 'rgba(34,197,94,0.2)', text: '#22c55e' };
-    case 'momentum': return { bg: 'rgba(251,191,36,0.2)', text: '#fbbf24' };
-    case 'mixed': return { bg: 'rgba(161,161,170,0.15)', text: '#a1a1aa' };
+    case 'value': return { bg: 'color-mix(in srgb, var(--color-blue-500) 20%, transparent)', text: 'var(--color-blue-400)' };
+    case 'growth': return { bg: 'color-mix(in srgb, var(--color-purple-500) 20%, transparent)', text: 'var(--color-purple-400)' };
+    case 'quality': return { bg: 'color-mix(in srgb, var(--color-green-500) 20%, transparent)', text: 'var(--color-green-500)' };
+    case 'momentum': return { bg: 'color-mix(in srgb, var(--color-amber-400) 20%, transparent)', text: 'var(--color-amber-400)' };
+    case 'mixed': return { bg: 'color-mix(in srgb, var(--color-zinc-400) 15%, transparent)', text: 'var(--color-zinc-400)' };
   }
 }
 
 function getReturnColor(ret: number): string {
-  if (ret > 0) return '#22c55e';
-  if (ret < 0) return '#ef4444';
-  return '#71717a';
+  if (ret > 0) return 'var(--color-green-500)';
+  if (ret < 0) return 'var(--color-red-500)';
+  return 'var(--color-zinc-500)';
 }
 
 function fmtPct(n: number): string {
@@ -54,20 +54,20 @@ function corrColor(v: number): string {
   // Blue (negative) -> dark (zero) -> Red (positive)
   if (v > 0) {
     const intensity = Math.min(v, 1);
-    return `rgba(239,68,68,${0.1 + intensity * 0.6})`;
+    return `color-mix(in srgb, var(--color-red-500) calc((${0.1 + intensity * 0.6}) * 100%), transparent)`;
   }
   if (v < 0) {
     const intensity = Math.min(Math.abs(v), 1);
-    return `rgba(59,130,246,${0.1 + intensity * 0.6})`;
+    return `color-mix(in srgb, var(--color-blue-500) calc((${0.1 + intensity * 0.6}) * 100%), transparent)`;
   }
-  return 'rgba(255,255,255,0.03)';
+  return 'color-mix(in srgb, var(--color-white) 3%, transparent)';
 }
 
 function corrTextColor(v: number): string {
   const abs = Math.abs(v);
-  if (abs > 0.6) return '#ffffff';
-  if (abs > 0.3) return '#d4d4d8';
-  return '#71717a';
+  if (abs > 0.6) return 'var(--color-white)';
+  if (abs > 0.3) return 'var(--color-zinc-300)';
+  return 'var(--color-zinc-500)';
 }
 
 // ── Main Panel ──
@@ -79,7 +79,7 @@ export function FactorExposurePanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
             <rect x="1" y="10" width="3" height="5" fill={ACCENT} opacity="0.7" />
@@ -88,14 +88,14 @@ export function FactorExposurePanel() {
             <rect x="13" y="1" width="2" height="14" fill={ACCENT} opacity="0.6" />
           </svg>
           <span
-            className="text-[9px] font-black font-mono uppercase tracking-tighter"
+            className="text-mini font-black font-mono uppercase tracking-tighter"
             style={{ color: ACCENT }}
           >
             {tr(t, 'feTitle', 'Factor Exposure')}
           </span>
           {data?.regime && (
             <span
-              className="text-[7px] font-mono font-black uppercase px-1.5 py-[1px]"
+              className="text-micro font-mono font-black uppercase px-1.5 py-[1px]"
               style={{
                 background: getStyleColor(data.regime.style).bg,
                 color: getStyleColor(data.regime.style).text,
@@ -116,7 +116,7 @@ export function FactorExposurePanel() {
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
           <div
-            className="text-center py-8 text-[9px] font-mono uppercase animate-pulse"
+            className="text-center py-8 text-mini font-mono uppercase animate-pulse"
             style={{ color: ACCENT }}
           >
             {tr(t, 'loading', 'Loading...')}
@@ -124,7 +124,7 @@ export function FactorExposurePanel() {
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {tr(t, 'feNoData', 'No data available')}
           </div>
         )}
@@ -167,7 +167,7 @@ function FactorPerformanceBars({ factors }: { factors: Factor[] }) {
 
   return (
     <div className="px-2 py-2 border-b border-border/20">
-      <div className="text-[7px] font-black uppercase tracking-widest text-neutral-500 mb-1 px-1">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral-500 mb-1 px-1">
         {tr(t, 'fe20dReturn', '20-Day Factor Returns')}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: sorted.length * 22 }}>
@@ -177,7 +177,7 @@ function FactorPerformanceBars({ factors }: { factors: Factor[] }) {
           y1={0}
           x2={CENTER_X}
           y2={H}
-          stroke="rgba(255,255,255,0.08)"
+          stroke="color-mix(in srgb, var(--color-white) 8%, transparent)"
           strokeWidth={0.5}
         />
 
@@ -199,9 +199,9 @@ function FactorPerformanceBars({ factors }: { factors: Factor[] }) {
                 y={y + ROW_H / 2}
                 textAnchor="end"
                 dominantBaseline="middle"
-                fill="#a1a1aa"
+                fill="var(--color-zinc-400)"
                 fontSize={7.5}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 {factor.name}
@@ -225,7 +225,7 @@ function FactorPerformanceBars({ factors }: { factors: Factor[] }) {
                 dominantBaseline="middle"
                 fill={barColor}
                 fontSize={7.5}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 {fmtPct(factor.return20d)}
@@ -245,21 +245,21 @@ function FactorMetricsTable({ factors }: { factors: Factor[] }) {
 
   return (
     <div className="px-2 py-2 border-b border-border/20">
-      <div className="text-[7px] font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1">
         {tr(t, 'feMetrics', 'Factor Metrics')}
       </div>
 
       {/* Header */}
       <div className="grid grid-cols-[1fr_36px_36px_36px_30px_34px_44px_46px_44px] gap-0 px-1 mb-0.5">
-        <span className="text-[6px] font-mono text-neutral-600 uppercase">Factor</span>
-        <span className="text-[6px] font-mono text-neutral-600 uppercase text-right">5D</span>
-        <span className="text-[6px] font-mono text-neutral-600 uppercase text-right">20D</span>
-        <span className="text-[6px] font-mono text-neutral-600 uppercase text-right">60D</span>
-        <span className="text-[6px] font-mono text-neutral-600 uppercase text-right">Vol</span>
-        <span className="text-[6px] font-mono text-neutral-600 uppercase text-right">Sharpe</span>
-        <span className="text-[6px] font-mono text-neutral-600 uppercase text-center">Z-Score</span>
-        <span className="text-[6px] font-mono text-neutral-600 uppercase text-center">Signal</span>
-        <span className="text-[6px] font-mono text-neutral-600 uppercase text-center">Trend</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase">Factor</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase text-right">5D</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase text-right">20D</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase text-right">60D</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase text-right">Vol</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase text-right">Sharpe</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase text-center">Z-Score</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase text-center">Signal</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase text-center">Trend</span>
       </div>
 
       {/* Rows */}
@@ -272,10 +272,10 @@ function FactorMetricsTable({ factors }: { factors: Factor[] }) {
           >
             {/* Factor name */}
             <div className="flex flex-col min-w-0">
-              <span className="text-[8px] font-mono font-bold text-neutral-200 truncate">
+              <span className="text-micro font-mono font-bold text-neutral-200 truncate">
                 {factor.name}
               </span>
-              <span className="text-[6px] font-mono text-neutral-600 truncate">
+              <span className="text-micro font-mono text-neutral-600 truncate">
                 {factor.symbol}
                 {factor.pairSymbol ? `/${factor.pairSymbol}` : ''}
               </span>
@@ -283,7 +283,7 @@ function FactorMetricsTable({ factors }: { factors: Factor[] }) {
 
             {/* 5D */}
             <span
-              className="text-[7px] font-mono font-bold text-right tabular-nums"
+              className="text-micro font-mono font-bold text-right tabular-nums"
               style={{ color: getReturnColor(factor.return5d) }}
             >
               {fmtPct(factor.return5d)}
@@ -291,7 +291,7 @@ function FactorMetricsTable({ factors }: { factors: Factor[] }) {
 
             {/* 20D */}
             <span
-              className="text-[7px] font-mono font-bold text-right tabular-nums"
+              className="text-micro font-mono font-bold text-right tabular-nums"
               style={{ color: getReturnColor(factor.return20d) }}
             >
               {fmtPct(factor.return20d)}
@@ -299,21 +299,21 @@ function FactorMetricsTable({ factors }: { factors: Factor[] }) {
 
             {/* 60D */}
             <span
-              className="text-[7px] font-mono font-bold text-right tabular-nums"
+              className="text-micro font-mono font-bold text-right tabular-nums"
               style={{ color: getReturnColor(factor.return60d) }}
             >
               {fmtPct(factor.return60d)}
             </span>
 
             {/* Vol */}
-            <span className="text-[7px] font-mono text-right tabular-nums text-neutral-400">
+            <span className="text-micro font-mono text-right tabular-nums text-neutral-400">
               {fmtNum(factor.volatility20d, 1)}
             </span>
 
             {/* Sharpe */}
             <span
-              className="text-[7px] font-mono font-bold text-right tabular-nums"
-              style={{ color: factor.sharpe20d > 0 ? '#22c55e' : factor.sharpe20d < 0 ? '#ef4444' : '#71717a' }}
+              className="text-micro font-mono font-bold text-right tabular-nums"
+              style={{ color: factor.sharpe20d > 0 ? 'var(--color-green-500)' : factor.sharpe20d < 0 ? 'var(--color-red-500)' : 'var(--color-zinc-500)' }}
             >
               {fmtNum(factor.sharpe20d)}
             </span>
@@ -326,7 +326,7 @@ function FactorMetricsTable({ factors }: { factors: Factor[] }) {
             {/* Signal badge */}
             <div className="flex justify-center">
               <span
-                className="text-[6px] font-mono font-black uppercase px-1 py-[1px]"
+                className="text-micro font-mono font-black uppercase px-1 py-[1px]"
                 style={{ background: sigColor.bg, color: sigColor.text }}
               >
                 {sigColor.label}
@@ -355,14 +355,14 @@ function ZScoreBar({ value }: { value: number }) {
   const barWidth = (Math.abs(clampedZ) / maxZ) * (W / 2 - 1);
   const isPositive = clampedZ >= 0;
   const barX = isPositive ? CENTER : CENTER - barWidth;
-  const color = isPositive ? '#22c55e' : '#ef4444';
+  const color = isPositive ? 'var(--color-green-500)' : 'var(--color-red-500)';
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
       {/* Background */}
-      <rect x={0} y={0} width={W} height={H} fill="rgba(255,255,255,0.03)" />
+      <rect x={0} y={0} width={W} height={H} fill="color-mix(in srgb, var(--color-white) 3%, transparent)" />
       {/* Center line */}
-      <line x1={CENTER} y1={0} x2={CENTER} y2={H} stroke="rgba(255,255,255,0.15)" strokeWidth={0.5} />
+      <line x1={CENTER} y1={0} x2={CENTER} y2={H} stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth={0.5} />
       {/* Bar */}
       <rect x={barX} y={1} width={Math.max(barWidth, 0.5)} height={H - 2} fill={color} opacity={0.7} />
       {/* Value text */}
@@ -373,7 +373,7 @@ function ZScoreBar({ value }: { value: number }) {
         dominantBaseline="middle"
         fill={color}
         fontSize={5}
-        fontFamily="monospace"
+        fontFamily="inherit"
         fontWeight="bold"
       >
         {value > 0 ? '+' : ''}{value.toFixed(1)}
@@ -400,7 +400,7 @@ function MiniSparkline({ data }: { data: number[] }) {
   }).join(' ');
 
   const lastVal = data[data.length - 1];
-  const color = lastVal >= 0 ? '#84cc16' : '#ef4444';
+  const color = lastVal >= 0 ? 'var(--color-lime-500)' : 'var(--color-red-500)';
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
@@ -452,7 +452,7 @@ function FactorCorrelationHeatmap({ data }: { data: FactorExposureData }) {
 
   return (
     <div className="px-2 py-2 border-b border-border/20">
-      <div className="text-[7px] font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral-500 mb-1.5 px-1">
         {tr(t, 'feCorrMatrix', 'Factor Correlation Matrix')}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 280 }}>
@@ -463,9 +463,9 @@ function FactorCorrelationHeatmap({ data }: { data: FactorExposureData }) {
             x={LABEL_W + i * CELL + CELL / 2}
             y={LABEL_H - 4}
             textAnchor="middle"
-            fill="#71717a"
+            fill="var(--color-zinc-500)"
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
             fontWeight="bold"
           >
             {label}
@@ -480,9 +480,9 @@ function FactorCorrelationHeatmap({ data }: { data: FactorExposureData }) {
             y={LABEL_H + i * CELL + CELL / 2 + 1}
             textAnchor="end"
             dominantBaseline="middle"
-            fill="#71717a"
+            fill="var(--color-zinc-500)"
             fontSize={6}
-            fontFamily="monospace"
+            fontFamily="inherit"
             fontWeight="bold"
           >
             {label}
@@ -495,8 +495,8 @@ function FactorCorrelationHeatmap({ data }: { data: FactorExposureData }) {
             const x = LABEL_W + j * CELL;
             const y = LABEL_H + i * CELL;
             const isDiagonal = i === j;
-            const bg = isDiagonal ? 'rgba(63,63,70,0.3)' : corrColor(val);
-            const textFill = isDiagonal ? '#a1a1aa' : corrTextColor(val);
+            const bg = isDiagonal ? 'color-mix(in srgb, var(--color-zinc-700) 30%, transparent)' : corrColor(val);
+            const textFill = isDiagonal ? 'var(--color-zinc-400)' : corrTextColor(val);
 
             return (
               <g key={`${i}-${j}`}>
@@ -508,7 +508,7 @@ function FactorCorrelationHeatmap({ data }: { data: FactorExposureData }) {
                   dominantBaseline="middle"
                   fill={textFill}
                   fontSize={6}
-                  fontFamily="monospace"
+                  fontFamily="inherit"
                   fontWeight="bold"
                 >
                   {isDiagonal ? '1.00' : val.toFixed(2)}
@@ -523,21 +523,21 @@ function FactorCorrelationHeatmap({ data }: { data: FactorExposureData }) {
       <div className="flex items-center justify-center gap-3 mt-1.5">
         <div className="flex items-center gap-1">
           <svg width="16" height="6" viewBox="0 0 16 6">
-            <rect x="0" y="0" width="16" height="6" fill="rgba(59,130,246,0.5)" />
+            <rect x="0" y="0" width="16" height="6" fill="color-mix(in srgb, var(--color-blue-500) 50%, transparent)" />
           </svg>
-          <span className="text-[6px] font-mono text-neutral-600">Negative</span>
+          <span className="text-micro font-mono text-neutral-600">Negative</span>
         </div>
         <div className="flex items-center gap-1">
           <svg width="16" height="6" viewBox="0 0 16 6">
-            <rect x="0" y="0" width="16" height="6" fill="rgba(255,255,255,0.05)" />
+            <rect x="0" y="0" width="16" height="6" fill="color-mix(in srgb, var(--color-white) 5%, transparent)" />
           </svg>
-          <span className="text-[6px] font-mono text-neutral-600">Zero</span>
+          <span className="text-micro font-mono text-neutral-600">Zero</span>
         </div>
         <div className="flex items-center gap-1">
           <svg width="16" height="6" viewBox="0 0 16 6">
-            <rect x="0" y="0" width="16" height="6" fill="rgba(239,68,68,0.5)" />
+            <rect x="0" y="0" width="16" height="6" fill="color-mix(in srgb, var(--color-red-500) 50%, transparent)" />
           </svg>
-          <span className="text-[6px] font-mono text-neutral-600">Positive</span>
+          <span className="text-micro font-mono text-neutral-600">Positive</span>
         </div>
       </div>
     </div>
@@ -559,15 +559,15 @@ function RegimeDescription({ data }: { data: FactorExposureData }) {
 
   return (
     <div className="px-3 py-2">
-      <div className="text-[7px] font-black uppercase tracking-widest text-neutral-500 mb-1.5">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral-500 mb-1.5">
         {tr(t, 'feRegime', 'Market Factor Regime')}
       </div>
 
       {/* Dominant factor */}
       <div className="flex items-center gap-2 mb-1.5">
-        <span className="text-[7px] font-mono text-neutral-600 uppercase">Dominant:</span>
+        <span className="text-micro font-mono text-neutral-600 uppercase">Dominant:</span>
         <span
-          className="text-[9px] font-mono font-black uppercase"
+          className="text-mini font-mono font-black uppercase"
           style={{ color: styleColor.text }}
         >
           {regime.dominantFactor}
@@ -584,16 +584,16 @@ function RegimeDescription({ data }: { data: FactorExposureData }) {
               className="flex-1 flex flex-col gap-0.5 px-1.5 py-1 border border-border/20"
               style={{ borderTopColor: retColor, borderTopWidth: 2 }}
             >
-              <span className="text-[6px] font-mono text-neutral-600 uppercase truncate">
+              <span className="text-micro font-mono text-neutral-600 uppercase truncate">
                 {f.name}
               </span>
               <span
-                className="text-[9px] font-mono font-black tabular-nums"
+                className="text-mini font-mono font-black tabular-nums"
                 style={{ color: retColor }}
               >
                 {fmtPct(f.return20d)}
               </span>
-              <span className="text-[6px] font-mono text-neutral-600 tabular-nums">
+              <span className="text-micro font-mono text-neutral-600 tabular-nums">
                 Z: {f.zScore > 0 ? '+' : ''}{f.zScore.toFixed(1)}
               </span>
             </div>
@@ -602,12 +602,12 @@ function RegimeDescription({ data }: { data: FactorExposureData }) {
       </div>
 
       {/* Description */}
-      <p className="text-[7.5px] font-mono text-neutral-500 leading-relaxed">
+      <p className="text-micro font-mono text-neutral-500 leading-relaxed">
         {regime.description}
       </p>
 
       {/* Timestamp */}
-      <div className="mt-2 text-[6px] font-mono text-neutral-700 uppercase">
+      <div className="mt-2 text-micro font-mono text-neutral-700 uppercase">
         {tr(t, 'feUpdated', 'Updated')}: {new Date(data.timestamp).toLocaleTimeString()}
       </div>
     </div>

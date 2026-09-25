@@ -52,9 +52,9 @@ function DonutChart({ insider, institution }: { insider: number; institution: nu
   const circumference = 2 * Math.PI * r;
 
   const segments = [
-    { pct: institution, color: '#818cf8' }, // indigo-400
-    { pct: insider, color: '#34d399' },     // emerald-400
-    { pct: other, color: '#3f3f46' },       // zinc-700
+    { pct: institution, color: 'var(--color-indigo-400)' }, // indigo-400
+    { pct: insider, color: 'var(--color-emerald-400)' },     // emerald-400
+    { pct: other, color: 'var(--color-zinc-700)' },       // zinc-700
   ];
 
   let offset = 0;
@@ -81,10 +81,10 @@ function DonutChart({ insider, institution }: { insider: number; institution: nu
   return (
     <svg viewBox="0 0 110 110" className="w-full h-full">
       {paths}
-      <text x={cx} y={cy - 4} textAnchor="middle" className="fill-neutral/80 text-[9px] font-mono font-bold">
+      <text x={cx} y={cy - 4} textAnchor="middle" className="fill-neutral/80 text-mini font-mono font-bold">
         {fmtPct(institution)}
       </text>
-      <text x={cx} y={cy + 8} textAnchor="middle" className="fill-neutral/40 text-[6px] font-mono uppercase">
+      <text x={cx} y={cy + 8} textAnchor="middle" className="fill-neutral/40 text-micro font-mono uppercase">
         INST
       </text>
     </svg>
@@ -100,18 +100,18 @@ function TopHoldersBarChart({ holders }: { holders: InstitutionHolder[] }) {
 
   return (
     <div className="space-y-1 mt-2">
-      <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">Top 10 by % Held</div>
+      <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">Top 10 by % Held</div>
       <svg viewBox={`0 0 300 ${top10.length * 18 + 2}`} className="w-full">
         {top10.map((h, i) => {
           const barWidth = Math.max(1, (h.pctHeld / maxPct) * 180);
           const y = i * 18 + 1;
           return (
             <g key={i}>
-              <text x={0} y={y + 11} className="fill-neutral/60 text-[7px] font-mono">
+              <text x={0} y={y + 11} className="fill-neutral/60 text-micro font-mono">
                 {h.name.length > 18 ? h.name.slice(0, 18) + '...' : h.name}
               </text>
-              <rect x={115} y={y + 2} width={barWidth} height={10} rx={1} fill="#818cf8" opacity={0.6} />
-              <text x={115 + barWidth + 4} y={y + 11} className="fill-neutral/50 text-[7px] font-mono">
+              <rect x={115} y={y + 2} width={barWidth} height={10} rx={1} fill="var(--color-indigo-400)" opacity={0.6} />
+              <text x={115 + barWidth + 4} y={y + 11} className="fill-neutral/50 text-micro font-mono">
                 {h.pctHeld.toFixed(2)}%
               </text>
             </g>
@@ -157,7 +157,7 @@ function InstitutionsTab({ holders }: { holders: InstitutionHolder[] }) {
   return (
     <div className="flex-1 overflow-auto min-h-0">
       {/* Table header */}
-      <div className="sticky top-0 bg-black/80 backdrop-blur-sm z-10 grid grid-cols-[24px_1fr_65px_65px_50px_55px_55px] text-[7px] font-mono text-neutral/40 uppercase tracking-wider px-2 py-1 border-b border-white/[0.04]">
+      <div className="sticky top-0 bg-black/80 backdrop-blur-sm z-10 grid grid-cols-[24px_1fr_65px_65px_50px_55px_55px] text-micro font-mono text-neutral/40 uppercase tracking-wider px-2 py-1 border-b border-white/[0.04]">
         <span>#</span>
         <span>Name</span>
         <button onClick={() => toggleSort('shares')} className="text-right hover:text-indigo-400 transition-colors">Shares{sortIcon('shares')}</button>
@@ -168,14 +168,14 @@ function InstitutionsTab({ holders }: { holders: InstitutionHolder[] }) {
       </div>
 
       {sorted.length === 0 ? (
-        <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+        <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
           No institutional data
         </div>
       ) : (
         sorted.map((h, i) => (
           <div
             key={i}
-            className="grid grid-cols-[24px_1fr_65px_65px_50px_55px_55px] text-[9px] font-mono px-2 py-1 border-b border-white/[0.02] hover:bg-indigo-500/[0.04] transition-colors items-center"
+            className="grid grid-cols-[24px_1fr_65px_65px_50px_55px_55px] text-mini font-mono px-2 py-1 border-b border-white/[0.02] hover:bg-indigo-500/[0.04] transition-colors items-center"
           >
             <span className="text-neutral/30">{i + 1}</span>
             <span className="text-neutral/80 truncate pr-1">{h.name}</span>
@@ -211,7 +211,7 @@ function FundsTab({ holders }: { holders: FundHolder[] }) {
 
   return (
     <div className="flex-1 overflow-auto min-h-0">
-      <div className="sticky top-0 bg-black/80 backdrop-blur-sm z-10 grid grid-cols-[24px_1fr_65px_65px_50px_55px_55px] text-[7px] font-mono text-neutral/40 uppercase tracking-wider px-2 py-1 border-b border-white/[0.04]">
+      <div className="sticky top-0 bg-black/80 backdrop-blur-sm z-10 grid grid-cols-[24px_1fr_65px_65px_50px_55px_55px] text-micro font-mono text-neutral/40 uppercase tracking-wider px-2 py-1 border-b border-white/[0.04]">
         <span>#</span>
         <span>Fund</span>
         <button onClick={() => toggleSort('shares')} className="text-right hover:text-indigo-400 transition-colors">Shares{sortIcon('shares')}</button>
@@ -222,14 +222,14 @@ function FundsTab({ holders }: { holders: FundHolder[] }) {
       </div>
 
       {sorted.length === 0 ? (
-        <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+        <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
           No fund data
         </div>
       ) : (
         sorted.map((h, i) => (
           <div
             key={i}
-            className="grid grid-cols-[24px_1fr_65px_65px_50px_55px_55px] text-[9px] font-mono px-2 py-1 border-b border-white/[0.02] hover:bg-indigo-500/[0.04] transition-colors items-center"
+            className="grid grid-cols-[24px_1fr_65px_65px_50px_55px_55px] text-mini font-mono px-2 py-1 border-b border-white/[0.02] hover:bg-indigo-500/[0.04] transition-colors items-center"
           >
             <span className="text-neutral/30">{i + 1}</span>
             <span className="text-neutral/80 truncate pr-1">{h.name}</span>
@@ -250,7 +250,7 @@ function FundsTab({ holders }: { holders: FundHolder[] }) {
 function InsidersTab({ insiders, t }: { insiders: InsiderHolder[]; t: (key: TranslationKey) => string }) {
   if (insiders.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+      <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
         No insider data
       </div>
     );
@@ -258,7 +258,7 @@ function InsidersTab({ insiders, t }: { insiders: InsiderHolder[]; t: (key: Tran
 
   return (
     <div className="flex-1 overflow-auto min-h-0">
-      <div className="sticky top-0 bg-black/80 backdrop-blur-sm z-10 grid grid-cols-[1fr_70px_60px_60px_65px_55px_50px] text-[7px] font-mono text-neutral/40 uppercase tracking-wider px-2 py-1 border-b border-white/[0.04]">
+      <div className="sticky top-0 bg-black/80 backdrop-blur-sm z-10 grid grid-cols-[1fr_70px_60px_60px_65px_55px_50px] text-micro font-mono text-neutral/40 uppercase tracking-wider px-2 py-1 border-b border-white/[0.04]">
         <span>{safeT(t, 'insider', 'Name')}</span>
         <span>Relation</span>
         <span className="text-right">{safeT(t, 'shares', 'Shares')}</span>
@@ -276,7 +276,7 @@ function InsidersTab({ insiders, t }: { insiders: InsiderHolder[]; t: (key: Tran
         return (
           <div
             key={i}
-            className="grid grid-cols-[1fr_70px_60px_60px_65px_55px_50px] text-[9px] font-mono px-2 py-1 border-b border-white/[0.02] hover:bg-indigo-500/[0.04] transition-colors items-center"
+            className="grid grid-cols-[1fr_70px_60px_60px_65px_55px_50px] text-mini font-mono px-2 py-1 border-b border-white/[0.02] hover:bg-indigo-500/[0.04] transition-colors items-center"
           >
             <span className="text-neutral/80 truncate pr-1">{ins.name}</span>
             <span className="text-neutral/50 truncate">{ins.relation || '--'}</span>
@@ -301,8 +301,8 @@ function InsidersTab({ insiders, t }: { insiders: InsiderHolder[]; t: (key: Tran
 function MetricCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="bg-white/[0.02] border border-white/[0.04] px-2 py-1.5 rounded">
-      <div className="text-[7px] text-neutral/40 uppercase tracking-wider font-mono mb-0.5">{label}</div>
-      <div className={`text-[11px] font-mono font-bold ${accent ? 'text-indigo-400' : 'text-neutral/90'}`}>{value}</div>
+      <div className="text-micro text-neutral/40 uppercase tracking-wider font-mono mb-0.5">{label}</div>
+      <div className={`text-xs font-mono font-bold ${accent ? 'text-indigo-400' : 'text-neutral/90'}`}>{value}</div>
     </div>
   );
 }
@@ -332,18 +332,18 @@ export function HoldingsPanel() {
   ];
 
   return (
-    <GlassCard className="flex flex-col h-full text-[10px]">
+    <GlassCard className="flex flex-col h-full text-mini">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.04]">
         <div className="flex items-center gap-1.5">
           <Building2 size={12} className="text-indigo-400" />
-          <span className="text-[10px] font-mono font-bold tracking-widest text-neutral/80 uppercase">
+          <span className="text-mini font-mono font-bold tracking-widest text-neutral/80 uppercase">
             {safeT(t, 'panelHoldings', 'INSTITUTIONAL HOLDINGS')}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {dataUpdatedAt > 0 && (
-            <span className="text-[8px] font-mono text-neutral/30">
+            <span className="text-micro font-mono text-neutral/30">
               {new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -365,12 +365,12 @@ export function HoldingsPanel() {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value.toUpperCase())}
           placeholder="SYMBOL"
-          className="flex-1 bg-transparent border-none outline-none text-[10px] font-mono text-white placeholder:text-neutral/30 uppercase"
+          className="flex-1 bg-transparent border-none outline-none text-mini font-mono text-white placeholder:text-neutral/30 uppercase"
           maxLength={10}
         />
         <button
           type="submit"
-          className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/30 transition-colors"
+          className="px-2 py-0.5 text-micro font-mono font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/30 transition-colors"
         >
           Go
         </button>
@@ -379,11 +379,11 @@ export function HoldingsPanel() {
       {/* Company info line */}
       {data && (
         <div className="flex items-center gap-3 px-3 py-1 border-b border-white/[0.04] bg-black/10">
-          <span className="text-[11px] font-mono font-bold text-indigo-400">{data.symbol}</span>
-          <span className="text-[9px] font-mono text-neutral/60 truncate">{data.companyName}</span>
-          <span className="text-[10px] font-mono font-bold text-white ml-auto">${data.price.toFixed(2)}</span>
+          <span className="text-xs font-mono font-bold text-indigo-400">{data.symbol}</span>
+          <span className="text-mini font-mono text-neutral/60 truncate">{data.companyName}</span>
+          <span className="text-mini font-mono font-bold text-white ml-auto">${data.price.toFixed(2)}</span>
           {data.marketCap != null && (
-            <span className="text-[8px] font-mono text-neutral/40">MCap: {fmtDollar(data.marketCap)}</span>
+            <span className="text-micro font-mono text-neutral/40">MCap: {fmtDollar(data.marketCap)}</span>
           )}
         </div>
       )}
@@ -392,12 +392,12 @@ export function HoldingsPanel() {
       {isLoading && !data && (
         <div className="flex flex-col items-center justify-center flex-1 gap-2">
           <div className="w-4 h-4 border-2 border-indigo-400/30 border-t-indigo-400 animate-spin" />
-          <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">{safeT(t, 'loading', 'Loading...')}</span>
+          <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">{safeT(t, 'loading', 'Loading...')}</span>
         </div>
       )}
 
       {!isLoading && !data && (
-        <div className="flex items-center justify-center flex-1 text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+        <div className="flex items-center justify-center flex-1 text-neutral/30 text-mini font-mono uppercase tracking-widest">
           {safeT(t, 'hdNoData', 'Enter a symbol to view holdings')}
         </div>
       )}
@@ -426,15 +426,15 @@ export function HoldingsPanel() {
             <div className="flex items-center gap-3 mt-1.5">
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-indigo-400 rounded-sm" />
-                <span className="text-[7px] font-mono text-neutral/50">Institutional</span>
+                <span className="text-micro font-mono text-neutral/50">Institutional</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-emerald-400 rounded-sm" />
-                <span className="text-[7px] font-mono text-neutral/50">Insider</span>
+                <span className="text-micro font-mono text-neutral/50">Insider</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-zinc-700 rounded-sm" />
-                <span className="text-[7px] font-mono text-neutral/50">Other</span>
+                <span className="text-micro font-mono text-neutral/50">Other</span>
               </div>
             </div>
           </div>
@@ -445,7 +445,7 @@ export function HoldingsPanel() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-2.5 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider transition-all ${
+                className={`px-2.5 py-0.5 text-micro font-mono font-bold uppercase tracking-wider transition-all ${
                   activeTab === tab.id
                     ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
                     : 'text-neutral/50 hover:text-white border border-transparent'
@@ -453,13 +453,13 @@ export function HoldingsPanel() {
               >
                 {tab.label}
                 {tab.id === 'institutions' && data.topInstitutions.length > 0 && (
-                  <span className="ml-1 text-[7px] text-neutral/30">{data.topInstitutions.length}</span>
+                  <span className="ml-1 text-micro text-neutral/30">{data.topInstitutions.length}</span>
                 )}
                 {tab.id === 'funds' && data.topFunds.length > 0 && (
-                  <span className="ml-1 text-[7px] text-neutral/30">{data.topFunds.length}</span>
+                  <span className="ml-1 text-micro text-neutral/30">{data.topFunds.length}</span>
                 )}
                 {tab.id === 'insiders' && data.insiders.length > 0 && (
-                  <span className="ml-1 text-[7px] text-neutral/30">{data.insiders.length}</span>
+                  <span className="ml-1 text-micro text-neutral/30">{data.insiders.length}</span>
                 )}
               </button>
             ))}

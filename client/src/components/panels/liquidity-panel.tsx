@@ -11,13 +11,13 @@ import { Droplets, RefreshCw } from 'lucide-react';
 // i18n helper with fallback
 // ── Constants ──
 
-const BLUE = '#3b82f6';
-const BLUE_LIGHT = '#60a5fa';
-const GREEN = '#34d399';
-const BRIGHT_GREEN = '#4ade80';
-const YELLOW = '#facc15';
-const ORANGE = '#fb923c';
-const RED = '#f87171';
+const BLUE = 'var(--color-blue-500)';
+const BLUE_LIGHT = 'var(--color-blue-400)';
+const GREEN = 'var(--color-emerald-400)';
+const BRIGHT_GREEN = 'var(--color-green-400)';
+const YELLOW = 'var(--color-amber-300)';
+const ORANGE = 'var(--color-orange-400)';
+const RED = 'var(--color-red-400)';
 
 // ── Color helpers ──
 
@@ -31,11 +31,11 @@ function scoreColor(score: number): string {
 
 function levelBadge(level: LiquidityData['level']): { text: string; color: string; bg: string } {
   switch (level) {
-    case 'abundant': return { text: 'ABUNDANT', color: BRIGHT_GREEN, bg: 'rgba(74,222,128,0.15)' };
-    case 'normal': return { text: 'NORMAL', color: GREEN, bg: 'rgba(52,211,153,0.12)' };
-    case 'tightening': return { text: 'TIGHTENING', color: YELLOW, bg: 'rgba(250,204,21,0.12)' };
-    case 'stressed': return { text: 'STRESSED', color: ORANGE, bg: 'rgba(251,146,60,0.15)' };
-    case 'crisis': return { text: 'CRISIS', color: RED, bg: 'rgba(248,113,113,0.18)' };
+    case 'abundant': return { text: 'ABUNDANT', color: BRIGHT_GREEN, bg: 'color-mix(in srgb, var(--color-green-400) 15%, transparent)' };
+    case 'normal': return { text: 'NORMAL', color: GREEN, bg: 'color-mix(in srgb, var(--color-emerald-400) 12%, transparent)' };
+    case 'tightening': return { text: 'TIGHTENING', color: YELLOW, bg: 'color-mix(in srgb, var(--color-amber-300) 12%, transparent)' };
+    case 'stressed': return { text: 'STRESSED', color: ORANGE, bg: 'color-mix(in srgb, var(--color-orange-400) 15%, transparent)' };
+    case 'crisis': return { text: 'CRISIS', color: RED, bg: 'color-mix(in srgb, var(--color-red-400) 18%, transparent)' };
   }
 }
 
@@ -46,18 +46,18 @@ function gradeColor(grade: string): string {
     case 'C': return YELLOW;
     case 'D': return ORANGE;
     case 'F': return RED;
-    default: return 'rgba(255,255,255,0.3)';
+    default: return 'color-mix(in srgb, var(--color-white) 30%, transparent)';
   }
 }
 
 function gradeBg(grade: string): string {
   switch (grade) {
-    case 'A': return 'rgba(52,211,153,0.12)';
-    case 'B': return 'rgba(96,165,250,0.12)';
-    case 'C': return 'rgba(250,204,21,0.1)';
-    case 'D': return 'rgba(251,146,60,0.12)';
-    case 'F': return 'rgba(248,113,113,0.15)';
-    default: return 'rgba(255,255,255,0.03)';
+    case 'A': return 'color-mix(in srgb, var(--color-emerald-400) 12%, transparent)';
+    case 'B': return 'color-mix(in srgb, var(--color-blue-400) 12%, transparent)';
+    case 'C': return 'color-mix(in srgb, var(--color-amber-300) 10%, transparent)';
+    case 'D': return 'color-mix(in srgb, var(--color-orange-400) 12%, transparent)';
+    case 'F': return 'color-mix(in srgb, var(--color-red-400) 15%, transparent)';
+    default: return 'color-mix(in srgb, var(--color-white) 3%, transparent)';
   }
 }
 
@@ -73,7 +73,7 @@ function trendColor(trend: string): string {
   switch (trend) {
     case 'rising': return GREEN;
     case 'falling': return RED;
-    default: return 'rgba(255,255,255,0.3)';
+    default: return 'color-mix(in srgb, var(--color-white) 30%, transparent)';
   }
 }
 
@@ -112,7 +112,7 @@ function CompositeGauge({ score, level }: { score: number; level: LiquidityData[
         </defs>
 
         {/* Background bar */}
-        <rect x={BAR_X} y={BAR_Y} width={BAR_W} height={BAR_H} fill="rgba(255,255,255,0.03)" />
+        <rect x={BAR_X} y={BAR_Y} width={BAR_W} height={BAR_H} fill="color-mix(in srgb, var(--color-white) 3%, transparent)" />
 
         {/* Fill bar */}
         <rect
@@ -153,18 +153,18 @@ function CompositeGauge({ score, level }: { score: number; level: LiquidityData[
           textAnchor="middle"
           fill={scoreColor(score)}
           fontSize={11}
-          fontFamily="monospace"
+          fontFamily="inherit"
           fontWeight="bold"
         >
           {score}
         </text>
 
         {/* Labels */}
-        <text x={BAR_X} y={BAR_Y + BAR_H + 10} fill="rgba(255,255,255,0.2)" fontSize={5} fontFamily="monospace">CRISIS</text>
-        <text x={BAR_X + BAR_W * 0.2} y={BAR_Y + BAR_H + 10} fill="rgba(255,255,255,0.2)" fontSize={5} fontFamily="monospace">STRESSED</text>
-        <text x={BAR_X + BAR_W * 0.4} y={BAR_Y + BAR_H + 10} fill="rgba(255,255,255,0.2)" fontSize={5} fontFamily="monospace">TIGHTENING</text>
-        <text x={BAR_X + BAR_W * 0.6} y={BAR_Y + BAR_H + 10} fill="rgba(255,255,255,0.2)" fontSize={5} fontFamily="monospace">NORMAL</text>
-        <text x={BAR_X + BAR_W * 0.82} y={BAR_Y + BAR_H + 10} fill="rgba(255,255,255,0.2)" fontSize={5} fontFamily="monospace">ABUNDANT</text>
+        <text x={BAR_X} y={BAR_Y + BAR_H + 10} fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={5} fontFamily="inherit">CRISIS</text>
+        <text x={BAR_X + BAR_W * 0.2} y={BAR_Y + BAR_H + 10} fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={5} fontFamily="inherit">STRESSED</text>
+        <text x={BAR_X + BAR_W * 0.4} y={BAR_Y + BAR_H + 10} fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={5} fontFamily="inherit">TIGHTENING</text>
+        <text x={BAR_X + BAR_W * 0.6} y={BAR_Y + BAR_H + 10} fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={5} fontFamily="inherit">NORMAL</text>
+        <text x={BAR_X + BAR_W * 0.82} y={BAR_Y + BAR_H + 10} fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={5} fontFamily="inherit">ABUNDANT</text>
       </svg>
     </div>
   );
@@ -203,16 +203,16 @@ function CrossMarketBars({ crossMarket }: { crossMarket: LiquidityCrossMarket })
                 x={BAR_X - 4}
                 y={y + BAR_H / 2 + 1.5}
                 textAnchor="end"
-                fill="rgba(255,255,255,0.4)"
+                fill="color-mix(in srgb, var(--color-white) 40%, transparent)"
                 fontSize={5.5}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 {bar.label}
               </text>
 
               {/* Background */}
-              <rect x={BAR_X} y={y} width={BAR_W} height={BAR_H} fill="rgba(255,255,255,0.02)" />
+              <rect x={BAR_X} y={y} width={BAR_W} height={BAR_H} fill="color-mix(in srgb, var(--color-white) 2%, transparent)" />
 
               {/* Fill */}
               <rect x={BAR_X} y={y} width={fillW} height={BAR_H} fill={color} fillOpacity={0.5} />
@@ -224,7 +224,7 @@ function CrossMarketBars({ crossMarket }: { crossMarket: LiquidityCrossMarket })
                 textAnchor="start"
                 fill={color}
                 fontSize={6}
-                fontFamily="monospace"
+                fontFamily="inherit"
                 fontWeight="bold"
               >
                 {bar.value}
@@ -292,7 +292,7 @@ function HistoryChart({ history }: { history: LiquidityHistoryPoint[] }) {
               y1={yScale(v)}
               x2={PAD_L + CHART_W}
               y2={yScale(v)}
-              stroke="rgba(255,255,255,0.05)"
+              stroke="color-mix(in srgb, var(--color-white) 5%, transparent)"
               strokeWidth={0.5}
               strokeDasharray="2,2"
             />
@@ -300,9 +300,9 @@ function HistoryChart({ history }: { history: LiquidityHistoryPoint[] }) {
               x={PAD_L - 3}
               y={yScale(v) + 1.5}
               textAnchor="end"
-              fill="rgba(255,255,255,0.15)"
+              fill="color-mix(in srgb, var(--color-white) 15%, transparent)"
               fontSize={4.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {v}
             </text>
@@ -327,19 +327,19 @@ function HistoryChart({ history }: { history: LiquidityHistoryPoint[] }) {
 
         {/* Legend */}
         <rect x={PAD_L + 2} y={H - 10} width={6} height={2} fill={BLUE} fillOpacity={0.8} />
-        <text x={PAD_L + 10} y={H - 8} fill="rgba(255,255,255,0.3)" fontSize={4} fontFamily="monospace">COMPOSITE</text>
+        <text x={PAD_L + 10} y={H - 8} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize={4} fontFamily="inherit">COMPOSITE</text>
         <rect x={PAD_L + 52} y={H - 10} width={6} height={2} fill={GREEN} fillOpacity={0.5} />
-        <text x={PAD_L + 60} y={H - 8} fill="rgba(255,255,255,0.3)" fontSize={4} fontFamily="monospace">EQUITY</text>
+        <text x={PAD_L + 60} y={H - 8} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize={4} fontFamily="inherit">EQUITY</text>
         <rect x={PAD_L + 92} y={H - 10} width={6} height={2} fill={ORANGE} fillOpacity={0.4} />
-        <text x={PAD_L + 100} y={H - 8} fill="rgba(255,255,255,0.3)" fontSize={4} fontFamily="monospace">BOND</text>
+        <text x={PAD_L + 100} y={H - 8} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize={4} fontFamily="inherit">BOND</text>
 
         {/* Date labels */}
         {history.length > 0 && (
           <>
-            <text x={PAD_L} y={H - 2} fill="rgba(255,255,255,0.12)" fontSize={4} fontFamily="monospace">
+            <text x={PAD_L} y={H - 2} fill="color-mix(in srgb, var(--color-white) 12%, transparent)" fontSize={4} fontFamily="inherit">
               {history[0].date.slice(5)}
             </text>
-            <text x={PAD_L + CHART_W} y={H - 2} textAnchor="end" fill="rgba(255,255,255,0.12)" fontSize={4} fontFamily="monospace">
+            <text x={PAD_L + CHART_W} y={H - 2} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 12%, transparent)" fontSize={4} fontFamily="inherit">
               {history[history.length - 1].date.slice(5)}
             </text>
           </>
@@ -366,7 +366,7 @@ function VolumeSparkline({ data, width = 52, height = 12 }: { data: number[]; wi
           y1={height - (1 / maxVal) * height}
           x2={width}
           y2={height - (1 / maxVal) * height}
-          stroke="rgba(255,255,255,0.08)"
+          stroke="color-mix(in srgb, var(--color-white) 8%, transparent)"
           strokeWidth={0.5}
         />
       )}
@@ -375,7 +375,7 @@ function VolumeSparkline({ data, width = 52, height = 12 }: { data: number[]; wi
         const x = i * stepX;
         const y = height - barH;
         const isAboveAvg = v >= 1.0;
-        const color = isAboveAvg ? 'rgba(52,211,153,0.5)' : 'rgba(248,113,113,0.4)';
+        const color = isAboveAvg ? 'color-mix(in srgb, var(--color-emerald-400) 50%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 40%, transparent)';
         return <rect key={i} x={x + stepX * 0.1} y={y} width={stepX * 0.8} height={barH} fill={color} />;
       })}
     </svg>
@@ -398,7 +398,7 @@ function IndicatorTable({ indicators, level }: { indicators: LiquidityIndicator[
   return (
     <div className="px-1">
       {/* Header */}
-      <div className="flex items-center py-0.5 px-1 border-b border-white/[0.06] text-[5px] font-mono text-white/20 uppercase gap-1">
+      <div className="flex items-center py-0.5 px-1 border-b border-white/[0.06] text-micro font-mono text-white/20 uppercase gap-1">
         <span className="w-[52px] shrink-0">NAME</span>
         <span className="w-[36px] shrink-0">SYM</span>
         <span className="w-[28px] text-right shrink-0">VOL R</span>
@@ -411,10 +411,10 @@ function IndicatorTable({ indicators, level }: { indicators: LiquidityIndicator[
       {sorted.map(ind => (
         <div
           key={ind.symbol}
-          className="flex items-center py-0.5 px-1 border-b border-white/[0.02] text-[7px] font-mono gap-1"
+          className="flex items-center py-0.5 px-1 border-b border-white/[0.02] text-micro font-mono gap-1"
         >
           {/* Name */}
-          <span className="w-[52px] text-white/35 truncate shrink-0 text-[6px]">{ind.name}</span>
+          <span className="w-[52px] text-white/35 truncate shrink-0 text-micro">{ind.name}</span>
 
           {/* Symbol */}
           <span className="w-[36px] font-bold text-white/60 shrink-0">{ind.symbol}</span>
@@ -445,7 +445,7 @@ function IndicatorTable({ indicators, level }: { indicators: LiquidityIndicator[
 
           {/* Grade badge */}
           <span
-            className="w-[16px] text-center font-black shrink-0 text-[6px]"
+            className="w-[16px] text-center font-black shrink-0 text-micro"
             style={{ color: gradeColor(ind.liquidityGrade), backgroundColor: gradeBg(ind.liquidityGrade) }}
           >
             {ind.liquidityGrade}
@@ -468,17 +468,17 @@ function AlertsSection({ alerts }: { alerts: string[] }) {
 
   return (
     <div className="px-2 py-1 border-t border-white/[0.06]">
-      <div className="text-[5px] font-mono text-white/20 uppercase tracking-wider mb-0.5">ALERTS</div>
+      <div className="text-micro font-mono text-white/20 uppercase tracking-wider mb-0.5">ALERTS</div>
       {alerts.map((alert, i) => (
         <div
           key={i}
-          className="flex items-start gap-1 py-0.5 text-[7px] font-mono"
+          className="flex items-start gap-1 py-0.5 text-micro font-mono"
         >
           <span
             className="shrink-0 mt-0.5 w-1 h-1 inline-block"
             style={{ backgroundColor: alert.startsWith('CRITICAL') ? RED : alert.startsWith('WARNING') ? ORANGE : YELLOW }}
           />
-          <span style={{ color: alert.startsWith('CRITICAL') ? RED : alert.startsWith('WARNING') ? ORANGE : 'rgba(255,255,255,0.45)' }}>
+          <span style={{ color: alert.startsWith('CRITICAL') ? RED : alert.startsWith('WARNING') ? ORANGE : 'color-mix(in srgb, var(--color-white) 45%, transparent)' }}>
             {alert}
           </span>
         </div>
@@ -496,26 +496,26 @@ export function LiquidityPanel() {
   const badge = data ? levelBadge(data.level) : null;
 
   return (
-    <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
+    <div className="h-full flex flex-col bg-black overflow-hidden text-mini font-mono">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-white/[0.08] shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-white/[0.08] shrink-0">
         <div className="flex items-center gap-2">
           <Droplets className="w-4 h-4" style={{ color: BLUE }} />
-          <span className="text-[9px] font-black uppercase tracking-tighter" style={{ color: BLUE }}>
+          <span className="text-mini font-black uppercase tracking-tighter" style={{ color: BLUE }}>
             {tr(t, 'liqTitle', 'Liquidity Monitor')}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           {badge && (
             <span
-              className="text-[5px] font-black uppercase px-1 py-0.5"
+              className="text-micro font-black uppercase px-1 py-0.5"
               style={{ color: badge.color, backgroundColor: badge.bg }}
             >
               {badge.text}
             </span>
           )}
           {data && (
-            <span className="text-[6px] text-white/20">
+            <span className="text-micro text-white/20">
               {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -531,7 +531,7 @@ export function LiquidityPanel() {
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-2">
               <div className="w-5 h-5 border-2 border-blue-400/30 border-t-blue-400 animate-spin" />
-              <span className="text-[10px] text-white/40 uppercase tracking-widest">
+              <span className="text-mini text-white/40 uppercase tracking-widest">
                 {tr(t, 'loading', 'Loading...')}
               </span>
             </div>
@@ -541,7 +541,7 @@ export function LiquidityPanel() {
             {/* Composite Score Gauge */}
             <div className="border-b border-white/[0.06]">
               <div className="px-2 pt-1">
-                <span className="text-[6px] text-white/25 uppercase tracking-wider">
+                <span className="text-micro text-white/25 uppercase tracking-wider">
                   {tr(t, 'liqComposite', 'Composite Liquidity Score')}
                 </span>
               </div>
@@ -551,7 +551,7 @@ export function LiquidityPanel() {
             {/* Cross-Market Bars */}
             <div className="border-b border-white/[0.06]">
               <div className="px-2 pt-1">
-                <span className="text-[6px] text-white/25 uppercase tracking-wider">
+                <span className="text-micro text-white/25 uppercase tracking-wider">
                   {tr(t, 'liqCrossMarket', 'Cross-Market Liquidity')}
                 </span>
               </div>
@@ -561,7 +561,7 @@ export function LiquidityPanel() {
             {/* History Chart */}
             <div className="border-b border-white/[0.06]">
               <div className="px-2 pt-1">
-                <span className="text-[6px] text-white/25 uppercase tracking-wider">
+                <span className="text-micro text-white/25 uppercase tracking-wider">
                   {tr(t, 'liqHistory', '20-Day Composite History')}
                 </span>
               </div>
@@ -571,7 +571,7 @@ export function LiquidityPanel() {
             {/* Indicator Table */}
             <div className="border-b border-white/[0.06]">
               <div className="px-2 pt-1 pb-0.5">
-                <span className="text-[6px] text-white/25 uppercase tracking-wider">
+                <span className="text-micro text-white/25 uppercase tracking-wider">
                   {tr(t, 'liqIndicators', 'Liquidity Indicators')}
                 </span>
               </div>
@@ -582,7 +582,7 @@ export function LiquidityPanel() {
             <AlertsSection alerts={data.alerts} />
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-[10px] text-white/40 uppercase">
+          <div className="flex items-center justify-center h-full text-mini text-white/40 uppercase">
             {tr(t, 'liqNoData', 'No data available')}
           </div>
         )}

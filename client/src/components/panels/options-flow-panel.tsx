@@ -66,7 +66,7 @@ export function OptionsFlowPanel() {
         </span>
       }
       headerRight={
-        <span className="text-[8px] font-mono text-neutral/50">
+        <span className="text-micro font-mono text-neutral/50">
           {t('flowsCount').replace('{count}', String(sorted.length))}
         </span>
       }
@@ -79,16 +79,16 @@ export function OptionsFlowPanel() {
           <div className="flex items-center gap-0.5">
             <button
               onClick={() => setUseWatchlist(true)}
-              className={`px-2 py-0.5 text-[8px] font-mono font-bold uppercase transition-all ${
-                useWatchlist ? 'bg-accent/20 text-accent' : 'text-neutral/40 hover:text-white'
+              className={`px-2 py-0.5 text-micro font-mono font-bold uppercase transition-all ${
+                useWatchlist ? 'bg-accent/20 text-accent-ink' : 'text-neutral/40 hover:text-white'
               }`}
             >
               {t('watchlist')}
             </button>
             <button
               onClick={() => setUseWatchlist(false)}
-              className={`px-2 py-0.5 text-[8px] font-mono font-bold uppercase transition-all ${
-                !useWatchlist ? 'bg-accent/20 text-accent' : 'text-neutral/40 hover:text-white'
+              className={`px-2 py-0.5 text-micro font-mono font-bold uppercase transition-all ${
+                !useWatchlist ? 'bg-accent/20 text-accent-ink' : 'text-neutral/40 hover:text-white'
               }`}
             >
               {t('manual')}
@@ -98,14 +98,14 @@ export function OptionsFlowPanel() {
           <div className="flex-1" />
 
           {/* Min premium */}
-          <span className="text-[8px] font-mono text-neutral/40">{t('minPremium')}:</span>
+          <span className="text-micro font-mono text-neutral/40">{t('minPremium')}:</span>
           {MIN_PREMIUM_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setMinPremium(opt.value)}
-              className={`px-1.5 py-0.5 text-[8px] font-mono font-bold transition-all ${
+              className={`px-1.5 py-0.5 text-micro font-mono font-bold transition-all ${
                 minPremium === opt.value
-                  ? 'bg-accent/20 text-accent'
+                  ? 'bg-accent/20 text-accent-ink'
                   : 'text-neutral/40 hover:text-white'
               }`}
             >
@@ -121,13 +121,13 @@ export function OptionsFlowPanel() {
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value.toUpperCase())}
             placeholder="AAPL, TSLA, NVDA"
-            className="w-full bg-black/40 border border-border/50 px-2 py-1 text-[10px] font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
+            className="w-full bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
           />
         )}
       </div>
 
       {/* Table header */}
-      <div className="shrink-0 grid grid-cols-[50px_35px_55px_50px_50px_45px_40px_55px_40px_1fr] text-[7px] font-mono text-neutral/40 uppercase tracking-wider px-3 py-1 border-b border-border/10 bg-black/10">
+      <div className="shrink-0 grid grid-cols-[50px_35px_55px_50px_50px_45px_40px_55px_40px_1fr] text-micro font-mono text-neutral/40 uppercase tracking-wider px-3 py-1 border-b border-border/10 bg-black/10">
         <span>{t('symbol')}</span>
         <span>{t('headerType')}</span>
         <span className="text-right">{t('strike')}</span>
@@ -145,22 +145,22 @@ export function OptionsFlowPanel() {
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-8 gap-2">
             <div className="w-4 h-4 border-2 border-accent/30 border-t-accent animate-spin" />
-            <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">{t('loading')}</span>
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">{t('loading')}</span>
           </div>
         )}
         {error && (
           <div className="flex flex-col items-center justify-center py-8 gap-2">
-            <span className="text-[10px] font-mono text-bearish/60 uppercase tracking-widest">{t('failedOptionsFlow')}</span>
-            <button onClick={() => window.location.reload()} className="text-[9px] font-mono text-accent hover:text-white border border-accent/30 px-2 py-0.5 transition-colors">{t('retry')}</button>
+            <span className="text-mini font-mono text-bearish/60 uppercase tracking-widest">{t('failedOptionsFlow')}</span>
+            <button onClick={() => window.location.reload()} className="text-mini font-mono text-accent-ink hover:text-white border border-accent/30 px-2 py-0.5 transition-colors">{t('retry')}</button>
           </div>
         )}
         {!isLoading && !error && symbols.length === 0 && (
-          <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('addSymbolsToTrack')}
           </div>
         )}
         {!isLoading && !error && symbols.length > 0 && sorted.length === 0 && (
-          <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('noUnusualActivity')}
           </div>
         )}
@@ -171,9 +171,9 @@ export function OptionsFlowPanel() {
           return (
             <div
               key={`${flow.symbol}-${flow.strike}-${flow.expiry}-${i}`}
-              className="grid grid-cols-[50px_35px_55px_50px_50px_45px_40px_55px_40px_1fr] text-[10px] font-mono px-3 py-1.5 border-b border-border/5 hover:bg-accent/[0.04] transition-colors items-center"
+              className="grid grid-cols-[50px_35px_55px_50px_50px_45px_40px_55px_40px_1fr] text-mini font-mono px-3 py-1.5 border-b border-border/5 hover:bg-accent/[0.04] transition-colors items-center"
             >
-              <span className="font-bold text-accent">{flow.symbol}</span>
+              <span className="font-bold text-accent-ink">{flow.symbol}</span>
               <span className={`font-bold uppercase ${isCall ? 'text-bullish' : 'text-bearish'}`}>
                 {flow.type === 'call' ? 'C' : 'P'}
               </span>
@@ -182,13 +182,13 @@ export function OptionsFlowPanel() {
               <span className="text-right text-gray-300">{formatCompact(flow.volume)}</span>
               <span className="text-right text-neutral/50">{formatCompact(flow.openInterest)}</span>
               <span
-                className={`text-right font-bold ${voiRatio > 3 ? 'text-accent' : 'text-gray-400'}`}
+                className={`text-right font-bold ${voiRatio > 3 ? 'text-accent-ink' : 'text-gray-400'}`}
               >
                 {voiRatio.toFixed(1)}
               </span>
               <span className="text-right font-bold text-gray-200">${formatCompact(flow.premium)}</span>
               <span className="text-right text-neutral/50">{(flow.impliedVolatility * 100).toFixed(0)}%</span>
-              <span className="text-[8px] text-neutral/40 truncate pl-2">{flow.unusual}</span>
+              <span className="text-micro text-neutral/40 truncate pl-2">{flow.unusual}</span>
             </div>
           );
         })}

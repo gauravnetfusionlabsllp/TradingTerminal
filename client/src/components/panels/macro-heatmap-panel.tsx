@@ -14,22 +14,22 @@ import { RefreshCw, Globe } from 'lucide-react';
 
 // ── Constants ──
 
-const ACCENT = '#0ea5e9'; // sky-400
+const ACCENT = 'var(--color-sky-500)'; // sky-400
 
 const SIGNAL_COLORS: Record<MacroSignal, string> = {
-  strong_up: '#22c55e',
-  up: '#86efac',
-  flat: '#3f3f46',
-  down: '#fca5a5',
-  strong_down: '#ef4444',
+  strong_up: 'var(--color-green-500)',
+  up: 'var(--color-green-300)',
+  flat: 'var(--color-zinc-700)',
+  down: 'var(--color-red-300)',
+  strong_down: 'var(--color-red-500)',
 };
 
 const SIGNAL_TEXT_COLORS: Record<MacroSignal, string> = {
-  strong_up: '#fff',
-  up: '#052e16',
-  flat: '#a1a1aa',
-  down: '#450a0a',
-  strong_down: '#fff',
+  strong_up: 'var(--color-white)',
+  up: 'var(--color-green-950)',
+  flat: 'var(--color-zinc-400)',
+  down: 'var(--color-red-950)',
+  strong_down: 'var(--color-white)',
 };
 
 // ── Helpers ──
@@ -54,9 +54,9 @@ function sentimentLabel(s: RegionSentiment): string {
 }
 
 function sentimentColor(s: RegionSentiment): string {
-  if (s === 'bullish') return '#22c55e';
-  if (s === 'bearish') return '#ef4444';
-  return '#a1a1aa';
+  if (s === 'bullish') return 'var(--color-green-500)';
+  if (s === 'bearish') return 'var(--color-red-500)';
+  return 'var(--color-zinc-400)';
 }
 
 function globalSentimentLabel(s: GlobalSentiment): string {
@@ -66,9 +66,9 @@ function globalSentimentLabel(s: GlobalSentiment): string {
 }
 
 function globalSentimentColor(s: GlobalSentiment): string {
-  if (s === 'risk_on') return '#22c55e';
-  if (s === 'risk_off') return '#ef4444';
-  return '#eab308';
+  if (s === 'risk_on') return 'var(--color-green-500)';
+  if (s === 'risk_off') return 'var(--color-red-500)';
+  return 'var(--color-yellow-500)';
 }
 
 // ── Risk Score Bar (SVG) ──
@@ -80,31 +80,31 @@ function RiskScoreBar({ score }: { score: number }) {
 
   return (
     <div className="flex items-center justify-center gap-2 px-3 py-1.5">
-      <span className="text-[8px] font-mono text-red-400 uppercase tracking-wider w-14 text-right shrink-0">
+      <span className="text-micro font-mono text-red-400 uppercase tracking-wider w-14 text-right shrink-0">
         RISK OFF
       </span>
       <svg width={barWidth} height={barHeight + 8} className="block shrink-0">
         <defs>
           <linearGradient id="risk-grad" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#ef4444" />
-            <stop offset="30%" stopColor="#f97316" />
-            <stop offset="50%" stopColor="#eab308" />
-            <stop offset="70%" stopColor="#84cc16" />
-            <stop offset="100%" stopColor="#22c55e" />
+            <stop offset="0%" stopColor="var(--color-red-500)" />
+            <stop offset="30%" stopColor="var(--color-orange-500)" />
+            <stop offset="50%" stopColor="var(--color-yellow-500)" />
+            <stop offset="70%" stopColor="var(--color-lime-500)" />
+            <stop offset="100%" stopColor="var(--color-green-500)" />
           </linearGradient>
         </defs>
         <rect x={0} y={4} width={barWidth} height={barHeight} fill="url(#risk-grad)" rx={0} />
         {/* Marker */}
         <polygon
           points={`${markerX - 4},0 ${markerX + 4},0 ${markerX},5`}
-          fill="#fff"
+          fill="var(--color-white)"
         />
         <line
           x1={markerX}
           y1={4}
           x2={markerX}
           y2={4 + barHeight}
-          stroke="#fff"
+          stroke="var(--color-white)"
           strokeWidth={2}
         />
         {/* Score label */}
@@ -112,15 +112,15 @@ function RiskScoreBar({ score }: { score: number }) {
           x={markerX}
           y={barHeight + 8 + 8}
           textAnchor="middle"
-          fill="#fff"
+          fill="var(--color-white)"
           fontSize={8}
-          fontFamily="monospace"
+          fontFamily="inherit"
           fontWeight="bold"
         >
           {score}
         </text>
       </svg>
-      <span className="text-[8px] font-mono text-green-400 uppercase tracking-wider w-14 shrink-0">
+      <span className="text-micro font-mono text-green-400 uppercase tracking-wider w-14 shrink-0">
         RISK ON
       </span>
     </div>
@@ -144,10 +144,10 @@ function HeatmapCell({ indicator }: { indicator: MacroIndicator }) {
         minWidth: 50,
       }}
     >
-      <span className="text-[7px] font-bold leading-none truncate max-w-[48px]">
+      <span className="text-micro font-bold leading-none truncate max-w-[48px]">
         {abbreviateSymbol(indicator.symbol)}
       </span>
-      <span className="text-[7px] leading-none">
+      <span className="text-micro leading-none">
         {fmtPct(indicator.changePct)}
       </span>
     </div>
@@ -162,13 +162,13 @@ function RegionRow({ region }: { region: MacroRegion }) {
       {/* Region header row */}
       <div
         className="flex items-center gap-2 px-2 py-0.5"
-        style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
+        style={{ backgroundColor: 'color-mix(in srgb, var(--color-white) 3%, transparent)' }}
       >
-        <span className="text-[8px] font-mono font-bold text-white/70 uppercase tracking-wider">
+        <span className="text-micro font-mono font-bold text-white/70 uppercase tracking-wider">
           {region.name}
         </span>
         <span
-          className="text-[7px] font-mono font-bold px-1"
+          className="text-micro font-mono font-bold px-1"
           style={{
             color: sentimentColor(region.sentiment),
             border: `1px solid ${sentimentColor(region.sentiment)}`,
@@ -176,7 +176,7 @@ function RegionRow({ region }: { region: MacroRegion }) {
         >
           {sentimentLabel(region.sentiment)}
         </span>
-        <span className="text-[8px] font-mono" style={{ color: region.avgChange >= 0 ? '#86efac' : '#fca5a5' }}>
+        <span className="text-micro font-mono" style={{ color: region.avgChange >= 0 ? 'var(--color-green-300)' : 'var(--color-red-300)' }}>
           avg {fmtPct(region.avgChange)}
         </span>
       </div>
@@ -205,20 +205,20 @@ function RegionSummaryBar({ regions }: { regions: MacroRegion[] }) {
 
   return (
     <div className="px-2 py-1">
-      <div className="text-[7px] font-mono text-white/30 uppercase tracking-wider mb-0.5">
+      <div className="text-micro font-mono text-white/30 uppercase tracking-wider mb-0.5">
         Region Performance
       </div>
       {sorted.map((region) => {
         const barPct = Math.min(Math.abs(region.avgChange) / maxAbs, 1) * 100;
         const isPositive = region.avgChange >= 0;
-        const barColor = isPositive ? '#22c55e' : '#ef4444';
+        const barColor = isPositive ? 'var(--color-green-500)' : 'var(--color-red-500)';
 
         return (
           <div key={region.name} className="flex items-center gap-1 py-px">
-            <span className="text-[7px] font-mono text-white/50 w-16 shrink-0 text-right">
+            <span className="text-micro font-mono text-white/50 w-16 shrink-0 text-right">
               {region.name}
             </span>
-            <div className="flex-1 h-[6px] relative" style={{ backgroundColor: '#18181b' }}>
+            <div className="flex-1 h-[6px] relative" style={{ backgroundColor: 'var(--color-zinc-900)' }}>
               {isPositive ? (
                 <div
                   className="absolute left-1/2 top-0 h-full"
@@ -238,8 +238,8 @@ function RegionSummaryBar({ regions }: { regions: MacroRegion[] }) {
               <div className="absolute left-1/2 top-0 h-full w-px bg-white/10" />
             </div>
             <span
-              className="text-[7px] font-mono font-bold w-12 shrink-0"
-              style={{ color: isPositive ? '#86efac' : '#fca5a5' }}
+              className="text-micro font-mono font-bold w-12 shrink-0"
+              style={{ color: isPositive ? 'var(--color-green-300)' : 'var(--color-red-300)' }}
             >
               {fmtPct(region.avgChange)}
             </span>
@@ -262,13 +262,13 @@ export function MacroHeatmapPanel() {
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
       <div
-        className="flex items-center justify-between px-3 py-1.5 bg-[#050505] shrink-0"
-        style={{ borderBottom: `1px solid ${ACCENT}33` }}
+        className="flex items-center justify-between px-3 py-1.5 bg-raised shrink-0"
+        style={{ borderBottom: `1px solid color-mix(in srgb, ${ACCENT} 20%, transparent)` }}
       >
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4" style={{ color: ACCENT }} />
           <span
-            className="text-[9px] font-black font-mono uppercase tracking-tighter"
+            className="text-mini font-black font-mono uppercase tracking-tighter"
             style={{ color: ACCENT }}
           >
             {tr(t, 'panelMacroHeatmap', 'GLOBAL MACRO HEATMAP')}
@@ -278,7 +278,7 @@ export function MacroHeatmapPanel() {
           {data && (
             <>
               <span
-                className="text-[8px] font-mono font-bold px-1.5 py-0.5"
+                className="text-micro font-mono font-bold px-1.5 py-0.5"
                 style={{
                   color: globalSentimentColor(data.globalSentiment),
                   border: `1px solid ${globalSentimentColor(data.globalSentiment)}`,
@@ -286,7 +286,7 @@ export function MacroHeatmapPanel() {
               >
                 {globalSentimentLabel(data.globalSentiment)}
               </span>
-              <span className="text-[8px] font-mono text-white/40">
+              <span className="text-micro font-mono text-white/40">
                 RS: <span className="text-white/70 font-bold">{data.riskScore}</span>
               </span>
             </>
@@ -305,9 +305,9 @@ export function MacroHeatmapPanel() {
         <div className="flex flex-col items-center justify-center flex-1 gap-2">
           <div
             className="w-5 h-5 border-2 animate-spin"
-            style={{ borderColor: `${ACCENT}33`, borderTopColor: ACCENT }}
+            style={{ borderColor: `color-mix(in srgb, ${ACCENT} 20%, transparent)`, borderTopColor: ACCENT }}
           />
-          <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest">
+          <span className="text-mini font-mono text-white/30 uppercase tracking-widest">
             {tr(t, 'loading', 'Loading...')}
           </span>
         </div>
@@ -316,7 +316,7 @@ export function MacroHeatmapPanel() {
       {/* Empty state */}
       {!isLoading && regions.length === 0 && (
         <div className="flex items-center justify-center flex-1">
-          <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+          <span className="text-mini font-mono text-white/20 uppercase tracking-widest">
             No macro data available
           </span>
         </div>
@@ -327,7 +327,7 @@ export function MacroHeatmapPanel() {
         <div className="flex-1 overflow-auto no-scrollbar flex flex-col">
           {/* Risk score bar */}
           {data && (
-            <div className="shrink-0" style={{ borderBottom: `1px solid ${ACCENT}15` }}>
+            <div className="shrink-0" style={{ borderBottom: `1px solid color-mix(in srgb, ${ACCENT} 8%, transparent)` }}>
               <RiskScoreBar score={data.riskScore} />
             </div>
           )}
@@ -340,7 +340,7 @@ export function MacroHeatmapPanel() {
           </div>
 
           {/* Region summary bar */}
-          <div className="shrink-0" style={{ borderTop: `1px solid ${ACCENT}15` }}>
+          <div className="shrink-0" style={{ borderTop: `1px solid color-mix(in srgb, ${ACCENT} 8%, transparent)` }}>
             <RegionSummaryBar regions={regions} />
           </div>
         </div>

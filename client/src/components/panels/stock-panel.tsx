@@ -27,7 +27,7 @@ export function StockPanel() {
       <GlassCard className="h-full flex flex-col items-center justify-center">
         <button
           onClick={() => setLoginModalOpen(true)}
-          className="px-4 py-2 border border-accent text-accent text-[11px] font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-colors"
+          className="px-4 h-8 rounded-sm bg-accent text-on-accent text-xs font-semibold hover:bg-accent/90 transition-colors"
         >
           {t('loginWithMt5')}
         </button>
@@ -78,7 +78,7 @@ function CompareWrapper() {
     <GlassCard
       headerRight={
         <div className="flex items-center gap-1">
-          <button onClick={clearCompare} className="text-neutral hover:text-bearish transition-colors p-1 text-[9px] font-mono">{t('clearCompare')}</button>
+          <button onClick={clearCompare} className="text-neutral hover:text-bearish transition-colors p-1 text-mini font-mono">{t('clearCompare')}</button>
           <button onClick={() => setStockPanelView('watchlist')} className="text-neutral hover:text-white transition-colors p-1">
             <List className="w-3.5 h-3.5" />
           </button>
@@ -161,9 +161,9 @@ function WatchlistView({
             <div key={tab} className="relative group/tab">
               <button
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${
+                className={`px-4 py-2 text-mini font-black uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${
                   activeTab === tab
-                    ? 'border-accent text-accent bg-accent/5'
+                    ? 'border-accent text-accent-ink bg-accent/5'
                     : 'border-transparent text-neutral hover:text-gray-300 hover:bg-white/5'
                 }`}
               >
@@ -180,7 +180,7 @@ function WatchlistView({
         </div>
         <button
           onClick={() => setIsAddingTab(true)}
-          className="p-2 text-neutral hover:text-accent transition-colors"
+          className="p-2 text-neutral hover:text-accent-ink transition-colors"
           title={t('addNewTab')}
         >
           <FolderPlus className="w-3.5 h-3.5" />
@@ -188,7 +188,7 @@ function WatchlistView({
         <div className="flex items-center gap-0.5 ml-auto pl-2 border-l border-border/20">
           <button
             onClick={() => setStockPanelView('heatmap')}
-            className="p-1.5 text-neutral hover:text-accent transition-colors"
+            className="p-1.5 text-neutral hover:text-accent-ink transition-colors"
             title={t('heatmap')}
           >
             <Grid3X3 className="w-3.5 h-3.5" />
@@ -210,9 +210,9 @@ function WatchlistView({
               onChange={e => setNewTabName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAddTab()}
               placeholder={t('tabNamePlaceholder')}
-              className="flex-1 bg-black/40 border border-border/50 px-2 py-1 text-[10px] font-mono text-white outline-none focus:border-accent"
+              className="flex-1 bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-white outline-none focus:border-accent"
             />
-            <button onClick={handleAddTab} className="p-1 text-accent hover:bg-accent/20">
+            <button onClick={handleAddTab} className="p-1 text-accent-ink hover:bg-accent/20">
               <Plus className="w-4 h-4" />
             </button>
             <button onClick={() => setIsAddingTab(false)} className="p-1 text-neutral hover:bg-white/10">
@@ -234,7 +234,7 @@ function WatchlistView({
       <div className="@container overflow-auto flex-1 no-scrollbar">
         <div>
           {/* Header */}
-          <div className={`grid ${gridCols} gap-x-2 px-3 py-1.5 border-b border-border/20 text-[8px] font-black text-neutral/50 uppercase tracking-[0.15em]`}>
+          <div className={`grid ${gridCols} gap-x-2 px-3 py-1.5 border-b border-border/20 text-micro font-black text-neutral/50 uppercase tracking-[0.15em]`}>
             <span>{t('asset')}</span>
             <span className="text-right">BID</span>
             <span className="text-right">ASK</span>
@@ -265,17 +265,17 @@ function WatchlistView({
                 </div>
                 <TickPrice value={q?.bid} />
                 <TickPrice value={q?.ask} />
-                <span className="text-right font-mono text-[10px] text-neutral/60 truncate hidden @min-[300px]:block">
+                <span className="text-right font-mono text-mini text-neutral/60 truncate hidden @min-[300px]:block">
                   {q ? fmtPrice(q.ask - q.bid) : '--'}
                 </span>
-                <span className="text-right font-mono text-[9px] text-neutral/60 uppercase truncate hidden @min-[420px]:block">
+                <span className="text-right font-mono text-mini text-neutral/60 uppercase truncate hidden @min-[420px]:block">
                   {tradeModeLabel(item.tradeMode)}
                 </span>
               </div>
             );
           })}
           {filteredItems.length === 0 && (
-            <div className="px-4 py-12 text-center text-neutral/40 text-[10px] font-mono uppercase tracking-[0.2em]">
+            <div className="px-4 py-12 text-center text-neutral/40 text-mini font-mono uppercase tracking-[0.2em]">
               {t('noDataInTab').replace('{tab}', tabLabel(activeTab))}
             </div>
           )}
@@ -316,7 +316,7 @@ function TickPrice({ value }: { value?: number }) {
   }, [value]);
 
   return (
-    <span ref={ref} className="tick-price justify-self-end max-w-full truncate px-1 rounded-sm font-mono text-[11px] font-bold text-white tabular-nums">
+    <span ref={ref} className="tick-price justify-self-end max-w-full truncate px-1 rounded-sm font-mono text-xs font-bold text-white tabular-nums">
       {value !== undefined ? value.toFixed(digits.current) : '--'}
     </span>
   );

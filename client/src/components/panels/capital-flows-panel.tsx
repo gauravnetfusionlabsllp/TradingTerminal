@@ -11,10 +11,10 @@ import { RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 // i18n helper with fallback
 // ── Constants ──
 
-const EMERALD = '#10b981';
-const GREEN = '#34d399';
-const RED = '#f87171';
-const YELLOW = '#fbbf24';
+const EMERALD = 'var(--color-emerald-500)';
+const GREEN = 'var(--color-emerald-400)';
+const RED = 'var(--color-red-400)';
+const YELLOW = 'var(--color-amber-400)';
 
 // ── Number formatting ──
 
@@ -39,34 +39,34 @@ function fmtPct(n: number): string {
 function flowColor(n: number): string {
   if (n > 0) return GREEN;
   if (n < 0) return RED;
-  return 'rgba(255,255,255,0.3)';
+  return 'color-mix(in srgb, var(--color-white) 30%, transparent)';
 }
 
 type TrendType = 'strong_inflow' | 'inflow' | 'neutral' | 'outflow' | 'strong_outflow';
 
 function trendBadge(trend: TrendType): { text: string; color: string; bg: string } {
   switch (trend) {
-    case 'strong_inflow': return { text: 'STRONG INFLOW', color: GREEN, bg: 'rgba(52,211,153,0.15)' };
-    case 'inflow': return { text: 'INFLOW', color: GREEN, bg: 'rgba(52,211,153,0.1)' };
-    case 'outflow': return { text: 'OUTFLOW', color: RED, bg: 'rgba(248,113,113,0.1)' };
-    case 'strong_outflow': return { text: 'STRONG OUTFLOW', color: RED, bg: 'rgba(248,113,113,0.15)' };
-    default: return { text: 'NEUTRAL', color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.03)' };
+    case 'strong_inflow': return { text: 'STRONG INFLOW', color: GREEN, bg: 'color-mix(in srgb, var(--color-emerald-400) 15%, transparent)' };
+    case 'inflow': return { text: 'INFLOW', color: GREEN, bg: 'color-mix(in srgb, var(--color-emerald-400) 10%, transparent)' };
+    case 'outflow': return { text: 'OUTFLOW', color: RED, bg: 'color-mix(in srgb, var(--color-red-400) 10%, transparent)' };
+    case 'strong_outflow': return { text: 'STRONG OUTFLOW', color: RED, bg: 'color-mix(in srgb, var(--color-red-400) 15%, transparent)' };
+    default: return { text: 'NEUTRAL', color: 'color-mix(in srgb, var(--color-white) 40%, transparent)', bg: 'color-mix(in srgb, var(--color-white) 3%, transparent)' };
   }
 }
 
 function dmEmBadge(v: 'dm_favored' | 'em_favored' | 'balanced'): { text: string; color: string; bg: string } {
   switch (v) {
-    case 'dm_favored': return { text: 'DM FAVORED', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)' };
-    case 'em_favored': return { text: 'EM FAVORED', color: EMERALD, bg: 'rgba(16,185,129,0.12)' };
-    default: return { text: 'DM/EM BALANCED', color: YELLOW, bg: 'rgba(251,191,36,0.1)' };
+    case 'dm_favored': return { text: 'DM FAVORED', color: 'var(--color-blue-400)', bg: 'color-mix(in srgb, var(--color-blue-400) 12%, transparent)' };
+    case 'em_favored': return { text: 'EM FAVORED', color: EMERALD, bg: 'color-mix(in srgb, var(--color-emerald-500) 12%, transparent)' };
+    default: return { text: 'DM/EM BALANCED', color: YELLOW, bg: 'color-mix(in srgb, var(--color-amber-400) 10%, transparent)' };
   }
 }
 
 function riskBadge(v: 'risk_on' | 'risk_off' | 'neutral'): { text: string; color: string; bg: string } {
   switch (v) {
-    case 'risk_on': return { text: 'RISK ON', color: GREEN, bg: 'rgba(52,211,153,0.12)' };
-    case 'risk_off': return { text: 'RISK OFF', color: RED, bg: 'rgba(248,113,113,0.12)' };
-    default: return { text: 'NEUTRAL', color: YELLOW, bg: 'rgba(251,191,36,0.1)' };
+    case 'risk_on': return { text: 'RISK ON', color: GREEN, bg: 'color-mix(in srgb, var(--color-emerald-400) 12%, transparent)' };
+    case 'risk_off': return { text: 'RISK OFF', color: RED, bg: 'color-mix(in srgb, var(--color-red-400) 12%, transparent)' };
+    default: return { text: 'NEUTRAL', color: YELLOW, bg: 'color-mix(in srgb, var(--color-amber-400) 10%, transparent)' };
   }
 }
 
@@ -163,7 +163,7 @@ function FlowDirectionMap({
 
         const flow = region.flow5d;
         const radius = 8 + Math.min(Math.abs(flow) / maxAbsFlow * 6, 6);
-        const color = flow > 0 ? GREEN : flow < 0 ? RED : 'rgba(255,255,255,0.3)';
+        const color = flow > 0 ? GREEN : flow < 0 ? RED : 'color-mix(in srgb, var(--color-white) 30%, transparent)';
         const bgOpacity = 0.08 + Math.min(Math.abs(flow) / maxAbsFlow * 0.12, 0.12);
 
         return (
@@ -192,9 +192,9 @@ function FlowDirectionMap({
               x={pos.x}
               y={pos.y - radius - 3}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.5)"
+              fill="color-mix(in srgb, var(--color-white) 50%, transparent)"
               fontSize={5.5}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {region.name}
@@ -206,7 +206,7 @@ function FlowDirectionMap({
               textAnchor="middle"
               fill={color}
               fontSize={5}
-              fontFamily="monospace"
+              fontFamily="inherit"
               fontWeight="bold"
             >
               {fmtFlowSigned(flow)}
@@ -230,12 +230,12 @@ function Sparkline({ data, width = 56, height = 14 }: { data: number[]; width?: 
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height}>
-      <line x1={0} y1={midY} x2={width} y2={midY} stroke="rgba(255,255,255,0.06)" strokeWidth={0.5} />
+      <line x1={0} y1={midY} x2={width} y2={midY} stroke="color-mix(in srgb, var(--color-white) 6%, transparent)" strokeWidth={0.5} />
       {data.map((v, i) => {
         const x = i * stepX;
         const barH = Math.abs(v) * scaleY;
         const y = v >= 0 ? midY - barH : midY;
-        const color = v >= 0 ? 'rgba(52,211,153,0.5)' : 'rgba(248,113,113,0.5)';
+        const color = v >= 0 ? 'color-mix(in srgb, var(--color-emerald-400) 50%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 50%, transparent)';
         return <rect key={i} x={x + stepX * 0.1} y={y} width={stepX * 0.8} height={Math.max(barH, 0.3)} fill={color} />;
       })}
     </svg>
@@ -251,9 +251,9 @@ function RegionFlowBar({ region, maxAbs }: { region: CapitalFlowRegion; maxAbs: 
 
   return (
     <div className="flex items-center gap-1 py-0.5 px-2 border-b border-white/[0.03]">
-      <span className="w-16 text-[7px] font-mono font-bold text-white/60 truncate shrink-0">{region.name}</span>
+      <span className="w-16 text-micro font-mono font-bold text-white/60 truncate shrink-0">{region.name}</span>
       <span
-        className="text-[5px] font-mono font-black uppercase px-1 py-0 shrink-0"
+        className="text-micro font-mono font-black uppercase px-1 py-0 shrink-0"
         style={{ color: badge.color, backgroundColor: badge.bg }}
       >
         {badge.text}
@@ -270,10 +270,10 @@ function RegionFlowBar({ region, maxAbs }: { region: CapitalFlowRegion; maxAbs: 
           }}
         />
       </div>
-      <span className="w-16 text-[7px] font-mono font-bold text-right shrink-0" style={{ color }}>
+      <span className="w-16 text-micro font-mono font-bold text-right shrink-0" style={{ color }}>
         {fmtFlowSigned(region.flow5d)}
       </span>
-      <span className={`w-10 text-[7px] font-mono text-right shrink-0 ${region.changePct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+      <span className={`w-10 text-micro font-mono text-right shrink-0 ${region.changePct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
         {fmtPct(region.changePct)}
       </span>
     </div>
@@ -297,25 +297,25 @@ function RegionSection({ region }: { region: CapitalFlowRegion }) {
           {expanded
             ? <ChevronDown className="w-2.5 h-2.5 text-white/30" />
             : <ChevronRight className="w-2.5 h-2.5 text-white/30" />}
-          <span className="text-[7px] font-black font-mono uppercase text-white/60">{region.name}</span>
+          <span className="text-micro font-black font-mono uppercase text-white/60">{region.name}</span>
           <span
-            className="text-[5px] font-black font-mono uppercase px-1 py-0"
+            className="text-micro font-black font-mono uppercase px-1 py-0"
             style={{ color: badge.color, backgroundColor: badge.bg }}
           >
             {badge.text}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-[6px] font-mono text-white/25">5D:</span>
-          <span className="text-[7px] font-mono font-bold" style={{ color }}>{fmtFlowSigned(region.flow5d)}</span>
-          <span className="text-[6px] font-mono text-white/25">20D:</span>
-          <span className="text-[7px] font-mono font-bold" style={{ color: flowColor(region.flow20d) }}>{fmtFlowSigned(region.flow20d)}</span>
+          <span className="text-micro font-mono text-white/25">5D:</span>
+          <span className="text-micro font-mono font-bold" style={{ color }}>{fmtFlowSigned(region.flow5d)}</span>
+          <span className="text-micro font-mono text-white/25">20D:</span>
+          <span className="text-micro font-mono font-bold" style={{ color: flowColor(region.flow20d) }}>{fmtFlowSigned(region.flow20d)}</span>
         </div>
       </button>
 
       {expanded && region.etfs.length > 0 && (
         <div className="px-2 pb-1">
-          <div className="flex items-center py-0.5 border-b border-white/[0.06] text-[5px] font-mono text-white/20 uppercase gap-1">
+          <div className="flex items-center py-0.5 border-b border-white/[0.06] text-micro font-mono text-white/20 uppercase gap-1">
             <span className="w-10 shrink-0">SYM</span>
             <span className="w-20 shrink-0">NAME</span>
             <span className="w-12 text-right shrink-0">PRICE</span>
@@ -324,7 +324,7 @@ function RegionSection({ region }: { region: CapitalFlowRegion }) {
             <span className="w-[56px] text-right shrink-0">HIST</span>
           </div>
           {region.etfs.map(etf => (
-            <div key={etf.symbol} className="flex items-center py-0.5 border-b border-white/[0.02] text-[7px] font-mono gap-1">
+            <div key={etf.symbol} className="flex items-center py-0.5 border-b border-white/[0.02] text-micro font-mono gap-1">
               <span className="w-10 font-bold text-white/70 shrink-0">{etf.symbol}</span>
               <span className="w-20 text-white/30 truncate shrink-0">{etf.name}</span>
               <span className="w-12 text-right text-white/50 shrink-0">${etf.price.toFixed(2)}</span>
@@ -349,28 +349,28 @@ function RegionSection({ region }: { region: CapitalFlowRegion }) {
 
 function FlowNarrative({ summary }: { summary: CapitalFlowSummary }) {
   const carry = summary.carryTradeSignal;
-  const carryColor = carry === 'active' ? GREEN : carry === 'unwinding' ? RED : 'rgba(255,255,255,0.4)';
+  const carryColor = carry === 'active' ? GREEN : carry === 'unwinding' ? RED : 'color-mix(in srgb, var(--color-white) 40%, transparent)';
   const carryText = carry === 'active' ? 'CARRY ACTIVE' : carry === 'unwinding' ? 'CARRY UNWIND' : 'CARRY NEUTRAL';
 
   return (
     <div className="px-2 py-1.5 border-t border-white/[0.06]">
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-[6px] font-mono text-white/25 uppercase tracking-wider">Signals</span>
+        <span className="text-micro font-mono text-white/25 uppercase tracking-wider">Signals</span>
         <span
-          className="text-[5px] font-black font-mono uppercase px-1 py-0"
-          style={{ color: carryColor, backgroundColor: carry === 'active' ? 'rgba(52,211,153,0.1)' : carry === 'unwinding' ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.03)' }}
+          className="text-micro font-black font-mono uppercase px-1 py-0"
+          style={{ color: carryColor, backgroundColor: carry === 'active' ? 'color-mix(in srgb, var(--color-emerald-400) 10%, transparent)' : carry === 'unwinding' ? 'color-mix(in srgb, var(--color-red-400) 10%, transparent)' : 'color-mix(in srgb, var(--color-white) 3%, transparent)' }}
         >
           {carryText}
         </span>
-        <span className="text-[6px] font-mono text-white/25">|</span>
-        <span className="text-[5px] font-mono text-white/30">
+        <span className="text-micro font-mono text-white/25">|</span>
+        <span className="text-micro font-mono text-white/30">
           Top In: <span className="text-emerald-400 font-bold">{summary.topInflow}</span>
         </span>
-        <span className="text-[5px] font-mono text-white/30">
+        <span className="text-micro font-mono text-white/30">
           Top Out: <span className="text-red-400 font-bold">{summary.topOutflow}</span>
         </span>
       </div>
-      <p className="text-[7px] font-mono text-white/35 leading-relaxed">
+      <p className="text-micro font-mono text-white/35 leading-relaxed">
         {summary.narrative}
       </p>
     </div>
@@ -396,9 +396,9 @@ export function CapitalFlowsPanel() {
     : 1;
 
   return (
-    <div className="h-full flex flex-col bg-black overflow-hidden text-[9px] font-mono">
+    <div className="h-full flex flex-col bg-black overflow-hidden text-mini font-mono">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-white/[0.08] shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-white/[0.08] shrink-0">
         <div className="flex items-center gap-2">
           <svg viewBox="0 0 16 16" className="w-4 h-4">
             <circle cx="5" cy="8" r="3" fill="none" stroke={EMERALD} strokeWidth="1" />
@@ -407,14 +407,14 @@ export function CapitalFlowsPanel() {
             <path d="M6.5 7L9.5 9" stroke={EMERALD} strokeWidth="0.6" opacity="0.5" />
             <path d="M6.5 9L9.5 7" stroke={EMERALD} strokeWidth="0.6" opacity="0.5" />
           </svg>
-          <span className="text-[9px] font-black uppercase tracking-tighter" style={{ color: EMERALD }}>
+          <span className="text-mini font-black uppercase tracking-tighter" style={{ color: EMERALD }}>
             {tr(t, 'cfTitle', 'Global Capital Flows')}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           {dmEm && (
             <span
-              className="text-[5px] font-black uppercase px-1 py-0.5"
+              className="text-micro font-black uppercase px-1 py-0.5"
               style={{ color: dmEm.color, backgroundColor: dmEm.bg }}
             >
               {dmEm.text}
@@ -422,14 +422,14 @@ export function CapitalFlowsPanel() {
           )}
           {risk && (
             <span
-              className="text-[5px] font-black uppercase px-1 py-0.5"
+              className="text-micro font-black uppercase px-1 py-0.5"
               style={{ color: risk.color, backgroundColor: risk.bg }}
             >
               {risk.text}
             </span>
           )}
           {data && (
-            <span className="text-[6px] text-white/20">
+            <span className="text-micro text-white/20">
               {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -445,7 +445,7 @@ export function CapitalFlowsPanel() {
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-2">
               <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 animate-spin" />
-              <span className="text-[10px] text-white/40 uppercase tracking-widest">
+              <span className="text-mini text-white/40 uppercase tracking-widest">
                 {tr(t, 'loading', 'Loading...')}
               </span>
             </div>
@@ -455,10 +455,10 @@ export function CapitalFlowsPanel() {
             {/* Flow Direction Map */}
             <div className="px-2 py-1 border-b border-white/[0.06]">
               <div className="flex items-center justify-between mb-0.5">
-                <span className="text-[6px] text-white/25 uppercase tracking-wider">
+                <span className="text-micro text-white/25 uppercase tracking-wider">
                   {tr(t, 'cfFlowMap', 'Capital Flow Direction')}
                 </span>
-                <span className="text-[5px] text-white/15">5-day net flows</span>
+                <span className="text-micro text-white/15">5-day net flows</span>
               </div>
               <FlowDirectionMap regions={data.regions} flowMap={data.flowMap} />
             </div>
@@ -466,10 +466,10 @@ export function CapitalFlowsPanel() {
             {/* Region Flow Bars (sorted by magnitude) */}
             <div className="border-b border-white/[0.06]">
               <div className="flex items-center justify-between px-2 py-0.5">
-                <span className="text-[6px] text-white/25 uppercase tracking-wider">
+                <span className="text-micro text-white/25 uppercase tracking-wider">
                   {tr(t, 'cfRegionFlows', 'Regional Flow Ranking')}
                 </span>
-                <div className="flex items-center gap-2 text-[5px] font-mono text-white/15">
+                <div className="flex items-center gap-2 text-micro font-mono text-white/15">
                   <span>REGION</span>
                   <span>TREND</span>
                   <span>FLOW BAR</span>
@@ -485,7 +485,7 @@ export function CapitalFlowsPanel() {
             {/* Expandable Region Details */}
             <div>
               <div className="px-2 py-0.5">
-                <span className="text-[6px] text-white/25 uppercase tracking-wider">
+                <span className="text-micro text-white/25 uppercase tracking-wider">
                   {tr(t, 'cfRegionDetail', 'Region Details')}
                 </span>
               </div>
@@ -498,7 +498,7 @@ export function CapitalFlowsPanel() {
             {summary && <FlowNarrative summary={summary} />}
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-[10px] text-white/40 uppercase">
+          <div className="flex items-center justify-center h-full text-mini text-white/40 uppercase">
             {tr(t, 'cfNoData', 'No data available')}
           </div>
         )}

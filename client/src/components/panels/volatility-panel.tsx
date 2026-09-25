@@ -10,10 +10,10 @@ export function VolatilityPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-orange-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-orange-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-orange-400">
             {t('panelVolatility')}
           </span>
         </div>
@@ -24,13 +24,13 @@ export function VolatilityPanel() {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-orange-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-orange-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {t('volNoData')}
           </div>
         )}
@@ -77,7 +77,7 @@ function VixDashboard({ data }: { data: VolatilityData }) {
       {/* Main VIX value */}
       <div className="px-3 py-3 flex items-start justify-between">
         <div>
-          <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider">CBOE VIX</div>
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">CBOE VIX</div>
           <div className="flex items-baseline gap-2 mt-0.5">
             <span className="text-[28px] font-black font-mono text-white leading-none">
               {data.vix.toFixed(2)}
@@ -88,7 +88,7 @@ function VixDashboard({ data }: { data: VolatilityData }) {
               ) : (
                 <TrendingDown className="w-3 h-3 text-emerald-400" />
               )}
-              <span className={`text-[11px] font-mono font-bold ${isUp ? 'text-red-400' : 'text-emerald-400'}`}>
+              <span className={`text-xs font-mono font-bold ${isUp ? 'text-red-400' : 'text-emerald-400'}`}>
                 {isUp ? '+' : ''}{data.vixChange.toFixed(2)} ({isUp ? '+' : ''}{data.vixChangePercent.toFixed(2)}%)
               </span>
             </div>
@@ -96,7 +96,7 @@ function VixDashboard({ data }: { data: VolatilityData }) {
         </div>
 
         {/* Contango/Backwardation badge */}
-        <div className={`px-2 py-1 rounded text-[8px] font-black font-mono uppercase tracking-wider ${
+        <div className={`px-2 py-1 rounded text-micro font-black font-mono uppercase tracking-wider ${
           data.isContango
             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
             : 'bg-red-500/10 text-red-400 border border-red-500/20'
@@ -109,7 +109,7 @@ function VixDashboard({ data }: { data: VolatilityData }) {
       <div className="px-3 pb-3 grid grid-cols-2 gap-3">
         {/* VIX Percentile */}
         <div>
-          <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">
             {t('volPercentile')} (252D)
           </div>
           <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ function VixDashboard({ data }: { data: VolatilityData }) {
                 style={{ width: `${data.vixPercentile}%` }}
               />
             </div>
-            <span className={`text-[11px] font-mono font-black ${pctColor}`}>
+            <span className={`text-xs font-mono font-black ${pctColor}`}>
               {data.vixPercentile}%
             </span>
           </div>
@@ -127,18 +127,18 @@ function VixDashboard({ data }: { data: VolatilityData }) {
 
         {/* 252-day Range */}
         <div>
-          <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">
+          <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">
             252D Range
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-[8px] font-mono text-neutral/50">{data.vixLow252.toFixed(1)}</span>
+            <span className="text-micro font-mono text-neutral/50">{data.vixLow252.toFixed(1)}</span>
             <div className="flex-1 h-3 bg-white/[0.03] rounded-sm relative overflow-hidden">
               <div
                 className="absolute top-0 h-full w-1.5 bg-orange-400 rounded-sm"
                 style={{ left: `calc(${Math.min(Math.max(positionPct, 2), 98)}% - 3px)` }}
               />
             </div>
-            <span className="text-[8px] font-mono text-neutral/50">{data.vixHigh252.toFixed(1)}</span>
+            <span className="text-micro font-mono text-neutral/50">{data.vixHigh252.toFixed(1)}</span>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@ function TermStructureChart({ data }: { data: VolatilityData }) {
   const pathD = points.map((p, i) => (i === 0 ? `M ${p.x},${p.y}` : `L ${p.x},${p.y}`)).join(' ');
 
   // Gradient: green for contango (upward), red for backwardation (downward)
-  const lineColor = data.isContango ? '#34d399' : '#f87171';
+  const lineColor = data.isContango ? 'var(--color-emerald-400)' : 'var(--color-red-400)';
 
   // Y-axis ticks
   const yStep = (maxY - minY) > 4 ? 2 : 1;
@@ -182,7 +182,7 @@ function TermStructureChart({ data }: { data: VolatilityData }) {
 
   return (
     <div className="px-3 py-3 border-b border-border/20">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {t('volTermStructure')}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 130 }}>
@@ -191,11 +191,11 @@ function TermStructureChart({ data }: { data: VolatilityData }) {
           <g key={v}>
             <line
               x1={PAD_X} y1={scaleY(v)} x2={W - PAD_X} y2={scaleY(v)}
-              stroke="rgba(255,255,255,0.05)" strokeDasharray="2,2"
+              stroke="color-mix(in srgb, var(--color-white) 5%, transparent)" strokeDasharray="2,2"
             />
             <text
               x={PAD_X - 4} y={scaleY(v) + 3}
-              textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize={7} fontFamily="monospace"
+              textAnchor="end" fill="color-mix(in srgb, var(--color-white) 25%, transparent)" fontSize={7} fontFamily="inherit"
             >
               {v.toFixed(0)}
             </text>
@@ -205,7 +205,7 @@ function TermStructureChart({ data }: { data: VolatilityData }) {
         {/* Area fill */}
         <path
           d={`${pathD} L ${points[points.length - 1].x},${H - PAD_BOTTOM} L ${points[0].x},${H - PAD_BOTTOM} Z`}
-          fill={data.isContango ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)'}
+          fill={data.isContango ? 'color-mix(in srgb, var(--color-emerald-400) 8%, transparent)' : 'color-mix(in srgb, var(--color-red-400) 8%, transparent)'}
         />
 
         {/* Line */}
@@ -215,18 +215,18 @@ function TermStructureChart({ data }: { data: VolatilityData }) {
         {points.map((p, i) => (
           <g key={i}>
             <circle cx={p.x} cy={p.y} r={3.5} fill={lineColor} />
-            <circle cx={p.x} cy={p.y} r={2} fill="#000" />
+            <circle cx={p.x} cy={p.y} r={2} fill="var(--color-black)" />
             {/* Value label */}
             <text
               x={p.x} y={p.y - 7}
-              textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize={7} fontFamily="monospace" fontWeight="bold"
+              textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 70%, transparent)" fontSize={7} fontFamily="inherit" fontWeight="bold"
             >
               {p.value.toFixed(1)}
             </text>
             {/* Tenor label */}
             <text
               x={p.x} y={H - 5}
-              textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize={7} fontFamily="monospace"
+              textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize={7} fontFamily="inherit"
             >
               {p.tenor}
             </text>
@@ -243,10 +243,10 @@ function HVvsIVComparison({ data }: { data: VolatilityData }) {
   const t = useT();
 
   const bars = [
-    { label: t('volHV20'), value: data.hv20, color: '#60a5fa' },
-    { label: t('volHV60'), value: data.hv60, color: '#818cf8' },
-    { label: t('volHV252'), value: data.hv252, color: '#a78bfa' },
-    { label: t('volImplied'), value: data.vix, color: '#fb923c' },
+    { label: t('volHV20'), value: data.hv20, color: 'var(--color-blue-400)' },
+    { label: t('volHV60'), value: data.hv60, color: 'var(--color-indigo-400)' },
+    { label: t('volHV252'), value: data.hv252, color: 'var(--color-violet-400)' },
+    { label: t('volImplied'), value: data.vix, color: 'var(--color-orange-400)' },
   ];
 
   const maxVal = Math.max(...bars.map((b) => b.value), 1);
@@ -259,11 +259,11 @@ function HVvsIVComparison({ data }: { data: VolatilityData }) {
   return (
     <div className="px-3 py-3 border-b border-border/20">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40">
           {t('volHistorical')} vs {t('volImplied')}
         </div>
         {data.hv20 > 0 && (
-          <span className={`text-[8px] font-mono font-bold ${ivColor}`}>
+          <span className={`text-micro font-mono font-bold ${ivColor}`}>
             {ivLabel}: {ivDiff > 0 ? '+' : ''}{ivDiff.toFixed(1)}
           </span>
         )}
@@ -272,7 +272,7 @@ function HVvsIVComparison({ data }: { data: VolatilityData }) {
       <div className="space-y-1.5">
         {bars.map((bar) => (
           <div key={bar.label} className="flex items-center gap-2">
-            <span className="text-[8px] font-mono text-neutral/50 w-14 text-right shrink-0">{bar.label}</span>
+            <span className="text-micro font-mono text-neutral/50 w-14 text-right shrink-0">{bar.label}</span>
             <div className="flex-1 h-4 bg-white/[0.03] rounded-sm overflow-hidden relative">
               <div
                 className="h-full rounded-sm transition-all"
@@ -283,7 +283,7 @@ function HVvsIVComparison({ data }: { data: VolatilityData }) {
                 }}
               />
             </div>
-            <span className="text-[9px] font-mono font-bold text-white w-10 text-right shrink-0">
+            <span className="text-mini font-mono font-bold text-white w-10 text-right shrink-0">
               {bar.value.toFixed(1)}
             </span>
           </div>
@@ -303,11 +303,11 @@ function VolETFTable({ data }: { data: VolatilityData }) {
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-2">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-1.5">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-1.5">
           {t('volETFs')}
         </div>
       </div>
-      <div className="grid grid-cols-[1fr_0.8fr_0.8fr] px-3 py-1 border-b border-border/10 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+      <div className="grid grid-cols-[1fr_0.8fr_0.8fr] px-3 py-1 border-b border-border/10 text-micro font-black text-neutral/40 uppercase tracking-wider">
         <span>{t('symbol')}</span>
         <span className="text-right">{t('price')}</span>
         <span className="text-right">{t('moversChange')}</span>
@@ -318,14 +318,14 @@ function VolETFTable({ data }: { data: VolatilityData }) {
           className="grid grid-cols-[1fr_0.8fr_0.8fr] px-3 py-1.5 border-b border-border/10 hover:bg-white/[0.02] transition-colors"
         >
           <div>
-            <div className="text-[10px] font-mono font-bold text-white">{etf.symbol}</div>
-            <div className="text-[7px] font-mono text-neutral/30 truncate">{etf.name}</div>
+            <div className="text-mini font-mono font-bold text-white">{etf.symbol}</div>
+            <div className="text-micro font-mono text-neutral/30 truncate">{etf.name}</div>
           </div>
-          <span className="text-[10px] font-mono text-white text-right self-center">
+          <span className="text-mini font-mono text-white text-right self-center">
             ${etf.price.toFixed(2)}
           </span>
           <span
-            className={`text-[10px] font-mono font-bold text-right self-center ${
+            className={`text-mini font-mono font-bold text-right self-center ${
               etf.changePercent >= 0 ? 'text-red-400' : 'text-emerald-400'
             }`}
           >
@@ -343,16 +343,16 @@ function StockVolSection({ data }: { data: StockVolData }) {
   const t = useT();
 
   const bars = [
-    { label: t('volHV20'), value: data.hv20, color: '#60a5fa' },
-    { label: t('volHV60'), value: data.hv60, color: '#818cf8' },
-    { label: t('volHV252'), value: data.hv252, color: '#a78bfa' },
+    { label: t('volHV20'), value: data.hv20, color: 'var(--color-blue-400)' },
+    { label: t('volHV60'), value: data.hv60, color: 'var(--color-indigo-400)' },
+    { label: t('volHV252'), value: data.hv252, color: 'var(--color-violet-400)' },
   ];
 
   const maxVal = Math.max(...bars.map((b) => b.value), 1);
 
   return (
     <div className="px-3 py-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral/40 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-2">
         {data.symbol} {t('volHistorical')}
       </div>
 
@@ -360,7 +360,7 @@ function StockVolSection({ data }: { data: StockVolData }) {
       <div className="space-y-1.5 mb-3">
         {bars.map((bar) => (
           <div key={bar.label} className="flex items-center gap-2">
-            <span className="text-[8px] font-mono text-neutral/50 w-14 text-right shrink-0">{bar.label}</span>
+            <span className="text-micro font-mono text-neutral/50 w-14 text-right shrink-0">{bar.label}</span>
             <div className="flex-1 h-4 bg-white/[0.03] rounded-sm overflow-hidden">
               <div
                 className="h-full rounded-sm transition-all"
@@ -371,7 +371,7 @@ function StockVolSection({ data }: { data: StockVolData }) {
                 }}
               />
             </div>
-            <span className="text-[9px] font-mono font-bold text-white w-10 text-right shrink-0">
+            <span className="text-mini font-mono font-bold text-white w-10 text-right shrink-0">
               {bar.value.toFixed(1)}
             </span>
           </div>
@@ -419,7 +419,7 @@ function RollingHVChart({ series }: { series: Array<{ timestamp: number; hv20: n
 
   return (
     <div>
-      <div className="text-[7px] font-mono text-neutral/30 uppercase tracking-wider mb-1">
+      <div className="text-micro font-mono text-neutral/30 uppercase tracking-wider mb-1">
         {t('volHV20')} Rolling (60D)
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 80 }}>
@@ -428,11 +428,11 @@ function RollingHVChart({ series }: { series: Array<{ timestamp: number; hv20: n
           <g key={v}>
             <line
               x1={PAD_X} y1={scaleY(v)} x2={W - PAD_X} y2={scaleY(v)}
-              stroke="rgba(255,255,255,0.04)" strokeDasharray="2,2"
+              stroke="color-mix(in srgb, var(--color-white) 4%, transparent)" strokeDasharray="2,2"
             />
             <text
               x={PAD_X - 3} y={scaleY(v) + 3}
-              textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace"
+              textAnchor="end" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit"
             >
               {v.toFixed(0)}
             </text>
@@ -440,8 +440,8 @@ function RollingHVChart({ series }: { series: Array<{ timestamp: number; hv20: n
         ))}
 
         {/* Area + line */}
-        <path d={areaD} fill="rgba(96,165,250,0.08)" />
-        <path d={pathD} fill="none" stroke="#60a5fa" strokeWidth={1.5} opacity={0.7} />
+        <path d={areaD} fill="color-mix(in srgb, var(--color-blue-400) 8%, transparent)" />
+        <path d={pathD} fill="none" stroke="var(--color-blue-400)" strokeWidth={1.5} opacity={0.7} />
       </svg>
     </div>
   );

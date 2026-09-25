@@ -45,10 +45,10 @@ export function ForexPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-cyan-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-cyan-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
             {t('panelForex')}
           </span>
         </div>
@@ -66,7 +66,7 @@ export function ForexPanel() {
           <button
             key={mode}
             onClick={() => setFilter(mode)}
-            className={`flex-1 py-1.5 text-[8px] font-black uppercase tracking-widest border-b-2 transition-colors ${
+            className={`flex-1 py-1.5 text-micro font-black uppercase tracking-widest border-b-2 transition-colors ${
               filter === mode
                 ? 'border-cyan-400 text-cyan-400'
                 : 'border-transparent text-neutral/40 hover:text-neutral'
@@ -78,7 +78,7 @@ export function ForexPanel() {
       </div>
 
       {/* Column header */}
-      <div className="grid grid-cols-[1fr_1fr_0.7fr_1fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+      <div className="grid grid-cols-[1fr_1fr_0.7fr_1fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider">
         <SortHeader label={t('fxPair')} sortKey="pair" currentKey={sortKey} asc={sortAsc} onClick={handleSort} />
         <SortHeader label={t('fxRate')} sortKey="rate" currentKey={sortKey} asc={sortAsc} onClick={handleSort} className="text-right" />
         <SortHeader label={t('moversChange')} sortKey="changePercent" currentKey={sortKey} asc={sortAsc} onClick={handleSort} className="text-right" />
@@ -88,13 +88,13 @@ export function ForexPanel() {
       {/* List */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !pairs && (
-          <div className="text-center py-8 text-cyan-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-cyan-400 text-mini font-mono uppercase animate-pulse">
             {t('loading')}
           </div>
         )}
 
         {!isLoading && sorted.length === 0 && (
-          <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
             {t('noData')}
           </div>
         )}
@@ -117,12 +117,12 @@ function FxRow({ pair: p }: { pair: FxPair }) {
   return (
     <div className="grid grid-cols-[1fr_1fr_0.7fr_1fr] px-3 py-1.5 border-b border-border/10 hover:bg-white/[0.02] transition-colors">
       <div className="flex items-center gap-1.5">
-        <span className="text-[10px] font-mono font-bold text-white">{p.pair}</span>
+        <span className="text-mini font-mono font-bold text-white">{p.pair}</span>
       </div>
-      <span className="text-[10px] font-mono text-white text-right self-center">
+      <span className="text-mini font-mono text-white text-right self-center">
         {p.rate.toFixed(decimals)}
       </span>
-      <span className={`text-[10px] font-mono font-bold text-right self-center ${
+      <span className={`text-mini font-mono font-bold text-right self-center ${
         isPositive ? 'text-bullish' : 'text-bearish'
       }`}>
         {isPositive ? '+' : ''}{p.changePercent.toFixed(2)}%
@@ -130,9 +130,9 @@ function FxRow({ pair: p }: { pair: FxPair }) {
       <div className="flex items-center justify-end gap-1 self-center">
         {p.dayLow != null && p.dayHigh != null && (
           <>
-            <span className="text-[7px] font-mono text-bearish/60">{p.dayLow.toFixed(decimals > 3 ? 4 : 2)}</span>
+            <span className="text-micro font-mono text-bearish/60">{p.dayLow.toFixed(decimals > 3 ? 4 : 2)}</span>
             <DayRangeBar low={p.dayLow} high={p.dayHigh} current={p.rate} />
-            <span className="text-[7px] font-mono text-bullish/60">{p.dayHigh.toFixed(decimals > 3 ? 4 : 2)}</span>
+            <span className="text-micro font-mono text-bullish/60">{p.dayHigh.toFixed(decimals > 3 ? 4 : 2)}</span>
           </>
         )}
       </div>

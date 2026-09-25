@@ -16,13 +16,13 @@ const PERIOD_API_MAP: Record<Period, string> = { '1D': '1D', '1W': '1W', '1M': '
 type View = 'heatmap' | 'rotation';
 
 function getHeatColor(value: number): string {
-  if (value > 3) return 'rgba(34,197,94,0.8)';
-  if (value > 1.5) return 'rgba(34,197,94,0.5)';
-  if (value > 0) return 'rgba(34,197,94,0.25)';
-  if (value === 0) return 'rgba(63,63,70,0.3)';
-  if (value > -1.5) return 'rgba(239,68,68,0.25)';
-  if (value > -3) return 'rgba(239,68,68,0.5)';
-  return 'rgba(239,68,68,0.8)';
+  if (value > 3) return 'color-mix(in srgb, var(--color-green-500) 80%, transparent)';
+  if (value > 1.5) return 'color-mix(in srgb, var(--color-green-500) 50%, transparent)';
+  if (value > 0) return 'color-mix(in srgb, var(--color-green-500) 25%, transparent)';
+  if (value === 0) return 'color-mix(in srgb, var(--color-zinc-700) 30%, transparent)';
+  if (value > -1.5) return 'color-mix(in srgb, var(--color-red-500) 25%, transparent)';
+  if (value > -3) return 'color-mix(in srgb, var(--color-red-500) 50%, transparent)';
+  return 'color-mix(in srgb, var(--color-red-500) 80%, transparent)';
 }
 
 function ArrowIcon({ value }: { value: number }) {
@@ -34,7 +34,7 @@ function ArrowIcon({ value }: { value: number }) {
 function HeatmapView({ sectors, t }: { sectors: SectorPerformance[]; t: (key: TranslationKey) => string }) {
   if (!sectors.length) {
     return (
-      <div className="flex-1 flex items-center justify-center text-[10px] font-mono text-neutral/40 uppercase">
+      <div className="flex-1 flex items-center justify-center text-mini font-mono text-neutral/40 uppercase">
         {t('noSectorData')}
       </div>
     );
@@ -49,13 +49,13 @@ function HeatmapView({ sectors, t }: { sectors: SectorPerformance[]; t: (key: Tr
             className="p-2 border border-border/20 flex flex-col items-center justify-center min-h-[60px]"
             style={{ backgroundColor: getHeatColor(s.return) }}
           >
-            <span className="text-[9px] font-mono font-black text-white uppercase tracking-wider text-center leading-tight">
+            <span className="text-mini font-mono font-black text-white uppercase tracking-wider text-center leading-tight">
               {s.name}
             </span>
             <div className="flex items-center gap-1 mt-1">
               <ArrowIcon value={s.return} />
               <span
-                className={`text-[11px] font-mono font-bold ${
+                className={`text-xs font-mono font-bold ${
                   s.return >= 0 ? 'text-bullish' : 'text-bearish'
                 }`}
               >
@@ -71,10 +71,10 @@ function HeatmapView({ sectors, t }: { sectors: SectorPerformance[]; t: (key: Tr
 }
 
 const QUADRANT_LABELS: Record<string, { key: TranslationKey; color: string }> = {
-  leading: { key: 'leading', color: '#22c55e' },
-  weakening: { key: 'weakening', color: '#fbbf24' },
-  lagging: { key: 'lagging', color: '#ef4444' },
-  improving: { key: 'improving', color: '#3b82f6' },
+  leading: { key: 'leading', color: 'var(--color-green-500)' },
+  weakening: { key: 'weakening', color: 'var(--color-amber-400)' },
+  lagging: { key: 'lagging', color: 'var(--color-red-500)' },
+  improving: { key: 'improving', color: 'var(--color-blue-500)' },
 };
 
 function RotationView({ sectors, t }: { sectors: SectorRotation[]; t: (key: TranslationKey) => string }) {
@@ -82,7 +82,7 @@ function RotationView({ sectors, t }: { sectors: SectorRotation[]; t: (key: Tran
 
   if (!sectors.length) {
     return (
-      <div className="flex-1 flex items-center justify-center text-[10px] font-mono text-neutral/40 uppercase">
+      <div className="flex-1 flex items-center justify-center text-mini font-mono text-neutral/40 uppercase">
         {t('noRotationData')}
       </div>
     );
@@ -97,7 +97,7 @@ function RotationView({ sectors, t }: { sectors: SectorRotation[]; t: (key: Tran
       {/* Quadrant labels */}
       <div className="flex items-center justify-center gap-3 mb-2">
         {Object.entries(QUADRANT_LABELS).map(([k, { key, color }]) => (
-          <span key={k} className="text-[8px] font-mono font-bold uppercase tracking-wider" style={{ color }}>
+          <span key={k} className="text-micro font-mono font-bold uppercase tracking-wider" style={{ color }}>
             {t(key)}
           </span>
         ))}
@@ -110,9 +110,9 @@ function RotationView({ sectors, t }: { sectors: SectorRotation[]; t: (key: Tran
         <div className="absolute top-1/2 left-0 right-0 h-px bg-border/30" />
 
         {/* Axis labels */}
-        <span className="absolute bottom-0 right-1 text-[7px] font-mono text-neutral/40">MOMENTUM +</span>
-        <span className="absolute bottom-0 left-1 text-[7px] font-mono text-neutral/40">MOMENTUM -</span>
-        <span className="absolute top-0 left-1 text-[7px] font-mono text-neutral/40">ACCEL +</span>
+        <span className="absolute bottom-0 right-1 text-micro font-mono text-neutral/40">MOMENTUM +</span>
+        <span className="absolute bottom-0 left-1 text-micro font-mono text-neutral/40">MOMENTUM -</span>
+        <span className="absolute top-0 left-1 text-micro font-mono text-neutral/40">ACCEL +</span>
 
         {/* Quadrant backgrounds */}
         <div className="absolute top-0 left-1/2 right-0 bottom-1/2 bg-bullish/5" /> {/* Leading */}
@@ -124,7 +124,7 @@ function RotationView({ sectors, t }: { sectors: SectorRotation[]; t: (key: Tran
         {sectors.map((s) => {
           const x = 50 + (s.momentum / maxMom) * 40;
           const y = 50 - (s.acceleration / maxAcc) * 40;
-          const qColor = QUADRANT_LABELS[s.quadrant]?.color ?? '#a1a1aa';
+          const qColor = QUADRANT_LABELS[s.quadrant]?.color ?? 'var(--color-zinc-400)';
 
           return (
             <div
@@ -137,7 +137,7 @@ function RotationView({ sectors, t }: { sectors: SectorRotation[]; t: (key: Tran
                 className="w-3 h-3 rounded-full border-2 group-hover:scale-150 transition-transform"
                 style={{ backgroundColor: qColor, borderColor: qColor }}
               />
-              <span className="text-[7px] font-mono font-bold text-white mt-0.5 whitespace-nowrap">
+              <span className="text-micro font-mono font-bold text-white mt-0.5 whitespace-nowrap">
                 {s.symbol}
               </span>
             </div>
@@ -176,9 +176,9 @@ export function SectorRotationPanel() {
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`px-2 py-0.5 text-[9px] font-mono font-black uppercase transition-all ${
+              className={`px-2 py-0.5 text-mini font-mono font-black uppercase transition-all ${
                 view === v
-                  ? 'bg-accent/20 text-accent'
+                  ? 'bg-accent/20 text-accent-ink'
                   : 'text-neutral/50 hover:text-white'
               }`}
             >
@@ -196,9 +196,9 @@ export function SectorRotationPanel() {
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-2 py-0.5 text-[9px] font-mono font-black transition-all ${
+                className={`px-2 py-0.5 text-mini font-mono font-black transition-all ${
                   period === p
-                    ? 'bg-accent/20 text-accent'
+                    ? 'bg-accent/20 text-accent-ink'
                     : 'text-neutral/50 hover:text-white'
                 }`}
               >
@@ -211,7 +211,7 @@ export function SectorRotationPanel() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="flex-1 flex items-center justify-center text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+        <div className="flex-1 flex items-center justify-center text-mini font-mono text-neutral/40 uppercase tracking-widest">
           {t('loading')}
         </div>
       ) : view === 'heatmap' ? (

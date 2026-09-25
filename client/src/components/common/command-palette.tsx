@@ -69,7 +69,7 @@ export function CommandPalette() {
         type: 'workspace',
         id: `ws-${w.key}`,
         label: `${t('wsSwitch')}: ${label}`,
-        icon: <LayoutDashboard className="w-4 h-4 text-accent" />,
+        icon: <LayoutDashboard className="w-4 h-4 text-accent-ink" />,
         action: () => ws.switchTo(w.key),
       });
     }
@@ -93,7 +93,7 @@ export function CommandPalette() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+          className="absolute inset-0 bg-bg/70 backdrop-blur-sm"
           onClick={() => setOpen(false)}
         />
         
@@ -101,17 +101,17 @@ export function CommandPalette() {
           initial={{ opacity: 0, scale: 0.95, y: -20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          className="w-full max-w-xl bg-panel border border-accent/30 rounded-xl shadow-2xl overflow-hidden z-10"
+          className="w-full max-w-xl bg-raised border border-border rounded-sm shadow-[0_24px_64px_rgb(0_0_0/0.35)] overflow-hidden z-10"
         >
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50 bg-bg/50">
-            <Command className="w-5 h-5 text-accent animate-pulse" />
+          <div className="flex items-center gap-3 px-4 h-12 border-b border-border">
+            <Command className="w-4 h-4 text-neutral" />
             <input
               ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t('cmdPlaceholder')}
-              className="flex-1 bg-transparent border-none outline-none text-gray-100 font-mono text-sm placeholder:text-neutral"
+              className="flex-1 bg-transparent border-none outline-none text-fg text-sm placeholder:text-neutral"
               onKeyDown={(e) => {
                 if (e.key === 'ArrowDown') {
                   e.preventDefault();
@@ -124,7 +124,7 @@ export function CommandPalette() {
                 }
               }}
             />
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-panel border border-border/50 text-[10px] font-bold text-neutral">
+            <div className="flex items-center gap-1.5 px-1.5 h-5 rounded-sm border border-border text-micro text-neutral">
               ESC
             </div>
           </div>
@@ -136,14 +136,14 @@ export function CommandPalette() {
                   key={item.id}
                   onClick={() => handleExecute(item)}
                   onMouseEnter={() => setActiveIndex(index)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    index === activeIndex ? 'bg-accent/20 border border-accent/30 text-white translate-x-1' : 'text-neutral hover:text-gray-200'
+                  className={`w-full flex items-center gap-3 px-3 h-9 rounded-sm text-sm ${
+                    index === activeIndex ? 'bg-accent/15 text-fg' : 'text-neutral'
                   }`}
                 >
-                  <span className={index === activeIndex ? 'text-accent' : ''}>{item.icon}</span>
-                  <span className="flex-1 text-left font-mono">{item.label}</span>
+                  <span className={index === activeIndex ? 'text-accent-ink' : ''}>{item.icon}</span>
+                  <span className="flex-1 text-left">{item.label}</span>
                   {index === activeIndex && (
-                    <span className="text-[10px] font-bold text-accent/60 flex items-center gap-1 uppercase tracking-tighter">
+                    <span className="text-micro text-accent-ink flex items-center gap-1">
                       {t('execute')} <Terminal className="w-3 h-3" />
                     </span>
                   )}
@@ -156,18 +156,16 @@ export function CommandPalette() {
             )}
           </div>
           
-          <div className="px-4 py-2 border-t border-border/30 bg-bg/30 flex justify-between items-center">
+          <div className="px-4 h-9 border-t border-border flex justify-between items-center">
             <div className="flex gap-4">
-              <span className="text-[10px] text-neutral flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 rounded bg-panel border border-border/50">↑↓</kbd> {t('navigate')}
+              <span className="text-mini text-neutral flex items-center gap-1">
+                <kbd className="px-1 h-4 inline-flex items-center rounded-sm border border-border">↑↓</kbd> {t('navigate')}
               </span>
-              <span className="text-[10px] text-neutral flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 rounded bg-panel border border-border/50">Enter</kbd> {t('execute')}
+              <span className="text-mini text-neutral flex items-center gap-1">
+                <kbd className="px-1 h-4 inline-flex items-center rounded-sm border border-border">Enter</kbd> {t('execute')}
               </span>
             </div>
-            <span className="text-[10px] font-bold text-accent/50 uppercase tracking-widest">
-              Terminal v2.6
-            </span>
+            <span className="text-micro text-neutral">SGFX Terminal</span>
           </div>
         </motion.div>
       </div>

@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { env } from '../config/env.js';
@@ -12,9 +13,15 @@ export class HttpError extends Error {
   }
 }
 
+// Time the current request spent waiting on the bridge, summed over every bridge() call it makes.
+// ponytail: a request awaiting another request's in-flight cached() bridge promise counts that wait as node time (rare, 60s cache)
+const bridgeTime = new AsyncLocalStorage<{ ms: number }>();
+
 /** Calls the MT5 bridge. Throws HttpError carrying a status fit to return to our own client. */
 export async function bridge<T = any>(path: string, body?: unknown): Promise<T> {
   let res: globalThis.Response;
+  let data: any;
+  const t = performance.now();
   try {
     res = await fetch(`${env.MT5_BRIDGE_URL}${path}`, {
       method: body === undefined ? 'GET' : 'POST',
@@ -23,12 +30,15 @@ export async function bridge<T = any>(path: string, body?: unknown): Promise<T> 
       // Bridge serializes trades behind one lock and polls up to 8s for confirmation
       signal: AbortSignal.timeout(30_000),
     });
+    data = await res.json().catch(() => null);
   } catch (err: any) {
     console.error(`[MT5] Bridge unreachable ${path.split('?')[0]}:`, err?.message);
     throw new HttpError(503, 'Trading server unavailable');
+  } finally {
+    const store = bridgeTime.getStore();
+    if (store) store.ms += performance.now() - t;
   }
 
-  const data = await res.json().catch(() => null);
   if (res.ok) return data as T;
   if (res.status >= 500 || res.status === 429) throw new HttpError(503, 'Trading server unavailable');
   if (res.status === 401 || res.status === 403) {
@@ -237,17 +247,28 @@ router.use(requireAuth);
 
 type Handler = (req: Request) => Promise<unknown>;
 const h = (fn: Handler) => async (req: Request, res: Response) => {
+  const timing = { ms: 0 };
+  // Server-Timing shows in DevTools → Network → Timing; trade POSTs are also logged
+  const send = (status: number, body: unknown) => {
+    const total = performance.now() - (res.locals.t0 ?? performance.now());
+    const node = total - timing.ms;
+    res.setHeader('Server-Timing', `node;dur=${node.toFixed(1)}, bridge;dur=${timing.ms.toFixed(1)}`);
+    if (req.method === 'POST') {
+      console.log(`[MT5] ${req.user?.mt5Login} POST ${req.path} ${status} — total ${total.toFixed(0)}ms (bridge ${timing.ms.toFixed(0)}ms, node ${node.toFixed(0)}ms)`);
+    }
+    res.status(status).json(body);
+  };
   try {
-    res.json(await fn(req));
+    send(200, await bridgeTime.run(timing, () => fn(req)));
   } catch (err) {
     if (err instanceof HttpError) {
-      res.status(err.status).json({ ...err.body, error: err.message });
+      send(err.status, { ...err.body, error: err.message });
     } else if (err instanceof z.ZodError) {
       const issue = err.issues[0];
-      res.status(400).json({ error: issue ? `${issue.path.join('.') || 'body'}: ${issue.message}` : 'Invalid request' });
+      send(400, { error: issue ? `${issue.path.join('.') || 'body'}: ${issue.message}` : 'Invalid request' });
     } else {
       console.error('[MT5]', (err as Error)?.message);
-      res.status(500).json({ error: 'Internal error' });
+      send(500, { error: 'Internal error' });
     }
   }
 };

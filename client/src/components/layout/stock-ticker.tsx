@@ -22,8 +22,8 @@ export function StockTicker() {
 
   if (!quotes || quotes.length === 0) {
     return (
-      <div className="bg-panel border-b border-border h-6 flex items-center px-2 shrink-0 z-10 relative">
-        <span className="text-[10px] text-accent font-mono uppercase font-bold animate-pulse">{t('awaitingDataStream')}</span>
+      <div className="bg-panel border-b border-border h-7 flex items-center px-4 shrink-0 z-10 relative">
+        <span className="text-mini text-neutral">{t('awaitingDataStream')}</span>
       </div>
     );
   }
@@ -31,18 +31,18 @@ export function StockTicker() {
   const items = [...quotes, ...quotes, ...quotes];
 
   return (
-    <div className="ticker-container bg-panel border-b border-border h-6 overflow-hidden shrink-0 cursor-default relative z-10">
+    <div className="ticker-container bg-panel border-b border-border h-7 overflow-hidden shrink-0 cursor-default relative z-10">
       <div className="animate-ticker flex items-center h-full whitespace-nowrap w-max" style={{ animationDuration: `${tickerSpeed}s` }}>
         {items.map((q, i) => {
           const isUp = q.changePercent !== null && q.changePercent > 0;
           const isDown = q.changePercent !== null && q.changePercent < 0;
           
           return (
-            <div key={`${q.symbol}-${i}`} className="inline-flex items-center gap-2 px-3 text-[11px] font-mono border-r border-border h-full uppercase tracking-wider">
-              <span className="text-accent font-bold">{q.symbol}</span>
-              <span className="text-white font-bold">{formatPrice(q.price)}</span>
+            <div key={`${q.symbol}-${i}`} className="inline-flex items-center gap-2 px-4 text-mini h-full">
+              <span className="text-neutral">{q.symbol}</span>
+              <span className="text-fg font-medium">{formatPrice(q.price)}</span>
               {q.changePercent !== null && (
-                <span className={`flex items-center gap-1 font-bold ${isUp ? 'text-bullish' : isDown ? 'text-bearish' : 'text-neutral'}`}>
+                <span className={`flex items-center gap-1 ${isUp ? 'text-bullish' : isDown ? 'text-bearish' : 'text-neutral'}`}>
                   {isUp ? '▲' : isDown ? '▼' : '-'}
                   {Math.abs(q.changePercent).toFixed(2)}%
                 </span>

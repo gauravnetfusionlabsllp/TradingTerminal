@@ -9,7 +9,7 @@ import { RefreshCw } from 'lucide-react';
 
 // ── Color helpers ──
 
-const ROSE = '#f43f5e';
+const ROSE = 'var(--color-rose-500)';
 
 function regimeColor(regime: string): string {
   switch (regime) {
@@ -76,21 +76,21 @@ export function VolTermStructurePanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-rose-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-rose-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-rose-400">
             {tr(t, 'volTermStructureTitle', 'Vol Term Structure')}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           {data && (
-            <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider border ${regimeBg(data.spot.regime)}`}>
+            <span className={`px-1.5 py-0.5 text-micro font-black font-mono uppercase tracking-wider border ${regimeBg(data.spot.regime)}`}>
               {data.spot.regime}
             </span>
           )}
           {data && (
-            <span className={`px-1.5 py-0.5 text-[7px] font-black font-mono uppercase tracking-wider border ${shapeBg(data.termStructure.shape)}`}>
+            <span className={`px-1.5 py-0.5 text-micro font-black font-mono uppercase tracking-wider border ${shapeBg(data.termStructure.shape)}`}>
               {data.termStructure.shape}
             </span>
           )}
@@ -105,13 +105,13 @@ export function VolTermStructurePanel() {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-rose-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-rose-400 text-mini font-mono uppercase animate-pulse">
             {tr(t, 'loading', 'Loading...')}
           </div>
         )}
 
         {!data && !isLoading && (
-          <div className="text-center py-8 text-neutral-500 text-[9px] font-mono uppercase">
+          <div className="text-center py-8 text-neutral-500 text-mini font-mono uppercase">
             {tr(t, 'volTsNoData', 'No data available')}
           </div>
         )}
@@ -146,7 +146,7 @@ function KeyMetricsRow({
       <div className="grid grid-cols-4 gap-px bg-border/10">
         {/* VIX Spot */}
         <div className="bg-black px-2 py-2">
-          <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+          <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
             {tr(t, 'volTsVixSpot', 'VIX Spot')}
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
@@ -154,17 +154,17 @@ function KeyMetricsRow({
               {spot.vix.toFixed(2)}
             </span>
           </div>
-          <div className={`text-[8px] font-mono font-bold ${isUp ? 'text-red-400' : 'text-emerald-400'}`}>
+          <div className={`text-micro font-mono font-bold ${isUp ? 'text-red-400' : 'text-emerald-400'}`}>
             {isUp ? '+' : ''}{spot.changePct.toFixed(2)}%
           </div>
-          <div className="text-[7px] font-mono text-neutral-600 mt-0.5">
+          <div className="text-micro font-mono text-neutral-600 mt-0.5">
             {tr(t, 'volTsPercentile', 'P60D')}: {spot.percentile60d}%
           </div>
         </div>
 
         {/* Contango Spread */}
         <div className="bg-black px-2 py-2">
-          <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+          <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
             {tr(t, 'volTsContangoSpread', 'Contango Spread')}
           </div>
           <div className={`text-[18px] font-black font-mono leading-none mt-0.5 ${
@@ -172,42 +172,42 @@ function KeyMetricsRow({
           }`}>
             {termStructure.spread > 0 ? '+' : ''}{termStructure.spread.toFixed(1)}%
           </div>
-          <div className="text-[8px] font-mono text-neutral-500 mt-0.5">
+          <div className="text-micro font-mono text-neutral-500 mt-0.5">
             {tr(t, 'volTsRatio', 'Ratio')}: {termStructure.ratio.toFixed(3)}
           </div>
-          <div className="text-[7px] font-mono text-neutral-600">
+          <div className="text-micro font-mono text-neutral-600">
             {tr(t, 'volTsSteepness', 'Steepness')}: {termStructure.steepness.toFixed(1)}/10
           </div>
         </div>
 
         {/* IV vs RV Spread */}
         <div className="bg-black px-2 py-2">
-          <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+          <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
             {tr(t, 'volTsIvRvSpread', 'IV-RV Spread')}
           </div>
           <div className={`text-[18px] font-black font-mono leading-none mt-0.5 ${premiumColor(realizedVsImplied.premium)}`}>
             {realizedVsImplied.spread > 0 ? '+' : ''}{realizedVsImplied.spread.toFixed(1)}
           </div>
-          <div className="text-[8px] font-mono text-neutral-500 mt-0.5">
+          <div className="text-micro font-mono text-neutral-500 mt-0.5">
             IV: {realizedVsImplied.impliedVol.toFixed(1)} / RV: {realizedVsImplied.realizedVol20d.toFixed(1)}
           </div>
-          <div className={`text-[7px] font-mono font-bold ${premiumColor(realizedVsImplied.premium)}`}>
+          <div className={`text-micro font-mono font-bold ${premiumColor(realizedVsImplied.premium)}`}>
             {realizedVsImplied.premium.toUpperCase()} {tr(t, 'volTsPremium', 'PREMIUM')}
           </div>
         </div>
 
         {/* Spike Risk */}
         <div className="bg-black px-2 py-2">
-          <div className="text-[7px] font-mono text-neutral-600 uppercase tracking-wider">
+          <div className="text-micro font-mono text-neutral-600 uppercase tracking-wider">
             {tr(t, 'volTsSpikeRisk', 'Spike Risk')}
           </div>
           <div className={`text-[14px] font-black font-mono leading-none mt-0.5 ${riskColor(signals.spikeRisk)}`}>
             {signals.spikeRisk.toUpperCase()}
           </div>
-          <div className="text-[8px] font-mono text-neutral-500 mt-0.5">
+          <div className="text-micro font-mono text-neutral-500 mt-0.5">
             SMA20: {signals.vixSma20.toFixed(1)}
           </div>
-          <div className={`text-[7px] font-mono font-bold ${
+          <div className={`text-micro font-mono font-bold ${
             signals.meanReversion === 'overbought' ? 'text-red-400' :
             signals.meanReversion === 'oversold' ? 'text-emerald-400' : 'text-neutral-500'
           }`}>
@@ -256,12 +256,12 @@ function TermStructureChart({
   const chartPoints = points.map((p, i) => ({ x: scaleX(i), y: scaleY(p.value), ...p }));
   const pathD = chartPoints.map((p, i) => (i === 0 ? `M ${p.x},${p.y}` : `L ${p.x},${p.y}`)).join(' ');
 
-  const lineColor = termStructure.shape === 'contango' ? '#34d399' : termStructure.shape === 'backwardation' ? '#f87171' : '#facc15';
+  const lineColor = termStructure.shape === 'contango' ? 'var(--color-emerald-400)' : termStructure.shape === 'backwardation' ? 'var(--color-red-400)' : 'var(--color-amber-300)';
   const fillColor = termStructure.shape === 'contango'
-    ? 'rgba(52,211,153,0.08)'
+    ? 'color-mix(in srgb, var(--color-emerald-400) 8%, transparent)'
     : termStructure.shape === 'backwardation'
-      ? 'rgba(248,113,113,0.08)'
-      : 'rgba(250,204,21,0.08)';
+      ? 'color-mix(in srgb, var(--color-red-400) 8%, transparent)'
+      : 'color-mix(in srgb, var(--color-amber-300) 8%, transparent)';
 
   // Y-axis ticks
   const yStep = (maxY - minY) > 6 ? 2 : 1;
@@ -275,7 +275,7 @@ function TermStructureChart({
 
   return (
     <div className="px-3 py-3 border-b border-border/20">
-      <div className="text-[8px] font-black uppercase tracking-widest text-neutral-500 mb-2">
+      <div className="text-micro font-black uppercase tracking-widest text-neutral-500 mb-2">
         {tr(t, 'volTsTermStructure', 'Term Structure Curve')}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 140 }}>
@@ -284,11 +284,11 @@ function TermStructureChart({
           <g key={v}>
             <line
               x1={PAD_X} y1={scaleY(v)} x2={W - PAD_X} y2={scaleY(v)}
-              stroke="rgba(255,255,255,0.05)" strokeDasharray="2,2"
+              stroke="color-mix(in srgb, var(--color-white) 5%, transparent)" strokeDasharray="2,2"
             />
             <text
               x={PAD_X - 4} y={scaleY(v) + 3}
-              textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize={7} fontFamily="monospace"
+              textAnchor="end" fill="color-mix(in srgb, var(--color-white) 25%, transparent)" fontSize={7} fontFamily="inherit"
             >
               {v.toFixed(0)}
             </text>
@@ -300,11 +300,11 @@ function TermStructureChart({
           <g>
             <line
               x1={PAD_X} y1={smaY} x2={W - PAD_X} y2={smaY}
-              stroke="rgba(244,63,94,0.4)" strokeDasharray="4,3" strokeWidth={1}
+              stroke="color-mix(in srgb, var(--color-rose-500) 40%, transparent)" strokeDasharray="4,3" strokeWidth={1}
             />
             <text
               x={W - PAD_X + 3} y={smaY + 3}
-              textAnchor="start" fill="rgba(244,63,94,0.6)" fontSize={6} fontFamily="monospace"
+              textAnchor="start" fill="color-mix(in srgb, var(--color-rose-500) 60%, transparent)" fontSize={6} fontFamily="inherit"
             >
               SMA20
             </text>
@@ -324,18 +324,18 @@ function TermStructureChart({
         {chartPoints.map((p, i) => (
           <g key={i}>
             <circle cx={p.x} cy={p.y} r={4} fill={lineColor} />
-            <circle cx={p.x} cy={p.y} r={2} fill="#000" />
+            <circle cx={p.x} cy={p.y} r={2} fill="var(--color-black)" />
             {/* Value label */}
             <text
               x={p.x} y={p.y - 8}
-              textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize={8} fontFamily="monospace" fontWeight="bold"
+              textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 80%, transparent)" fontSize={8} fontFamily="inherit" fontWeight="bold"
             >
               {p.value.toFixed(1)}
             </text>
             {/* Tenor label */}
             <text
               x={p.x} y={H - 6}
-              textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize={7} fontFamily="monospace"
+              textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 35%, transparent)" fontSize={7} fontFamily="inherit"
             >
               {p.label}
             </text>
@@ -434,10 +434,10 @@ function VixHistoryChart({
 
     // Regime band rects
     const regimeBands = [
-      { min: 0, max: 15, color: 'rgba(52,211,153,0.04)' },
-      { min: 15, max: 20, color: 'rgba(250,204,21,0.04)' },
-      { min: 20, max: 30, color: 'rgba(249,115,22,0.04)' },
-      { min: 30, max: Math.max(maxVol, 40), color: 'rgba(248,113,113,0.04)' },
+      { min: 0, max: 15, color: 'color-mix(in srgb, var(--color-emerald-400) 4%, transparent)' },
+      { min: 15, max: 20, color: 'color-mix(in srgb, var(--color-amber-300) 4%, transparent)' },
+      { min: 20, max: 30, color: 'color-mix(in srgb, var(--color-orange-500) 4%, transparent)' },
+      { min: 30, max: Math.max(maxVol, 40), color: 'color-mix(in srgb, var(--color-red-400) 4%, transparent)' },
     ];
 
     const visibleBands = regimeBands
@@ -487,25 +487,25 @@ function VixHistoryChart({
   return (
     <div className="px-3 py-3 border-b border-border/20">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[8px] font-black uppercase tracking-widest text-neutral-500">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral-500">
           {tr(t, 'volTsHistory', 'VIX History (60D)')}
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <div className="w-3 h-px bg-rose-400" />
-            <span className="text-[6px] font-mono text-neutral-600">VIX</span>
+            <span className="text-micro font-mono text-neutral-600">VIX</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-px bg-blue-400 opacity-60" style={{ borderTop: '1px dashed' }} />
-            <span className="text-[6px] font-mono text-neutral-600">VIX3M</span>
+            <span className="text-micro font-mono text-neutral-600">VIX3M</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-px bg-amber-400 opacity-40" />
-            <span className="text-[6px] font-mono text-neutral-600">RV20</span>
+            <span className="text-micro font-mono text-neutral-600">RV20</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-px bg-neutral-600 opacity-40" />
-            <span className="text-[6px] font-mono text-neutral-600">SPX inv</span>
+            <span className="text-micro font-mono text-neutral-600">SPX inv</span>
           </div>
         </div>
       </div>
@@ -526,11 +526,11 @@ function VixHistoryChart({
           <g key={v}>
             <line
               x1={PAD_X} y1={scaleVolY(v)} x2={W - PAD_RIGHT} y2={scaleVolY(v)}
-              stroke="rgba(255,255,255,0.04)" strokeDasharray="2,2"
+              stroke="color-mix(in srgb, var(--color-white) 4%, transparent)" strokeDasharray="2,2"
             />
             <text
               x={PAD_X - 3} y={scaleVolY(v) + 3}
-              textAnchor="end" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace"
+              textAnchor="end" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit"
             >
               {v.toFixed(0)}
             </text>
@@ -542,7 +542,7 @@ function VixHistoryChart({
           <text
             key={d.i}
             x={scaleX(d.i)} y={H - 3}
-            textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize={6} fontFamily="monospace"
+            textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 20%, transparent)" fontSize={6} fontFamily="inherit"
           >
             {d.label}
           </text>
@@ -550,20 +550,20 @@ function VixHistoryChart({
 
         {/* SPX inverted overlay */}
         {spxPath && (
-          <path d={spxPath} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={0.8} />
+          <path d={spxPath} fill="none" stroke="color-mix(in srgb, var(--color-white) 10%, transparent)" strokeWidth={0.8} />
         )}
 
         {/* Realized vol line */}
         {rvPath && (
-          <path d={rvPath} fill="none" stroke="rgba(251,191,36,0.4)" strokeWidth={1} />
+          <path d={rvPath} fill="none" stroke="color-mix(in srgb, var(--color-amber-400) 40%, transparent)" strokeWidth={1} />
         )}
 
         {/* VIX area */}
-        <path d={vixAreaPath} fill="rgba(244,63,94,0.06)" />
+        <path d={vixAreaPath} fill="color-mix(in srgb, var(--color-rose-500) 6%, transparent)" />
 
         {/* VIX3M dashed line */}
         {vix3mPath && (
-          <path d={vix3mPath} fill="none" stroke="rgba(96,165,250,0.6)" strokeWidth={1} strokeDasharray="4,2" />
+          <path d={vix3mPath} fill="none" stroke="color-mix(in srgb, var(--color-blue-400) 60%, transparent)" strokeWidth={1} strokeDasharray="4,2" />
         )}
 
         {/* VIX solid line */}
@@ -597,11 +597,11 @@ function VolProductsTable({
   return (
     <div className="border-b border-border/20">
       <div className="px-3 py-1 border-b border-border/10">
-        <span className="text-[8px] font-black font-mono uppercase tracking-wider text-neutral-500">
+        <span className="text-micro font-black font-mono uppercase tracking-wider text-neutral-500">
           {tr(t, 'volTsProducts', 'Vol Products')}
         </span>
       </div>
-      <div className="grid grid-cols-[1fr_0.6fr_0.6fr] px-3 py-1 border-b border-border/10 text-[7px] font-black text-neutral-600 uppercase tracking-wider">
+      <div className="grid grid-cols-[1fr_0.6fr_0.6fr] px-3 py-1 border-b border-border/10 text-micro font-black text-neutral-600 uppercase tracking-wider">
         <span>{tr(t, 'symbol', 'Symbol')}</span>
         <span className="text-right">{tr(t, 'price', 'Price')}</span>
         <span className="text-right">{tr(t, 'moversChange', 'Change')}</span>
@@ -612,14 +612,14 @@ function VolProductsTable({
           className="grid grid-cols-[1fr_0.6fr_0.6fr] px-3 py-1.5 border-b border-border/10 hover:bg-white/[0.02] transition-colors"
         >
           <div>
-            <div className="text-[9px] font-mono font-bold text-white">{p.symbol}</div>
-            <div className="text-[7px] font-mono text-neutral-600 truncate">{p.description}</div>
+            <div className="text-mini font-mono font-bold text-white">{p.symbol}</div>
+            <div className="text-micro font-mono text-neutral-600 truncate">{p.description}</div>
           </div>
-          <span className="text-[9px] font-mono text-white text-right self-center">
+          <span className="text-mini font-mono text-white text-right self-center">
             ${p.price.toFixed(2)}
           </span>
           <span
-            className={`text-[9px] font-mono font-bold text-right self-center ${
+            className={`text-mini font-mono font-bold text-right self-center ${
               p.changePct >= 0 ? 'text-red-400' : 'text-emerald-400'
             }`}
           >
@@ -630,7 +630,7 @@ function VolProductsTable({
 
       {/* Timestamp */}
       <div className="px-3 py-1.5">
-        <span className="text-[7px] font-mono text-neutral-700">
+        <span className="text-micro font-mono text-neutral-700">
           {tr(t, 'volTsLastUpdate', 'Last update')}: {new Date().toLocaleTimeString()}
         </span>
       </div>

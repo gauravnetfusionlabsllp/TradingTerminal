@@ -26,10 +26,10 @@ export function YieldCurvePanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-cyan-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-cyan-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-cyan-400">
             {tr('panelYieldCurve', 'YIELD CURVE')}
           </span>
         </div>
@@ -47,7 +47,7 @@ export function YieldCurvePanel() {
           <button
             key={t_}
             onClick={() => setTab(t_)}
-            className={`flex-1 py-1.5 text-[8px] font-black uppercase tracking-widest border-b-2 transition-colors ${
+            className={`flex-1 py-1.5 text-micro font-black uppercase tracking-widest border-b-2 transition-colors ${
               tab === t_
                 ? 'border-cyan-400 text-cyan-400'
                 : 'border-transparent text-neutral/40 hover:text-neutral'
@@ -62,7 +62,7 @@ export function YieldCurvePanel() {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && !data && (
-          <div className="text-center py-8 text-cyan-400 text-[9px] font-mono uppercase animate-pulse">
+          <div className="text-center py-8 text-cyan-400 text-mini font-mono uppercase animate-pulse">
             {tr('loading', 'Loading...')}
           </div>
         )}
@@ -87,7 +87,7 @@ function CurrentCurveView({ maturities, updatedAt }: { maturities: YieldPoint[];
 
   if (maturities.length === 0) {
     return (
-      <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+      <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
         {tr('noData', 'No data available')}
       </div>
     );
@@ -121,35 +121,35 @@ function CurrentCurveView({ maturities, updatedAt }: { maturities: YieldPoint[];
       </div>
 
       {/* Key Metrics Summary */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border/20 bg-[#030303]">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/20 bg-raised">
         <div className="flex gap-4">
           <div>
-            <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">2Y/10Y Spread</div>
+            <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">2Y/10Y Spread</div>
             <div className={`text-[12px] font-mono font-black ${spread2s10s >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {spread2s10s >= 0 ? '+' : ''}{spread2s10s}bp
             </div>
           </div>
           <div>
-            <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">3M/10Y Spread</div>
+            <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">3M/10Y Spread</div>
             <div className={`text-[12px] font-mono font-black ${spread3m10y >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {spread3m10y >= 0 ? '+' : ''}{spread3m10y}bp
             </div>
           </div>
           <div>
-            <div className="text-[7px] font-mono text-neutral/40 uppercase tracking-wider">Curve Shape</div>
+            <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider">Curve Shape</div>
             <div className={`text-[12px] font-mono font-black ${shapeColor}`}>
               {curveShape}
             </div>
           </div>
         </div>
-        <div className="text-[7px] font-mono text-neutral/25">
+        <div className="text-micro font-mono text-neutral/25">
           {new Date(updatedAt).toLocaleTimeString()}
         </div>
       </div>
 
       {/* Yield Table */}
       <div>
-        <div className="grid grid-cols-[1fr_1fr_0.6fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+        <div className="grid grid-cols-[1fr_1fr_0.6fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider">
           <span>{tr('yieldMaturity', 'Maturity')}</span>
           <span className="text-right">{tr('yieldRate', 'Yield')}</span>
           <span className="text-right">{tr('yieldSource', 'Source')}</span>
@@ -163,15 +163,15 @@ function CurrentCurveView({ maturities, updatedAt }: { maturities: YieldPoint[];
             }`}
           >
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono font-bold text-white">{m.term}</span>
+              <span className="text-mini font-mono font-bold text-white">{m.term}</span>
               {m.term === '2Y' || m.term === '10Y' ? (
-                <span className="text-[6px] font-mono text-cyan-400/50 uppercase">key</span>
+                <span className="text-micro font-mono text-cyan-400/50 uppercase">key</span>
               ) : null}
             </div>
-            <span className="text-[10px] font-mono font-bold text-cyan-300 text-right">
+            <span className="text-mini font-mono font-bold text-cyan-300 text-right">
               {m.yield.toFixed(3)}%
             </span>
-            <span className={`text-[8px] font-mono text-right ${m.isLive ? 'text-emerald-400/60' : 'text-neutral/30'}`}>
+            <span className={`text-micro font-mono text-right ${m.isLive ? 'text-emerald-400/60' : 'text-neutral/30'}`}>
               {m.isLive ? 'LIVE' : 'EST'}
             </span>
           </div>
@@ -283,13 +283,13 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
     >
       <defs>
         <linearGradient id="yc-fill-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.2} />
-          <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
+          <stop offset="0%" stopColor="var(--color-cyan-500)" stopOpacity={0.2} />
+          <stop offset="100%" stopColor="var(--color-cyan-500)" stopOpacity={0.02} />
         </linearGradient>
         <linearGradient id="yc-line-grad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#22d3ee" />
-          <stop offset="50%" stopColor="#06b6d4" />
-          <stop offset="100%" stopColor="#0891b2" />
+          <stop offset="0%" stopColor="var(--color-cyan-400)" />
+          <stop offset="50%" stopColor="var(--color-cyan-500)" />
+          <stop offset="100%" stopColor="var(--color-cyan-600)" />
         </linearGradient>
       </defs>
 
@@ -301,16 +301,16 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
             y1={scaleY(v)}
             x2={W - PAD_R}
             y2={scaleY(v)}
-            stroke="rgba(255,255,255,0.04)"
+            stroke="color-mix(in srgb, var(--color-white) 4%, transparent)"
             strokeDasharray="2,3"
           />
           <text
             x={PAD_L - 4}
             y={scaleY(v) + 3}
             textAnchor="end"
-            fill="rgba(255,255,255,0.25)"
+            fill="color-mix(in srgb, var(--color-white) 25%, transparent)"
             fontSize={7}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {v.toFixed(2)}
           </text>
@@ -323,7 +323,7 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
         y1={H - PAD_B}
         x2={W - PAD_R}
         y2={H - PAD_B}
-        stroke="rgba(255,255,255,0.08)"
+        stroke="color-mix(in srgb, var(--color-white) 8%, transparent)"
       />
 
       {/* Gradient fill under curve */}
@@ -340,9 +340,9 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
             x={p.x}
             y={H - PAD_B + 12}
             textAnchor="middle"
-            fill="rgba(255,255,255,0.3)"
+            fill="color-mix(in srgb, var(--color-white) 30%, transparent)"
             fontSize={7}
-            fontFamily="monospace"
+            fontFamily="inherit"
           >
             {p.data.term}
           </text>
@@ -353,7 +353,7 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
             y1={H - PAD_B}
             x2={p.x}
             y2={H - PAD_B + 3}
-            stroke="rgba(255,255,255,0.15)"
+            stroke="color-mix(in srgb, var(--color-white) 15%, transparent)"
           />
 
           {/* Data point dot */}
@@ -361,8 +361,8 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
             cx={p.x}
             cy={p.y}
             r={hovered === i ? 4 : p.data.isLive ? 3 : 2}
-            fill={hovered === i ? '#22d3ee' : p.data.isLive ? '#06b6d4' : '#0e7490'}
-            stroke={hovered === i ? '#fff' : 'none'}
+            fill={hovered === i ? 'var(--color-cyan-400)' : p.data.isLive ? 'var(--color-cyan-500)' : 'var(--color-cyan-700)'}
+            stroke={hovered === i ? 'var(--color-white)' : 'none'}
             strokeWidth={1}
           />
         </g>
@@ -377,7 +377,7 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
             y1={PAD_T}
             x2={points[hovered].x}
             y2={H - PAD_B}
-            stroke="rgba(6,182,212,0.3)"
+            stroke="color-mix(in srgb, var(--color-cyan-500) 30%, transparent)"
             strokeDasharray="3,3"
           />
 
@@ -389,7 +389,7 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
             height={20}
             rx={2}
             fill="rgba(0,0,0,0.85)"
-            stroke="rgba(6,182,212,0.5)"
+            stroke="color-mix(in srgb, var(--color-cyan-500) 50%, transparent)"
             strokeWidth={0.5}
           />
           {/* Tooltip text */}
@@ -397,9 +397,9 @@ function YieldCurveChart({ maturities }: { maturities: YieldPoint[] }) {
             x={Math.min(points[hovered].x, W - PAD_R - 32)}
             y={Math.max(points[hovered].y - 13, PAD_T + 13)}
             textAnchor="middle"
-            fill="#22d3ee"
+            fill="var(--color-cyan-400)"
             fontSize={9}
-            fontFamily="monospace"
+            fontFamily="inherit"
             fontWeight="bold"
           >
             {points[hovered].data.term} {points[hovered].data.yield.toFixed(3)}%
@@ -426,7 +426,7 @@ function HistoryCurveView({
 
   if (historyData.length === 0 && currentData.length === 0) {
     return (
-      <div className="text-center py-8 text-neutral/30 text-[9px] font-mono uppercase">
+      <div className="text-center py-8 text-neutral/30 text-mini font-mono uppercase">
         {tr('loading', 'Loading...')}
       </div>
     );
@@ -448,13 +448,13 @@ function HistoryCurveView({
 
       {/* Legend / date selector */}
       <div className="px-3 py-2 border-b border-border/20">
-        <div className="text-[7px] font-black uppercase tracking-widest text-neutral/40 mb-1.5">
+        <div className="text-micro font-black uppercase tracking-widest text-neutral/40 mb-1.5">
           Historical Curves
         </div>
         <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => setSelectedIdx(null)}
-            className={`px-2 py-0.5 text-[8px] font-mono border transition-colors ${
+            className={`px-2 py-0.5 text-micro font-mono border transition-colors ${
               selectedIdx === null
                 ? 'border-cyan-400 text-cyan-400 bg-cyan-400/10'
                 : 'border-border/30 text-neutral/40 hover:text-neutral'
@@ -468,7 +468,7 @@ function HistoryCurveView({
               <button
                 key={c.date}
                 onClick={() => setSelectedIdx(selectedIdx === i ? null : i)}
-                className={`px-2 py-0.5 text-[8px] font-mono border transition-colors ${
+                className={`px-2 py-0.5 text-micro font-mono border transition-colors ${
                   selectedIdx === i
                     ? 'border-cyan-400 text-cyan-400 bg-cyan-400/10'
                     : 'border-border/30 text-neutral/40 hover:text-neutral'
@@ -484,10 +484,10 @@ function HistoryCurveView({
       {/* Selected curve detail table */}
       {selectedIdx !== null && recentCurves[selectedIdx] && (
         <div>
-          <div className="px-3 py-1 border-b border-border/20 text-[8px] font-mono text-cyan-400/60">
+          <div className="px-3 py-1 border-b border-border/20 text-micro font-mono text-cyan-400/60">
             Curve as of {recentCurves[selectedIdx].date}
           </div>
-          <div className="grid grid-cols-[1fr_1fr] px-3 py-1 border-b border-border/20 text-[7px] font-black text-neutral/40 uppercase tracking-wider">
+          <div className="grid grid-cols-[1fr_1fr] px-3 py-1 border-b border-border/20 text-micro font-black text-neutral/40 uppercase tracking-wider">
             <span>Maturity</span>
             <span className="text-right">Yield</span>
           </div>
@@ -498,8 +498,8 @@ function HistoryCurveView({
                 i % 2 === 0 ? 'bg-black' : 'bg-white/[0.01]'
               }`}
             >
-              <span className="text-[9px] font-mono text-white">{p.term}</span>
-              <span className="text-[9px] font-mono text-cyan-300 text-right">
+              <span className="text-mini font-mono text-white">{p.term}</span>
+              <span className="text-mini font-mono text-cyan-300 text-right">
                 {p.yield.toFixed(3)}%
               </span>
             </div>
@@ -515,12 +515,12 @@ function HistoryCurveView({
 // ────────────────────────────────────────────────────
 
 const HISTORY_COLORS = [
-  'rgba(255,255,255,0.08)',
-  'rgba(255,255,255,0.12)',
-  'rgba(255,255,255,0.16)',
-  'rgba(255,255,255,0.22)',
-  'rgba(255,255,255,0.30)',
-  'rgba(255,255,255,0.40)',
+  'color-mix(in srgb, var(--color-white) 8%, transparent)',
+  'color-mix(in srgb, var(--color-white) 12%, transparent)',
+  'color-mix(in srgb, var(--color-white) 16%, transparent)',
+  'color-mix(in srgb, var(--color-white) 22%, transparent)',
+  'color-mix(in srgb, var(--color-white) 30%, transparent)',
+  'color-mix(in srgb, var(--color-white) 40%, transparent)',
 ];
 
 function HistoryChart({
@@ -613,11 +613,11 @@ function HistoryChart({
         <g key={v}>
           <line
             x1={PAD_L} y1={scaleY(v)} x2={W - 12} y2={scaleY(v)}
-            stroke="rgba(255,255,255,0.04)" strokeDasharray="2,3"
+            stroke="color-mix(in srgb, var(--color-white) 4%, transparent)" strokeDasharray="2,3"
           />
           <text
             x={PAD_L - 4} y={scaleY(v) + 3}
-            textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize={7} fontFamily="monospace"
+            textAnchor="end" fill="color-mix(in srgb, var(--color-white) 25%, transparent)" fontSize={7} fontFamily="inherit"
           >
             {v.toFixed(2)}
           </text>
@@ -625,7 +625,7 @@ function HistoryChart({
       ))}
 
       {/* X baseline */}
-      <line x1={PAD_L} y1={H - PAD_B} x2={W - 12} y2={H - PAD_B} stroke="rgba(255,255,255,0.08)" />
+      <line x1={PAD_L} y1={H - PAD_B} x2={W - 12} y2={H - PAD_B} stroke="color-mix(in srgb, var(--color-white) 8%, transparent)" />
 
       {/* Historical curves (faded) */}
       {curvePaths.map((d, i) => (
@@ -633,7 +633,7 @@ function HistoryChart({
           key={i}
           d={d}
           fill="none"
-          stroke={selectedIdx === i ? '#22d3ee' : HISTORY_COLORS[i] ?? 'rgba(255,255,255,0.1)'}
+          stroke={selectedIdx === i ? 'var(--color-cyan-400)' : HISTORY_COLORS[i] ?? 'color-mix(in srgb, var(--color-white) 10%, transparent)'}
           strokeWidth={selectedIdx === i ? 1.5 : 1}
           strokeDasharray={selectedIdx === i ? undefined : '4,2'}
         />
@@ -641,17 +641,17 @@ function HistoryChart({
 
       {/* Current curve (bright) */}
       {currentPath && (
-        <path d={currentPath} fill="none" stroke="#06b6d4" strokeWidth={2.5} />
+        <path d={currentPath} fill="none" stroke="var(--color-cyan-500)" strokeWidth={2.5} />
       )}
 
       {/* Current data points */}
       {currentPts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={2} fill="#22d3ee" />
+        <circle key={i} cx={p.x} cy={p.y} r={2} fill="var(--color-cyan-400)" />
       ))}
 
       {/* X labels */}
       {xLabels.map((l, i) => (
-        <text key={i} x={l.x} y={H - PAD_B + 12} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize={7} fontFamily="monospace">
+        <text key={i} x={l.x} y={H - PAD_B + 12} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize={7} fontFamily="inherit">
           {l.label}
         </text>
       ))}

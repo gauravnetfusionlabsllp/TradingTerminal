@@ -25,8 +25,8 @@ function node(n: any, horizontal: boolean, key: number): ReactNode {
       key={key}
       style={{ flex }}
       className={cn(
-        'min-w-0 min-h-0 overflow-hidden whitespace-nowrap border px-[2px] pt-px text-[6px] leading-[7px] font-mono uppercase',
-        trades ? 'border-accent/70 text-accent/80' : 'border-border text-neutral/45',
+        'min-w-0 min-h-0 overflow-hidden whitespace-nowrap border px-[2px] pt-px text-micro leading-[7px] font-mono uppercase',
+        trades ? 'border-accent/70 text-accent-ink/80' : 'border-border text-neutral/45',
       )}
     >
       {selected ? getLocalizedPanelName(selected) : ''}

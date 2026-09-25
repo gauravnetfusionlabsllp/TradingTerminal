@@ -70,19 +70,19 @@ function AlertRow({ alert: a, onToggle, onDelete }: {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono font-bold text-gray-200 truncate">{a.name}</span>
+          <span className="text-mini font-mono font-bold text-gray-200 truncate">{a.name}</span>
           {triggerCount > 0 && (
-            <span className="px-1 py-0.5 text-[7px] font-mono font-bold bg-accent/20 text-accent border border-accent/30 shrink-0">
+            <span className="px-1 py-0.5 text-micro font-mono font-bold bg-accent/20 text-accent-ink border border-accent/30 shrink-0">
               {triggerCount}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-[8px] font-mono text-neutral/40 uppercase">{a.type}</span>
+          <span className="text-micro font-mono text-neutral/40 uppercase">{a.type}</span>
           {a.symbol && (
-            <span className="text-[8px] font-mono text-accent/60">{a.symbol}</span>
+            <span className="text-micro font-mono text-accent-ink/60">{a.symbol}</span>
           )}
-          <span className="text-[8px] font-mono text-neutral/30 truncate">{a.condition}</span>
+          <span className="text-micro font-mono text-neutral/30 truncate">{a.condition}</span>
         </div>
       </div>
 
@@ -121,7 +121,7 @@ function CreateAlertForm({ onClose }: { onClose: () => void }) {
   return (
     <div className="px-3 py-2 bg-accent/5 border-b border-accent/20 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-[9px] font-mono font-bold text-accent uppercase tracking-wider">
+        <span className="text-mini font-mono font-bold text-accent-ink uppercase tracking-wider">
           {t('newAlert')}
         </span>
         <button onClick={onClose} className="text-neutral/40 hover:text-white transition-colors">
@@ -134,16 +134,16 @@ function CreateAlertForm({ onClose }: { onClose: () => void }) {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder={t('alertName')}
-        className="w-full bg-black/40 border border-border/50 px-2 py-1 text-[10px] font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
+        className="w-full bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
       />
 
       <div className="grid grid-cols-2 gap-2">
         <div className="flex flex-col gap-0.5">
-          <label className="text-[8px] font-mono text-neutral/40 uppercase">{t('alertTypeLabel')}</label>
+          <label className="text-micro font-mono text-neutral/40 uppercase">{t('alertTypeLabel')}</label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value as AlertType)}
-            className="bg-black/40 border border-border/50 px-2 py-1 text-[10px] font-mono text-gray-200 outline-none focus:border-accent/50 appearance-none"
+            className="bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 outline-none focus:border-accent/50 appearance-none"
           >
             {ALERT_TYPES.map((at) => (
               <option key={at} value={at}>{t(ALERT_TYPE_KEYS[at])}</option>
@@ -152,33 +152,33 @@ function CreateAlertForm({ onClose }: { onClose: () => void }) {
         </div>
         {needsSymbol(type) && (
           <div className="flex flex-col gap-0.5">
-            <label className="text-[8px] font-mono text-neutral/40 uppercase">{t('symbol')}</label>
+            <label className="text-micro font-mono text-neutral/40 uppercase">{t('symbol')}</label>
             <input
               type="text"
               value={symbol}
               onChange={(e) => setSymbol(e.target.value.toUpperCase())}
               placeholder="AAPL"
-              className="bg-black/40 border border-border/50 px-2 py-1 text-[10px] font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
+              className="bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
             />
           </div>
         )}
       </div>
 
       <div className="flex flex-col gap-0.5">
-        <label className="text-[8px] font-mono text-neutral/40 uppercase">{t('condition')}</label>
+        <label className="text-micro font-mono text-neutral/40 uppercase">{t('condition')}</label>
         <input
           type="text"
           value={condition}
           onChange={(e) => setCondition(e.target.value)}
           placeholder={t(CONDITION_PLACEHOLDER_KEYS[type])}
-          className="w-full bg-black/40 border border-border/50 px-2 py-1 text-[10px] font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
+          className="w-full bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
         />
       </div>
 
       <button
         onClick={handleSubmit}
         disabled={!name.trim() || !condition.trim() || createAlert.isPending}
-        className="w-full py-1.5 bg-accent/20 text-accent text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-accent/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="w-full py-1.5 bg-accent/20 text-accent-ink text-mini font-mono font-bold uppercase tracking-wider hover:bg-accent/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
       >
         {createAlert.isPending ? t('creating') : t('createAlert')}
       </button>
@@ -203,12 +203,12 @@ export function AlertsPanel() {
       }
       headerRight={
         <div className="flex items-center gap-2">
-          <span className="text-[8px] font-mono text-neutral/50">
+          <span className="text-micro font-mono text-neutral/50">
             {alerts?.length ?? 0}
           </span>
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="p-0.5 text-neutral hover:text-accent transition-colors"
+            className="p-0.5 text-neutral hover:text-accent-ink transition-colors"
           >
             {showCreate ? <ChevronUp className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
           </button>
@@ -222,17 +222,17 @@ export function AlertsPanel() {
       {/* Alert list */}
       <div className="flex-1 overflow-auto no-scrollbar">
         {isLoading && (
-          <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('loading')}
           </div>
         )}
         {error && (
-          <div className="flex items-center justify-center py-8 text-[10px] font-mono text-bearish/60 uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-mini font-mono text-bearish/60 uppercase tracking-widest">
             {t('failedToLoadAlerts')}
           </div>
         )}
         {!isLoading && !error && (!alerts || alerts.length === 0) && (
-          <div className="flex items-center justify-center py-8 text-[10px] font-mono text-neutral/40 uppercase tracking-widest">
+          <div className="flex items-center justify-center py-8 text-mini font-mono text-neutral/40 uppercase tracking-widest">
             {t('noAlertsConfigured')}
           </div>
         )}

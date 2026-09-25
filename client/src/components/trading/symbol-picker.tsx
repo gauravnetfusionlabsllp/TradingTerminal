@@ -118,8 +118,8 @@ export function SymbolPicker({ symbols, value = '', onSelect, placeholder, clear
                   style={{ position: 'absolute', top: idx * ROW_H, height: ROW_H, left: 0, right: 0 }}
                   className={`px-3 flex items-center gap-3 cursor-pointer border-b border-border/10 ${idx === highlight ? 'bg-white/10' : ''}`}
                 >
-                  <span className="font-mono font-black text-[11px] text-accent flex-1 truncate">{s.symbol}</span>
-                  <span className="text-[9px] text-neutral font-mono shrink-0">{tradeModeLabel(s.tradeMode)}</span>
+                  <span className="font-mono font-black text-xs text-accent-ink flex-1 truncate">{s.symbol}</span>
+                  <span className="text-mini text-neutral font-mono shrink-0">{tradeModeLabel(s.tradeMode)}</span>
                 </div>
               );
             })}

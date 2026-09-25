@@ -209,19 +209,19 @@ function MortgageInput({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{label}</label>
+      <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">{label}</label>
       <div className="flex items-center bg-black/40 border border-border/50 focus-within:border-teal-400/50 transition-colors">
-        {prefix && <span className="text-[10px] font-mono text-neutral/40 pl-2">{prefix}</span>}
+        {prefix && <span className="text-mini font-mono text-neutral/40 pl-2">{prefix}</span>}
         <input
           type="number"
           step={step ?? 'any'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-transparent px-2 py-1 text-[11px] font-mono text-gray-200 outline-none w-full min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="flex-1 bg-transparent px-2 py-1 text-xs font-mono text-gray-200 outline-none w-full min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
-        {suffix && <span className="text-[10px] font-mono text-neutral/40 pr-2">{suffix}</span>}
+        {suffix && <span className="text-mini font-mono text-neutral/40 pr-2">{suffix}</span>}
       </div>
-      {note && <span className="text-[8px] font-mono text-neutral/30">{note}</span>}
+      {note && <span className="text-micro font-mono text-neutral/30">{note}</span>}
     </div>
   );
 }
@@ -283,14 +283,14 @@ function DonutChart({ segments, centerLabel, centerValue }: { segments: DonutSeg
     <div className="flex flex-col items-center gap-2">
       <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[180px] h-auto">
         {paths}
-        <text x={cx} y={cy - 6} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="8" fontFamily="monospace">{centerLabel}</text>
-        <text x={cx} y={cy + 10} textAnchor="middle" fill="rgb(45,212,191)" fontSize="16" fontFamily="monospace" fontWeight="bold">{centerValue}</text>
+        <text x={cx} y={cy - 6} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 40%, transparent)" fontSize="8" fontFamily="inherit">{centerLabel}</text>
+        <text x={cx} y={cy + 10} textAnchor="middle" fill="var(--color-teal-400)" fontSize="16" fontFamily="inherit" fontWeight="bold">{centerValue}</text>
       </svg>
       <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center">
         {segments.filter(s => s.value > 0).map((seg, i) => (
           <div key={i} className="flex items-center gap-1">
             <div className="w-2 h-2" style={{ backgroundColor: seg.color }} />
-            <span className="text-[8px] font-mono text-neutral/50">{seg.label}: ${fmt(seg.value)}</span>
+            <span className="text-micro font-mono text-neutral/50">{seg.label}: ${fmt(seg.value)}</span>
           </div>
         ))}
       </div>
@@ -380,26 +380,26 @@ function AmortizationChart({
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
       {/* Grid */}
       {yearTicks.map((m, i) => (
-        <line key={`xg${i}`} x1={scaleX(m)} y1={pad.top} x2={scaleX(m)} y2={pad.top + innerH} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+        <line key={`xg${i}`} x1={scaleX(m)} y1={pad.top} x2={scaleX(m)} y2={pad.top + innerH} stroke="color-mix(in srgb, var(--color-white) 6%, transparent)" strokeWidth="0.5" />
       ))}
       {yTicks.map((v, i) => (
-        <line key={`yg${i}`} x1={pad.left} y1={scaleY(v)} x2={pad.left + innerW} y2={scaleY(v)} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+        <line key={`yg${i}`} x1={pad.left} y1={scaleY(v)} x2={pad.left + innerW} y2={scaleY(v)} stroke="color-mix(in srgb, var(--color-white) 6%, transparent)" strokeWidth="0.5" />
       ))}
 
       {/* Balance area fill */}
       {balanceLinePath && (
         <path
           d={`${balanceLinePath} L${scaleX(schedule[schedule.length - 1].month).toFixed(1)},${scaleY(0).toFixed(1)} L${scaleX(schedule[0].month).toFixed(1)},${scaleY(0).toFixed(1)} Z`}
-          fill="rgba(45,212,191,0.08)"
+          fill="color-mix(in srgb, var(--color-teal-400) 8%, transparent)"
         />
       )}
 
       {/* Balance line */}
-      <path d={balanceLinePath} fill="none" stroke="rgb(45,212,191)" strokeWidth="1.5" />
+      <path d={balanceLinePath} fill="none" stroke="var(--color-teal-400)" strokeWidth="1.5" />
 
       {/* Extra payment balance line (original schedule without extra, for comparison) */}
       {extraBalancePath && (
-        <path d={extraBalancePath} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4,3" />
+        <path d={extraBalancePath} fill="none" stroke="color-mix(in srgb, var(--color-white) 20%, transparent)" strokeWidth="1" strokeDasharray="4,3" />
       )}
 
       {/* Payoff marker */}
@@ -408,7 +408,7 @@ function AmortizationChart({
           cx={scaleX(schedule[schedule.length - 1].month)}
           cy={scaleY(0)}
           r="3"
-          fill="rgb(45,212,191)"
+          fill="var(--color-teal-400)"
           stroke="black"
           strokeWidth="1"
         />
@@ -416,30 +416,30 @@ function AmortizationChart({
 
       {/* X-axis labels */}
       {yearTicks.map((m, i) => (
-        <text key={`xl${i}`} x={scaleX(m)} y={height - pad.bottom + 14} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="7" fontFamily="monospace">
+        <text key={`xl${i}`} x={scaleX(m)} y={height - pad.bottom + 14} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 40%, transparent)" fontSize="7" fontFamily="inherit">
           {Math.round(m / 12)}y
         </text>
       ))}
-      <text x={pad.left + innerW / 2} y={height - 2} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="monospace">Years</text>
+      <text x={pad.left + innerW / 2} y={height - 2} textAnchor="middle" fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="7" fontFamily="inherit">Years</text>
 
       {/* Y-axis labels */}
       {yTicks.map((v, i) => (
-        <text key={`yl${i}`} x={pad.left - 4} y={scaleY(v) + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="7" fontFamily="monospace">
+        <text key={`yl${i}`} x={pad.left - 4} y={scaleY(v) + 3} textAnchor="end" fill="color-mix(in srgb, var(--color-white) 40%, transparent)" fontSize="7" fontFamily="inherit">
           ${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toFixed(0)}
         </text>
       ))}
 
       {/* Axes */}
-      <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + innerH} stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-      <line x1={pad.left} y1={pad.top + innerH} x2={pad.left + innerW} y2={pad.top + innerH} stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+      <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + innerH} stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth="0.5" />
+      <line x1={pad.left} y1={pad.top + innerH} x2={pad.left + innerW} y2={pad.top + innerH} stroke="color-mix(in srgb, var(--color-white) 15%, transparent)" strokeWidth="0.5" />
 
       {/* Legend */}
-      <line x1={pad.left + innerW - 100} y1={pad.top + 4} x2={pad.left + innerW - 82} y2={pad.top + 4} stroke="rgb(45,212,191)" strokeWidth="1.5" />
-      <text x={pad.left + innerW - 78} y={pad.top + 7} fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="monospace">Balance</text>
+      <line x1={pad.left + innerW - 100} y1={pad.top + 4} x2={pad.left + innerW - 82} y2={pad.top + 4} stroke="var(--color-teal-400)" strokeWidth="1.5" />
+      <text x={pad.left + innerW - 78} y={pad.top + 7} fill="color-mix(in srgb, var(--color-white) 50%, transparent)" fontSize="7" fontFamily="inherit">Balance</text>
       {extraBalancePath && (
         <>
-          <line x1={pad.left + innerW - 100} y1={pad.top + 16} x2={pad.left + innerW - 82} y2={pad.top + 16} stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="4,3" />
-          <text x={pad.left + innerW - 78} y={pad.top + 19} fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="monospace">No Extra</text>
+          <line x1={pad.left + innerW - 100} y1={pad.top + 16} x2={pad.left + innerW - 82} y2={pad.top + 16} stroke="color-mix(in srgb, var(--color-white) 30%, transparent)" strokeWidth="1" strokeDasharray="4,3" />
+          <text x={pad.left + innerW - 78} y={pad.top + 19} fill="color-mix(in srgb, var(--color-white) 30%, transparent)" fontSize="7" fontFamily="inherit">No Extra</text>
         </>
       )}
     </svg>
@@ -501,7 +501,7 @@ function AmortizationTable({ schedule }: { schedule: AmortRow[] }) {
     <div className="bg-black/30 border border-border/30 p-2">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-1 text-[8px] font-mono text-neutral/40 uppercase tracking-wider hover:text-neutral/60 transition-colors"
+        className="w-full flex items-center gap-1 text-micro font-mono text-neutral/40 uppercase tracking-wider hover:text-neutral/60 transition-colors"
       >
         {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         Amortization Table ({yearSummaries.length} years)
@@ -509,7 +509,7 @@ function AmortizationTable({ schedule }: { schedule: AmortRow[] }) {
 
       {expanded && (
         <div className="mt-2 overflow-x-auto max-h-[300px] overflow-y-auto">
-          <table className="w-full text-[9px] font-mono border-collapse">
+          <table className="w-full text-mini font-mono border-collapse">
             <thead className="sticky top-0 bg-black/90 z-10">
               <tr>
                 <th className="text-neutral/40 text-left p-1 border-b border-border/20">Year</th>
@@ -633,11 +633,11 @@ export function MortgageCalcPanel() {
 
   // Donut segments
   const donutSegments: DonutSegment[] = result ? [
-    { label: 'P&I', value: result.monthlyBreakdown.principalAndInterest, color: 'rgb(45,212,191)' },
-    { label: t('mtgTax'), value: result.monthlyBreakdown.propertyTax, color: 'rgb(59,130,246)' },
-    { label: t('mtgInsurance'), value: result.monthlyBreakdown.insurance, color: 'rgb(168,85,247)' },
+    { label: 'P&I', value: result.monthlyBreakdown.principalAndInterest, color: 'var(--color-teal-400)' },
+    { label: t('mtgTax'), value: result.monthlyBreakdown.propertyTax, color: 'var(--color-blue-500)' },
+    { label: t('mtgInsurance'), value: result.monthlyBreakdown.insurance, color: 'var(--color-purple-500)' },
     ...(result.monthlyBreakdown.pmi > 0
-      ? [{ label: t('mtgPMI'), value: result.monthlyBreakdown.pmi, color: 'rgb(251,146,60)' }]
+      ? [{ label: t('mtgPMI'), value: result.monthlyBreakdown.pmi, color: 'var(--color-orange-400)' }]
       : []),
   ] : [];
 
@@ -673,8 +673,8 @@ export function MortgageCalcPanel() {
             />
 
             <div className="flex flex-col gap-0.5">
-              <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{t('mtgLoanAmount')}</label>
-              <div className="bg-black/40 border border-border/30 px-2 py-1 text-[11px] font-mono text-teal-400 font-bold">
+              <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">{t('mtgLoanAmount')}</label>
+              <div className="bg-black/40 border border-border/30 px-2 py-1 text-xs font-mono text-teal-400 font-bold">
                 ${fmt(loanAmount)}
               </div>
             </div>
@@ -689,13 +689,13 @@ export function MortgageCalcPanel() {
 
             {/* Term selector */}
             <div className="flex flex-col gap-0.5">
-              <label className="text-[8px] font-mono text-neutral/50 uppercase tracking-wider">{t('mtgTerm')}</label>
+              <label className="text-micro font-mono text-neutral/50 uppercase tracking-wider">{t('mtgTerm')}</label>
               <div className="flex border border-border/50 bg-black/40">
                 {termOptions.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => setTermYears(opt.value)}
-                    className={`flex-1 px-2 py-1.5 text-[9px] font-mono font-bold tracking-wider transition-colors ${
+                    className={`flex-1 px-2 py-1.5 text-mini font-mono font-bold tracking-wider transition-colors ${
                       termYears === opt.value
                         ? 'bg-teal-500/20 text-teal-400'
                         : 'text-neutral/40 hover:text-neutral/60'
@@ -751,37 +751,37 @@ export function MortgageCalcPanel() {
             {/* Monthly Payment Breakdown */}
             {result && (
               <div className="bg-black/30 border border-border/30 p-3">
-                <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-2">{t('mtgMonthly')}</div>
+                <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-2">{t('mtgMonthly')}</div>
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
                   <div className="space-y-2">
                     <div>
-                      <div className="text-[8px] font-mono text-neutral/50 uppercase">Total Monthly</div>
+                      <div className="text-micro font-mono text-neutral/50 uppercase">Total Monthly</div>
                       <div className="text-2xl font-mono font-bold text-teal-400">
                         ${fmtDec(result.monthlyBreakdown.total)}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                       <div className="flex justify-between items-baseline">
-                        <span className="text-[9px] font-mono text-neutral/50">P&I</span>
-                        <span className="text-[11px] font-mono text-teal-300">${fmtDec(result.monthlyBreakdown.principalAndInterest)}</span>
+                        <span className="text-mini font-mono text-neutral/50">P&I</span>
+                        <span className="text-xs font-mono text-teal-300">${fmtDec(result.monthlyBreakdown.principalAndInterest)}</span>
                       </div>
                       <div className="flex justify-between items-baseline">
-                        <span className="text-[9px] font-mono text-neutral/50">{t('mtgTax')}</span>
-                        <span className="text-[11px] font-mono text-blue-400">${fmtDec(result.monthlyBreakdown.propertyTax)}</span>
+                        <span className="text-mini font-mono text-neutral/50">{t('mtgTax')}</span>
+                        <span className="text-xs font-mono text-blue-400">${fmtDec(result.monthlyBreakdown.propertyTax)}</span>
                       </div>
                       <div className="flex justify-between items-baseline">
-                        <span className="text-[9px] font-mono text-neutral/50">{t('mtgInsurance')}</span>
-                        <span className="text-[11px] font-mono text-purple-400">${fmtDec(result.monthlyBreakdown.insurance)}</span>
+                        <span className="text-mini font-mono text-neutral/50">{t('mtgInsurance')}</span>
+                        <span className="text-xs font-mono text-purple-400">${fmtDec(result.monthlyBreakdown.insurance)}</span>
                       </div>
                       {result.monthlyBreakdown.pmi > 0 && (
                         <div className="flex justify-between items-baseline">
-                          <span className="text-[9px] font-mono text-neutral/50">{t('mtgPMI')}</span>
-                          <span className="text-[11px] font-mono text-orange-400">${fmtDec(result.monthlyBreakdown.pmi)}</span>
+                          <span className="text-mini font-mono text-neutral/50">{t('mtgPMI')}</span>
+                          <span className="text-xs font-mono text-orange-400">${fmtDec(result.monthlyBreakdown.pmi)}</span>
                         </div>
                       )}
                     </div>
                     {result.monthlyBreakdown.pmi > 0 && (
-                      <div className="text-[8px] font-mono text-orange-400/50 mt-1">
+                      <div className="text-micro font-mono text-orange-400/50 mt-1">
                         PMI drops off when equity reaches 20%
                       </div>
                     )}
@@ -799,25 +799,25 @@ export function MortgageCalcPanel() {
             {/* Loan Summary */}
             {result && (
               <div className="bg-black/30 border border-border/30 p-3">
-                <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-2">Loan Summary</div>
+                <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-2">Loan Summary</div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div>
-                    <div className="text-[8px] font-mono text-neutral/50 uppercase">{t('mtgTotalPaid')}</div>
+                    <div className="text-micro font-mono text-neutral/50 uppercase">{t('mtgTotalPaid')}</div>
                     <div className="text-base font-mono font-bold text-gray-200">${fmt(result.totalPaid)}</div>
                   </div>
                   <div>
-                    <div className="text-[8px] font-mono text-neutral/50 uppercase">{t('mtgTotalInterest')}</div>
+                    <div className="text-micro font-mono text-neutral/50 uppercase">{t('mtgTotalInterest')}</div>
                     <div className="text-base font-mono font-bold text-red-400">${fmt(result.totalInterest)}</div>
                   </div>
                   <div>
-                    <div className="text-[8px] font-mono text-neutral/50 uppercase">Interest / Principal</div>
+                    <div className="text-micro font-mono text-neutral/50 uppercase">Interest / Principal</div>
                     <div className="text-base font-mono font-bold text-amber-400">{fmtDec(result.interestToRatio, 2)}x</div>
                   </div>
                   <div>
-                    <div className="text-[8px] font-mono text-neutral/50 uppercase">{t('mtgPayoff')}</div>
+                    <div className="text-micro font-mono text-neutral/50 uppercase">{t('mtgPayoff')}</div>
                     <div className="text-base font-mono font-bold text-teal-300">
                       {fmtDate(result.payoffDate)}
-                      <span className="text-[9px] text-neutral/40 ml-1">({Math.ceil(result.totalMonths / 12)}y)</span>
+                      <span className="text-mini text-neutral/40 ml-1">({Math.ceil(result.totalMonths / 12)}y)</span>
                     </div>
                   </div>
                 </div>
@@ -827,9 +827,9 @@ export function MortgageCalcPanel() {
             {/* Comparison Table (if extra payment > 0) */}
             {comparison && (
               <div className="bg-black/30 border border-border/30 p-3">
-                <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-2">Extra Payment Impact</div>
+                <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-2">Extra Payment Impact</div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-[9px] font-mono border-collapse">
+                  <table className="w-full text-mini font-mono border-collapse">
                     <thead>
                       <tr>
                         <th className="text-neutral/40 text-left p-1 border-b border-border/20" />
@@ -866,7 +866,7 @@ export function MortgageCalcPanel() {
             {/* Amortization Chart */}
             {result && result.schedule.length > 0 && (
               <div className="bg-black/30 border border-border/30 p-2">
-                <div className="text-[8px] font-mono text-neutral/40 uppercase tracking-wider mb-1">{t('mtgAmortization')}</div>
+                <div className="text-micro font-mono text-neutral/40 uppercase tracking-wider mb-1">{t('mtgAmortization')}</div>
                 <AmortizationChart
                   schedule={result.schedule}
                   extraSchedule={noExtraSchedule}

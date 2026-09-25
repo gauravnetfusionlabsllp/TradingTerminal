@@ -5,7 +5,7 @@ import { GitCompare, RefreshCw, X } from 'lucide-react';
 import { useT } from '../../i18n';
 import { useAppStore } from '../../stores/use-app-store';
 
-const COLORS = ['#22d3ee', '#a78bfa', '#f472b6', '#facc15', '#4ade80', '#fb923c'];
+const COLORS = ['var(--color-cyan-400)', 'var(--color-violet-400)', 'var(--color-pink-400)', 'var(--color-amber-300)', 'var(--color-green-400)', 'var(--color-orange-400)'];
 
 const RANGES = [
   { key: '1mo', label: 'perfRange1M' },
@@ -123,16 +123,16 @@ function PerformanceChart({ series }: { series: ComparisonSeries[] }) {
               y1={y}
               x2={viewWidth - padding.right}
               y2={y}
-              stroke="rgba(63,63,70,0.3)"
+              stroke="color-mix(in srgb, var(--color-zinc-700) 30%, transparent)"
               strokeWidth="0.5"
             />
             <text
               x={padding.left - 6}
               y={y + 3}
               textAnchor="end"
-              fill="#71717a"
+              fill="var(--color-zinc-500)"
               fontSize="8"
-              fontFamily="monospace"
+              fontFamily="inherit"
             >
               {v >= 0 ? '+' : ''}{v.toFixed(1)}%
             </text>
@@ -147,7 +147,7 @@ function PerformanceChart({ series }: { series: ComparisonSeries[] }) {
           y1={zeroY}
           x2={viewWidth - padding.right}
           y2={zeroY}
-          stroke="rgba(161,161,170,0.5)"
+          stroke="color-mix(in srgb, var(--color-zinc-400) 50%, transparent)"
           strokeWidth="1"
           strokeDasharray="4 2"
         />
@@ -160,9 +160,9 @@ function PerformanceChart({ series }: { series: ComparisonSeries[] }) {
           x={scaleX(xl.ts)}
           y={viewHeight - 6}
           textAnchor="middle"
-          fill="#71717a"
+          fill="var(--color-zinc-500)"
           fontSize="8"
-          fontFamily="monospace"
+          fontFamily="inherit"
         >
           {xl.label}
         </text>
@@ -259,7 +259,7 @@ export function ComparisonPanel() {
       headerRight={
         <button
           onClick={() => refetch()}
-          className="p-0.5 text-neutral/50 hover:text-accent transition-colors"
+          className="p-0.5 text-neutral/50 hover:text-accent-ink transition-colors"
           title="Refresh"
         >
           <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
@@ -274,7 +274,7 @@ export function ComparisonPanel() {
           {symbols.map((sym, i) => (
             <span
               key={sym}
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-mono font-bold border border-border/40 bg-black/40"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-mini font-mono font-bold border border-border/40 bg-black/40"
               style={{ color: COLORS[i % COLORS.length] }}
             >
               <span
@@ -300,12 +300,12 @@ export function ComparisonPanel() {
             onChange={e => setInputValue(e.target.value)}
             onKeyDown={handleInputKeyDown}
             placeholder={t('perfAdd')}
-            className="flex-1 min-w-0 bg-black/40 border border-border/30 px-2 py-0.5 text-[10px] font-mono text-white placeholder-neutral/30 focus:outline-none focus:border-accent/50"
+            className="flex-1 min-w-0 bg-black/40 border border-border/30 px-2 py-0.5 text-mini font-mono text-white placeholder-neutral/30 focus:outline-none focus:border-accent/50"
             disabled={symbols.length >= 6}
           />
           <button
             onClick={handleCompare}
-            className="px-2 py-0.5 text-[9px] font-mono font-bold bg-accent/20 text-accent hover:bg-accent/30 transition-colors border border-accent/30"
+            className="px-2 py-0.5 text-mini font-mono font-bold bg-accent/20 text-accent-ink hover:bg-accent/30 transition-colors border border-accent/30"
           >
             {t('perfCompare')}
           </button>
@@ -318,9 +318,9 @@ export function ComparisonPanel() {
           <button
             key={r.key}
             onClick={() => setRange(r.key)}
-            className={`px-2 py-0.5 text-[9px] font-mono font-black transition-all ${
+            className={`px-2 py-0.5 text-mini font-mono font-black transition-all ${
               range === r.key
-                ? 'bg-accent/20 text-accent'
+                ? 'bg-accent/20 text-accent-ink'
                 : 'text-neutral/50 hover:text-white'
             }`}
           >
@@ -332,13 +332,13 @@ export function ComparisonPanel() {
       {/* Content area */}
       <div className="flex-1 flex flex-col overflow-auto min-h-0">
         {symbols.length < 2 ? (
-          <div className="flex items-center justify-center flex-1 text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center flex-1 text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {t('perfNoData')}
           </div>
         ) : isLoading ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-2">
             <div className="w-5 h-5 border-2 border-accent/30 border-t-accent animate-spin" />
-            <span className="text-[10px] font-mono text-neutral/40 uppercase tracking-widest">{t('loading')}</span>
+            <span className="text-mini font-mono text-neutral/40 uppercase tracking-widest">{t('loading')}</span>
           </div>
         ) : data && data.series.length > 0 ? (
           <>
@@ -350,7 +350,7 @@ export function ComparisonPanel() {
             {/* Legend */}
             <div className="shrink-0 flex flex-wrap gap-x-3 gap-y-0.5 px-3 py-1 border-b border-border/20">
               {data.series.map((s, i) => (
-                <span key={s.symbol} className="flex items-center gap-1 text-[8px] font-mono">
+                <span key={s.symbol} className="flex items-center gap-1 text-micro font-mono">
                   <span
                     className="w-2 h-0.5 inline-block"
                     style={{ backgroundColor: COLORS[i % COLORS.length] }}
@@ -365,7 +365,7 @@ export function ComparisonPanel() {
 
             {/* Summary table */}
             <div className="shrink-0 px-2 pb-2">
-              <table className="w-full text-[9px] font-mono">
+              <table className="w-full text-mini font-mono">
                 <thead>
                   <tr className="text-neutral/50 uppercase">
                     <th className="text-left py-1 px-1 font-normal">Symbol</th>
@@ -405,7 +405,7 @@ export function ComparisonPanel() {
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center flex-1 text-neutral/30 text-[10px] font-mono uppercase tracking-widest">
+          <div className="flex items-center justify-center flex-1 text-neutral/30 text-mini font-mono uppercase tracking-widest">
             {t('perfNoData')}
           </div>
         )}

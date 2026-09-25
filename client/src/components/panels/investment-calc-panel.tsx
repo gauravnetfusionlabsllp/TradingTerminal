@@ -11,10 +11,10 @@ export function InvestmentCalcPanel() {
   return (
     <div className="h-full flex flex-col bg-black overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] border-b border-border/30 shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-raised border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-emerald-400" />
-          <span className="text-[9px] font-black font-mono uppercase tracking-tighter text-emerald-400">
+          <span className="text-mini font-black font-mono uppercase tracking-tighter text-emerald-400">
             {t('panelInvestCalc')}
           </span>
         </div>
@@ -26,7 +26,7 @@ export function InvestmentCalcPanel() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex-1 py-1.5 text-[8px] font-black uppercase tracking-wider transition-colors ${
+            className={`flex-1 py-1.5 text-micro font-black uppercase tracking-wider transition-colors ${
               tab === key ? 'text-emerald-400 border-b border-emerald-400 bg-emerald-400/5' : 'text-neutral/40 hover:text-neutral/60'
             }`}
           >
@@ -94,7 +94,7 @@ function CompoundTab() {
       <div className="flex gap-1">
         {[['12', 'Monthly'], ['4', 'Quarterly'], ['1', 'Annually']] .map(([val, label]) => (
           <button key={val} onClick={() => setCompound(val as '12' | '4' | '1')}
-            className={`px-2 py-0.5 text-[7px] font-black uppercase tracking-wider border transition-colors ${
+            className={`px-2 py-0.5 text-micro font-black uppercase tracking-wider border transition-colors ${
               compound === val ? 'border-emerald-400/40 text-emerald-400 bg-emerald-400/10' : 'border-border/20 text-neutral/30'
             }`}>{label}</button>
         ))}
@@ -109,7 +109,7 @@ function CompoundTab() {
 
       {/* SVG Chart */}
       <div className="mt-2">
-        <div className="text-[7px] font-mono text-neutral/40 uppercase mb-1">{t('invGrowthChart')}</div>
+        <div className="text-micro font-mono text-neutral/40 uppercase mb-1">{t('invGrowthChart')}</div>
         <svg viewBox="0 0 300 120" className="w-full">
           {result.breakdown.length > 1 && result.breakdown.map((b, i) => {
             const x = (i / (result.breakdown.length - 1)) * 280 + 10;
@@ -118,18 +118,18 @@ function CompoundTab() {
             const barW = Math.max(280 / result.breakdown.length - 1, 2);
             return (
               <g key={i}>
-                <rect x={x - barW / 2} y={110 - hBal} width={barW} height={hBal} fill="rgba(16,185,129,0.3)" />
-                <rect x={x - barW / 2} y={110 - hCon} width={barW} height={hCon} fill="rgba(16,185,129,0.7)" />
+                <rect x={x - barW / 2} y={110 - hBal} width={barW} height={hBal} fill="color-mix(in srgb, var(--color-emerald-500) 30%, transparent)" />
+                <rect x={x - barW / 2} y={110 - hCon} width={barW} height={hCon} fill="color-mix(in srgb, var(--color-emerald-500) 70%, transparent)" />
               </g>
             );
           })}
-          <line x1="10" y1="110" x2="290" y2="110" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+          <line x1="10" y1="110" x2="290" y2="110" stroke="color-mix(in srgb, var(--color-white) 10%, transparent)" strokeWidth="0.5" />
         </svg>
         <div className="flex gap-3 mt-1">
-          <span className="flex items-center gap-1 text-[7px] font-mono text-neutral/40">
+          <span className="flex items-center gap-1 text-micro font-mono text-neutral/40">
             <span className="w-2 h-2 bg-emerald-500/70 inline-block" /> {t('invContributed')}
           </span>
-          <span className="flex items-center gap-1 text-[7px] font-mono text-neutral/40">
+          <span className="flex items-center gap-1 text-micro font-mono text-neutral/40">
             <span className="w-2 h-2 bg-emerald-500/30 inline-block" /> {t('invInterestEarned')}
           </span>
         </div>
@@ -174,7 +174,7 @@ function CAGRTab() {
       </div>
 
       {/* Comparison table: What if different rates? */}
-      <div className="text-[7px] font-mono text-neutral/40 uppercase mb-1">{t('invWhatIf')}</div>
+      <div className="text-micro font-mono text-neutral/40 uppercase mb-1">{t('invWhatIf')}</div>
       <div className="space-y-0.5">
         {[5, 7, 8, 10, 12, 15].map((r) => {
           const bv = parseFloat(beginVal) || 0;
@@ -183,8 +183,8 @@ function CAGRTab() {
           const isActive = Math.abs(r - result.cagr) < 0.5;
           return (
             <div key={r} className={`flex justify-between px-2 py-0.5 ${isActive ? 'bg-emerald-400/10 text-emerald-400' : 'text-neutral/40'}`}>
-              <span className="text-[8px] font-mono font-bold">{r}%</span>
-              <span className="text-[8px] font-mono">{fmtCurrency(fv)}</span>
+              <span className="text-micro font-mono font-bold">{r}%</span>
+              <span className="text-micro font-mono">{fmtCurrency(fv)}</span>
             </div>
           );
         })}
@@ -263,14 +263,14 @@ function DCATab() {
           {/* DCA vs Lump Sum comparison */}
           <div className="flex gap-2">
             <div className="flex-1 border border-emerald-400/20 bg-emerald-400/5 px-2 py-1.5">
-              <div className="text-[7px] font-mono text-neutral/40 uppercase">DCA</div>
-              <div className="text-[10px] font-mono font-bold text-emerald-400">{fmtCurrency(result.finalValue)}</div>
-              <div className="text-[7px] font-mono text-neutral/40">{result.gainPct.toFixed(1)}%</div>
+              <div className="text-micro font-mono text-neutral/40 uppercase">DCA</div>
+              <div className="text-mini font-mono font-bold text-emerald-400">{fmtCurrency(result.finalValue)}</div>
+              <div className="text-micro font-mono text-neutral/40">{result.gainPct.toFixed(1)}%</div>
             </div>
             <div className="flex-1 border border-border/20 px-2 py-1.5">
-              <div className="text-[7px] font-mono text-neutral/40 uppercase">{t('invLumpSum')}</div>
-              <div className="text-[10px] font-mono font-bold text-white">{fmtCurrency(result.lumpValue)}</div>
-              <div className="text-[7px] font-mono text-neutral/40">{result.lumpGain.toFixed(1)}%</div>
+              <div className="text-micro font-mono text-neutral/40 uppercase">{t('invLumpSum')}</div>
+              <div className="text-mini font-mono font-bold text-white">{fmtCurrency(result.lumpValue)}</div>
+              <div className="text-micro font-mono text-neutral/40">{result.lumpGain.toFixed(1)}%</div>
             </div>
           </div>
 
@@ -290,12 +290,12 @@ function DCATab() {
               });
               return (
                 <>
-                  <polyline points={costPts.join(' ')} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                  <polyline points={pts.join(' ')} fill="none" stroke="rgba(16,185,129,0.8)" strokeWidth="1.5" />
+                  <polyline points={costPts.join(' ')} fill="none" stroke="color-mix(in srgb, var(--color-white) 20%, transparent)" strokeWidth="1" />
+                  <polyline points={pts.join(' ')} fill="none" stroke="color-mix(in srgb, var(--color-emerald-500) 80%, transparent)" strokeWidth="1.5" />
                 </>
               );
             })()}
-            <line x1="10" y1="90" x2="290" y2="90" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+            <line x1="10" y1="90" x2="290" y2="90" stroke="color-mix(in srgb, var(--color-white) 10%, transparent)" strokeWidth="0.5" />
           </svg>
         </>
       )}
@@ -308,12 +308,12 @@ function CalcInput({ label, value, onChange, prefix, suffix }: {
 }) {
   return (
     <div>
-      <div className="text-[7px] font-mono text-neutral/40 mb-0.5">{label}</div>
+      <div className="text-micro font-mono text-neutral/40 mb-0.5">{label}</div>
       <div className="flex items-center">
-        {prefix && <span className="text-[8px] font-mono text-neutral/30 mr-0.5">{prefix}</span>}
+        {prefix && <span className="text-micro font-mono text-neutral/30 mr-0.5">{prefix}</span>}
         <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-black border border-border/30 px-1.5 py-0.5 text-[9px] font-mono text-white placeholder:text-neutral/20" />
-        {suffix && <span className="text-[7px] font-mono text-neutral/30 ml-0.5 shrink-0">{suffix}</span>}
+          className="w-full bg-black border border-border/30 px-1.5 py-0.5 text-mini font-mono text-white placeholder:text-neutral/20" />
+        {suffix && <span className="text-micro font-mono text-neutral/30 ml-0.5 shrink-0">{suffix}</span>}
       </div>
     </div>
   );
@@ -322,8 +322,8 @@ function CalcInput({ label, value, onChange, prefix, suffix }: {
 function ResultBox({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className={`px-2 py-1.5 border ${accent ? 'border-emerald-400/30 bg-emerald-400/5' : 'border-border/20'}`}>
-      <div className="text-[7px] font-mono text-neutral/40 uppercase">{label}</div>
-      <div className={`text-[10px] font-mono font-bold ${accent ? 'text-emerald-400' : 'text-white'}`}>{value}</div>
+      <div className="text-micro font-mono text-neutral/40 uppercase">{label}</div>
+      <div className={`text-mini font-mono font-bold ${accent ? 'text-emerald-400' : 'text-white'}`}>{value}</div>
     </div>
   );
 }

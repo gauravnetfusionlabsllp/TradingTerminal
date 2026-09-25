@@ -5,7 +5,7 @@ import { DockLayout } from './dock-layout';
 
 export function AppShell() {
   return (
-    <div className="h-screen flex flex-col bg-bg text-neutral font-sans selection:bg-accent selection:text-black">
+    <div className="h-screen flex flex-col bg-bg text-fg font-sans">
       <TopBar />
       <StockTicker />
       <main className="flex-1 overflow-hidden min-h-0 relative">

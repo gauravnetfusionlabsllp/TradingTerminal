@@ -1,286 +1,146 @@
-/* FlexLayout terminal theme override */
-/* Import base dark theme from flexlayout-react */
-
-/* Global Layout */
+/* FlexLayout on the SGFX tokens: flexlayout's own variables are fed from ours, so dark.css serves both themes.
+   Never redefine the app's --color-* tokens in here — every panel renders inside .flexlayout__layout. */
 .flexlayout__layout {
-  --color-bg: #000000;
-  --color-border: #333333;
-  --color-accent: #ff9900;
-  --color-text: #cccccc;
-
-  background-color: #000000;
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  --color-text: var(--color-fg);
+  --color-background: var(--color-bg);
+  --color-base: var(--color-bg);
+  --color-1: var(--color-raised);
+  --color-2: var(--color-hover);
+  --color-3: var(--color-raised);
+  --color-4: var(--color-border);
+  --color-5: var(--color-border);
+  --color-6: var(--color-neutral);
+  --color-drag1: var(--color-accent);
+  --color-drag2: var(--color-accent);
+  --color-drag1-background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  --color-drag2-background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  --color-icon: var(--color-neutral);
+  --color-overflow: var(--color-neutral);
+  --color-tabset-background: var(--color-raised);
+  --color-tabset-background-selected: var(--color-raised);
+  --color-tabset-background-maximized: var(--color-raised);
+  --color-tabset-divider-line: var(--color-border);
+  --color-tabset-header-background: var(--color-raised);
+  --color-tabset-header: var(--color-fg);
+  --color-tab-content: var(--color-panel);
+  --color-tab-selected: var(--color-fg);
+  --color-tab-selected-background: var(--color-panel);
+  --color-tab-unselected: var(--color-neutral);
+  --color-tab-unselected-background: transparent;
+  --color-tab-textbox: var(--color-fg);
+  --color-tab-textbox-background: var(--color-panel);
+  --color-splitter: var(--color-bg);
+  --color-splitter-hover: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  --color-splitter-drag: var(--color-accent);
+  --color-drag-rect-border: var(--color-accent);
+  --color-drag-rect-background: var(--color-raised);
+  --color-drag-rect: var(--color-fg);
+  --color-popup-border: var(--color-border);
+  --color-popup-unselected: var(--color-fg);
+  --color-popup-unselected-background: var(--color-raised);
+  --color-popup-selected: var(--color-fg);
+  --color-popup-selected-background: var(--color-hover);
+  --color-edge-marker: var(--color-accent);
+  --color-edge-icon: var(--color-on-accent);
+  --color-toolbar-button-hover: var(--color-hover);
+  --font-size: 11px;
+  --font-family: var(--font-mono);
 }
 
-/* Tabset (tab bar container) */
-.flexlayout__tabset {
-  background-color: #000000;
-  border: 1px solid #333333;
-  overflow: hidden;
-}
+/* Tiles: sharp, no gradients or inset shadows from dark.css */
+.flexlayout__layout *,
+.flexlayout__layout *::before,
+.flexlayout__layout *::after { border-radius: 0 !important; }
+.flexlayout__tabset,
+.flexlayout__tab { background-color: var(--color-panel); }
+.flexlayout__tabset_header,
+.flexlayout__tabset-selected,
+.flexlayout__tabset-maximized,
+.flexlayout__tab_top,
+.flexlayout__tab_bottom { box-shadow: none; background-image: none; }
 
-.flexlayout__tabset_header {
-  background-color: #0a0a0a;
-  border-bottom: 1px solid #333333;
-}
+/* Tab strip: 28px, sentence case */
+.flexlayout__tabset_tabbar_outer { height: 28px; }
+.flexlayout__tabset_tabbar_outer_top { padding: 0; }
+.flexlayout__tabset_tabbar_inner_tab_container { padding: 0; }
+.flexlayout__tabset_tabbar_inner_tab_container_top { border-top: 0; }
 
-/* Tab strip (the row of tabs) */
-.flexlayout__tabset_tabbar_outer {
-  background-color: #0a0a0a;
-  border-bottom: 1px solid #333333;
-}
-
-.flexlayout__tabset_tabbar_inner {
-  /* no extra spacing */
-}
-
-.flexlayout__tabset_tabbar_outer_top {
-  border-bottom: 1px solid #333333;
-}
-
-/* Individual tab buttons */
 .flexlayout__tab_button {
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
-  font-size: 10px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #666666;
-  padding: 4px 12px;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  cursor: pointer;
-  transition: none;
+  position: relative;
+  height: 28px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  border-right: 1px solid var(--color-border);
+  transition: color 0.1s;
 }
-
-.flexlayout__tab_button:hover {
-  color: #cccccc;
-  background-color: #111111;
+.flexlayout__tab_button--selected { font-weight: 600; }
+/* The selected tab merges into the panel below it */
+.flexlayout__tab_button--selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--color-panel);
 }
-
-.flexlayout__tab_button--selected {
-  color: #ff9900;
-  background-color: #000000;
-  border-bottom: 2px solid #ff9900;
+/* Corner flag on the selected tab of the focused panel */
+.flexlayout__tabset-selected .flexlayout__tab_button--selected::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 7px;
+  height: 7px;
+  background: var(--color-accent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
-
-.flexlayout__tab_button_leading {
-  display: none;
+.flexlayout__tab_button_leading { display: none; }
+.flexlayout__tab_button_trailing {
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+  margin-right: -6px;
+  color: var(--color-neutral);
 }
-
-.flexlayout__tab_button_content {
-  /* inherits font from parent */
-}
-
 .flexlayout__tab_button_textbox {
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
-  font-size: 10px;
-  color: #ff9900;
-  background: #111111;
-  border: 1px solid #ff9900;
+  font-size: 11px;
+  border: 1px solid var(--color-accent);
   padding: 2px 6px;
 }
 
-/* Tab close button */
-.flexlayout__tab_button_trailing {
-  width: 12px;
-  height: 12px;
-  margin-left: 6px;
-  opacity: 0;
-  transition: opacity 0.1s;
-}
+/* Toolbar (maximize etc.) */
+.flexlayout__tab_toolbar { gap: 2px; padding-right: 4px; }
+.flexlayout__tab_toolbar_button { color: var(--color-neutral); }
+.flexlayout__tab_toolbar_button:hover { color: var(--color-fg); }
+.flexlayout__tab_toolbar_button-max svg,
+.flexlayout__tab_toolbar_button-min svg { width: 12px; height: 12px; }
 
-.flexlayout__tab_button:hover .flexlayout__tab_button_trailing {
-  opacity: 0.6;
-}
+/* Splitters are the canvas showing through; blue while grabbed */
+.flexlayout__splitter_drag { background-color: var(--color-accent); z-index: 1000; }
 
-.flexlayout__tab_button_trailing:hover {
-  opacity: 1 !important;
-}
-
-/* Tab content area */
-.flexlayout__tab {
-  background-color: #000000;
-  overflow: hidden;
-}
-
-/* Splitters */
-.flexlayout__splitter {
-  background-color: #333333;
-}
-
-.flexlayout__splitter:hover {
-  background-color: #ff9900;
-}
-
-.flexlayout__splitter_drag {
-  background-color: #ff9900;
-  z-index: 1000;
-}
-
-/* Drag drop indicator (when dragging tabs) */
-.flexlayout__tab_floating {
-  border: 2px solid #ff9900;
-  background-color: rgba(255, 153, 0, 0.1);
-  box-shadow: 0 0 20px rgba(255, 153, 0, 0.3);
-}
-
-.flexlayout__outline_rect {
-  border: 2px solid #ff9900;
-  background-color: rgba(255, 153, 0, 0.08);
-}
-
+/* Dragging tabs */
+.flexlayout__outline_rect,
 .flexlayout__outline_rect_edge {
-  border: 2px solid #ff9900;
-  background-color: rgba(255, 153, 0, 0.08);
+  border: 2px solid var(--color-accent);
+  background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  box-shadow: none;
 }
-
 .flexlayout__edge_rect {
-  background-color: rgba(255, 153, 0, 0.15);
-  border: 1px solid #ff9900;
-}
-
-/* Tabset overflow button (when too many tabs) */
-.flexlayout__tab_toolbar_button {
-  color: #666666;
-  cursor: pointer;
-}
-
-.flexlayout__tab_toolbar_button:hover {
-  color: #ff9900;
+  background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border: 1px solid var(--color-accent);
 }
 
 /* Overflow menu */
 .flexlayout__popup_menu {
-  background-color: #0a0a0a;
-  border: 1px solid #333333;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
 }
-
-.flexlayout__popup_menu_item {
-  font-size: 11px;
-  color: #cccccc;
-  padding: 6px 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.flexlayout__popup_menu_item:hover {
-  background-color: #111111;
-  color: #ff9900;
-}
-
-/* Border panels (bottom/left/right docking areas) */
-.flexlayout__border_top,
-.flexlayout__border_bottom,
-.flexlayout__border_left,
-.flexlayout__border_right {
-  background-color: #0a0a0a;
-  border-color: #333333;
-}
-
-.flexlayout__border_button {
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
-  font-size: 9px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: #666666;
-  padding: 4px 10px;
-  border: none;
-  border-radius: 0;
-}
-
-.flexlayout__border_button--selected {
-  color: #ff9900;
-  background-color: #111111;
-}
-
-.flexlayout__border_button:hover {
-  color: #cccccc;
-}
-
-/* Tabset toolbar (maximize etc.) */
-.flexlayout__tab_toolbar {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding-right: 4px;
-}
-
-.flexlayout__tab_toolbar_button-max svg,
-.flexlayout__tab_toolbar_button-min svg {
-  width: 12px;
-  height: 12px;
-  color: #666666;
-}
-
-.flexlayout__tab_toolbar_button-max:hover svg,
-.flexlayout__tab_toolbar_button-min:hover svg {
-  color: #ff9900;
-}
+.flexlayout__popup_menu_item { font-size: 11px; padding: 6px 12px; }
+.flexlayout__popup_menu_item:hover { background-color: var(--color-hover); }
 
 /* Floating windows */
-.flexlayout__floating_window_content {
-  background-color: #000000;
-  border: 1px solid #333333;
-}
-
-.flexlayout__floating_window_tab {
-  background-color: #000000;
-}
-
-/* Remove all border-radius globally within flexlayout */
-.flexlayout__layout *,
-.flexlayout__layout *::before,
-.flexlayout__layout *::after {
-  border-radius: 0 !important;
-}
-
-/* Midnight theme overrides */
-[data-theme="midnight"] .flexlayout__layout {
-  --color-accent: #00ffff;
-}
-
-[data-theme="midnight"] .flexlayout__tabset {
-  border-color: #444477;
-}
-
-[data-theme="midnight"] .flexlayout__tabset_tabbar_outer {
-  background-color: #000022;
-  border-bottom-color: #444477;
-}
-
-[data-theme="midnight"] .flexlayout__tab_button--selected {
-  color: #00ffff;
-  border-bottom-color: #00ffff;
-}
-
-[data-theme="midnight"] .flexlayout__splitter {
-  background-color: #444477;
-}
-
-[data-theme="midnight"] .flexlayout__splitter:hover {
-  background-color: #00ffff;
-}
-
-[data-theme="midnight"] .flexlayout__outline_rect,
-[data-theme="midnight"] .flexlayout__outline_rect_edge,
-[data-theme="midnight"] .flexlayout__edge_rect {
-  border-color: #00ffff;
-  background-color: rgba(0, 255, 255, 0.08);
-}
-
-[data-theme="midnight"] .flexlayout__tab {
-  background-color: #000022;
-}
-
-[data-theme="midnight"] .flexlayout__tab_button:hover {
-  background-color: #000044;
-}
-
-[data-theme="midnight"] .flexlayout__tab_button--selected {
-  background-color: #000022;
-}
+.flexlayout__floating_window_content,
+.flexlayout__floating_window_tab { background-color: var(--color-panel); }
