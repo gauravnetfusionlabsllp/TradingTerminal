@@ -67,7 +67,7 @@ class Overlay implements ISeriesPrimitive<Time> {
     const e = z && this.y(z.entry);
     if (!z || e == null) return;
     t.useMediaCoordinateSpace(({ context: ctx, mediaSize: { width } }) => {
-      for (const [p, c, a] of [[z.tp, this.colors.tp, 0.1], [z.sl, this.colors.sl, 0.08]] as const) {
+      for (const [p, c, a] of [[z.tp, this.colors.tp, 0.1], [z.sl, this.colors.sl, 0.1]] as const) {
         const y = this.y(p);
         if (y == null) continue;
         ctx.fillStyle = alpha(c, a);
@@ -201,10 +201,28 @@ export function TradeChips({ chart, series, colors, chips, zone, dragging, plus,
     };
   }, [chart, on]);
 
+  // Chip hover through native mouseover / mouseout, not React's onMouseEnter: arriving from the chart canvas, React
+  // waits for the canvas's mouseout, which never reaches it — gliding onto a chip would never light its trade
+  const layer = useRef<HTMLDivElement>(null);
+  const hoverRef = useRef(onHover);
+  hoverRef.current = onHover;
+  useEffect(() => {
+    const box = layer.current;
+    if (!box) return;
+    const chipOf = (t: EventTarget | null) => (t instanceof Element ? t.closest<HTMLElement>('[data-chip]')?.dataset.chip ?? null : null);
+    // Moves inside one chip (between its segments) change nothing; chip to chip is a leave then an enter
+    const over = (e: MouseEvent) => { const id = chipOf(e.target); if (id && id !== chipOf(e.relatedTarget)) hoverRef.current(id); };
+    const out = (e: MouseEvent) => { const id = chipOf(e.target); if (id && id !== chipOf(e.relatedTarget)) hoverRef.current(null); };
+    box.addEventListener('mouseover', over);
+    box.addEventListener('mouseout', out);
+    return () => { box.removeEventListener('mouseover', over); box.removeEventListener('mouseout', out); };
+  }, []);
+
   const seg = (c: Chip) => ({ borderColor: `color-mix(in srgb, ${c.color} 45%, transparent)` });
 
   return (
-    <>
+    // display: contents — the chips still position against the chart; this box only hears their hover
+    <div ref={layer} className="contents">
       {chips.map((c) => (
         <div
           key={c.id}
@@ -216,8 +234,7 @@ export function TradeChips({ chart, series, colors, chips, zone, dragging, plus,
             e.preventDefault();
             onGrab(c.id, null, e.clientY);
           }}
-          onMouseEnter={() => onHover(c.id)}
-          onMouseLeave={() => onHover(null)}
+          data-chip={c.id}
           onContextMenu={(e) => { e.preventDefault(); onMenu(c.id, e); }}
           className={`group absolute top-0 right-0 flex items-stretch h-5 rounded-sm border bg-raised text-mini font-mono tabular-nums leading-none whitespace-nowrap select-none shadow-[0_2px_10px_rgb(0_0_0/0.25)] transition-opacity duration-100 motion-reduce:transition-none ${
             c.drag ? 'cursor-ns-resize' : ''
@@ -289,6 +306,6 @@ export function TradeChips({ chart, series, colors, chips, zone, dragging, plus,
       >
         +
       </button>
-    </>
+    </div>
   );
 }

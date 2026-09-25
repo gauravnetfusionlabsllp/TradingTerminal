@@ -243,6 +243,7 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
             symbol={symbol}
             trade={trade}
             candles={candles}
+            tfSec={tfSec}
             chartType={chartType}
             volume={volume}
             outputs={outputs}
@@ -296,6 +297,7 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
 
 const INITIAL_BARS = 120; // on open; dragging toward the left edge loads older pages
 const OLDER_AT = 20; // fetch the next older page when the view is this close to the oldest loaded bar
+const FUTURE_BARS = 500; // empty slots right of the last bar, so drawings can reach into the future
 
 // Bars are real UTC; label them in the viewer's local time
 const tickMark: TickMarkFormatter = (time, type) => {
@@ -356,6 +358,7 @@ interface LwChartProps {
   symbol: string;
   trade?: { readOnly: boolean; oneClick: boolean };
   candles: Candle[];
+  tfSec: number;
   chartType: ChartType;
   volume: boolean;
   outputs: StudyOut[];
@@ -370,7 +373,7 @@ interface LwChartProps {
 
 /** Mounted per symbol + timeframe (keyed by the caller); data is pushed in with setData on every change. */
 function LwChart({
-  symbol, trade, candles, chartType, volume, outputs, onStudy, onRemoveStudy, hoverIndex, setHoverIndex, hasMore, loadingOlder, onNeedOlder,
+  symbol, trade, candles, tfSec, chartType, volume, outputs, onStudy, onRemoveStudy, hoverIndex, setHoverIndex, hasMore, loadingOlder, onNeedOlder,
 }: LwChartProps) {
   const mainEl = useRef<HTMLDivElement>(null);
   const main = useRef<{ chart: IChartApi; s: MainSeries } | null>(null);
@@ -437,6 +440,12 @@ function LwChart({
   }, [setHoverIndex]);
 
   const precision = useMemo(() => pricePrecision(candles), [candles]);
+  // Whitespace bars (time only) extend the time scale past the last candle; the right edge and autoscale ignore them.
+  // ponytail: uniform grid (ignores weekend/session gaps), session-aware slots if drawings must line up across a weekend
+  const future = useMemo(() => {
+    const last = candles[candles.length - 1]?.timestamp;
+    return last == null ? [] : Array.from({ length: FUTURE_BARS }, (_, i) => last + (i + 1) * tfSec);
+  }, [candles, tfSec]);
 
   // Push data (pages, refetches and live ticks alike), then put the view back where it was
   useEffect(() => {
@@ -452,7 +461,10 @@ function LwChart({
     s.candle.applyOptions({ visible: chartType === 'candle', priceFormat });
     s.line.applyOptions({ visible: chartType === 'line', priceFormat });
     s.volume.applyOptions({ visible: volume });
-    s.candle.setData(candles.map((c) => ({ time: time(c), open: c.open, high: c.high, low: c.low, close: c.close })));
+    s.candle.setData([
+      ...candles.map((c) => ({ time: time(c), open: c.open, high: c.high, low: c.low, close: c.close })),
+      ...future.map((t) => ({ time: t as UTCTimestamp })),
+    ]);
     s.line.setData(candles.map((c) => ({ time: time(c), value: c.close })));
     s.volume.setData(candles.map((c) => ({
       time: time(c),
@@ -470,7 +482,7 @@ function LwChart({
       ts.setVisibleLogicalRange(keepView(before, p.n, n, appended));
     }
     prev.current = { n, lastT: candles[n - 1].timestamp };
-  }, [candles, chartType, precision, volume, colors]);
+  }, [candles, future, chartType, precision, volume, colors]);
 
   // Theme flip: recolour in place (the chart, its view and its panes stay)
   useEffect(() => {
@@ -483,7 +495,7 @@ function LwChart({
   const series = ready ? (chartType === 'candle' ? ready.s.candle : ready.s.line) : null;
   useStudySeries(ready?.chart ?? null, series, outputs);
 
-  const times = useMemo(() => candles.map((c) => c.timestamp), [candles]);
+  const times = useMemo(() => [...candles.map((c) => c.timestamp), ...future], [candles, future]);
   const draw = useDrawings({ chart: ready?.chart ?? null, series, el: ready ? mainEl.current : null, symbol, times, precision });
 
   const paneCount = outputs.reduce((n, o) => Math.max(n, o.pane + 1), 1);

@@ -80,7 +80,7 @@ interface Args {
   series: ISeriesApi<SeriesType> | null;
   el: HTMLElement | null;
   symbol: string;
-  /** Bar open times on screen, ascending: saved anchors snap onto them */
+  /** Bar open times on screen plus the empty future slots, ascending: saved anchors snap onto them */
   times: number[];
   /** Decimals the symbol quotes in */
   precision: number;
