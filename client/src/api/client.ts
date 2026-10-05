@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/use-auth-store';
 // The browser calls the API server directly (no dev proxy). Dev defaults to the local server; production builds
 // stay same-origin because the server serves the client. VITE_API_URL overrides both.
 // `?.`: import.meta.env is undefined outside Vite (tsx self-checks)
-export const API_URL = (import.meta.env?.VITE_API_URL || (import.meta.env?.DEV ? 'http://localhost:3001' : '')).replace(/\/$/, '');
+export const API_URL = (import.meta.env?.VITE_API_URL || (import.meta.env?.DEV ? 'http://192.168.15.77:3001' : '')).replace(/\/$/, '');
 export const API_BASE = `${API_URL}/api`;
 const BASE_URL = API_BASE;
 const REQUEST_TIMEOUT = 30_000; // 30s timeout for all API requests

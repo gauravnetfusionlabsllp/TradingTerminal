@@ -5,6 +5,7 @@ import { API_URL } from '../api/client';
 import { useAuthStore } from '../stores/use-auth-store';
 import { useMt5Live, wantedMt5Symbols, applyTradeEvent, resyncTrades, type Mt5Quote } from '../api/hooks/use-mt5';
 import { createQuoteThrottle } from '../lib/quote-throttle';
+import { playAlertSound } from '../lib/alert-sound';
 import { setSocket } from './socket';
 
 function getWsUrl() {
@@ -156,9 +157,10 @@ export function useWebSocket() {
         }
         case 'alert-triggered': {
           queryClient.invalidateQueries({ queryKey: ['alerts'] });
-          const alertName = msg.data?.name || 'Alert';
+          const alertName = msg.data?.alertName || 'Alert';
           const alertMsg = msg.data?.message || '';
           addLog({ type: 'alert', message: `Alert — ${alertName}: ${alertMsg}` });
+          if (useAppStore.getState().settings.soundEnabled) playAlertSound();
           useAppStore.getState().addNotification({
             id: Date.now(),
             title: `${alertName}: ${alertMsg}`,

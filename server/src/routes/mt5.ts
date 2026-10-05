@@ -276,17 +276,19 @@ const h = (fn: Handler) => async (req: Request, res: Response) => {
 // Every bridge call uses the login from the verified JWT — never from the request.
 router.get('/symbols', h(async (req) => ({ symbols: await allowedSymbols(req.user!.mt5Login) })));
 
+interface Tick { symbol: string; bid: number; ask: number; last: number }
+// Bridge answers unknown/idle symbols with zeros instead of 404
+export const currentTick = (symbol: string) =>
+  cached(`tick:${symbol}`, 2_000, () => bridge<Tick>(`/api/market/tick/${encodeURIComponent(symbol)}`));
+
 router.get('/quotes', h(async (req) => {
-  interface Tick { symbol: string; bid: number; ask: number; last: number }
   const allowed = new Set((await allowedSymbols(req.user!.mt5Login)).map((s) => s.symbol));
   const symbols = String(req.query.symbols ?? '').split(',').filter((s) => allowed.has(s)).slice(0, 30);
   const quotes: Tick[] = [];
   // Fallback only — clients use the realtime FIX feed (ws-server.ts) while it's live.
   // Polled 5 at a time to respect the MT5 bridge's 20 req/s per-IP limit.
   for (let i = 0; i < symbols.length; i += 5) {
-    const batch = await Promise.all(symbols.slice(i, i + 5).map((s) =>
-      cached(`tick:${s}`, 2_000, () => bridge<Tick>(`/api/market/tick/${encodeURIComponent(s)}`)).catch(() => null)));
-    // Bridge answers unknown/idle symbols with zeros instead of 404
+    const batch = await Promise.all(symbols.slice(i, i + 5).map((s) => currentTick(s).catch(() => null)));
     quotes.push(...batch.filter((q): q is Tick => !!q && (q.bid > 0 || q.ask > 0)));
   }
   return { quotes };

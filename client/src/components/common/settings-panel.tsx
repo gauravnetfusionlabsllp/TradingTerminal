@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, RefreshCw, Gauge, Palette, Moon, Sun, Monitor } from 'lucide-react';
 import { useAppStore, type UserSettings } from '../../stores/use-app-store';
+import { playAlertSound } from '../../lib/alert-sound';
 import { useT } from '../../i18n';
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
@@ -104,7 +105,7 @@ export function SettingsPanel() {
               <div className="space-y-2.5 pl-5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-fg">{t('sound')}</span>
-                  <Toggle checked={settings.soundEnabled} onChange={(v) => set('soundEnabled', v)} />
+                  <Toggle checked={settings.soundEnabled} onChange={(v) => { set('soundEnabled', v); if (v) playAlertSound(); }} />
                 </div>
               </div>
             </div>

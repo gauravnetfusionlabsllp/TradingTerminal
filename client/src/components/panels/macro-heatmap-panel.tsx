@@ -1,349 +1,173 @@
 import { useMemo } from 'react';
+import { Cable, Coins, Droplet, Flame, Globe, Wheat, type LucideIcon } from 'lucide-react';
 import {
   useMacroHeatmap,
-  type MacroRegion,
+  type MacroCategory,
   type MacroIndicator,
-  type MacroSignal,
+  type MacroRegion,
   type RegionSentiment,
   type GlobalSentiment,
 } from '../../api/hooks/use-macro-heatmap';
-import { useT, tr, TFn } from '../../i18n';
-import { RefreshCw, Globe } from 'lucide-react';
+import { useAppStore } from '../../stores/use-app-store';
+import { useT, tr } from '../../i18n';
+import { CHAR_W, HeatLegend, HeatTreemap, PeerRows, TileContent, pct, tone } from '../common/heat-treemap';
 
-// ── i18n helper with fallback ──
+// Index moves are smaller than single stocks', so the scale saturates sooner
+const CAP = 1.5;
 
-// ── Constants ──
+const SHORT: Record<string, string> = { '^GSPC': 'SPX', '^STOXX50E': 'SX5E', 'DX-Y.NYB': 'DXY' };
+const short = (symbol: string) => SHORT[symbol] ?? symbol.replace(/^\^|=F$|-USD$/g, '');
 
-const ACCENT = 'var(--color-sky-500)'; // sky-400
-
-const SIGNAL_COLORS: Record<MacroSignal, string> = {
-  strong_up: 'var(--color-green-500)',
-  up: 'var(--color-green-300)',
-  flat: 'var(--color-zinc-700)',
-  down: 'var(--color-red-300)',
-  strong_down: 'var(--color-red-500)',
+const CATEGORY: Record<MacroCategory, string> = {
+  equity: 'Equity', rate: 'Rates', credit: 'Credit', fx: 'FX', vol: 'Volatility', commodity: 'Commodity', crypto: 'Crypto',
 };
 
-const SIGNAL_TEXT_COLORS: Record<MacroSignal, string> = {
-  strong_up: 'var(--color-white)',
-  up: 'var(--color-green-950)',
-  flat: 'var(--color-zinc-400)',
-  down: 'var(--color-red-950)',
-  strong_down: 'var(--color-white)',
+// Every tile gets a square badge: the market's flag, the coin's logo, or a commodity glyph
+const REGION_FLAG: Record<string, string> = { US: 'us', Europe: 'eu' };
+const SYMBOL_FLAG: Record<string, string | null> = {
+  EWJ: 'jp', '^N225': 'jp', FXI: 'cn', MCHI: 'cn', KWEB: 'cn', '^HSI': 'hk', EEM: null, IGOV: null,
+};
+const COMMODITY: Record<string, { Icon: LucideIcon; bg: string }> = {
+  'CL=F': { Icon: Droplet, bg: '#26303d' },
+  'NG=F': { Icon: Flame, bg: '#1f5fbf' },
+  'GC=F': { Icon: Coins, bg: '#b08a1e' },
+  'HG=F': { Icon: Cable, bg: '#a8582a' },
+  DBA: { Icon: Wheat, bg: '#5f7d2a' },
+};
+const hideBroken = (e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; };
+
+function Badge({ ind, region, size }: { ind: MacroIndicator; region: string; size: number }) {
+  const box = { width: size, height: size };
+  const img = (src: string) => (
+    <img src={src} alt="" width={size} height={size} draggable={false} decoding="async" referrerPolicy="no-referrer" onError={hideBroken} className="rounded-sm ring-1 ring-on-accent/25 object-cover" style={box} />
+  );
+  if (ind.category === 'crypto') return img(`https://assets.parqet.com/logos/crypto/${ind.symbol.replace('-USD', '')}`);
+  const flag = ind.symbol in SYMBOL_FLAG ? SYMBOL_FLAG[ind.symbol] : REGION_FLAG[region];
+  if (flag) return img(`https://cdn.jsdelivr.net/npm/flag-icons@7/flags/1x1/${flag}.svg`);
+  const { Icon, bg } = COMMODITY[ind.symbol] ?? { Icon: Globe, bg: '#34425a' };
+  return (
+    <span className="rounded-sm ring-1 ring-on-accent/25 flex items-center justify-center text-on-accent" style={{ ...box, background: bg }}>
+      <Icon style={{ width: size * 0.58, height: size * 0.58 }} strokeWidth={2} />
+    </span>
+  );
+}
+
+const SENTIMENT: Record<RegionSentiment, { label: string; cls: string }> = {
+  bullish: { label: 'BULL', cls: 'text-bullish' },
+  neutral: { label: 'NEUT', cls: 'text-neutral' },
+  bearish: { label: 'BEAR', cls: 'text-bearish' },
+};
+const GLOBAL: Record<GlobalSentiment, { label: string; cls: string }> = {
+  risk_on: { label: 'RISK ON', cls: 'text-bullish' },
+  mixed: { label: 'MIXED', cls: 'text-orange' },
+  risk_off: { label: 'RISK OFF', cls: 'text-bearish' },
 };
 
-// ── Helpers ──
+const price = (n: number) => (n > 0 ? n.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—');
 
-function fmtPct(n: number): string {
-  return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
-}
+interface MacroItem { id: string; weight: number; change: number; ind: MacroIndicator; region: string }
+interface RegionGroup { id: string; items: MacroItem[]; region: MacroRegion }
 
-function abbreviateSymbol(symbol: string): string {
-  return symbol
-    .replace('^', '')
-    .replace('=F', '')
-    .replace('-USD', '')
-    .replace('.NYB', '')
-    .replace('DX-Y', 'DXY');
-}
+const header = ({ region }: RegionGroup) => (
+  <>
+    <span className="uppercase tracking-wider text-neutral truncate">{region.name}</span>
+    <span className={`shrink-0 px-1 border border-current leading-[12px] ${SENTIMENT[region.sentiment].cls}`}>{SENTIMENT[region.sentiment].label}</span>
+    <span className={`ml-auto shrink-0 font-bold ${tone(region.avgChange)}`}>{pct(region.avgChange)}</span>
+  </>
+);
 
-function sentimentLabel(s: RegionSentiment): string {
-  if (s === 'bullish') return 'BULL';
-  if (s === 'bearish') return 'BEAR';
-  return 'NEUT';
-}
-
-function sentimentColor(s: RegionSentiment): string {
-  if (s === 'bullish') return 'var(--color-green-500)';
-  if (s === 'bearish') return 'var(--color-red-500)';
-  return 'var(--color-zinc-400)';
-}
-
-function globalSentimentLabel(s: GlobalSentiment): string {
-  if (s === 'risk_on') return 'RISK ON';
-  if (s === 'risk_off') return 'RISK OFF';
-  return 'MIXED';
-}
-
-function globalSentimentColor(s: GlobalSentiment): string {
-  if (s === 'risk_on') return 'var(--color-green-500)';
-  if (s === 'risk_off') return 'var(--color-red-500)';
-  return 'var(--color-yellow-500)';
-}
-
-// ── Risk Score Bar (SVG) ──
-
-function RiskScoreBar({ score }: { score: number }) {
-  const barWidth = 260;
-  const barHeight = 14;
-  const markerX = (score / 100) * barWidth;
-
+// The name when it fits legibly ("S&P 500" over "SPX"), with the ticker under it on big tiles
+const tile = ({ ind, region }: MacroItem, w: number, h: number) => {
+  const named = (w - 8) / (CHAR_W * ind.name.length) >= 11;
   return (
-    <div className="flex items-center justify-center gap-2 px-3 py-1.5">
-      <span className="text-micro font-mono text-red-400 uppercase tracking-wider w-14 text-right shrink-0">
-        RISK OFF
-      </span>
-      <svg width={barWidth} height={barHeight + 8} className="block shrink-0">
-        <defs>
-          <linearGradient id="risk-grad" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="var(--color-red-500)" />
-            <stop offset="30%" stopColor="var(--color-orange-500)" />
-            <stop offset="50%" stopColor="var(--color-yellow-500)" />
-            <stop offset="70%" stopColor="var(--color-lime-500)" />
-            <stop offset="100%" stopColor="var(--color-green-500)" />
-          </linearGradient>
-        </defs>
-        <rect x={0} y={4} width={barWidth} height={barHeight} fill="url(#risk-grad)" rx={0} />
-        {/* Marker */}
-        <polygon
-          points={`${markerX - 4},0 ${markerX + 4},0 ${markerX},5`}
-          fill="var(--color-white)"
-        />
-        <line
-          x1={markerX}
-          y1={4}
-          x2={markerX}
-          y2={4 + barHeight}
-          stroke="var(--color-white)"
-          strokeWidth={2}
-        />
-        {/* Score label */}
-        <text
-          x={markerX}
-          y={barHeight + 8 + 8}
-          textAnchor="middle"
-          fill="var(--color-white)"
-          fontSize={8}
-          fontFamily="inherit"
-          fontWeight="bold"
-        >
-          {score}
-        </text>
-      </svg>
-      <span className="text-micro font-mono text-green-400 uppercase tracking-wider w-14 shrink-0">
-        RISK ON
-      </span>
-    </div>
+    <TileContent
+      label={named ? ind.name : short(ind.symbol)}
+      sub={named ? short(ind.symbol) : undefined}
+      change={ind.changePct}
+      w={w}
+      h={h}
+      icon={(size) => <Badge ind={ind} region={region} size={size} />}
+    />
   );
-}
+};
 
-// ── Heatmap Cell ──
-
-function HeatmapCell({ indicator }: { indicator: MacroIndicator }) {
-  const bg = SIGNAL_COLORS[indicator.signal];
-  const fg = SIGNAL_TEXT_COLORS[indicator.signal];
-
-  return (
-    <div
-      className="flex flex-col items-center justify-center font-mono"
-      style={{
-        backgroundColor: bg,
-        color: fg,
-        width: 50,
-        height: 28,
-        minWidth: 50,
-      }}
-    >
-      <span className="text-micro font-bold leading-none truncate max-w-[48px]">
-        {abbreviateSymbol(indicator.symbol)}
-      </span>
-      <span className="text-micro leading-none">
-        {fmtPct(indicator.changePct)}
-      </span>
-    </div>
-  );
-}
-
-// ── Region Row ──
-
-function RegionRow({ region }: { region: MacroRegion }) {
-  return (
-    <>
-      {/* Region header row */}
-      <div
-        className="flex items-center gap-2 px-2 py-0.5"
-        style={{ backgroundColor: 'color-mix(in srgb, var(--color-white) 3%, transparent)' }}
-      >
-        <span className="text-micro font-mono font-bold text-white/70 uppercase tracking-wider">
-          {region.name}
-        </span>
-        <span
-          className="text-micro font-mono font-bold px-1"
-          style={{
-            color: sentimentColor(region.sentiment),
-            border: `1px solid ${sentimentColor(region.sentiment)}`,
-          }}
-        >
-          {sentimentLabel(region.sentiment)}
-        </span>
-        <span className="text-micro font-mono" style={{ color: region.avgChange >= 0 ? 'var(--color-green-300)' : 'var(--color-red-300)' }}>
-          avg {fmtPct(region.avgChange)}
-        </span>
+const tooltip = ({ ind, region }: MacroItem, { items }: RegionGroup) => (
+  <>
+    <div className="flex items-center gap-2 px-2.5 py-2">
+      <Badge ind={ind} region={region} size={32} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="text-xs font-bold text-fg truncate">{ind.name}</span>
+          <span className={`ml-auto shrink-0 text-xs font-bold ${tone(ind.changePct)}`}>{pct(ind.changePct)}</span>
+        </div>
+        <div className="flex items-baseline gap-2 text-micro text-neutral">
+          <span className="truncate">{ind.symbol} · {CATEGORY[ind.category]}</span>
+          <span className="ml-auto shrink-0 text-fg">{price(ind.price)}</span>
+        </div>
       </div>
-      {/* Indicator cells grid */}
-      <div className="flex flex-wrap gap-px px-1 pb-1">
-        {region.indicators.map((ind) => (
-          <HeatmapCell key={ind.symbol} indicator={ind} />
-        ))}
-      </div>
-    </>
-  );
-}
-
-// ── Region Summary Bar ──
-
-function RegionSummaryBar({ regions }: { regions: MacroRegion[] }) {
-  const sorted = useMemo(
-    () => [...regions].sort((a, b) => b.avgChange - a.avgChange),
-    [regions],
-  );
-
-  const maxAbs = useMemo(
-    () => Math.max(...sorted.map((r) => Math.abs(r.avgChange)), 0.01),
-    [sorted],
-  );
-
-  return (
-    <div className="px-2 py-1">
-      <div className="text-micro font-mono text-white/30 uppercase tracking-wider mb-0.5">
-        Region Performance
-      </div>
-      {sorted.map((region) => {
-        const barPct = Math.min(Math.abs(region.avgChange) / maxAbs, 1) * 100;
-        const isPositive = region.avgChange >= 0;
-        const barColor = isPositive ? 'var(--color-green-500)' : 'var(--color-red-500)';
-
-        return (
-          <div key={region.name} className="flex items-center gap-1 py-px">
-            <span className="text-micro font-mono text-white/50 w-16 shrink-0 text-right">
-              {region.name}
-            </span>
-            <div className="flex-1 h-[6px] relative" style={{ backgroundColor: 'var(--color-zinc-900)' }}>
-              {isPositive ? (
-                <div
-                  className="absolute left-1/2 top-0 h-full"
-                  style={{ width: `${barPct / 2}%`, backgroundColor: barColor }}
-                />
-              ) : (
-                <div
-                  className="absolute top-0 h-full"
-                  style={{
-                    right: '50%',
-                    width: `${barPct / 2}%`,
-                    backgroundColor: barColor,
-                  }}
-                />
-              )}
-              {/* Center line */}
-              <div className="absolute left-1/2 top-0 h-full w-px bg-white/10" />
-            </div>
-            <span
-              className="text-micro font-mono font-bold w-12 shrink-0"
-              style={{ color: isPositive ? 'var(--color-green-300)' : 'var(--color-red-300)' }}
-            >
-              {fmtPct(region.avgChange)}
-            </span>
-          </div>
-        );
-      })}
     </div>
-  );
-}
-
-// ── Main Panel ──
+    <div className="border-t border-border py-1">
+      <div className="px-2.5 pb-0.5 text-micro uppercase tracking-wider text-neutral">{region}</div>
+      <PeerRows items={items} current={ind.symbol} cap={CAP} name={(i) => <span className="truncate">{i.ind.name}</span>} />
+    </div>
+  </>
+);
 
 export function MacroHeatmapPanel() {
   const t = useT();
-  const { data, isLoading, refetch } = useMacroHeatmap();
+  const { data, isLoading } = useMacroHeatmap();
+  const selected = useAppStore((s) => s.selectedSymbol);
+  const setSelectedSymbol = useAppStore((s) => s.setSelectedSymbol);
 
   const regions = data?.regions ?? [];
+  // ponytail: equal weights (no caps for indices, yields, futures) — a region's area is its instrument count
+  const groups = useMemo<RegionGroup[]>(() => (data?.regions ?? []).map((region) => ({
+    id: region.name,
+    region,
+    items: region.indicators.map((ind) => ({ id: ind.symbol, weight: 1, change: ind.changePct, ind, region: region.name })),
+  })), [data]);
+  // Yahoo tickers: the chart and ticket map them to the account's MT5 names (^GSPC → US500, GC=F → XAUUSD)
+  const onPick = useMemo(() => (i: MacroItem) => setSelectedSymbol(i.id), [setSelectedSymbol]);
+
+  const regionsUp = regions.filter((r) => r.avgChange >= 0).length;
+  const mood = data && GLOBAL[data.globalSentiment];
 
   return (
-    <div className="h-full flex flex-col bg-black overflow-hidden">
-      {/* Header */}
-      <div
-        className="flex items-center justify-between px-3 py-1.5 bg-raised shrink-0"
-        style={{ borderBottom: `1px solid color-mix(in srgb, ${ACCENT} 20%, transparent)` }}
-      >
-        <div className="flex items-center gap-2">
-          <Globe className="w-4 h-4" style={{ color: ACCENT }} />
-          <span
-            className="text-mini font-black font-mono uppercase tracking-tighter"
-            style={{ color: ACCENT }}
-          >
-            {tr(t, 'panelMacroHeatmap', 'GLOBAL MACRO HEATMAP')}
+    <div className="h-full flex flex-col bg-black overflow-hidden @container">
+      {data && regions.length > 0 && (
+        <div className="flex items-center gap-3 px-2.5 h-7 border-b border-border shrink-0 text-micro font-mono">
+          <span className={`px-1 border border-current font-bold ${mood!.cls}`}>{mood!.label}</span>
+          <span className="flex items-center gap-2 text-neutral" title="Risk score: 0 = risk off, 100 = risk on">
+            Risk <span className="text-fg font-bold">{data.riskScore}</span>
+            <span
+              className="relative w-24 h-1.5 hidden @min-[300px]:block"
+              style={{ background: 'linear-gradient(90deg, var(--color-bearish), var(--color-neutral), var(--color-bullish))' }}
+            >
+              <span className="absolute -top-1 -bottom-1 w-0.5 -ml-px bg-fg" style={{ left: `${data.riskScore}%` }} />
+            </span>
           </span>
+          <span className="hidden @min-[440px]:inline">
+            <span className="text-bullish">{regionsUp} up</span> · <span className="text-bearish">{regions.length - regionsUp} down</span>
+          </span>
+          <HeatLegend cap={CAP} className="ml-auto hidden @min-[640px]:flex" />
         </div>
-        <div className="flex items-center gap-2">
-          {data && (
-            <>
-              <span
-                className="text-micro font-mono font-bold px-1.5 py-0.5"
-                style={{
-                  color: globalSentimentColor(data.globalSentiment),
-                  border: `1px solid ${globalSentimentColor(data.globalSentiment)}`,
-                }}
-              >
-                {globalSentimentLabel(data.globalSentiment)}
-              </span>
-              <span className="text-micro font-mono text-white/40">
-                RS: <span className="text-white/70 font-bold">{data.riskScore}</span>
-              </span>
-            </>
-          )}
-          <button
-            onClick={() => refetch()}
-            className="p-1 text-white/30 hover:text-sky-400 transition-colors"
-          >
-            <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </div>
+      )}
 
-      {/* Loading state */}
       {isLoading && !data && (
         <div className="flex flex-col items-center justify-center flex-1 gap-2">
-          <div
-            className="w-5 h-5 border-2 animate-spin"
-            style={{ borderColor: `color-mix(in srgb, ${ACCENT} 20%, transparent)`, borderTopColor: ACCENT }}
-          />
-          <span className="text-mini font-mono text-white/30 uppercase tracking-widest">
-            {tr(t, 'loading', 'Loading...')}
-          </span>
+          <div className="w-5 h-5 border-2 border-accent/30 border-t-accent animate-spin" />
+          <span className="text-mini font-mono text-neutral uppercase tracking-widest">{tr(t, 'loading', 'Loading...')}</span>
         </div>
       )}
 
-      {/* Empty state */}
       {!isLoading && regions.length === 0 && (
         <div className="flex items-center justify-center flex-1">
-          <span className="text-mini font-mono text-white/20 uppercase tracking-widest">
-            No macro data available
-          </span>
+          <span className="text-mini font-mono text-neutral uppercase tracking-widest">No macro data available</span>
         </div>
       )}
 
-      {/* Content */}
       {regions.length > 0 && (
-        <div className="flex-1 overflow-auto no-scrollbar flex flex-col">
-          {/* Risk score bar */}
-          {data && (
-            <div className="shrink-0" style={{ borderBottom: `1px solid color-mix(in srgb, ${ACCENT} 8%, transparent)` }}>
-              <RiskScoreBar score={data.riskScore} />
-            </div>
-          )}
-
-          {/* Heatmap grid */}
-          <div className="flex-1 overflow-auto no-scrollbar">
-            {regions.map((region) => (
-              <RegionRow key={region.name} region={region} />
-            ))}
-          </div>
-
-          {/* Region summary bar */}
-          <div className="shrink-0" style={{ borderTop: `1px solid color-mix(in srgb, ${ACCENT} 8%, transparent)` }}>
-            <RegionSummaryBar regions={regions} />
-          </div>
-        </div>
+        <HeatTreemap groups={groups} cap={CAP} selected={selected} onPick={onPick} header={header} tile={tile} tooltip={tooltip} />
       )}
     </div>
   );

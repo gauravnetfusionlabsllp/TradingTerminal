@@ -6,11 +6,16 @@ export interface Alert {
   name: string;
   type: string;
   symbol: string | null;
-  condition: string;
+  condition: string; // JSON built by the server: {direction, price} | {pct, basePrice}
   enabled: boolean;
-  _count?: { triggers: number };
+  triggerCount: number;
   createdAt: string;
 }
+
+export type NewAlert = { name: string; symbol: string } & (
+  | { type: 'price_cross'; direction: 'above' | 'below'; price: number }
+  | { type: 'price_change_pct'; pct: number }
+);
 
 export function useAlerts() {
   return useQuery<Alert[]>({
@@ -24,7 +29,7 @@ export function useAlerts() {
 export function useCreateAlert() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; type: string; symbol?: string; condition: string }) =>
+    mutationFn: (data: NewAlert) =>
       api.post('/alerts', data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
   });
@@ -33,7 +38,7 @@ export function useCreateAlert() {
 export function useUpdateAlert() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: number; name?: string; enabled?: boolean; condition?: string }) =>
+    mutationFn: ({ id, ...data }: { id: number; enabled: boolean }) =>
       api.put(`/alerts/${id}`, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
   });

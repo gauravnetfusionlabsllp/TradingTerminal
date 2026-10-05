@@ -144,3 +144,77 @@
 /* Floating windows */
 .flexlayout__floating_window_content,
 .flexlayout__floating_window_tab { background-color: var(--color-panel); }
+
+/* Collapsed panels (components/layout/collapse.tsx)
+   Width: the tab strip turned on its side — a 28px rail whose names read down from the header line.
+   The strip itself must measure 0 tall: flexlayout adds its height to the tabset's min/max height. */
+.flexlayout__tabset_tabbar_outer.sg-rail { height: 0; border: 0; }
+.sg-rail > :not(.flexlayout__tabset_leading),
+.sg-rail ~ .flexlayout__tabset_content { display: none; }
+/* Positioned on .flexlayout__tabset, so it escapes the 0-tall strip's overflow clip */
+.sg-rail-list {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background-color: var(--color-raised);
+}
+.sg-rail-open,
+.sg-rail-tab {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-neutral);
+  transition: color 0.1s;
+}
+.sg-rail-open { flex: none; height: 28px; align-items: center; }
+/* Names share the height and ellipsize before the list scrolls */
+.sg-rail-tab {
+  flex: 0 1 auto;
+  min-height: 48px;
+  padding: 12px 0;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 500;
+}
+.sg-rail-tab > span {
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sg-rail-tab[aria-current] { color: var(--color-fg); font-weight: 600; }
+.sg-rail-open:hover,
+.sg-rail-tab:hover { color: var(--color-fg); background-color: var(--color-hover); }
+.sg-rail-open:focus-visible,
+.sg-rail-tab:focus-visible { outline: 1px solid var(--color-accent); outline-offset: -1px; }
+
+/* Height: folded to its tab strip. No panel below, so the selected tab has nothing to merge into */
+.sg-fold .flexlayout__tab_button--selected::before,
+.sg-fold .flexlayout__tab_toolbar_button-max,
+.sg-fold .flexlayout__tab_toolbar_button-min { display: none; }
+
+/* Splitter dragged past a panel's minimum: dim it and show the rail / strip it will collapse to.
+   A flat tint, never backdrop-filter — software compositing over RDP */
+.sg-snap-preview {
+  position: absolute;
+  z-index: 999;
+  pointer-events: none;
+  background-color: color-mix(in srgb, var(--color-bg) 70%, transparent);
+}
+.sg-snap-preview::after {
+  content: '';
+  position: absolute;
+  background-color: var(--color-raised);
+  border: 1px solid var(--color-accent);
+}
+.sg-snap-preview[data-axis='w']::after { top: 0; bottom: 0; width: 28px; }
+.sg-snap-preview[data-axis='h']::after { left: 0; right: 0; height: 28px; }
+.sg-snap-preview[data-axis='w'][data-edge='start']::after { left: 0; }
+.sg-snap-preview[data-axis='w'][data-edge='end']::after { right: 0; }
+.sg-snap-preview[data-axis='h'][data-edge='start']::after { top: 0; }
+.sg-snap-preview[data-axis='h'][data-edge='end']::after { bottom: 0; }
+.sg-snapping .flexlayout__splitter_drag { visibility: hidden; }

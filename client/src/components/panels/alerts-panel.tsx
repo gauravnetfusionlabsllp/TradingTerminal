@@ -7,45 +7,37 @@ import {
   useDeleteAlert,
   type Alert,
 } from '../../api/hooks/use-alerts';
+import { useMt5Symbols, useMt5Quotes } from '../../api/hooks/use-mt5';
+import { SymbolPicker } from '../trading/symbol-picker';
+import { fmtPrice } from '../trading/mt5-trading';
 import { useT } from '../../i18n';
-import { Bell, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bell, Plus, Trash2, ChevronUp } from 'lucide-react';
 
+// Evaluated server-side on every live MT5 bid; one-shot (firing disables the alert)
 const ALERT_TYPES = [
-  'Price Cross',
-  'Price Change %',
-  'Sentiment Shift',
-  'News Keyword',
-  'Volume Spike',
+  { value: 'price_cross', key: 'priceCross' },
+  { value: 'price_change_pct', key: 'priceChangePct' },
 ] as const;
 
-type AlertType = typeof ALERT_TYPES[number];
+type AlertType = typeof ALERT_TYPES[number]['value'];
 
-const ALERT_TYPE_KEYS: Record<AlertType, 'priceCross' | 'priceChangePct' | 'sentimentShift' | 'newsKeyword' | 'volumeSpike'> = {
-  'Price Cross': 'priceCross',
-  'Price Change %': 'priceChangePct',
-  'Sentiment Shift': 'sentimentShift',
-  'News Keyword': 'newsKeyword',
-  'Volume Spike': 'volumeSpike',
-};
-
-const CONDITION_PLACEHOLDER_KEYS: Record<AlertType, 'conditionPlaceholderPriceCross' | 'conditionPlaceholderPriceChange' | 'conditionPlaceholderSentiment' | 'conditionPlaceholderKeyword' | 'conditionPlaceholderVolume'> = {
-  'Price Cross': 'conditionPlaceholderPriceCross',
-  'Price Change %': 'conditionPlaceholderPriceChange',
-  'Sentiment Shift': 'conditionPlaceholderSentiment',
-  'News Keyword': 'conditionPlaceholderKeyword',
-  'Volume Spike': 'conditionPlaceholderVolume',
-};
-
-function needsSymbol(type: AlertType): boolean {
-  return type !== 'News Keyword' && type !== 'Sentiment Shift';
-}
+const inputCls = 'bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50';
 
 function AlertRow({ alert: a, onToggle, onDelete }: {
   alert: Alert;
   onToggle: () => void;
   onDelete: () => void;
 }) {
-  const triggerCount = a._count?.triggers ?? 0;
+  const t = useT();
+  const typeKey = ALERT_TYPES.find((x) => x.value === a.type)?.key;
+  let condition = a.condition;
+  try {
+    const c = JSON.parse(a.condition);
+    if (a.type === 'price_cross') condition = `${t(c.direction === 'below' ? 'below' : 'above')} ${fmtPrice(c.price)}`;
+    else if (a.type === 'price_change_pct') condition = `±${c.pct}% · ${fmtPrice(c.basePrice)}`;
+  } catch {
+    // legacy/invalid JSON: show raw
+  }
 
   return (
     <div
@@ -71,18 +63,18 @@ function AlertRow({ alert: a, onToggle, onDelete }: {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-mini font-mono font-bold text-gray-200 truncate">{a.name}</span>
-          {triggerCount > 0 && (
+          {a.triggerCount > 0 && (
             <span className="px-1 py-0.5 text-micro font-mono font-bold bg-accent/20 text-accent-ink border border-accent/30 shrink-0">
-              {triggerCount}
+              {a.triggerCount}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-micro font-mono text-neutral/40 uppercase">{a.type}</span>
+          <span className="text-micro font-mono text-neutral/40 uppercase">{typeKey ? t(typeKey) : a.type}</span>
           {a.symbol && (
             <span className="text-micro font-mono text-accent-ink/60">{a.symbol}</span>
           )}
-          <span className="text-micro font-mono text-neutral/30 truncate">{a.condition}</span>
+          <span className="text-micro font-mono text-neutral/30 truncate">{condition}</span>
         </div>
       </div>
 
@@ -100,20 +92,23 @@ function AlertRow({ alert: a, onToggle, onDelete }: {
 function CreateAlertForm({ onClose }: { onClose: () => void }) {
   const t = useT();
   const [name, setName] = useState('');
-  const [type, setType] = useState<AlertType>('Price Cross');
+  const [type, setType] = useState<AlertType>('price_cross');
   const [symbol, setSymbol] = useState('');
-  const [condition, setCondition] = useState('');
+  const [direction, setDirection] = useState<'above' | 'below'>('above');
+  const [value, setValue] = useState('');
+  const { data: symbols } = useMt5Symbols();
+  const bid = useMt5Quotes(symbol ? [symbol] : []).data?.[symbol]?.bid;
   const createAlert = useCreateAlert();
 
+  const num = Number(value);
+  const valid = !!name.trim() && !!symbol && value.trim() !== '' && num > 0;
+
   const handleSubmit = () => {
-    if (!name.trim() || !condition.trim()) return;
+    if (!valid) return;
     createAlert.mutate(
-      {
-        name: name.trim(),
-        type,
-        symbol: needsSymbol(type) ? symbol.toUpperCase() : undefined,
-        condition: condition.trim(),
-      },
+      type === 'price_cross'
+        ? { name: name.trim(), type, symbol, direction, price: num }
+        : { name: name.trim(), type, symbol, pct: num },
       { onSuccess: () => onClose() },
     );
   };
@@ -134,7 +129,7 @@ function CreateAlertForm({ onClose }: { onClose: () => void }) {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder={t('alertName')}
-        className="w-full bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
+        className={`w-full ${inputCls}`}
       />
 
       <div className="grid grid-cols-2 gap-2">
@@ -142,46 +137,72 @@ function CreateAlertForm({ onClose }: { onClose: () => void }) {
           <label className="text-micro font-mono text-neutral/40 uppercase">{t('alertTypeLabel')}</label>
           <select
             value={type}
-            onChange={(e) => setType(e.target.value as AlertType)}
-            className="bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 outline-none focus:border-accent/50 appearance-none"
+            onChange={(e) => { setType(e.target.value as AlertType); setValue(''); }}
+            className={`${inputCls} appearance-none`}
           >
             {ALERT_TYPES.map((at) => (
-              <option key={at} value={at}>{t(ALERT_TYPE_KEYS[at])}</option>
+              <option key={at.value} value={at.value}>{t(at.key)}</option>
             ))}
           </select>
         </div>
-        {needsSymbol(type) && (
-          <div className="flex flex-col gap-0.5">
-            <label className="text-micro font-mono text-neutral/40 uppercase">{t('symbol')}</label>
-            <input
-              type="text"
-              value={symbol}
-              onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-              placeholder="AAPL"
-              className="bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
-            />
-          </div>
-        )}
+        <div className="flex flex-col gap-0.5">
+          <label className="text-micro font-mono text-neutral/40 uppercase">{t('symbol')}</label>
+          <SymbolPicker symbols={symbols ?? []} value={symbol} onSelect={setSymbol} placeholder="EURUSD" />
+        </div>
       </div>
 
       <div className="flex flex-col gap-0.5">
-        <label className="text-micro font-mono text-neutral/40 uppercase">{t('condition')}</label>
-        <input
-          type="text"
-          value={condition}
-          onChange={(e) => setCondition(e.target.value)}
-          placeholder={t(CONDITION_PLACEHOLDER_KEYS[type])}
-          className="w-full bg-black/40 border border-border/50 px-2 py-1 text-mini font-mono text-gray-200 placeholder:text-neutral/30 outline-none focus:border-accent/50"
-        />
+        <label className="flex justify-between text-micro font-mono text-neutral/40 uppercase">
+          <span>{t('condition')}</span>
+          {bid != null && <span className="normal-case">Bid {fmtPrice(bid)}</span>}
+        </label>
+        {type === 'price_cross' ? (
+          <div className="grid grid-cols-2 gap-2">
+            <select
+              value={direction}
+              onChange={(e) => setDirection(e.target.value as 'above' | 'below')}
+              className={`${inputCls} appearance-none`}
+            >
+              <option value="above">{t('above')}</option>
+              <option value="below">{t('below')}</option>
+            </select>
+            <input
+              type="number"
+              min="0"
+              step="any"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={bid != null ? fmtPrice(bid) : t('price')}
+              aria-label={t('price')}
+              className={inputCls}
+            />
+          </div>
+        ) : (
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="any"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="±% e.g. 0.5"
+            aria-label={t('priceChangePct')}
+            className={`w-full ${inputCls}`}
+          />
+        )}
       </div>
 
       <button
         onClick={handleSubmit}
-        disabled={!name.trim() || !condition.trim() || createAlert.isPending}
+        disabled={!valid || createAlert.isPending}
         className="w-full py-1.5 bg-accent/20 text-accent-ink text-mini font-mono font-bold uppercase tracking-wider hover:bg-accent/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
       >
         {createAlert.isPending ? t('creating') : t('createAlert')}
       </button>
+
+      {createAlert.isError && (
+        <p role="alert" className="text-micro font-mono text-bearish">{createAlert.error.message}</p>
+      )}
     </div>
   );
 }
@@ -218,6 +239,13 @@ export function AlertsPanel() {
     >
       {/* Create form */}
       {showCreate && <CreateAlertForm onClose={() => setShowCreate(false)} />}
+
+      {/* Re-enabling re-arms server-side and can be refused (e.g. price already past the level) */}
+      {updateAlert.isError && (
+        <p role="alert" className="px-3 py-1 border-b border-border/10 text-micro font-mono text-bearish">
+          {updateAlert.error.message}
+        </p>
+      )}
 
       {/* Alert list */}
       <div className="flex-1 overflow-auto no-scrollbar">

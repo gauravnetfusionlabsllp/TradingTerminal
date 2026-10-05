@@ -1,65 +1,18 @@
-export interface AlertEvalContext {
-  symbol: string;
-  currentPrice: number;
-  previousPrice: number;
-  volume: number;
-  avgVolume: number;
+// Pure alert logic, evaluated against the live MT5 bid. No I/O here so scripts/check-alerts.ts can import it.
+// Conditions (Alert.condition JSON): price_cross {direction:'above'|'below', price}, price_change_pct {pct, basePrice}
+
+const fmt = (n: number) => String(+n.toFixed(6)); // drop float noise, keep FX precision
+
+export function conditionMet(type: string, c: any, bid: number): boolean {
+  if (type === 'price_cross') return c.direction === 'above' ? bid >= c.price : bid <= c.price;
+  if (type === 'price_change_pct') return c.basePrice > 0 && Math.abs(bid - c.basePrice) / c.basePrice * 100 >= c.pct;
+  return false;
 }
 
-export function evaluatePriceCross(
-  condition: { threshold: number; direction: 'above' | 'below' },
-  ctx: AlertEvalContext,
-): { triggered: boolean; message: string } {
-  if (condition.direction === 'above') {
-    const triggered = ctx.previousPrice < condition.threshold && ctx.currentPrice >= condition.threshold;
-    return {
-      triggered,
-      message: triggered
-        ? `${ctx.symbol} crossed above $${condition.threshold} (now $${ctx.currentPrice.toFixed(2)})`
-        : '',
-    };
-  } else {
-    const triggered = ctx.previousPrice > condition.threshold && ctx.currentPrice <= condition.threshold;
-    return {
-      triggered,
-      message: triggered
-        ? `${ctx.symbol} crossed below $${condition.threshold} (now $${ctx.currentPrice.toFixed(2)})`
-        : '',
-    };
-  }
-}
-
-export function evaluatePriceChangePct(
-  condition: { threshold: number },
-  ctx: AlertEvalContext,
-): { triggered: boolean; message: string } {
-  if (ctx.previousPrice === 0) return { triggered: false, message: '' };
-
-  const changePct = Math.abs((ctx.currentPrice - ctx.previousPrice) / ctx.previousPrice) * 100;
-  const triggered = changePct >= condition.threshold;
-  const direction = ctx.currentPrice > ctx.previousPrice ? 'up' : 'down';
-
-  return {
-    triggered,
-    message: triggered
-      ? `${ctx.symbol} moved ${direction} ${changePct.toFixed(2)}% (threshold: ${condition.threshold}%)`
-      : '',
-  };
-}
-
-export function evaluateVolumeSpike(
-  condition: { multiplier: number },
-  ctx: AlertEvalContext,
-): { triggered: boolean; message: string } {
-  if (ctx.avgVolume === 0) return { triggered: false, message: '' };
-
-  const ratio = ctx.volume / ctx.avgVolume;
-  const triggered = ratio >= condition.multiplier;
-
-  return {
-    triggered,
-    message: triggered
-      ? `${ctx.symbol} volume spike: ${ratio.toFixed(1)}x average (${ctx.volume.toLocaleString()} vs avg ${ctx.avgVolume.toLocaleString()})`
-      : '',
-  };
+/** Trigger message when the condition holds at this bid, else null. */
+export function checkAlert(type: string, c: any, symbol: string, bid: number): string | null {
+  if (!conditionMet(type, c, bid)) return null;
+  if (type === 'price_cross') return `${symbol} bid ${c.direction === 'above' ? 'rose above' : 'fell below'} ${fmt(c.price)} (now ${fmt(bid)})`;
+  const pct = (bid - c.basePrice) / c.basePrice * 100;
+  return `${symbol} moved ${pct >= 0 ? 'up' : 'down'} ${Math.abs(pct).toFixed(2)}% from ${fmt(c.basePrice)} (now ${fmt(bid)})`;
 }

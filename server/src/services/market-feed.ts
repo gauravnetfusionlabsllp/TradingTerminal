@@ -27,6 +27,8 @@ const counts = new Map<string, number>();
 const last = new Map<string, Quote>();
 
 export const setHandlers = (h: Handlers) => { handlers = h; };
+/** Extra tick consumers beyond ws-server (alert evaluator). */
+export const quoteListeners = new Set<(q: Quote) => void>();
 export const isLive = () => live;
 export const lastQuote = (symbol: string) => last.get(symbol);
 
@@ -77,6 +79,7 @@ function handleMessage(raw: WebSocket.RawData) {
     const q: Quote = { symbol: msg.symbol, bid, ask, ts: fixTime(msg.ts) };
     last.set(q.symbol, q);
     handlers.onQuote(q);
+    for (const fn of quoteListeners) fn(q);
   } else if (msg.type === 'status') {
     // Bridge only broadcasts status on change; md_reject is broadcast for every bridge client's symbols
     if (msg.state === 'logged_on') setLive(true);

@@ -32,7 +32,7 @@ export interface UserSettings {
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
-  soundEnabled: false,
+  soundEnabled: true, // alert chime (use-ws.ts); saved settings keep the user's choice
   autoRefreshInterval: 30,
   showTicker: true,
   tickerSpeed: 80,

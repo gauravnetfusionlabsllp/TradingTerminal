@@ -23,10 +23,11 @@ const pending = new Map<string, feed.Quote>(); // latest quote per symbol since 
 // Trade events route by the JWT's MT5 login — a socket only ever receives its own account's events
 const byLogin = new Map<number, Set<WebSocket>>();
 
-function relayTradeEvent(event: string, login: number, data: unknown) {
+/** Send to every open socket of one MT5 login (trade events, that user's alerts). */
+export function sendToLogin(login: number, type: string, data: unknown) {
   const sockets = byLogin.get(login);
   if (!sockets) return;
-  const message = JSON.stringify({ type: 'mt5-trade', data: { event, data } }); // once, not per socket
+  const message = JSON.stringify({ type, data }); // once, not per socket
   const now = Date.now() / 1000;
   for (const ws of sockets) {
     if (ws.readyState !== WebSocket.OPEN || clients.get(ws)!.auth!.exp < now) continue; // expired session: stop
@@ -125,7 +126,7 @@ export function startWebSocketServer(server: Server) {
       onStatus: (live) => broadcast('mt5-feed', { live }),
     });
     tradeFeed.setHandlers({
-      onEvent: relayTradeEvent,
+      onEvent: (event, login, data) => sendToLogin(login, 'mt5-trade', { event, data }),
       onStatus: (live) => broadcast('mt5-trade-feed', { live }),
     });
 
@@ -214,10 +215,6 @@ export function broadcastQuotes(quotes: unknown[]) {
 
 export function broadcastCalendarRelease(event: unknown) {
   broadcast('calendar-release', event);
-}
-
-export function broadcastAlertTriggered(alert: unknown) {
-  broadcast('alert-triggered', alert);
 }
 
 export function getClientCount(): number {

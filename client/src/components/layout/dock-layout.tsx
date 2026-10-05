@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { create } from 'zustand';
-import { Layout, Model, TabNode, type TabSetNode, type BorderNode, type Action, Actions, DockLocation } from 'flexlayout-react';
+import { Layout, Model, TabNode, RowNode, type TabSetNode, type BorderNode, type Action, type ITabSetRenderValues, Actions, DockLocation } from 'flexlayout-react';
 // CSS imported via index.css to avoid duplication
 
 import { lazy, Suspense } from 'react';
@@ -13,6 +13,7 @@ import { translations } from '../../i18n/translations';
 import { useWorkspaceStore, layoutOf } from '../../stores/use-workspace-store';
 import { PANEL_IDS, PANEL_NAME_KEYS, ALL_PANEL_IDS, UNDER_DEVELOPMENT, getLocalizedPanelName } from './panels';
 import { sanitizeLayout, presetLayout } from './presets';
+import { collapse, collapsedOf, expand, normalize, renderCollapsed, takeSnap, useSnapDrag } from './collapse';
 
 // Lazy load heavy panels
 const Mt5Ticket = lazy(() => import('../trading/mt5-trading').then(m => ({ default: m.Mt5Ticket })));
@@ -175,6 +176,39 @@ export function hidePanelInLayout(panelId: string) {
 
 const SELECTION_ACTIONS = new Set([Actions.SELECT_TAB, Actions.SET_ACTIVE_TABSET]);
 
+let reopenedAt = 0;
+
+/** Reopen a collapsed panel (optionally on one of its tabs) and ring it, like a panel shown on request */
+function reopen(model: Model, tabsetId: string, tabId?: string) {
+  if (!expand(model, tabsetId)) return;
+  if (tabId) model.doAction(Actions.selectTab(tabId));
+  const id = tabId ?? (model.getNodeById(tabsetId) as TabSetNode | undefined)?.getSelectedNode()?.getId();
+  if (id) useFlash.setState({ id, at: Date.now() });
+  reopenedAt = Date.now();
+}
+
+/** Selecting or dropping a tab into a collapsed panel opens it; other structural changes re-check collapsed panels */
+function settleCollapse(model: Model, action: Action) {
+  const d = action.data;
+  switch (action.type) {
+    case Actions.SELECT_TAB: {
+      const ts = model.getNodeById(d.tabNode)?.getParent();
+      if (ts && collapsedOf(ts)) reopen(model, ts.getId());
+      break;
+    }
+    case Actions.ADD_NODE:
+    case Actions.MOVE_NODE: {
+      const to = model.getNodeById(d.toNode);
+      if (to && collapsedOf(to) && d.location === DockLocation.CENTER.getName()) reopen(model, to.getId());
+      normalize(model);
+      break;
+    }
+    case Actions.DELETE_TAB:
+    case Actions.DELETE_TABSET:
+      normalize(model);
+  }
+}
+
 export function DockLayout() {
   const owner = useWorkspaceStore((s) => s.owner);
   const active = useWorkspaceStore((s) => s.byOwner[s.owner]?.active ?? 'trade');
@@ -197,7 +231,32 @@ export function DockLayout() {
   const onModelChange = useCallback((m: Model, action: Action) => {
     syncHiddenPanels(m);
     useWorkspaceStore.getState().saveLayout(m.toJson(), SELECTION_ACTIONS.has(action.type));
+    settleCollapse(m, action);
   }, []);
+
+  useSnapDrag(model);
+
+  const onAction = useCallback((action: Action) => {
+    // A splitter released past a panel's minimum: collapse it instead of applying flexlayout's clamped weights
+    if (action.type === Actions.ADJUST_WEIGHTS) {
+      const snap = takeSnap(action.data.nodeId);
+      const row = snap && model.getNodeById(snap.rowId);
+      if (snap && row instanceof RowNode) {
+        collapse(model, row, snap.i, snap.into);
+        return undefined;
+      }
+    }
+    if (action.type === Actions.MAXIMIZE_TOGGLE) {
+      // The second click of a double-click that just reopened a panel lands on its new tab strip
+      if (Date.now() - reopenedAt < 500) return undefined;
+      const ts = model.getNodeById(action.data.node);
+      if (ts && collapsedOf(ts)) {
+        reopen(model, ts.getId());
+        return undefined;
+      }
+    }
+    return action;
+  }, [model]);
 
   // Middle-click closes a tab, as in browsers and editors; the × stays for mouse, touch and keyboard users alike
   const onAuxMouseClick = useCallback((node: TabNode | TabSetNode | BorderNode, e: React.MouseEvent) => {
@@ -321,12 +380,18 @@ export function DockLayout() {
     if (key) renderValues.content = translations[locale]?.[key] ?? translations.en[key];
   }, [locale]);
 
+  const onRenderTabSet = useCallback((node: TabSetNode | BorderNode, rv: ITabSetRenderValues) => {
+    renderCollapsed(node, rv, (id, tab) => reopen(model, id, tab), translations[locale]?.expandPanel ?? translations.en.expandPanel);
+  }, [model, locale]);
+
   return (
     <Layout
       key={`${owner}|${active}|${rev}`}
       model={model}
       factory={factory}
       onRenderTab={onRenderTab}
+      onRenderTabSet={onRenderTabSet}
+      onAction={onAction}
       onModelChange={onModelChange}
       onAuxMouseClick={onAuxMouseClick}
     />

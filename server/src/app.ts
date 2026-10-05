@@ -57,7 +57,7 @@ const isProd = process.env.NODE_ENV === 'production';
 // ── CORS allowlist (configure via ALLOWED_ORIGINS env var in production) ──
 const ALLOWED_ORIGINS: (string | RegExp)[] = isProd
   ? (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)
-  : [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/];
+  : [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/, /^http:\/\/192\.168\.\d+\.\d+:\d+$/];
 
 // ── Rate limiters ──
 const globalLimiter = rateLimit({

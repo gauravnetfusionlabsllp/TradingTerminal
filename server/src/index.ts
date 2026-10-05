@@ -3,6 +3,7 @@ import { createApp } from './app.js';
 import { startWebSocketServer } from './services/websocket/ws-server.js';
 import { startMarketFeed, stopMarketFeed } from './services/market-feed.js';
 import { startTradeFeed, stopTradeFeed } from './services/trade-feed.js';
+import { startAlertEvaluator } from './services/alerts/alert-evaluator.js';
 import { startStockTracker, stopStockTracker } from './services/stocks/stock-tracker.js';
 import { seedDatabase } from './lib/seed.js';
 import { backupDatabase } from './lib/gcs-backup.js';
@@ -37,6 +38,7 @@ const server = app.listen(env.PORT, async () => {
 
   startWebSocketServer(server);
   startMarketFeed();
+  startAlertEvaluator();
   startTradeFeed();
   startStockTracker();
   startCalendarTracker();
