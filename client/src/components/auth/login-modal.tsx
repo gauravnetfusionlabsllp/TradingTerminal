@@ -12,7 +12,17 @@ export function LoginModal() {
   const setOpen = useAuthStore((s) => s.setLoginModalOpen);
   const { login } = useAuthActions();
 
-  const [mt5Login, setMt5Login] = useState('');
+  // Prefill from ?login=… so arriving from the client portal's Trade button
+  // lands on the right account. Digits only — anything else is ignored rather
+  // than dropped into the field. The password is never taken from the URL.
+  const [mt5Login, setMt5Login] = useState(() => {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get('login') ?? '';
+      return /^\d{1,20}$/.test(fromUrl) ? fromUrl : '';
+    } catch {
+      return '';
+    }
+  });
   const [password, setPassword] = useState('');
   const [investor, setInvestor] = useState(false);
   const [error, setError] = useState('');

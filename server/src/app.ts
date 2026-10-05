@@ -6,8 +6,6 @@ import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import { lazyRoute } from './lib/lazy-route.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import stocksRouter from './routes/stocks.js';
 import watchlistRouter from './routes/watchlist.js';
 import sectorsRouter from './routes/sectors.js';
@@ -50,14 +48,14 @@ import currencyStrengthRouter from './routes/currency-strength.js';
 import moneyFlowRouter from './routes/money-flow.js';
 import { attachUser } from './middleware/auth.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const isProd = process.env.NODE_ENV === 'production';
 
-// ── CORS allowlist (configure via ALLOWED_ORIGINS env var in production) ──
-const ALLOWED_ORIGINS: (string | RegExp)[] = isProd
-  ? (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)
-  : [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/, /^http:\/\/192\.168\.\d+\.\d+:\d+$/];
+// ── CORS allowlist: ALLOWED_ORIGINS (any mode) + local/LAN origins in dev ──
+// Trailing slashes stripped: browsers send Origin without one and cors compares exactly
+const ALLOWED_ORIGINS: (string | RegExp)[] = [
+  ...(process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim().replace(/\/+$/, '')).filter(Boolean),
+  ...(isProd ? [] : [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/, /^http:\/\/192\.168\.\d+\.\d+:\d+$/]),
+];
 
 // ── Rate limiters ──
 const globalLimiter = rateLimit({
@@ -248,21 +246,6 @@ export function createApp() {
     res.status(status).json({
       error: isProd && status >= 500 ? 'Internal server error' : message,
     });
-  });
-
-  // Static files — serve client build in production
-  const clientDist = path.resolve(__dirname, '..', '..', 'client', 'dist');
-  app.use(express.static(clientDist, {
-    maxAge: isProd ? '1y' : 0,
-    immutable: isProd, // Content-hashed filenames never change
-    etag: true,
-  }));
-
-  // SPA fallback — serve index.html for all non-API routes
-  // index.html must NOT be cached long-term (it references hashed JS/CSS bundles)
-  app.get('/{*splat}', (_req, res) => {
-    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-    res.sendFile(path.join(clientDist, 'index.html'));
   });
 
   return app;
