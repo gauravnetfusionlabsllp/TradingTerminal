@@ -5,6 +5,7 @@ import { prisma } from '../lib/prisma.js';
 import { signJwt } from '../lib/jwt.js';
 import { requireAuth, type AuthUser } from '../middleware/auth.js';
 import { bridge } from './mt5.js';
+import { env } from '../config/env.js';
 
 const router = Router();
 
@@ -114,16 +115,78 @@ router.post('/login', async (req, res) => {
   clearVerifyAttempts(ip);
 
   try {
-    const user = await prisma.user.upsert({
-      where: { mt5Login: String(login) },
-      update: { name: result.name ?? undefined },
-      create: { mt5Login: String(login), name: result.name },
-    });
-    const token = signJwt({ sub: user.id, login, ro: investor }, TOKEN_TTL_SEC);
-    res.cookie('token', token, COOKIE_OPTIONS);
-    res.json({ user: publicUser({ ...user, mt5Login: login, readOnly: investor }), token });
+    await startSession(res, login, result.name, investor);
   } catch (err: any) {
     console.error('[Auth] MT5 login error:', err?.message);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Upserts the user, signs the session JWT and sets the cookie - shared by the
+// password login and the client-portal SSO below.
+async function startSession(res: import('express').Response, login: number, name: string | null, investor: boolean) {
+  const user = await prisma.user.upsert({
+    where: { mt5Login: String(login) },
+    update: { name: name ?? undefined },
+    create: { mt5Login: String(login), name },
+  });
+  const token = signJwt({ sub: user.id, login, ro: investor }, TOKEN_TTL_SEC);
+  res.cookie('token', token, COOKIE_OPTIONS);
+  res.json({ user: publicUser({ ...user, mt5Login: login, readOnly: investor }), token });
+}
+
+const SsoBody = z.object({ token: z.string().min(16).max(256) });
+
+// POST /api/auth/sso — one-time token from the client portal's "Trade" button.
+// Redeemed server-to-server with the CRM (shared secret, single use, ~60s
+// lifetime): the CRM vouches that its logged-in client owns this MT5 login, so
+// no password is involved. Starts a full (non-investor) session.
+router.post('/sso', async (req, res) => {
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  if (isVerifyBlocked(ip)) {
+    return res.status(429).json({ error: 'Too many failed logins, please try again later' });
+  }
+  if (!env.CRM_SSO_REDEEM_URL || !env.CRM_SSO_SECRET) {
+    return res.status(503).json({ error: 'Portal sign-in is not enabled' });
+  }
+
+  const parsed = SsoBody.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Sign-in token required' });
+  }
+
+  let redeemed: { login: number; name: string | null };
+  try {
+    const r = await fetch(env.CRM_SSO_REDEEM_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Webtrader-Key': env.CRM_SSO_SECRET },
+      body: JSON.stringify({ token: parsed.data.token }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (r.status === 401 || r.status === 403) {
+      recordVerifyAttempt(ip);
+      return res.status(401).json({ error: 'Sign-in link expired, please log in' });
+    }
+    if (!r.ok) {
+      console.error(`[Auth] CRM SSO redeem failed (${r.status})`);
+      return res.status(503).json({ error: 'Client portal unavailable, please log in' });
+    }
+    redeemed = await r.json();
+  } catch (err: any) {
+    console.error('[Auth] CRM SSO redeem error:', err?.message);
+    return res.status(503).json({ error: 'Client portal unavailable, please log in' });
+  }
+
+  const login = Number(redeemed?.login);
+  if (!Number.isSafeInteger(login) || login <= 0) {
+    return res.status(502).json({ error: 'Sign-in failed, please log in' });
+  }
+  clearVerifyAttempts(ip);
+
+  try {
+    await startSession(res, login, redeemed.name || null, false);
+  } catch (err: any) {
+    console.error('[Auth] SSO login error:', err?.message);
     res.status(500).json({ error: 'Login failed' });
   }
 });

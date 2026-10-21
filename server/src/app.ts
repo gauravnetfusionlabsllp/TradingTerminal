@@ -143,6 +143,7 @@ export function createApp() {
 
   // Auth routes — stricter rate limit on the login attempt itself (not /me)
   app.use('/api/auth/login', authLimiter);
+  app.use('/api/auth/sso', authLimiter);
   app.use('/api/auth', authRouter);
   app.use('/api/mt5', mt5Router);
   app.use('/api/streams', streamsRouter);

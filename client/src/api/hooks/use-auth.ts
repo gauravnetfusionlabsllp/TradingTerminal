@@ -15,16 +15,52 @@ async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
+// ?login= / ?sso= come from the client portal's "Trade" button, read once at load.
+const bootParams = new URLSearchParams(window.location.search);
+const portalLogin = bootParams.get('login');
+const portalSso = bootParams.get('sso');
+
+// One boot per page load (React StrictMode runs effects twice in dev; a second
+// run must not try to redeem the single-use token again).
+let bootPromise: Promise<AuthUser | null> | null = null;
+
+function bootSession(): Promise<AuthUser | null> {
+  if (bootPromise) return bootPromise;
+
+  // Strip the one-time token from the address bar right away (history, bookmarks, screenshots).
+  if (portalSso) {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('sso');
+    const qs = params.toString();
+    window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`);
+  }
+
+  const me = () => fetchJSON<{ user: AuthUser | null }>('/auth/me').then((d) => d.user);
+  bootPromise = portalSso
+    ? fetchJSON<{ user: AuthUser }>('/auth/sso', { method: 'POST', body: JSON.stringify({ token: portalSso }) })
+        .then((d) => d.user)
+        // Expired/used/unavailable: keep an existing session only if it's the account the
+        // portal asked for; otherwise the caller opens the login modal (?login= prefilled).
+        .catch(() => me().then((user) =>
+          user && (!portalLogin || String(user.mt5Login) === portalLogin) ? user : Promise.reject(new Error('sso failed'))))
+    : me();
+  return bootPromise;
+}
+
 export function useAuth() {
   const setUser = useAuthStore((s) => s.setUser);
   const setLoading = useAuthStore((s) => s.setLoading);
+  const setLoginModalOpen = useAuthStore((s) => s.setLoginModalOpen);
 
   useEffect(() => {
-    fetchJSON<{ user: AuthUser | null }>('/auth/me')
-      .then((data) => setUser(data.user))
-      .catch(() => setUser(null))
+    bootSession()
+      .then((user) => setUser(user))
+      .catch(() => {
+        setUser(null);
+        if (portalSso || portalLogin) setLoginModalOpen(true);
+      })
       .finally(() => setLoading(false));
-  }, [setUser, setLoading]);
+  }, [setUser, setLoading, setLoginModalOpen]);
 }
 
 export function useAuthActions() {

@@ -24,6 +24,12 @@ const envSchema = z.object({
   MT5_BRIDGE_API_KEY: z.string().default(''),
   JWT_SECRET: z.string().default(''),
 
+  // Client portal (CRM) single sign-on for the "Trade" button: the CRM endpoint
+  // that redeems one-time tokens, and the shared secret it expects in
+  // X-Webtrader-Key. Either empty = portal sign-in disabled.
+  CRM_SSO_REDEEM_URL: z.string().default(''),
+  CRM_SSO_SECRET: z.string().default(''),
+
   // Realtime prices: the Python FXCubic FIX bridge's WebSocket (empty = disabled, REST polling only)
   MARKET_FEED_URL: z.string().default('ws://localhost:8765'),
 });
