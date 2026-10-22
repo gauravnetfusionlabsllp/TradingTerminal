@@ -18,12 +18,13 @@ declare global {
 }
 
 /**
- * Global middleware: reads JWT (`token` cookie or `Authorization: Bearer`) → verifies → loads user → attaches req.user
+ * Global middleware: reads JWT (`Authorization: Bearer`, else the `token` cookie) → verifies → loads user → attaches req.user.
+ * Bearer wins: native clients hold one token per MT5 account, and a leftover cookie from another account must not override it.
  */
 export async function attachUser(req: Request, _res: Response, next: NextFunction) {
   try {
     const auth = req.headers.authorization;
-    const token = req.cookies?.token || (auth?.startsWith('Bearer ') ? auth.slice(7) : undefined);
+    const token = (auth?.startsWith('Bearer ') ? auth.slice(7) : undefined) || req.cookies?.token;
     if (!token) return next();
 
     const claims = verifyJwt(token);

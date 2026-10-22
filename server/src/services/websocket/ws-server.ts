@@ -15,7 +15,7 @@ const MAX_SYMBOLS_PER_CLIENT = 100;
 const FLUSH_INTERVAL = 10;
 
 interface Client {
-  auth: JwtPayload | null;  // from the `token` cookie at upgrade; null = anonymous (public broadcasts only)
+  auth: JwtPayload | null;  // from Bearer or the `token` cookie at upgrade; null = anonymous (public broadcasts only)
   symbols: Set<string>;     // realtime MT5 symbols this socket subscribed to
 }
 const clients = new Map<WebSocket, Client>();
@@ -39,7 +39,10 @@ export function sendToLogin(login: number, type: string, data: unknown) {
   }
 }
 
-function authFromCookie(req: IncomingMessage): JwtPayload | null {
+// Bearer first (native apps send it on the upgrade), then the browser's `token` cookie
+function authFromRequest(req: IncomingMessage): JwtPayload | null {
+  const auth = req.headers.authorization;
+  if (auth?.startsWith('Bearer ')) return verifyJwt(auth.slice(7));
   const token = req.headers.cookie?.match(/(?:^|;\s*)token=([^;]+)/)?.[1];
   return token ? verifyJwt(decodeURIComponent(token)) : null;
 }
@@ -131,7 +134,7 @@ export function startWebSocketServer(server: Server) {
     });
 
     wss.on('connection', (ws, req) => {
-      const client: Client = { auth: authFromCookie(req), symbols: new Set() };
+      const client: Client = { auth: authFromRequest(req), symbols: new Set() };
       clients.set(ws, client);
       console.log(`[WS] Client connected${client.auth ? ` (MT5 #${client.auth.login})` : ''}`);
       const login = client.auth?.login;
