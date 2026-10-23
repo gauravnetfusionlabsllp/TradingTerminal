@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCheck, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '../../stores/use-app-store';
+import { SymbolLogo } from './symbol-logo';
 
 function timeAgo(date: Date) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
@@ -104,9 +105,9 @@ export function NotificationPanel() {
                         {n.symbols.slice(0, 3).map((s) => (
                           <span
                             key={s}
-                            className="px-1.5 py-0.5 border border-border rounded-sm text-micro text-neutral"
+                            className="flex items-center gap-1 px-1.5 py-0.5 border border-border rounded-sm text-micro text-neutral"
                           >
-                            ${s}
+                            <SymbolLogo symbol={s} size={12} />${s}
                           </span>
                         ))}
                         <span className="ml-auto">{sentimentIcon(n.sentiment)}</span>

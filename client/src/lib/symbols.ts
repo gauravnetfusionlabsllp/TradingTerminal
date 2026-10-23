@@ -18,20 +18,23 @@ const ALIAS: Record<string, string> = {
   XNGUSD: 'NG=F', NATGAS: 'NG=F', COCOA: 'CC=F',
   US30: '^DJI', DJ30: '^DJI', US500: '^GSPC', SPX500: '^GSPC', 'S&P500': '^GSPC',
   NAS100: '^NDX', ND100: '^NDX', USNDX: '^NDX', USTECH: '^NDX',
-  GER40: '^GDAXI', DAX40: '^GDAXI', GERMAN: '^GDAXI', UK100: '^FTSE', JPN225: '^N225', JP225: '^N225',
+  GER40: '^GDAXI', DAX40: '^GDAXI', DE40: '^GDAXI', GERMAN: '^GDAXI', UK100: '^FTSE', JPN225: '^N225', JP225: '^N225',
   FRENCH: '^FCHI', CAC40: '^FCHI', ESX50: '^STOXX50E', ESTOX: '^STOXX50E', ESP35: '^IBEX', HSI50: '^HSI',
   AUS200: '^AXJO', AEX25: '^AEX', SMI20: '^SSMI', CHINA50: 'XIN9.FGI', NIFTY: '^NSEI', BANKNIFTY: '^NSEBANK',
   DXY: 'DX-Y.NYB', 'HKG.33': '^HSI', BRKB: 'BRK-B', VISA: 'V',
 };
-const COIN: Record<string, string> = { DSH: 'DASH', LNK: 'LINK', AVX: 'AVAX', WAV: 'WAVES', SHI: 'SHIB' };
+const COIN: Record<string, string> = {
+  DSH: 'DASH', LNK: 'LINK', AVX: 'AVAX', WAV: 'WAVES', SHI: 'SHIB', SHB: 'SHIB', ALG: 'ALGO', ATM: 'ATOM', AVE: 'AAVE',
+  COM: 'COMP', DOG: 'DOGE', INC: '1INCH', MAN: 'MANA', NER: 'NEAR', SND: 'SAND', XBN: 'BNB', XET: 'ETH', XLC: 'LTC',
+};
 // Futures roots → continuous series. A root alone (CL, ES…) is a stock ticker, so these need an expiry or "FUT".
 const FUTURE: Record<string, string> = {
   GC: 'GC=F', SI: 'SI=F', CL: 'CL=F', NG: 'NG=F', HG: 'HG=F', ES: 'ES=F', NQ: 'NQ=F', ZN: 'ZN=F', DJ: 'YM=F', DJ30: 'YM=F',
   NIFTY: '^NSEI', BANKNIFTY: '^NSEBANK',
 };
 const MONTHS = 'JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC';
-// Z26 · Z_26 · _Z26 · 20DEC2025 · 27-DEC-24
-const EXPIRY = `_?(?:[FGHJKMNQUVXZ]_?\\d{2}|\\d{2}-?(?:${MONTHS})-?\\d{2,4})`;
+// Z26 · Z_26 · _Z26 · .Z26 · 20DEC2025 · 27-DEC-24
+const EXPIRY = `[._]?(?:[FGHJKMNQUVXZ]_?\\d{2}|\\d{2}-?(?:${MONTHS})-?\\d{2,4})`;
 const DATED_RE = new RegExp(`^(${Object.keys(FUTURE).join('|')})${EXPIRY}$`);
 // "RELIANCE FUT 25 AUG 26", "M&M_FUT_28_JUL_26", "RELIANCEFUT25AUG26", "GC27DEC2024 FUT"
 const FUT_RE = new RegExp(`^([A-Z0-9&-]+?)(?:${EXPIRY})?[ _]?FUT(?:[ _\\d]|$)`);
@@ -62,7 +65,7 @@ export function toYahoo(symbol: string): string {
   if (fx && ISO.has(fx[1]) && ISO.has(fx[2])) return `${base}=X`;
   const coin = base.match(/^([A-Z0-9]{2,6}?)USDT?$/);
   if (coin && !ISO.has(coin[1]) && !METALS.has(coin[1])) return `${COIN[coin[1]] ?? coin[1]}-USD`;
-  const dated = base.match(DATED_RE);
+  const dated = base.match(DATED_RE) ?? symbol.toUpperCase().match(DATED_RE); // GC.Z25: mt5Base drops the .Z25
   if (dated) return FUTURE[dated[1]];
   // ponytail: MCX commodity futures (CRUDEOIL FUT, GOLDM FUT) become <root>.NS, which Yahoo doesn't have — no data
   const fut = base.match(FUT_RE) ?? base.match(NSE_MONTH_RE);

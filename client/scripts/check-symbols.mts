@@ -12,9 +12,9 @@ assert.equal(mt5Base('COCOAcash.stdc'), 'COCOA');
 const cases: [string, string][] = [
   ['EURUSD', 'EURUSD=X'], ['AUDCHF.ecn', 'AUDCHF=X'], ['USDJPYm', 'USDJPY=X'], ['USDTRY', 'USDTRY=X'],
   ['XAUUSD', 'GC=F'], ['XAGUSD.std', 'SI=F'], ['XPT', 'PL=F'], ['USOIL', 'CL=F'], ['XBRUSD', 'BZ=F'], ['XNGUSD', 'NG=F'],
-  ['US30', '^DJI'], ['S&P500.e', '^GSPC'], ['NAS100', '^NDX'], ['GER40', '^GDAXI'], ['China50.CNT', 'XIN9.FGI'], ['DXY', 'DX-Y.NYB'],
-  ['BTCUSD', 'BTC-USD'], ['DOGEUSDT', 'DOGE-USD'], ['DSHUSD', 'DASH-USD'], ['USDTUSD', 'USDT-USD'],
-  ['GCZ26', 'GC=F'], ['GCZ_26i', 'GC=F'], ['SI_Z26', 'SI=F'], ['CL20DEC2025', 'CL=F'], ['DJ30U26', 'YM=F'], ['NQZ26', 'NQ=F'],
+  ['US30', '^DJI'], ['S&P500.e', '^GSPC'], ['NAS100', '^NDX'], ['GER40', '^GDAXI'], ['DE40.imf', '^GDAXI'], ['China50.CNT', 'XIN9.FGI'], ['DXY', 'DX-Y.NYB'],
+  ['BTCUSD', 'BTC-USD'], ['DOGEUSDT', 'DOGE-USD'], ['DSHUSD', 'DASH-USD'], ['USDTUSD', 'USDT-USD'], ['DOGUSD.i', 'DOGE-USD'],
+  ['GCZ26', 'GC=F'], ['GCZ_26i', 'GC=F'], ['SI_Z26', 'SI=F'], ['CL20DEC2025', 'CL=F'], ['DJ30U26', 'YM=F'], ['NQZ26', 'NQ=F'], ['GC.Z25', 'GC=F'], ['CL.K24', 'CL=F'], ['ES.M24', 'ES=F'],
   ['RELIANCE FUT 25 AUG 26', 'RELIANCE.NS'], ['M&M_FUT_28_JUL_26', 'M&M.NS'], ['RELIANCEFUT25AUG26', 'RELIANCE.NS'], ['NIFTY FUT 30 JUN 26', '^NSEI'],
   ['NIFTY25JUL2024 FUT', '^NSEI'], ['GC27-DEC-24 FUT', 'GC=F'], ['NIFTYH26', '^NSEI'], ['RELIANCEAPR', 'RELIANCE.NS'], ['BANKNIFTYMAR', '^NSEBANK'],
   ['360ONE FUT 25 AUG 26', '360ONE.NS'], ['JP225Roll.CNT', '^N225'], ['XAUUSD_80340', 'GC=F'], ['HKG.33.CNT', '^HSI'],

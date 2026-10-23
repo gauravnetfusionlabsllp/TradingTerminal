@@ -7,6 +7,7 @@ import { useAppStore } from '../../stores/use-app-store';
 import { useT, type TranslationKey } from '../../i18n';
 import { GlassCard } from '../common/glass-card';
 import { ConfirmDialog } from '../common/confirm-dialog';
+import { SymbolLogo } from '../common/symbol-logo';
 import { Search, X, TrendingUp, TrendingDown, Plus, FolderPlus, List, Columns } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { lazy, Suspense } from 'react';
@@ -219,7 +220,8 @@ function WatchlistView({
                 className={`grid ${gridCols} gap-x-2 px-3 py-2 border-b border-border/5 cursor-pointer transition-colors group items-center ${item.symbol === selectedSymbol ? 'bg-accent/10 shadow-[inset_2px_0_0_var(--color-accent)]' : 'hover:bg-white/[0.03]'}`}
                 onClick={() => onSelect(item.symbol)}
               >
-                <div className="flex items-center gap-1 min-w-0">
+                <div className="relative flex items-center gap-1.5 min-w-0">
+                  <SymbolLogo symbol={item.symbol} />
                   <span className="font-mono font-black text-white text-[12px] group-hover:text-cyan-300 transition-colors truncate">{item.symbol}</span>
                   <button
                     onClick={(e) => {
@@ -227,7 +229,8 @@ function WatchlistView({
                       removeSymbolFromTab(item.symbol, activeTab);
                     }}
                     aria-label={`Remove ${item.symbol}`}
-                    className="shrink-0 text-neutral hover:text-bearish opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5"
+                    // Floats over the name's end on hover: a reserved slot would leave the logo'd name too little room
+                    className="absolute right-0 bg-panel text-neutral hover:text-bearish opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5"
                   >
                     <X className="w-3 h-3" />
                   </button>

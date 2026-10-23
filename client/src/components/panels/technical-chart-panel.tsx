@@ -10,6 +10,7 @@ import { usePersisted } from '../../hooks/use-persisted';
 import { tickBucket, foldTick, mergeLive, type Bar } from '../../lib/live-candles';
 import { keepView } from '../../lib/chart-view';
 import { toMt5 } from '../../lib/symbols';
+import { SymbolLogo } from '../common/symbol-logo';
 import { fmtPrice } from '../trading/mt5-trading';
 import { SymbolPicker } from '../trading/symbol-picker';
 import { ChartTrading, ChartMenu } from './chart-trading';
@@ -221,7 +222,7 @@ export function TechnicalChart({ symbol, picker }: { symbol: string; picker?: Re
         <div className="ml-auto flex items-center gap-3 text-mini font-mono">
           {lastCandle && (
             <>
-              <span className="text-accent-ink font-bold">{symbol}</span>
+              <span className="flex items-center gap-1 text-accent-ink font-bold"><SymbolLogo symbol={symbol} size={12} />{symbol}</span>
               <span className="text-white font-bold">{formatPrice(lastCandle.close)}</span>
               <span className={change >= 0 ? 'text-emerald-400' : 'text-red-400'}>
                 {change >= 0 ? '+' : ''}{formatPrice(change)} ({changePct >= 0 ? '+' : ''}{changePct.toFixed(2)}%)

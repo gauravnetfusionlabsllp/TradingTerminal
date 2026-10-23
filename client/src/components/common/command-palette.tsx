@@ -9,6 +9,8 @@ import { useAuthActions } from '../../api/hooks/use-auth';
 import { useMt5Symbols } from '../../api/hooks/use-mt5';
 import { useTickerSearch } from '../../api/hooks/use-watchlist';
 import { toMt5 } from '../../lib/symbols';
+import { logoFor } from '../../lib/logos';
+import { SymbolLogo } from './symbol-logo';
 import { useResolvedTheme } from '../../lib/theme';
 import { showPanelInLayout, hidePanelInLayout } from '../layout/dock-layout';
 import { ALL_PANEL_IDS, PANEL_IDS, getLocalizedPanelName, getPanelDescription } from '../layout/panels';
@@ -110,7 +112,7 @@ function Palette({ close }: { close: () => void }) {
     saveRecent(sym);
   };
   const symRow = (sym: string, hint?: string, icon = <TrendingUp className={ICON} />): Row =>
-    ({ id: `sym-${sym}`, label: sym, hint, icon, run: () => openSymbol(sym) });
+    ({ id: `sym-${sym}`, label: sym, hint, icon: logoFor(sym).length ? <SymbolLogo symbol={sym} size={16} /> : icon, run: () => openSymbol(sym) });
 
   const fullscreen = !!document.fullscreenElement;
   const activeWs = space?.list.find((w) => w.key === space.active);

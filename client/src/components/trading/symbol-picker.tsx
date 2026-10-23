@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useId } from 'react';
 import type { Mt5Symbol } from '../../api/hooks/use-mt5';
+import { SymbolLogo } from '../common/symbol-logo';
 
 export const tradeModeLabel = (mode: string) =>
   ({ TRADE_FULL: 'Full', TRADE_LONGONLY: 'Long only', TRADE_SHORTONLY: 'Short only', TRADE_CLOSEONLY: 'Close only' } as Record<string, string>)[mode] ?? mode;
@@ -71,6 +72,12 @@ export function SymbolPicker({ symbols, value = '', onSelect, placeholder, clear
 
   return (
     <div className={`relative ${className}`}>
+      {/* The selected symbol's logo; blank while typing. Search-only pickers (clearOnSelect) have none */}
+      {!clearOnSelect && (
+        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 flex pointer-events-none">
+          <SymbolLogo symbol={query === value ? value : ''} />
+        </span>
+      )}
       <input
         type="text"
         role="combobox"
@@ -91,7 +98,7 @@ export function SymbolPicker({ symbols, value = '', onSelect, placeholder, clear
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         maxLength={32}
-        className="w-full bg-black/60 border border-border/40 px-3 py-2 text-[12px] font-mono text-white placeholder:text-neutral/30 outline-none focus:border-accent/50"
+        className={`w-full bg-black/60 border border-border/40 px-3 ${clearOnSelect ? '' : 'pl-7!'} py-2 text-[12px] font-mono text-white placeholder:text-neutral/30 outline-none focus:border-accent/50`}
       />
 
       {open && matches.length > 0 && (
@@ -116,8 +123,9 @@ export function SymbolPicker({ symbols, value = '', onSelect, placeholder, clear
                   onMouseDown={(e) => { e.preventDefault(); pick(s.symbol); }}
                   onMouseEnter={() => setHighlight(idx)}
                   style={{ position: 'absolute', top: idx * ROW_H, height: ROW_H, left: 0, right: 0 }}
-                  className={`px-3 flex items-center gap-3 cursor-pointer border-b border-border/10 ${idx === highlight ? 'bg-white/10' : ''}`}
+                  className={`px-3 flex items-center gap-2 cursor-pointer border-b border-border/10 ${idx === highlight ? 'bg-white/10' : ''}`}
                 >
+                  <SymbolLogo symbol={s.symbol} />
                   <span className="font-mono font-black text-xs text-accent-ink flex-1 truncate">{s.symbol}</span>
                   <span className="text-mini text-neutral font-mono shrink-0">{tradeModeLabel(s.tradeMode)}</span>
                 </div>

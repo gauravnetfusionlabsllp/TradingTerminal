@@ -9,6 +9,7 @@ import {
 } from '../../api/hooks/use-alerts';
 import { useMt5Symbols, useMt5Quotes } from '../../api/hooks/use-mt5';
 import { SymbolPicker } from '../trading/symbol-picker';
+import { SymbolLogo } from '../common/symbol-logo';
 import { fmtPrice } from '../trading/mt5-trading';
 import { useT } from '../../i18n';
 import { Bell, Plus, Trash2, ChevronUp } from 'lucide-react';
@@ -72,7 +73,7 @@ function AlertRow({ alert: a, onToggle, onDelete }: {
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-micro font-mono text-neutral/40 uppercase">{typeKey ? t(typeKey) : a.type}</span>
           {a.symbol && (
-            <span className="text-micro font-mono text-accent-ink/60">{a.symbol}</span>
+            <span className="flex items-center gap-1 text-micro font-mono text-accent-ink/60"><SymbolLogo symbol={a.symbol} size={12} />{a.symbol}</span>
           )}
           <span className="text-micro font-mono text-neutral/30 truncate">{condition}</span>
         </div>

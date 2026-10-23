@@ -8,6 +8,7 @@ import { useAuthStore } from '../../stores/use-auth-store';
 import { useAppStore, type OrderDraft } from '../../stores/use-app-store';
 import { useT } from '../../i18n';
 import { SymbolPicker } from './symbol-picker';
+import { SymbolLogo } from '../common/symbol-logo';
 import { toMt5 } from '../../lib/symbols';
 import {
   levelsError, pipSize, pips, pipText, levelAtPips, pendingTypeFor, draftEntry, draftRef, snap, typeName,
@@ -512,6 +513,7 @@ export function Mt5Positions() {
             <div className="flex items-center justify-between gap-2">
               <button onClick={() => setSelectedSymbol(p.symbol)} className="text-left min-w-0">
                 <span className={`text-mini font-black mr-1.5 ${p.side === 'BUY' ? 'text-accent-ink' : 'text-bearish'}`}>{p.side}</span>
+                <SymbolLogo symbol={p.symbol} className="mr-1" />
                 <span className="text-xs font-mono font-bold text-white hover:text-accent-ink">{p.symbol}</span>
                 <span className="text-mini font-mono text-neutral ml-2">{p.volume} @ {fmtPrice(p.openPrice)}</span>
               </button>
@@ -595,7 +597,10 @@ export function Mt5Orders() {
                 <span className={`text-mini font-black uppercase px-1.5 py-0.5 border ${
                   o.type.startsWith('BUY') ? 'text-accent-ink border-buy/30 bg-buy/10' : 'text-bearish border-sell/30 bg-sell/10'
                 }`}>{o.type.replace('_', ' ')}</span>
-                <span className="text-xs font-mono font-bold text-white">{o.symbol}</span>
+                <span className="flex items-center gap-1">
+                  <SymbolLogo symbol={o.symbol} />
+                  <span className="text-xs font-mono font-bold text-white">{o.symbol}</span>
+                </span>
                 <span className="text-mini font-mono text-neutral">{o.volume} @ {fmtPrice(o.price)}</span>
               </div>
               {!readOnly && (
@@ -677,7 +682,7 @@ export function Mt5History() {
                 <tr key={d.ticket} onClick={() => setSelectedSymbol(d.symbol)} className="cursor-pointer"
                   title={`Deal #${d.ticket}\nOrder #${d.orderTicket}\nPosition #${d.positionId}`}>
                   <td className="text-neutral/60">{fmtTime(d.time)}</td>
-                  <td className="text-white font-bold">{d.symbol}</td>
+                  <td className="text-white font-bold"><SymbolLogo symbol={d.symbol} size={12} className="mr-1" />{d.symbol}</td>
                   <td className={`font-bold ${d.action === 'BUY' ? 'text-accent-ink' : 'text-bearish'}`}>{d.action}</td>
                   <td className="text-neutral/70">{d.entry.replace('_', ' ').toLowerCase()}</td>
                   <td className="r text-white/80">{d.volume}</td>
