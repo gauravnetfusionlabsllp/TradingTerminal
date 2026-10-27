@@ -1,8 +1,8 @@
 # Deploy SGFX Terminal to PRODUCTION. The only place anything gets built.
-# Run from the prod folder:   cd D:\deploy\sgfx-terminal; .\deploy.ps1            (latest committed master)
+# Run from the prod folder:   cd D:\deploy\sgfx-terminal; .\deploy.ps1            (latest committed main)
 # Roll back / pin a release:  .\deploy.ps1 -Ref <commit-or-tag>
 # Only committed code reaches prod: it fetches from the dev repo, never copies its working files.
-param([string]$Ref = 'origin/master')
+param([string]$Ref = 'origin/main')
 $ErrorActionPreference = 'Stop'
 $Prod = 'D:\deploy\sgfx-terminal'
 
@@ -29,7 +29,7 @@ Push-Location server
 try {
   Run 'npx prisma migrate deploy'
 } finally { Pop-Location }
-Run 'pm2 restart sgfx-api --update-env'
+Run 'pm2 startOrRestart ecosystem.config.cjs --update-env'
 
 Start-Sleep -Seconds 3
 $health = Invoke-WebRequest -UseBasicParsing -TimeoutSec 15 'http://127.0.0.1:3001/api/health'
