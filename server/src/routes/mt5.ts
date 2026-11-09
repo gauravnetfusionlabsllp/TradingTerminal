@@ -62,7 +62,8 @@ function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T>
 
 // ── Symbols ──
 
-interface AllowedSymbol { symbol: string; tradeMode: string }
+// The bridge also sends the group-resolved contract spec (digits, contractSize, volumeMin, ...); it passes through as-is
+interface AllowedSymbol { symbol: string; tradeMode: string; point?: number; spread?: number; spreadFloat?: boolean }
 
 export async function allowedSymbols(login: number): Promise<AllowedSymbol[]> {
   return cached(`symbols:${login}`, 60_000, async () =>
@@ -274,7 +275,14 @@ const h = (fn: Handler) => async (req: Request, res: Response) => {
 };
 
 // Every bridge call uses the login from the verified JWT — never from the request.
-router.get('/symbols', h(async (req) => ({ symbols: await allowedSymbols(req.user!.mt5Login) })));
+router.get('/symbols', h(async (req) => ({ symbols: (await allowedSymbols(req.user!.mt5Login)).map(withLiveSpread) })));
+
+// MT5 config only holds fixed spreads (0 = floating). Floating ones get the live FIX spread, or none rather than a false 0.
+function withLiveSpread(s: AllowedSymbol): AllowedSymbol {
+  if (!s.spreadFloat || !s.point) return s;
+  const q = lastQuote(s.symbol);
+  return { ...s, spread: q && tickingNow(s.symbol) ? Math.round((q.ask - q.bid) / s.point) : undefined }; // undefined = left out of the JSON
+}
 
 interface Tick { symbol: string; bid: number; ask: number; last: number }
 // Bridge answers unknown/idle symbols with zeros instead of 404
