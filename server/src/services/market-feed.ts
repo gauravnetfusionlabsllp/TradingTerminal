@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import { env } from '../config/env.js';
+import { currentTick } from '../routes/mt5.js';
 
 /**
  * Single upstream client of the Python FXCubic FIX bridge (D:\apps\MarketData, ws_server.py).
@@ -16,6 +17,8 @@ function fixTime(s: string): number {
 }
 
 interface Handlers { onQuote(q: Quote): void; onStatus(live: boolean): void }
+
+const STALE_MS = 60_000; // snapshot older than this = the bridge's cached replay, not a live tick
 
 let socket: WebSocket | null = null;
 let handlers: Handlers = { onQuote() {}, onStatus() {} };
@@ -55,11 +58,32 @@ export function release(symbol: string) {
   const n = counts.get(symbol) ?? 0;
   if (n <= 1) {
     counts.delete(symbol);
-    last.delete(symbol); // bridge replays its own cached snapshot on the next subscribe
+    last.delete(symbol); // next subscribe starts clean: a stale replay then seeds from MT5 (handleMessage)
     if (n === 1) send('unsubscribe', [symbol]);
   } else {
     counts.set(symbol, n - 1);
   }
+}
+
+function publish(q: Quote) {
+  last.set(q.symbol, q);
+  handlers.onQuote(q);
+  for (const fn of quoteListeners) fn(q);
+}
+
+// The bridge's replay on subscribe is the last tick it saw while anyone was subscribed: days old after a quiet spell
+// ($57-74 off on gold, QA #26). Until FIX ticks live, show MT5's own last tick — what Market Watch shows and fills at.
+// The old `ts` stays, so tickingNow, alerts and live candles still treat it as not live.
+// ponytail: serial, one bridge call per 100ms (its 20 req/s is shared with trading) — a closed-market watchlist of 100 fills in ~10s
+let seeding = Promise.resolve();
+function seedFromMt5(stale: Quote) {
+  const wanted = () => counts.has(stale.symbol) && !last.has(stale.symbol); // released, or FIX ticked meanwhile
+  seeding = seeding.then(async () => {
+    if (!wanted()) return;
+    const t = await currentTick(stale.symbol).catch(() => null);
+    if (wanted()) publish(t && t.bid > 0 && t.ask > 0 ? { ...stale, bid: t.bid, ask: t.ask } : stale);
+    await new Promise((r) => setTimeout(r, 100));
+  }).catch((err) => console.warn('[MarketFeed] seed failed:', err?.message));
 }
 
 function handleMessage(raw: WebSocket.RawData) {
@@ -77,9 +101,11 @@ function handleMessage(raw: WebSocket.RawData) {
     const ask = msg.entries?.find((e: any) => e.type === 'ask')?.price ?? prev?.ask;
     if (typeof bid !== 'number' || typeof ask !== 'number') return;
     const q: Quote = { symbol: msg.symbol, bid, ask, ts: fixTime(msg.ts) };
-    last.set(q.symbol, q);
-    handlers.onQuote(q);
-    for (const fn of quoteListeners) fn(q);
+    if (Date.now() - q.ts > STALE_MS) {
+      if (!prev) seedFromMt5(q); // a replay; whatever we already hold is at least as new
+      return;
+    }
+    publish(q);
   } else if (msg.type === 'status') {
     // Bridge only broadcasts status on change; md_reject is broadcast for every bridge client's symbols
     if (msg.state === 'logged_on') setLive(true);
