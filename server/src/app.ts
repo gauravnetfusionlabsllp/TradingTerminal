@@ -2,7 +2,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import { lazyRoute } from './lib/lazy-route.js';
@@ -58,9 +58,12 @@ const ALLOWED_ORIGINS: (string | RegExp)[] = [
 ];
 
 // ── Rate limiters ──
+// Signed-in traffic is counted per MT5 login, not per IP: phones behind one office Wi-Fi or carrier NAT share an
+// IP, and the mobile app's REST reads (positions, orders, sparklines) would lock every trader screen out with 429s.
 const globalLimiter = rateLimit({
   windowMs: 60 * 1000,  // 1 minute
-  max: 120,              // 120 requests per minute (matches CLAUDE.md spec)
+  limit: (req: Request) => (req.user ? 300 : 120), // anonymous: 120/min per IP (matches CLAUDE.md spec)
+  keyGenerator: (req: Request) => (req.user ? `login:${req.user.mt5Login}` : ipKeyGenerator(req.ip ?? 'unknown')),
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later' },
